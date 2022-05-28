@@ -8504,6 +8504,35 @@ void func_80844708(Player* this, GlobalContext* globalCtx) {
                     return;
                 }
             }
+            
+            u8 D_808546F0[] = { ITEM_SWORD_MASTER, ITEM_SWORD_KOKIRI };
+
+            if (this->skelAnime.curFrame >= 10.0f && CHECK_BTN_ALL(sControlInput->press.button, BTN_B)) {
+                if (Player_GetSwordHeld(this) == 0) {
+                    func_808328EC(this, NA_SE_IT_SWORD_PICKOUT);
+                }
+
+                func_808328EC(this, NA_SE_IT_SWORD_SWING);
+
+                s32 item = D_808546F0[(void)0, gSaveContext.linkAge];
+                s32 actionParam = sItemActionParams[item];
+
+                func_80835EFC(this);
+                func_808323B4(globalCtx, this);
+
+                this->heldItemId = item;
+                this->nextModelGroup = Player_ActionToModelGroup(this, actionParam);
+
+                func_8083399C(globalCtx, this, actionParam);
+                func_80834644(globalCtx, this);
+
+                func_80837948(globalCtx, this, 13);
+
+                this->linearVelocity = 15;
+
+                return;
+            }
+
 
             if ((this->skelAnime.curFrame < 15.0f) || !func_80850224(this, globalCtx)) {
                 if (this->skelAnime.curFrame >= 20.0f) {
