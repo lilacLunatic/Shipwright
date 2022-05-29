@@ -12777,7 +12777,7 @@ void func_8084EAC0(Player* this, GlobalContext* globalCtx) {
                 }
 
                 if (sp28 & 4) {
-                    gSaveContext.healthAccumulator = 0x5;
+                    gSaveContext.healthAccumulator = 0x50;
                 }
             }
 
