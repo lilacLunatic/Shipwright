@@ -225,6 +225,14 @@ static InitChainEntry sInitChain[] = {
     ICHAIN_F32(targetArrowOffset, 1500, ICHAIN_STOP),
 };
 
+void EnDekubaba_ChangeSize(EnDekubaba* this, f32 newSize) {
+    this->size = newSize;
+    for (s32 i = 0; i < sJntSphInit.count; i++) {
+            this->collider.elements[i].dim.worldSphere.radius = this->collider.elements[i].dim.modelSphere.radius =
+                (sJntSphElementsInit[i].dim.modelSphere.radius * this->size);
+    }
+}
+
 void EnDekubaba_Init(Actor* thisx, GlobalContext* globalCtx) {
     EnDekubaba* this = (EnDekubaba*)thisx;
     s32 i;
@@ -241,7 +249,7 @@ void EnDekubaba_Init(Actor* thisx, GlobalContext* globalCtx) {
 
         for (i = 0; i < sJntSphInit.count; i++) {
             this->collider.elements[i].dim.worldSphere.radius = this->collider.elements[i].dim.modelSphere.radius =
-                (sJntSphElementsInit[i].dim.modelSphere.radius * 2.50f);
+                (sJntSphElementsInit[i].dim.modelSphere.radius * this->size);
         }
 
         // This and its counterpart below mean that a Deku Stick jumpslash will not trigger the Deku Stick drop route.
@@ -1042,6 +1050,7 @@ void EnDekubaba_UpdateDamage(EnDekubaba* this, GlobalContext* globalCtx) {
             ((this->actor.colChkInfo.damageEffect != DEKUBABA_DMGEFF_NONE) || (this->actor.colChkInfo.damage != 0))) {
 
             phi_s0 = this->actor.colChkInfo.health - this->actor.colChkInfo.damage;
+            EnDekubaba_ChangeSize(this,this->size+0.25f*this->actor.colChkInfo.damage);
 
             if (this->actionFunc != EnDekubaba_StunnedVertical) {
                 if ((this->actor.colChkInfo.damageEffect == DEKUBABA_DMGEFF_BOOMERANG) ||
