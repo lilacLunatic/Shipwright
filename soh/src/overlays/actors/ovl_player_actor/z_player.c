@@ -12769,7 +12769,7 @@ void func_8084EAC0(Player* this, GlobalContext* globalCtx) {
                 s32 sp28 = D_808549FC[this->itemActionParam - PLAYER_AP_BOTTLE_POTION_RED];
 
                 if (sp28 & 1) {
-                    gSaveContext.healthAccumulator = 0xA2;
+                    gSaveContext.healthAccumulator = 0xC0;
                 }
 
                 if (sp28 & 2) {

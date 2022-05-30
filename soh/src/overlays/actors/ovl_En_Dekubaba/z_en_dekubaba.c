@@ -136,7 +136,10 @@ static ColliderJntSphInit sJntSphInit = {
     sJntSphElementsInit,
 };
 
-static CollisionCheckInfoInit sColChkInfoInit = { 2, 25, 25, MASS_IMMOVABLE };
+//Note: EnDekubaba_Init changes the dekubaba's initial health value when it is a Big type baba
+const static u8 BABA_HP_SMALL = 8;
+const static u8 BABA_HP_BIG = BABA_HP_SMALL*2;
+static CollisionCheckInfoInit sColChkInfoInit = { BABA_HP_SMALL, 25, 25, MASS_IMMOVABLE };
 
 typedef enum {
     /* 0x0 */ DEKUBABA_DMGEFF_NONE,
@@ -249,7 +252,7 @@ void EnDekubaba_Init(Actor* thisx, GlobalContext* globalCtx) {
         }
 
         CollisionCheck_SetInfo(&this->actor.colChkInfo, &sBigDekuBabaDamageTable, &sColChkInfoInit);
-        this->actor.colChkInfo.health = 4;
+        this->actor.colChkInfo.health = BABA_HP_BIG;
         this->actor.naviEnemyId = 0x08; // Big Deku Baba
         this->actor.targetMode = 2;
     } else {
