@@ -245,12 +245,7 @@ void EnDekubaba_Init(Actor* thisx, GlobalContext* globalCtx) {
     Collider_SetJntSph(globalCtx, &this->collider, &this->actor, &sJntSphInit, this->colliderElements);
 
     if (this->actor.params == DEKUBABA_BIG) {
-        this->size = 2.5f;
-
-        for (i = 0; i < sJntSphInit.count; i++) {
-            this->collider.elements[i].dim.worldSphere.radius = this->collider.elements[i].dim.modelSphere.radius =
-                (sJntSphElementsInit[i].dim.modelSphere.radius * this->size);
-        }
+        EnDekubaba_ChangeSize(this, 2.5f);
 
         // This and its counterpart below mean that a Deku Stick jumpslash will not trigger the Deku Stick drop route.
         // (Of course they reckoned without each age being able to use the other's items, so Stick and Master Sword
