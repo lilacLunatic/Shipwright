@@ -233,6 +233,11 @@ void EnDekubaba_ChangeSize(EnDekubaba* this, f32 newSize) {
     }
 }
 
+bool isBabaClose(EnDekubaba* this, GlobalContext* globalCtx){
+    Player* player = GET_PLAYER(globalCtx);
+    return (70.0f * this->size > Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos));
+}
+
 void EnDekubaba_Init(Actor* thisx, GlobalContext* globalCtx) {
     EnDekubaba* this = (EnDekubaba*)thisx;
     s32 i;
