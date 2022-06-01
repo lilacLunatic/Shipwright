@@ -152,7 +152,7 @@ typedef enum {
 static DamageTable sDekuBabaDamageTable = {
     /* Deku nut      */ DMG_ENTRY(0, DEKUBABA_DMGEFF_DEKUNUT),
     /* Deku stick    */ DMG_ENTRY(2, DEKUBABA_DMGEFF_NONE),
-    /* Slingshot     */ DMG_ENTRY(1, DEKUBABA_DMGEFF_NONE),
+    /* Slingshot     */ DMG_ENTRY(0, DEKUBABA_DMGEFF_NONE),
     /* Explosive     */ DMG_ENTRY(2, DEKUBABA_DMGEFF_NONE),
     /* Boomerang     */ DMG_ENTRY(2, DEKUBABA_DMGEFF_BOOMERANG),
     /* Normal arrow  */ DMG_ENTRY(2, DEKUBABA_DMGEFF_NONE),
@@ -189,7 +189,7 @@ static DamageTable sDekuBabaDamageTable = {
 static DamageTable sBigDekuBabaDamageTable = {
     /* Deku nut      */ DMG_ENTRY(0, DEKUBABA_DMGEFF_DEKUNUT),
     /* Deku stick    */ DMG_ENTRY(2, DEKUBABA_DMGEFF_NONE),
-    /* Slingshot     */ DMG_ENTRY(1, DEKUBABA_DMGEFF_NONE),
+    /* Slingshot     */ DMG_ENTRY(0, DEKUBABA_DMGEFF_NONE),
     /* Explosive     */ DMG_ENTRY(2, DEKUBABA_DMGEFF_NONE),
     /* Boomerang     */ DMG_ENTRY(2, DEKUBABA_DMGEFF_BOOMERANG),
     /* Normal arrow  */ DMG_ENTRY(2, DEKUBABA_DMGEFF_NONE),
