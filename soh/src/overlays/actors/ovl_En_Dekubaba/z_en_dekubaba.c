@@ -137,7 +137,7 @@ static ColliderJntSphInit sJntSphInit = {
 };
 
 //Note: EnDekubaba_Init changes the dekubaba's initial health value when it is a Big type baba
-const static u8 BABA_HP_SMALL = 4;
+const static u8 BABA_HP_SMALL = 6;
 const static u8 BABA_HP_BIG = BABA_HP_SMALL*2;
 static CollisionCheckInfoInit sColChkInfoInit = { BABA_HP_SMALL, 25, 25, MASS_IMMOVABLE };
 
@@ -227,7 +227,7 @@ static InitChainEntry sInitChain[] = {
 
 static void EnDekubaba_ChangeSize(EnDekubaba* this, f32 newSize) {
     this->size = newSize;
-    this->actor.targetMode = (int)newSize;
+    this->actor.targetMode = (s8)newSize;
     for (s32 i = 0; i < sJntSphInit.count; i++) {
             this->collider.elements[i].dim.worldSphere.radius = this->collider.elements[i].dim.modelSphere.radius =
                 (sJntSphElementsInit[i].dim.modelSphere.radius * this->size);
@@ -674,7 +674,7 @@ void EnDekubaba_DecideLunge(EnDekubaba* this, GlobalContext* globalCtx) {
 
     if (240.0f * this->size < Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos)) {
         EnDekubaba_SetupRetract(this);
-    } else if ((this->timer == 0) || (this->actor.xzDistToPlayer < DEKUBABA_ATTACK_RANGE * this->size)) {
+    } else if ((this->timer == 0) || isBabaClose(this,globalCtx)) {
         EnDekubaba_SetupPrepareLunge(this);
     }
 }
@@ -826,7 +826,7 @@ void EnDekubaba_PullBack(EnDekubaba* this, GlobalContext* globalCtx) {
         this->timer++;
 
         if (this->timer > 30) {
-            if (this->actor.xzDistToPlayer < DEKUBABA_ATTACK_RANGE * this->size) {
+            if (isBabaClose(this,globalCtx)) {
                 EnDekubaba_SetupPrepareLunge(this);
             } else {
                 EnDekubaba_SetupDecideLunge(this);
@@ -894,7 +894,7 @@ void EnDekubaba_Hit(EnDekubaba* this, GlobalContext* globalCtx) {
         } else {
             this->collider.base.acFlags |= AC_ON;
             if (this->timer == 0) {
-                if (this->actor.xzDistToPlayer < DEKUBABA_ATTACK_RANGE * this->size) {
+                if (isBabaClose(this,globalCtx)) {
                     EnDekubaba_SetupPrepareLunge(this);
                 } else {
                     EnDekubaba_SetupRecover(this);
@@ -918,7 +918,7 @@ void EnDekubaba_StunnedVertical(EnDekubaba* this, GlobalContext* globalCtx) {
     if (this->timer == 0) {
         EnDekubaba_DisableHitboxes(this);
 
-        if (this->actor.xzDistToPlayer < DEKUBABA_ATTACK_RANGE * this->size) {
+        if (isBabaClose(this,globalCtx)) {
             EnDekubaba_SetupPrepareLunge(this);
         } else {
             EnDekubaba_SetupRecover(this);
@@ -944,7 +944,7 @@ void EnDekubaba_Sway(EnDekubaba* this, GlobalContext* globalCtx) {
 
     if (ABS(angleToVertical) < 0x100) {
         this->collider.base.acFlags |= AC_ON;
-        if (this->actor.xzDistToPlayer < DEKUBABA_ATTACK_RANGE * this->size) {
+        if (isBabaClose(this,globalCtx)) {
             EnDekubaba_SetupPrepareLunge(this);
         } else {
             EnDekubaba_SetupRecover(this);
