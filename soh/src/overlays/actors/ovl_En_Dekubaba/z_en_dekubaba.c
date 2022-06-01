@@ -47,7 +47,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[7] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0xFFCFFFFF, 0x00, 0x10 },
+            { 0xFFCFFFFF, 0x00, 0x08 },
             { 0xFFCFFFFF, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_HARD,
             BUMP_ON,
@@ -225,7 +225,7 @@ static InitChainEntry sInitChain[] = {
     ICHAIN_F32(targetArrowOffset, 1500, ICHAIN_STOP),
 };
 
-void EnDekubaba_ChangeSize(EnDekubaba* this, f32 newSize) {
+static void EnDekubaba_ChangeSize(EnDekubaba* this, f32 newSize) {
     this->size = newSize;
     for (s32 i = 0; i < sJntSphInit.count; i++) {
             this->collider.elements[i].dim.worldSphere.radius = this->collider.elements[i].dim.modelSphere.radius =
@@ -233,9 +233,11 @@ void EnDekubaba_ChangeSize(EnDekubaba* this, f32 newSize) {
     }
 }
 
-bool isBabaClose(EnDekubaba* this, GlobalContext* globalCtx){
+static const f32 DEKUBABA_ATTACK_RANGE = 90.0f;
+
+static bool isBabaClose(EnDekubaba* this, GlobalContext* globalCtx){
     Player* player = GET_PLAYER(globalCtx);
-    return (70.0f * this->size > Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos));
+    return (DEKUBABA_ATTACK_RANGE * this->size > Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos));
 }
 
 void EnDekubaba_Init(Actor* thisx, GlobalContext* globalCtx) {
@@ -671,7 +673,7 @@ void EnDekubaba_DecideLunge(EnDekubaba* this, GlobalContext* globalCtx) {
 
     if (240.0f * this->size < Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos)) {
         EnDekubaba_SetupRetract(this);
-    } else if ((this->timer == 0) || (this->actor.xzDistToPlayer < 80.0f * this->size)) {
+    } else if ((this->timer == 0) || (this->actor.xzDistToPlayer < DEKUBABA_ATTACK_RANGE * this->size)) {
         EnDekubaba_SetupPrepareLunge(this);
     }
 }
@@ -749,7 +751,11 @@ void EnDekubaba_PrepareLunge(EnDekubaba* this, GlobalContext* globalCtx) {
     Math_ScaledStepToS(&this->stemSectionAngle[2], -0x6AA4, 0x888);
 
     if (this->timer == 0) {
-        EnDekubaba_SetupLunge(this);
+    	if (isBabaClose(this,globalCtx))
+            EnDekubaba_SetupLunge(this);
+        else {
+            EnDekubaba_SetupRecover(this);
+        }
     }
 
     EnDekubaba_UpdateHeadPosition(this);
@@ -819,7 +825,7 @@ void EnDekubaba_PullBack(EnDekubaba* this, GlobalContext* globalCtx) {
         this->timer++;
 
         if (this->timer > 30) {
-            if (this->actor.xzDistToPlayer < 80.0f * this->size) {
+            if (this->actor.xzDistToPlayer < DEKUBABA_ATTACK_RANGE * this->size) {
                 EnDekubaba_SetupPrepareLunge(this);
             } else {
                 EnDekubaba_SetupDecideLunge(this);
@@ -887,7 +893,7 @@ void EnDekubaba_Hit(EnDekubaba* this, GlobalContext* globalCtx) {
         } else {
             this->collider.base.acFlags |= AC_ON;
             if (this->timer == 0) {
-                if (this->actor.xzDistToPlayer < 80.0f * this->size) {
+                if (this->actor.xzDistToPlayer < DEKUBABA_ATTACK_RANGE * this->size) {
                     EnDekubaba_SetupPrepareLunge(this);
                 } else {
                     EnDekubaba_SetupRecover(this);
@@ -911,7 +917,7 @@ void EnDekubaba_StunnedVertical(EnDekubaba* this, GlobalContext* globalCtx) {
     if (this->timer == 0) {
         EnDekubaba_DisableHitboxes(this);
 
-        if (this->actor.xzDistToPlayer < 80.0f * this->size) {
+        if (this->actor.xzDistToPlayer < DEKUBABA_ATTACK_RANGE * this->size) {
             EnDekubaba_SetupPrepareLunge(this);
         } else {
             EnDekubaba_SetupRecover(this);
@@ -937,7 +943,7 @@ void EnDekubaba_Sway(EnDekubaba* this, GlobalContext* globalCtx) {
 
     if (ABS(angleToVertical) < 0x100) {
         this->collider.base.acFlags |= AC_ON;
-        if (this->actor.xzDistToPlayer < 80.0f * this->size) {
+        if (this->actor.xzDistToPlayer < DEKUBABA_ATTACK_RANGE * this->size) {
             EnDekubaba_SetupPrepareLunge(this);
         } else {
             EnDekubaba_SetupRecover(this);
