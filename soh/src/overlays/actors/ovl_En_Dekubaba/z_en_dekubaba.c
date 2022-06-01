@@ -1056,7 +1056,6 @@ void EnDekubaba_UpdateDamage(EnDekubaba* this, GlobalContext* globalCtx) {
             ((this->actor.colChkInfo.damageEffect != DEKUBABA_DMGEFF_NONE) || (this->actor.colChkInfo.damage != 0))) {
 
             phi_s0 = this->actor.colChkInfo.health - this->actor.colChkInfo.damage;
-            EnDekubaba_ChangeSize(this,this->size+0.25f*this->actor.colChkInfo.damage);
 
             if (this->actionFunc != EnDekubaba_StunnedVertical) {
                 if ((this->actor.colChkInfo.damageEffect == DEKUBABA_DMGEFF_BOOMERANG) ||
@@ -1088,7 +1087,10 @@ void EnDekubaba_UpdateDamage(EnDekubaba* this, GlobalContext* globalCtx) {
                 return;
             }
 
+            s32 damageDone = this->actor.colChkInfo.health - phi_s0;
             this->actor.colChkInfo.health = CLAMP_MIN(phi_s0, 0);
+            if (damageDone > 0 && this->actor.colChkInfo.health > 0)
+                EnDekubaba_ChangeSize(this,this->size+0.25f*damageDone);
 
             if (this->actor.colChkInfo.damageEffect == DEKUBABA_DMGEFF_FIRE) {
                 firePos = &this->actor.world.pos;
