@@ -137,7 +137,7 @@ static ColliderJntSphInit sJntSphInit = {
 };
 
 //Note: EnDekubaba_Init changes the dekubaba's initial health value when it is a Big type baba
-const static u8 BABA_HP_SMALL = 8;
+const static u8 BABA_HP_SMALL = 4;
 const static u8 BABA_HP_BIG = BABA_HP_SMALL*2;
 static CollisionCheckInfoInit sColChkInfoInit = { BABA_HP_SMALL, 25, 25, MASS_IMMOVABLE };
 
@@ -227,13 +227,14 @@ static InitChainEntry sInitChain[] = {
 
 static void EnDekubaba_ChangeSize(EnDekubaba* this, f32 newSize) {
     this->size = newSize;
+    this->actor.targetMode = (int)newSize;
     for (s32 i = 0; i < sJntSphInit.count; i++) {
             this->collider.elements[i].dim.worldSphere.radius = this->collider.elements[i].dim.modelSphere.radius =
                 (sJntSphElementsInit[i].dim.modelSphere.radius * this->size);
     }
 }
 
-static const f32 DEKUBABA_ATTACK_RANGE = 90.0f;
+static const f32 DEKUBABA_ATTACK_RANGE = 80.0f;
 
 static bool isBabaClose(EnDekubaba* this, GlobalContext* globalCtx){
     Player* player = GET_PLAYER(globalCtx);
