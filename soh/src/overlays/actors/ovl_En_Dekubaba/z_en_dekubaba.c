@@ -47,7 +47,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[7] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0xFFCFFFFF, 0x00, 0x08 },
+            { 0x20000000, 0x00, 0x08 },
             { 0xFFCFFFFF, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_HARD,
             BUMP_ON,
