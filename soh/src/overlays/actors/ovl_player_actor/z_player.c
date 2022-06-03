@@ -2889,7 +2889,6 @@ void func_80835F44(GlobalContext* globalCtx, Player* this, s32 item) {
     }
 }
 
-//This determines whether the player can be revived by a fairy
 void func_80836448(GlobalContext* globalCtx, Player* this, LinkAnimationHeader* anim) {
     s32 cond = func_808332B8(this);
 
@@ -8159,7 +8158,6 @@ void func_80843A38(Player* this, GlobalContext* globalCtx) {
 
 static Vec3f D_808545E4 = { 0.0f, 0.0f, 5.0f };
 
-//This may deal with fairy auto revival (its one of the 3 places in this file that uses the hex value 0x140 to indicate full heart recovery)
 void func_80843AE8(GlobalContext* globalCtx, Player* this) {
     if (this->unk_850 != 0) {
         if (this->unk_850 > 0) {
@@ -8173,7 +8171,7 @@ void func_80843AE8(GlobalContext* globalCtx, Player* this) {
                     LinkAnimation_Change(globalCtx, &this->skelAnime, &gPlayerAnim_002878, 1.0f, 99.0f,
                         Animation_GetLastFrame(&gPlayerAnim_002878), ANIMMODE_ONCE, 0.0f);
                 }
-                gSaveContext.healthAccumulator = 0x30;
+                gSaveContext.healthAccumulator = 0x140;
                 this->unk_850 = -1;
             }
         }
@@ -12738,12 +12736,10 @@ void func_8084E9AC(Player* this, GlobalContext* globalCtx) {
     }
 }
 
-//Table of values for potion effects
 static u8 D_808549FC[] = {
     0x01, 0x03, 0x02, 0x04, 0x04,
 };
 
-//Seems to handle the effects of the player using 'drinkable' items
 void func_8084EAC0(Player* this, GlobalContext* globalCtx) {
     if (LinkAnimation_Update(globalCtx, &this->skelAnime)) {
         if (this->unk_850 == 0) {
@@ -12769,7 +12765,7 @@ void func_8084EAC0(Player* this, GlobalContext* globalCtx) {
                 s32 sp28 = D_808549FC[this->itemActionParam - PLAYER_AP_BOTTLE_POTION_RED];
 
                 if (sp28 & 1) {
-                    gSaveContext.healthAccumulator = 0xC0;
+                    gSaveContext.healthAccumulator = 0x140;
                 }
 
                 if (sp28 & 2) {
@@ -12876,7 +12872,6 @@ void func_8084ECA4(Player* this, GlobalContext* globalCtx) {
 
 static Vec3f D_80854A1C = { 0.0f, 0.0f, 5.0f };
 
-//This seems to handle the player being healed by a fairy from a bottle, but there may be counterpart functions that deals with manual healing and revival seperately
 void func_8084EED8(Player* this, GlobalContext* globalCtx) {
     if (LinkAnimation_Update(globalCtx, &this->skelAnime)) {
         func_8083C0E8(this, globalCtx);
@@ -12891,7 +12886,7 @@ void func_8084EED8(Player* this, GlobalContext* globalCtx) {
         func_8002F7DC(&this->actor, NA_SE_EV_FIATY_HEAL - SFX_FLAG);
     }
     else if (LinkAnimation_OnFrame(&this->skelAnime, 47.0f)) {
-        gSaveContext.healthAccumulator = 0x60;
+        gSaveContext.healthAccumulator = 0x140;
     }
 }
 
