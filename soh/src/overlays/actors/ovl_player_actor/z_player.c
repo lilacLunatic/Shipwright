@@ -1507,17 +1507,19 @@ void func_8083313C(GlobalContext* globalCtx, Player* this, LinkAnimationHeader* 
     func_80833114(globalCtx, this, anim, 0x1C);
 }
 
+//Updates C-stick position values (possibly relative to the player)
 void func_8083315C(GlobalContext* globalCtx, Player* this) {
     s8 phi_v1;
     s8 phi_v0;
 
     this->unk_A7C = D_808535D4;
     this->unk_A80 = D_808535D8;
-
+    
+    //This provides the distance of the C-stick in the first argument, and angle in the second
     func_80077D10(&D_808535D4, &D_808535D8, sControlInput);
 
     D_808535DC = Camera_GetInputDirYaw(GET_ACTIVE_CAM(globalCtx)) + D_808535D8;
-
+    //This seems to store 4 'previous values' of the stick direction
     this->unk_846 = (this->unk_846 + 1) % 4;
 
     if (D_808535D4 < 55.0f) {
@@ -5160,6 +5162,7 @@ s32 func_8083B998(Player* this, GlobalContext* globalCtx) {
     return 0;
 }
 
+//Begins a jump slash
 void func_8083BA90(GlobalContext* globalCtx, Player* this, s32 arg2, f32 xzVelocity, f32 yVelocity) {
     func_80837948(globalCtx, this, arg2);
     func_80835C58(globalCtx, this, func_80844AF4, 0);
@@ -5188,6 +5191,7 @@ s32 func_8083BB20(Player* this) {
     return 0;
 }
 
+//Causes Jump Slashing to activate after B is pressed in the air
 s32 func_8083BBA0(Player* this, GlobalContext* globalCtx) {
     if (func_8083BB20(this) && (D_808535E4 != 7)) {
         func_8083BA90(globalCtx, this, 17, 3.0f, 4.5f);
@@ -5197,6 +5201,7 @@ s32 func_8083BBA0(Player* this, GlobalContext* globalCtx) {
     return 0;
 }
 
+//Sets Link's rolling animation state
 void func_8083BC04(Player* this, GlobalContext* globalCtx) {
     func_80835C58(globalCtx, this, func_80844708, 0);
     LinkAnimation_PlayOnceSetSpeed(globalCtx, &this->skelAnime, D_80853914[PLAYER_ANIMGROUP_16][this->modelAnimType],
@@ -5247,10 +5252,12 @@ s32 func_8083BDBC(Player* this, GlobalContext* globalCtx) {
                     }
                 }
                 else {
-                    if (Player_GetSwordHeld(this) && func_808365C8(this)) {
+                    if (Player_GetSwordHeld(this) && func_808365C8(this) && (sp2C < 0)) {
+                    	//Performs Jumping Attack
                         func_8083BA90(globalCtx, this, 17, 5.0f, 5.0f);
                     }
                     else {
+                        //Performs roll
                         func_8083BC04(this, globalCtx);
                     }
                 }
@@ -5258,6 +5265,7 @@ s32 func_8083BDBC(Player* this, GlobalContext* globalCtx) {
             }
         }
         else {
+            //Allows the player to side-dodge/backflip
             func_8083BCD0(this, globalCtx, sp2C);
             return 1;
         }
@@ -5325,6 +5333,7 @@ void func_8083C148(Player* this, GlobalContext* globalCtx) {
     this->stateFlags1 &= ~(PLAYER_STATE1_13 | PLAYER_STATE1_14 | PLAYER_STATE1_20);
 }
 
+//This function will determine if the player can roll while moving, but not while targeting without a melee weapon
 s32 func_8083C1DC(Player* this, GlobalContext* globalCtx) {
     if (!func_80833B54(this) && (D_808535E0 == 0) && !(this->stateFlags1 & PLAYER_STATE1_23) &&
         CHECK_BTN_ALL(sControlInput->press.button, BTN_A)) {
@@ -8574,6 +8583,8 @@ void func_80844A44(Player* this, GlobalContext* globalCtx) {
     }
 }
 
+
+//Seems to control jump slash physics after the jump apex
 void func_80844AF4(Player* this, GlobalContext* globalCtx) {
     f32 sp2C;
     s16 sp2A;
