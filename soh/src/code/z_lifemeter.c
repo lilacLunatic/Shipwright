@@ -571,7 +571,7 @@ void HealthMeter_Draw(GlobalContext* globalCtx) {
         }
 
         offsetX += 10.0f;
-        if ((i+1)%10 == 0) {
+        if (i == 9) {
             offsetY += 10.0f;
             offsetX = OTRGetDimensionFromLeftEdge(0.0f)+(Left_LM_Margin*-1);
         }
