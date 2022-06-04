@@ -1290,6 +1290,7 @@ void func_808327F8(Player* this, f32 arg1) {
     func_800F4010(&this->actor.projectedPos, sfxId, arg1);
 }
 
+//Plays jump sfx
 void func_80832854(Player* this) {
     s32 sfxId;
 
@@ -1303,6 +1304,7 @@ void func_80832854(Player* this) {
     func_8002F7DC(&this->actor, sfxId);
 }
 
+//Plays landing-from-jump sfx
 void func_808328A0(Player* this) {
     s32 sfxId;
 
@@ -3455,6 +3457,7 @@ static u32 D_80854488[][2] = {
     { 0x00000002, 0x08000000 }, { 0x00000040, 0x40000000 },
 };
 
+//Seems to activate all of Link's sword attacks
 void func_80837948(GlobalContext* globalCtx, Player* this, s32 arg2) {
     s32 pad;
     u32 flags;
@@ -5217,7 +5220,9 @@ s32 func_8083BC7C(Player* this, GlobalContext* globalCtx) {
     return 0;
 }
 
+//Allows the player to side-dodge/backflip
 void func_8083BCD0(Player* this, GlobalContext* globalCtx, s32 arg2) {
+    //Puts player in dodge or backflip state
     func_80838940(this, D_80853D4C[arg2][0], !(arg2 & 1) ? 5.8f : 3.5f, globalCtx, NA_SE_VO_LI_SWORD_N);
 
     if (arg2) {}
@@ -8537,7 +8542,7 @@ void func_80844708(Player* this, GlobalContext* globalCtx) {
 
                 func_80837948(globalCtx, this, 13);
 
-                this->linearVelocity = 15;
+                this->linearVelocity = 5;
 
                 return;
             }
@@ -8612,6 +8617,7 @@ void func_80844AF4(Player* this, GlobalContext* globalCtx) {
     }
 }
 
+//Determines actions taken in spin attack stance
 s32 func_80844BE4(Player* this, GlobalContext* globalCtx) {
     s32 temp;
 
