@@ -3335,6 +3335,7 @@ void func_80837530(GlobalContext* globalCtx, Player* this, s32 arg2) {
     }
 }
 
+//Checks the values stored in the unk_847 buffer to determine whether Link should perform an instant spin attack
 s32 func_808375D8(Player* this) {
     s8 sp3C[4];
     s8* iter;
@@ -3408,7 +3409,7 @@ s32 func_80837818(Player* this) {
         this->unk_845 = 0;
     }
     else {
-        if (func_808375D8(this)) {
+        if (func_808375D8(this)) {//Instant spin attack
             sp18 = 24;
         }
         else {
@@ -5427,6 +5428,7 @@ void func_8083C50C(Player* this) {
     }
 }
 
+//Allows Link to enter spin-attack charge stance
 s32 func_8083C544(Player* this, GlobalContext* globalCtx) {
     if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_B)) {
         if (!(this->stateFlags1 & PLAYER_STATE1_22) && (Player_GetSwordHeld(this) != 0) && (this->unk_844 == 1) &&
@@ -13405,8 +13407,8 @@ void func_8085002C(Player* this) {
 
 s32 func_80850224(Player* this, GlobalContext* globalCtx) {
     if (func_8083C6B8(globalCtx, this) == 0) {
-        if (func_8083BB20(this) != 0) {
-            s32 sp24 = func_80837818(this);
+        if (func_8083BB20(this) != 0) { //Did the player press B with a sword available?
+            s32 sp24 = func_80837818(this);//Determien sword move to do
 
             func_80837948(globalCtx, this, sp24);
 
