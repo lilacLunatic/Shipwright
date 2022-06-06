@@ -3186,8 +3186,8 @@ s32 func_80836FAC(GlobalContext* globalCtx, Player* this, f32* arg2, s16* arg3, 
         *arg3 = this->actor.shape.rot.y;
     }
     else {
-        *arg2 = D_808535D4;
-        *arg3 = D_808535D8;
+        *arg2 = D_808535D4;//polar ABS DIST
+        *arg3 = D_808535D8;//polar ANGLE
 
         if (arg4 != 0.0f) {
             *arg2 -= 20.0f;
@@ -3262,7 +3262,7 @@ static s8 D_80854424[] = { 0, 11, 1, 2, 3, 12, 5, 4, 9, 8, 7, -6 };
 static s8 D_80854430[] = { 13, 1, 2, 3, 12, 5, 4, 9, 10, 11, 8, 7, -6 };
 static s8 D_80854440[] = { 10, 8, -7 };
 static s8 D_80854444[] = { 0, 12, 5, -4 };
-
+//Seems to possibly be a list of 'sword preperation' functions
 static s32(*D_80854448[])(Player* this, GlobalContext* globalCtx) = {
     func_8083B998, func_80839800, func_8083E5A8, func_8083E0FC, func_8083B644, func_8083F7BC, func_8083C1DC,
     func_80850224, func_8083C544, func_8083EB44, func_8083BDBC, func_8083C2B0, func_80838A14, func_8083B040,
@@ -3481,7 +3481,7 @@ void func_80837948(GlobalContext* globalCtx, Player* this, s32 arg2) {
 
     this->swordAnimation = arg2;
 
-    func_808322D0(globalCtx, this, D_80854190[arg2].unk_00);
+    func_808322D0(globalCtx, this, D_80854190[arg2].unk_00);//PlayOnceSetSpeed
     if ((arg2 != 16) && (arg2 != 17)) {
         func_80832F54(globalCtx, this, 0x209);
     }
@@ -4515,7 +4515,7 @@ void func_8083A060(Player* this, GlobalContext* globalCtx) {
 
 void func_8083A098(Player* this, LinkAnimationHeader* anim, GlobalContext* globalCtx) {
     func_8083A060(this, globalCtx);
-    func_8083328C(globalCtx, this, anim);
+    func_8083328C(globalCtx, this, anim);//PlayOnceSetSpeed
 }
 
 s32 func_8083A0D4(Player* this) {
@@ -8635,7 +8635,7 @@ s32 func_80844BE4(Player* this, GlobalContext* globalCtx) {
                 temp = D_80854380[Player_HoldsTwoHandedWeapon(this)];
             }
 
-            func_80837948(globalCtx, this, temp);
+            func_80837948(globalCtx, this, temp);//Initiate spin attack
             func_80837AFC(this, -8);
 
             this->stateFlags2 |= PLAYER_STATE2_17;
@@ -8650,11 +8650,11 @@ s32 func_80844BE4(Player* this, GlobalContext* globalCtx) {
 
     return 1;
 }
-
+//Charge variation B
 void func_80844CF8(Player* this, GlobalContext* globalCtx) {
     func_80835C58(globalCtx, this, func_80845000, 1);
 }
-
+//Charge variation C
 void func_80844D30(Player* this, GlobalContext* globalCtx) {
     func_80835C58(globalCtx, this, func_80845308, 1);
 }
@@ -8662,10 +8662,10 @@ void func_80844D30(Player* this, GlobalContext* globalCtx) {
 void func_80844D68(Player* this, GlobalContext* globalCtx) {
     func_80839FFC(this, globalCtx);
     func_80832318(this);
-    func_80832B0C(globalCtx, this, D_80854368[Player_HoldsTwoHandedWeapon(this)]);
+    func_80832B0C(globalCtx, this, D_80854368[Player_HoldsTwoHandedWeapon(this)]);//Calls LinkAnimation_Change
     this->currentYaw = this->actor.shape.rot.y;
 }
-
+//Charge variation A
 void func_80844DC8(Player* this, GlobalContext* globalCtx) {
     func_80835C58(globalCtx, this, func_80844E68, 1);
     this->unk_868 = 0.0f;
@@ -8673,10 +8673,11 @@ void func_80844DC8(Player* this, GlobalContext* globalCtx) {
     this->unk_850 = 1;
 }
 
+// Spin attack charge timer
 void func_80844E3C(Player* this) {
     Math_StepToF(&this->unk_858, 1.0f, 0.02f);
 }
-
+//Charge variation A
 void func_80844E68(Player* this, GlobalContext* globalCtx) {
     f32 sp34;
     s16 sp32;
@@ -8711,15 +8712,15 @@ void func_80844E68(Player* this, GlobalContext* globalCtx) {
 
             temp = func_80840058(this, &sp34, &sp32, globalCtx);
             if (temp > 0) {
-                func_80844CF8(this, globalCtx);
+                func_80844CF8(this, globalCtx);//Charge variation B
             }
             else if (temp < 0) {
-                func_80844D30(this, globalCtx);
+                func_80844D30(this, globalCtx);//Charge variation C
             }
         }
     }
 }
-
+//Charge variation B
 void func_80845000(Player* this, GlobalContext* globalCtx) {
     s16 temp1;
     s32 temp2;
@@ -8783,11 +8784,11 @@ void func_80845000(Player* this, GlobalContext* globalCtx) {
         Math_ScaledStepToS(&this->currentYaw, sp52, sp44 * 0.1f);
 
         if ((sp54 == 0.0f) && (this->linearVelocity == 0.0f)) {
-            func_80844DC8(this, globalCtx);
+            func_80844DC8(this, globalCtx);//Charge variaiton A
         }
     }
 }
-
+//Charge variation C
 void func_80845308(Player* this, GlobalContext* globalCtx) {
     f32 sp5C;
     f32 sp58;
@@ -13408,7 +13409,12 @@ void func_8085002C(Player* this) {
 s32 func_80850224(Player* this, GlobalContext* globalCtx) {
     if (func_8083C6B8(globalCtx, this) == 0) {
         if (func_8083BB20(this) != 0) { //Did the player press B with a sword available?
-            s32 sp24 = func_80837818(this);//Determien sword move to do
+            s32 sp24 = func_80837818(this);//Determine sword move to do
+            
+            if (func_808375D8(this)){
+            	func_808377DC(globalCtx,this);
+            	return 0;
+            }
 
             func_80837948(globalCtx, this, sp24);
 
@@ -13448,7 +13454,7 @@ void func_808502D0(Player* this, GlobalContext* globalCtx) {
 
         Math_StepToF(&this->linearVelocity, 0.0f, 5.0f);
         func_8083C50C(this);
-
+//Determines Link's actions finishing a sword move
         if (LinkAnimation_Update(globalCtx, &this->skelAnime)) {
             if (!func_80850224(this, globalCtx)) {
                 u8 sp43 = this->skelAnime.moveFlags;
@@ -13464,11 +13470,11 @@ void func_808502D0(Player* this, GlobalContext* globalCtx) {
                 func_80832318(this);
                 this->skelAnime.moveFlags = 0;
 
-                if ((sp3C == &gPlayerAnim_002908) && (this->modelAnimType != PLAYER_ANIMTYPE_3)) {
+                if ((sp3C == &gPlayerAnim_002908) && (this->modelAnimType != PLAYER_ANIMTYPE_3)) {/* gPlayerAnim_002908 is PLAYER_MWA_JUMPSLASH_FINISH */
                     sp3C = &gPlayerAnim_002AC8;
                 }
 
-                func_8083A098(this, sp3C, globalCtx);
+                func_8083A098(this, sp3C, globalCtx);//Allow the next state to follow
 
                 this->skelAnime.moveFlags = sp43;
                 this->stateFlags3 |= PLAYER_STATE3_3;
