@@ -13410,6 +13410,11 @@ s32 func_80850224(Player* this, GlobalContext* globalCtx) {
     if (func_8083C6B8(globalCtx, this) == 0) {
         if (func_8083BB20(this) != 0) { //Did the player press B with a sword available?
             s32 sp24 = func_80837818(this);//Determine sword move to do
+            
+            if (func_808375D8(this)){
+                func_808377DC(globalCtx,this);
+            
+            }
 
             func_80837948(globalCtx, this, sp24);
 
