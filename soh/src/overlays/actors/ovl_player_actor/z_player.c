@@ -8629,10 +8629,10 @@ s32 func_80844BE4(Player* this, GlobalContext* globalCtx) {
     else {
         if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_B)) {
             if ((this->unk_858 >= 0.85f) || func_808375D8(this)) {
-                temp = D_80854384[Player_HoldsTwoHandedWeapon(this)];
+                temp = D_80854384[Player_HoldsTwoHandedWeapon(this)];//Performs double spin slash
             }
             else {
-                temp = D_80854380[Player_HoldsTwoHandedWeapon(this)];
+                temp = D_80854380[Player_HoldsTwoHandedWeapon(this)];//Performs triple spin slash
             }
 
             func_80837948(globalCtx, this, temp);//Initiate spin attack
@@ -8650,11 +8650,11 @@ s32 func_80844BE4(Player* this, GlobalContext* globalCtx) {
 
     return 1;
 }
-//Charge variation B
+//Charge variation B transition
 void func_80844CF8(Player* this, GlobalContext* globalCtx) {
     func_80835C58(globalCtx, this, func_80845000, 1);
 }
-//Charge variation C
+//Charge variation C transition
 void func_80844D30(Player* this, GlobalContext* globalCtx) {
     func_80835C58(globalCtx, this, func_80845308, 1);
 }
@@ -8665,19 +8665,27 @@ void func_80844D68(Player* this, GlobalContext* globalCtx) {
     func_80832B0C(globalCtx, this, D_80854368[Player_HoldsTwoHandedWeapon(this)]);//Calls LinkAnimation_Change
     this->currentYaw = this->actor.shape.rot.y;
 }
-//Charge variation A
+//Charge variation A transition
 void func_80844DC8(Player* this, GlobalContext* globalCtx) {
     func_80835C58(globalCtx, this, func_80844E68, 1);
-    this->unk_868 = 0.0f;
+    this->unk_868 = 0.0f;//Sets charge timer to 0
     func_80832284(globalCtx, this, D_80854360[Player_HoldsTwoHandedWeapon(this)]);
     this->unk_850 = 1;
 }
+
+static const f32 INITIAL_CHARGE_RATE = 1.0f;
 
 // Spin attack charge timer
 void func_80844E3C(Player* this) {
     Math_StepToF(&this->unk_858, 1.0f, 0.02f);
 }
-//Charge variation A
+
+// Spin attack initial charge timer
+void initial_spin_timer(Player* this) {
+    Math_StepToF(&this->unk_858, 1.0f, INITIAL_CHARGE_RATE*0.02f);
+}
+
+//Charge variation A - Neutral
 void func_80844E68(Player* this, GlobalContext* globalCtx) {
     f32 sp34;
     s16 sp32;
@@ -8685,33 +8693,38 @@ void func_80844E68(Player* this, GlobalContext* globalCtx) {
 
     this->stateFlags1 |= PLAYER_STATE1_12;
 
-    if (LinkAnimation_Update(globalCtx, &this->skelAnime)) {
+    f32 oldSpeed = this->skelAnime.playSpeed;
+    this->skelAnime.playSpeed *= INITIAL_CHARGE_RATE;
+    if (this->unk_850 != 0) this->skelAnime.playSpeed = oldSpeed;
+    if (LinkAnimation_Update(globalCtx, &this->skelAnime)) {//LinkAnimation_Update returns 1 if an animation has reached a finished state, and 0 otherwise
+        this->skelAnime.playSpeed = oldSpeed;
         func_80832DBC(this);
-        func_808355DC(this);
-        this->stateFlags1 &= ~PLAYER_STATE1_17;
+        func_808355DC(this);//Puts stateFlags1 into PLAYER_STATE1_17
+        this->stateFlags1 &= ~PLAYER_STATE1_17;//Removes PLAYER_STATE1_17 from stateFlags1
         func_80832284(globalCtx, this, D_80854360[Player_HoldsTwoHandedWeapon(this)]);
-        this->unk_850 = -1;
+        this->unk_850 = -1;//Should initially be 0, transitioning from other charge animations puts this value to 1, this changes it to -1
     }
+    this->skelAnime.playSpeed = oldSpeed;
 
     func_8083721C(this);
 
-    if (!func_80842964(this, globalCtx) && (this->unk_850 != 0)) {
-        func_80844E3C(this);
+    if (!func_80842964(this, globalCtx) && (this->unk_850 != 0)) {//This section will not be entered until the initial animation is finished
+        initial_spin_timer(this);
 
         if (this->unk_850 < 0) {
-            if (this->unk_858 >= 0.1f) {
+            if (this->unk_858 >= 0.10f) {
                 this->unk_845 = 0;
                 this->unk_850 = 1;
             }
             else if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_B)) {
-                func_80844D68(this, globalCtx);
+                //func_80844D68(this, globalCtx);//Causes the charge stance to be canceled before it is fully entered
             }
         }
         else if (!func_80844BE4(this, globalCtx)) {
-            func_80837268(this, &sp34, &sp32, 0.0f, globalCtx);
+            func_80837268(this, &sp34, &sp32, 0.0f, globalCtx);//Puts C-stick dist and angle in sp
 
             temp = func_80840058(this, &sp34, &sp32, globalCtx);
-            if (temp > 0) {
+            if (temp > 0) {//Selects variation to change to depending on if the Z or X relative axis has more motion
                 func_80844CF8(this, globalCtx);//Charge variation B
             }
             else if (temp < 0) {
@@ -8720,7 +8733,7 @@ void func_80844E68(Player* this, GlobalContext* globalCtx) {
         }
     }
 }
-//Charge variation B
+//Charge variation B - F/R Step
 void func_80845000(Player* this, GlobalContext* globalCtx) {
     s16 temp1;
     s32 temp2;
@@ -8784,11 +8797,11 @@ void func_80845000(Player* this, GlobalContext* globalCtx) {
         Math_ScaledStepToS(&this->currentYaw, sp52, sp44 * 0.1f);
 
         if ((sp54 == 0.0f) && (this->linearVelocity == 0.0f)) {
-            func_80844DC8(this, globalCtx);//Charge variaiton A
+            func_80844DC8(this, globalCtx);//Charge variation A
         }
     }
 }
-//Charge variation C
+//Charge variation C - Side Step
 void func_80845308(Player* this, GlobalContext* globalCtx) {
     f32 sp5C;
     f32 sp58;
