@@ -2651,16 +2651,13 @@ void Interface_UpdateMagicBar(GlobalContext* globalCtx) {
 
 void Interface_DrawMagicBar(GlobalContext* globalCtx) {
     InterfaceContext* interfaceCtx = &globalCtx->interfaceCtx;
+    s16 magicDrop = R_MAGIC_BAR_LARGE_Y-R_MAGIC_BAR_SMALL_Y+2;
     s16 magicBarY;
 
     OPEN_DISPS(globalCtx->state.gfxCtx, "../z_parameter.c", 2650);
 
     if (gSaveContext.magicLevel != 0) {
-        if (gSaveContext.healthCapacity > 0xA0) {
-            magicBarY = R_MAGIC_BAR_LARGE_Y + (Top_HUD_Margin*-1);
-        } else {
-            magicBarY = R_MAGIC_BAR_SMALL_Y + (Top_HUD_Margin*-1);
-        }
+        magicBarY =  R_MAGIC_BAR_SMALL_Y-2 + magicDrop*((gSaveContext.healthCapacity-1)/0xA0) + (Top_HUD_Margin*-1);
 
         func_80094520(globalCtx->state.gfxCtx);
 
