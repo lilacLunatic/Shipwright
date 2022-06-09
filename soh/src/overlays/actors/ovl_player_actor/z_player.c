@@ -8628,7 +8628,7 @@ s32 func_80844BE4(Player* this, GlobalContext* globalCtx) {
     }
     else {
         if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_B)) {
-            if ((this->unk_858 >= 0.85f) || func_808375D8(this)) {
+            if ((this->unk_858 >= 0.79f) || func_808375D8(this)) {
                 temp = D_80854384[Player_HoldsTwoHandedWeapon(this)];//Performs double spin slash
             }
             else {
@@ -8673,7 +8673,7 @@ void func_80844DC8(Player* this, GlobalContext* globalCtx) {
     this->unk_850 = 1;
 }
 
-static const f32 INITIAL_CHARGE_RATE = 1.0f;
+static const f32 INITIAL_CHARGE_RATE = 2.0f;
 
 // Spin attack charge timer
 void func_80844E3C(Player* this) {
@@ -8709,10 +8709,10 @@ void func_80844E68(Player* this, GlobalContext* globalCtx) {
     func_8083721C(this);
 
     if (!func_80842964(this, globalCtx) && (this->unk_850 != 0)) {//This section will not be entered until the initial animation is finished
-        initial_spin_timer(this);
+        func_80844E3C(this);
 
         if (this->unk_850 < 0) {
-            if (this->unk_858 >= 0.10f) {
+            if (this->unk_858 >= 0.01f) {
                 this->unk_845 = 0;
                 this->unk_850 = 1;
             }
