@@ -68,7 +68,7 @@ static CollisionCheckInfoInit sColChkInfoInit = { 0x01, 0x0012, 0x0020, MASS_IMM
 static DamageTable sDamageTable = {
     /* Deku nut      */ DMG_ENTRY(0, 0x1),
     /* Deku stick    */ DMG_ENTRY(2, 0x0),
-    /* Slingshot     */ DMG_ENTRY(1, 0x0),
+    /* Slingshot     */ DMG_ENTRY(0, 0x0),
     /* Explosive     */ DMG_ENTRY(2, 0x0),
     /* Boomerang     */ DMG_ENTRY(1, 0x0),
     /* Normal arrow  */ DMG_ENTRY(2, 0x0),
@@ -120,7 +120,7 @@ void EnDekunuts_Init(Actor* thisx, GlobalContext* globalCtx) {
         Collider_InitCylinder(globalCtx, &this->collider);
         Collider_SetCylinder(globalCtx, &this->collider, &this->actor, &sCylinderInit);
         CollisionCheck_SetInfo(&thisx->colChkInfo, &sDamageTable, &sColChkInfoInit);
-        this->shotsPerRound = ((thisx->params >> 8) & 0xFF);
+        this->shotsPerRound = ((thisx->params >> 8) & 0xFF)+1;
         thisx->params &= 0xFF;
         if ((this->shotsPerRound == 0xFF) || (this->shotsPerRound == 0)) {
             this->shotsPerRound = 1;
