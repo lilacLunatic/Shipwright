@@ -3750,7 +3750,7 @@ s32 func_808382DC(Player* this, GlobalContext* globalCtx) {
         if (!Player_InBlockingCsMode(globalCtx, this)) {
             s32 damageToInflict;
             if (gSaveContext.health <= 0x30)
-            	damageToInflict = 0x10;
+                damageToInflict = 0x10;
             else {
                 s32 noHearts = gSaveContext.health/0x10;
                 s32 majorDamage = 0x10*(1+((gSaveContext.health-1)/0x30));
