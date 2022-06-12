@@ -31,24 +31,24 @@ static ColliderJntSphElementInit sJntSphElementsInit[2] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0xFFCFFFFF, 0x00, 0x04 },
+            { 0xFFCFFFFF, 0x00, 0x08 },
             { 0x00000000, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
+            TOUCH_NONE | TOUCH_SFX_NORMAL,
             BUMP_NONE,
             OCELEM_NONE,
         },
-        { 15, { { 0, 0, 0 }, 10 }, 100 },
+        { 15, { { 0, 0, 0 }, 10 }, 400 },
     },
     {
         {
             ELEMTYPE_UNK0,
-            { 0x00000000, 0x00, 0x00 },
+            { 0x20000000, 0x00, 0x04 },
             { 0xFFCFFFFF, 0x00, 0x00 },
-            TOUCH_NONE,
+            TOUCH_ON,
             BUMP_ON | BUMP_HOOKABLE,
             OCELEM_ON,
         },
-        { 1, { { 0, 0, 0 }, 20 }, 100 },
+        { 1, { { 0, 0, 0 }, 20 }, 80 },
     },
 };
 
@@ -99,6 +99,10 @@ static DamageTable sDamageTable = {
     /* Hammer jump   */ DMG_ENTRY(4, 0xF),
     /* Unknown 2     */ DMG_ENTRY(0, 0x0),
 };
+
+static const f32 ATTACK_TRIGGER_DIST_MULT = 2.0;
+static const f32 SPEED_MULT = 3.0;
+static const f32 RISE_MULT = 2.0;
 
 const ActorInit En_Skb_InitVars = {
     ACTOR_EN_SKB,
@@ -192,7 +196,7 @@ void func_80AFCD60(EnSkb* this) {
     if (IS_DAY) {
         func_80AFCF48(this);
     } else if (Actor_IsFacingPlayer(&this->actor, 0x11C7) &&
-               (this->actor.xzDistToPlayer < (60.0f + (this->actor.params * 6.0f)))) {
+               (this->actor.xzDistToPlayer < ATTACK_TRIGGER_DIST_MULT*(60.0f + (this->actor.params * 6.0f)))) {
         func_80AFD33C(this);
     } else {
         func_80AFD0A4(this);
@@ -200,7 +204,7 @@ void func_80AFCD60(EnSkb* this) {
 }
 
 void func_80AFCDF8(EnSkb* this) {
-    Animation_PlayOnceSetSpeed(&this->skelAnime, &gStalchildUncurlingAnim, 1.0f);
+    Animation_PlayOnceSetSpeed(&this->skelAnime, &gStalchildUncurlingAnim, RISE_MULT);
     this->unk_280 = 0;
     this->actor.flags &= ~ACTOR_FLAG_0;
     Audio_PlayActorSound2(&this->actor, NA_SE_EN_RIVA_APPEAR);
@@ -247,11 +251,11 @@ void func_80AFCFF0(EnSkb* this, GlobalContext* globalCtx) {
 }
 
 void func_80AFD0A4(EnSkb* this) {
-    Animation_Change(&this->skelAnime, &gStalchildWalkingAnim, 0.96000004f, 0.0f,
+    Animation_Change(&this->skelAnime, &gStalchildWalkingAnim, 0.96000004f*SPEED_MULT, 0.0f,
                      Animation_GetLastFrame(&gStalchildWalkingAnim), ANIMMODE_LOOP, -4.0f);
     this->unk_280 = 4;
     this->unk_288 = 0;
-    this->actor.speedXZ = this->actor.scale.y * 160.0f;
+    this->actor.speedXZ = this->actor.scale.y * 160.0f * SPEED_MULT;
     EnSkb_SetupAction(this, EnSkb_Advance);
 }
 
@@ -264,7 +268,7 @@ void EnSkb_Advance(EnSkb* this, GlobalContext* globalCtx) {
     if ((this->unk_283 != 0) && ((globalCtx->gameplayFrames & 0xF) == 0)) {
         this->unk_288 = Rand_CenteredFloat(50000.0f);
     }
-    Math_SmoothStepToS(&this->actor.shape.rot.y, (this->actor.yawTowardsPlayer + this->unk_288), 1, 0x2EE, 0);
+    Math_SmoothStepToS(&this->actor.shape.rot.y, (this->actor.yawTowardsPlayer + this->unk_288), 1, 0x760, 0);
     this->actor.world.rot.y = this->actor.shape.rot.y;
     thisKeyFrame = this->skelAnime.curFrame;
     SkelAnime_Update(&this->skelAnime);
@@ -289,7 +293,7 @@ void EnSkb_Advance(EnSkb* this, GlobalContext* globalCtx) {
     if (Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos) > 800.0f || IS_DAY) {
         func_80AFCF48(this);
     } else if (Actor_IsFacingPlayer(&this->actor, 0x11C7) &&
-               (this->actor.xzDistToPlayer < (60.0f + (this->actor.params * 6.0f)))) {
+               (this->actor.xzDistToPlayer < ATTACK_TRIGGER_DIST_MULT*(60.0f + (this->actor.params * 6.0f)))) {
         func_80AFD33C(this);
     }
 }
@@ -309,7 +313,9 @@ void EnSkb_SetupAttack(EnSkb* this, GlobalContext* globalCtx) {
     frameData = this->skelAnime.curFrame;
     if (frameData == 3) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_STALKID_ATTACK);
+        EnSkb_SpawnDebris(globalCtx, this, &this->actor.world.pos);
         this->unk_281 = 1;
+        
     } else if (frameData == 6) {
         this->unk_281 = 0;
     }
@@ -502,9 +508,15 @@ void EnSkb_Update(Actor* thisx, GlobalContext* globalCtx) {
     this->actionFunc(this, globalCtx);
     this->actor.focus.pos = this->actor.world.pos;
     this->actor.focus.pos.y += (3000.0f * this->actor.scale.y);
-    if (this->unk_281 != 0) {
+    
+    if (this->unk_281 != 0)
+        this->collider.elements[0].info.toucherFlags |= AT_ON;
+    else
+        this->collider.elements[0].info.toucherFlags &= ~AT_ON;
+        
+    if ((this->unk_280 != 0) && (this->unk_280 != 2) && (this->unk_280 != 6) &&
+                    ((this->actor.colorFilterTimer == 0) || ((this->actor.colorFilterParams & 0x4000) == 0)))
         CollisionCheck_SetAT(globalCtx, &globalCtx->colChkCtx, &this->collider.base);
-    }
 
     if (this->unk_280 >= 3) {
         if ((this->actor.colorFilterTimer == 0) || ((this->actor.colorFilterParams & 0x4000) == 0)) {
