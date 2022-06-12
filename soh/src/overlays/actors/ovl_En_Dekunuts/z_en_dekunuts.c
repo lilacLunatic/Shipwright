@@ -100,6 +100,9 @@ static DamageTable sDamageTable = {
     /* Unknown 2     */ DMG_ENTRY(0, 0x0),
 };
 
+const static f32 BURROW_DIST_CLOSE = 240.0f;
+const static f32 BURROW_DIST_FAR = 640.0f;
+
 static InitChainEntry sInitChain[] = {
     ICHAIN_S8(naviEnemyId, 0x4D, ICHAIN_CONTINUE),
     ICHAIN_F32(gravity, -1, ICHAIN_CONTINUE),
@@ -251,10 +254,10 @@ void EnDekunuts_Wait(EnDekunuts* this, GlobalContext* globalCtx) {
     }
 
     this->collider.dim.height = ((CLAMP(this->skelAnime.curFrame, 9.0f, 12.0f) - 9.0f) * 9.0f) + 5.0f;
-    if (!hasSlowPlaybackSpeed && (this->actor.xzDistToPlayer < 120.0f)) {
+    if (!hasSlowPlaybackSpeed && (this->actor.xzDistToPlayer < BURROW_DIST_CLOSE)) {
         EnDekunuts_SetupBurrow(this);
     } else if (SkelAnime_Update(&this->skelAnime)) {
-        if (this->actor.xzDistToPlayer < 120.0f) {
+        if (this->actor.xzDistToPlayer < BURROW_DIST_CLOSE) {
             EnDekunuts_SetupBurrow(this);
         } else if ((this->animFlagAndTimer == 0) && (this->actor.xzDistToPlayer > 320.0f)) {
             EnDekunuts_SetupLookAround(this);
@@ -264,7 +267,7 @@ void EnDekunuts_Wait(EnDekunuts* this, GlobalContext* globalCtx) {
     }
     if (hasSlowPlaybackSpeed &&
         ((this->actor.xzDistToPlayer > 160.0f) && (fabsf(this->actor.yDistToPlayer) < 120.0f)) &&
-        ((this->animFlagAndTimer == 0) || (this->actor.xzDistToPlayer < 480.0f))) {
+        ((this->animFlagAndTimer == 0) || (this->actor.xzDistToPlayer < BURROW_DIST_FAR))) {
         this->skelAnime.playSpeed = 1.0f;
     }
 }
@@ -274,7 +277,7 @@ void EnDekunuts_LookAround(EnDekunuts* this, GlobalContext* globalCtx) {
     if (Animation_OnFrame(&this->skelAnime, 0.0f) && (this->animFlagAndTimer != 0)) {
         this->animFlagAndTimer--;
     }
-    if ((this->actor.xzDistToPlayer < 120.0f) || (this->animFlagAndTimer == 0)) {
+    if ((this->actor.xzDistToPlayer < BURROW_DIST_CLOSE) || (this->animFlagAndTimer == 0)) {
         EnDekunuts_SetupBurrow(this);
     }
 }
@@ -288,7 +291,7 @@ void EnDekunuts_Stand(EnDekunuts* this, GlobalContext* globalCtx) {
         Math_ApproachS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 2, 0xE38);
     }
     if (this->animFlagAndTimer == 0x1000) {
-        if ((this->actor.xzDistToPlayer > 480.0f) || (this->actor.xzDistToPlayer < 120.0f)) {
+        if ((this->actor.xzDistToPlayer > BURROW_DIST_FAR) || (this->actor.xzDistToPlayer < BURROW_DIST_CLOSE)) {
             EnDekunuts_SetupBurrow(this);
         } else {
             EnDekunuts_SetupThrowNut(this);
