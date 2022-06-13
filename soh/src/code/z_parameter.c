@@ -2398,8 +2398,8 @@ s32 func_80087708(GlobalContext* globalCtx, s16 arg1, s16 arg2) {
             }
         case 3:
             if (gSaveContext.unk_13F0 == 0) {
-                if (gSaveContext.magic != 0) {
-                    globalCtx->interfaceCtx.unk_230 = 80;
+                if (gSaveContext.magic > arg1) {
+                    globalCtx->interfaceCtx.unk_230 = 1;
                     gSaveContext.unk_13F0 = 7;
                     return 1;
                 } else {

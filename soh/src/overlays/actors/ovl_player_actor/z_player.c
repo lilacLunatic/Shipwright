@@ -2806,7 +2806,7 @@ void func_80835F44(GlobalContext* globalCtx, Player* this, s32 item) {
             }
 
             if (actionParam == PLAYER_AP_LENS) {
-                if (func_80087708(globalCtx, 0, 3)) {
+                if (func_80087708(globalCtx, 1, 3)) {
                     if (globalCtx->actorCtx.unk_03 != 0) {
                         func_800304B0(globalCtx);
                     }
