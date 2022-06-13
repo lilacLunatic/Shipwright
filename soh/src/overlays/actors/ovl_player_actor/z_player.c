@@ -3059,6 +3059,7 @@ s32 func_80836AB8(Player* this, s32 arg1) {
     return var;
 }
 
+//Function that seems to determine Z-targeting selection
 void func_80836BEC(Player* this, GlobalContext* globalCtx) {
     s32 sp1C = 0;
     s32 zTrigPressed = CHECK_BTN_ALL(sControlInput->cur.button, BTN_Z);
@@ -3141,7 +3142,7 @@ void func_80836BEC(Player* this, GlobalContext* globalCtx) {
 
             if (this->unk_664 != NULL) {
                 if ((this->actor.category == ACTORCAT_PLAYER) && (this->unk_664 != this->unk_684) &&
-                    func_8002F0C8(this->unk_664, this, sp1C)) {
+                    func_8002F0C8(this->unk_664, this, sp1C)) {//Causes Z-targeting to disengage if player is too far away
                     func_8008EDF0(this);
                     this->stateFlags1 |= PLAYER_STATE1_30;
                 }
@@ -3152,6 +3153,12 @@ void func_80836BEC(Player* this, GlobalContext* globalCtx) {
             else if (this->unk_684 != NULL) {
                 this->unk_664 = this->unk_684;
             }
+        }
+        
+        if (this->unk_664 != NULL) {
+            if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_R) &&
+                        this->unk_664->xzDistToPlayer < 30.0f && this->unk_664->yDistToPlayer < -20.0f)
+                func_8008EDF0(this);
         }
 
         if (this->unk_664 != NULL) {
