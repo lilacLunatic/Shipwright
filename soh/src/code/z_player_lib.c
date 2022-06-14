@@ -1266,6 +1266,7 @@ BowStringData sBowStringData[] = {
     { gLinkChildSlinghotStringDL, { 606.0f, 236.0f, 0.0f } }, // slingshot
 };
 
+//Shield data
 Vec3f D_80126154[] = {
     { -4500.0f, -3000.0f, -600.0f },
     { 1500.0f, -3000.0f, -600.0f },
@@ -1276,6 +1277,7 @@ Vec3f D_80126154[] = {
 Vec3f D_80126184 = { 100.0f, 1500.0f, 0.0f };
 Vec3f D_80126190 = { 100.0f, 1640.0f, 0.0f };
 
+//Shield data
 Vec3f D_8012619C[] = {
     { -3000.0f, -3000.0f, -900.0f },
     { 3000.0f, -3000.0f, -900.0f },

@@ -2120,7 +2120,7 @@ s32 func_80834758(GlobalContext* globalCtx, Player* this) {
     if (!(this->stateFlags1 & (PLAYER_STATE1_22 | PLAYER_STATE1_23 | PLAYER_STATE1_29)) &&
         (globalCtx->shootingGalleryStatus == 0) && (this->heldItemActionParam == this->itemActionParam) &&
         (this->currentShield != PLAYER_SHIELD_NONE) && !Player_IsChildWithHylianShield(this) && func_80833BCC(this) &&
-        CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) {
+        CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) {//Eliminating this section prevents you from going into a shield state while targeting
 
         anim = func_808346C4(globalCtx, this);
         frame = Animation_GetLastFrame(anim);
@@ -2130,7 +2130,7 @@ s32 func_80834758(GlobalContext* globalCtx, Player* this) {
         return 1;
     }
     else {
-        return 0;
+        return 0;//Returning 1 here causes your crouching shield animation to not change the shield position, causing the shield to be oriented to the right 
     }
 }
 
@@ -2215,11 +2215,11 @@ s32 func_80834A2C(Player* this, GlobalContext* globalCtx) {
 s32 func_80834B5C(Player* this, GlobalContext* globalCtx) {
     LinkAnimation_Update(globalCtx, &this->skelAnime2);
 
-    if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) {
+    if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) {//Forcing this to true prevents Link from finishing the holding shield animation
         func_80834894(this);
         return 1;
     }
-    else {
+    else {//Forcing the conditon false prevents Link from putting down the Z-shield, leaving the shield up unless forced to or this is done from crouch
         this->stateFlags1 |= PLAYER_STATE1_22;
         Player_SetModelsForHoldingShield(this);
         return 1;
