@@ -91,7 +91,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[1] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0x20000000, 0x00, 0x08 },
+            { 0xFFCFFFFF, 0x00, 0x08 },
             { 0xFFCFFFFF, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_NORMAL,
             BUMP_ON | BUMP_HOOKABLE,
@@ -174,6 +174,8 @@ static const f32 MAX_DIST = 500.0f;
 static const f32 ATTACK_DIST = 300.0f;
 static const f32 VERTICAL_DIST = 200.0f;
 static const f32 TURN_MULT = 2.0f;
+static const f32 MOVEMENT_SPEED = 6.0;
+static const f32 RECALL_SPEED = -8.0;
 
 void EnTite_SetupAction(EnTite* this, EnTiteActionFunc actionFunc) {
     this->actionFunc = actionFunc;
@@ -194,14 +196,14 @@ void EnTite_Init(Actor* thisx, GlobalContext* globalCtx) {
     this->bodyBreak.val = BODYBREAK_STATUS_FINISHED;
     thisx->focus.pos = thisx->world.pos;
     thisx->focus.pos.y += 20.0f;
-    thisx->colChkInfo.health = 2;
+    thisx->colChkInfo.health = 3;
     thisx->colChkInfo.mass = MASS_HEAVY;
     Collider_InitJntSph(globalCtx, &this->collider);
     Collider_SetJntSph(globalCtx, &this->collider, thisx, &sJntSphInit, &this->colliderItem);
     this->unk_2DC = 0x1D;
     if (this->actor.params == TEKTITE_BLUE) {
         this->unk_2DC |= 0x40; // Don't use the actor engine's ripple spawning code
-        thisx->colChkInfo.health = 4;
+        thisx->colChkInfo.health = 8;
         thisx->naviEnemyId += 1;
     }
     EnTite_SetupIdle(this);
@@ -376,7 +378,7 @@ void EnTite_Attack(EnTite* this, GlobalContext* globalCtx) {
                 Player* player = GET_PLAYER(globalCtx);
                 this->collider.base.atFlags &= ~AT_HIT;
                 Animation_MorphToLoop(&this->skelAnime, &object_tite_Anim_0012E4, 4.0f);
-                this->actor.speedXZ = -6.0f;
+                this->actor.speedXZ = RECALL_SPEED;
                 this->actor.world.rot.y = this->actor.yawTowardsPlayer;
                 if (&player->actor == this->collider.base.at) {
                     if (!(this->collider.base.atFlags & AT_BOUNCED)) {
@@ -429,6 +431,7 @@ void EnTite_Attack(EnTite* this, GlobalContext* globalCtx) {
 void EnTite_SetupTurnTowardPlayer(EnTite* this) {
     Animation_PlayLoop(&this->skelAnime, &object_tite_Anim_000A14);
     this->action = TEKTITE_TURN_TOWARD_PLAYER;
+    this->actor.world.rot.y = this->actor.shape.rot.y;
     if ((this->actor.bgCheckFlags & 3) || ((this->actor.params == TEKTITE_BLUE) && (this->actor.bgCheckFlags & 0x20))) {
         if (this->actor.velocity.y <= 0.0f) {
             this->actor.gravity = 0.0f;
@@ -493,15 +496,14 @@ void EnTite_TurnTowardPlayer(EnTite* this, GlobalContext* globalCtx) {
     }
 }
 
-static const MOVEMENT_SPEED = 6.0;
-
 void EnTite_SetupMoveTowardPlayer(EnTite* this) {
     Animation_PlayLoop(&this->skelAnime, &object_tite_Anim_000C70);
     this->action = TEKTITE_MOVE_TOWARD_PLAYER;
+    this->actor.world.rot.y = this->actor.yawTowardsPlayer + (Rand_ZeroOne() < 0.5f ? 0x4800 : -0x4800);
     this->actor.velocity.y = MOVEMENT_SPEED;
     this->actor.gravity = -1.0f;
     this->actor.speedXZ = MOVEMENT_SPEED;
-    this->vQueuedJumps = Rand_S16Offset(1, 3);
+    this->vQueuedJumps = Rand_S16Offset(0, 3);
     if ((this->actor.params == TEKTITE_BLUE) && (this->actor.bgCheckFlags & 0x20)) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_TEKU_JUMP_WATER);
     } else {
@@ -542,7 +544,7 @@ void EnTite_MoveTowardPlayer(EnTite* this, GlobalContext* globalCtx) {
         // slightly turn toward player upon landing and snap to ground or water.
         this->actor.speedXZ = 0.0f;
         Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 1, 4000, 0);
-        this->actor.world.rot.y = this->actor.shape.rot.y;
+        //this->actor.world.rot.y = this->actor.shape.rot.y;
         if ((this->actor.params != TEKTITE_BLUE) || !(this->actor.bgCheckFlags & 0x20)) {
             if (this->actor.floorHeight > BGCHECK_Y_MIN) {
                 this->actor.world.pos.y = this->actor.floorHeight;
@@ -613,7 +615,8 @@ void EnTite_MoveTowardPlayer(EnTite* this, GlobalContext* globalCtx) {
 void EnTite_SetupRecoil(EnTite* this) {
     this->action = TEKTITE_RECOIL;
     Animation_MorphToLoop(&this->skelAnime, &object_tite_Anim_0012E4, 4.0f);
-    this->actor.speedXZ = -6.0f;
+    this->actor.velocity.y = 0;
+    this->actor.speedXZ = RECALL_SPEED;
     this->actor.world.rot.y = this->actor.yawTowardsPlayer;
     this->actor.gravity = -1.0f;
     EnTite_SetupAction(this, EnTite_Recoil);
@@ -679,7 +682,7 @@ void EnTite_SetupStunned(EnTite* this) {
     Animation_Change(&this->skelAnime, &object_tite_Anim_0012E4, 0.0f, 0.0f,
                      (f32)Animation_GetLastFrame(&object_tite_Anim_0012E4), ANIMMODE_LOOP, 4.0f);
     this->action = TEKTITE_STUNNED;
-    this->actor.speedXZ = -6.0f;
+    this->actor.speedXZ = RECALL_SPEED;
     this->actor.world.rot.y = this->actor.yawTowardsPlayer;
     if (this->damageEffect == 0xF) {
         this->spawnIceTimer = 48;
