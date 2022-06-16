@@ -208,7 +208,7 @@ void EnVm_Wait(EnVm* this, GlobalContext* globalCtx) {
                     }
                 }
             } else {
-                this->headRotY -= 0x1F4;
+                this->headRotY -= 0x1F4*2;
             }
 
             SkelAnime_Update(&this->skelAnime);
@@ -247,6 +247,11 @@ void EnVm_Wait(EnVm* this, GlobalContext* globalCtx) {
         }
     }
 }
+
+static const s16 FRAME_SCALE_Y = 3;
+static const s16 FRAME_SCALE_X = 5;
+static const s16 MIN_PITCH_SPEED = 0xDAC/20;
+static const s16 MIN_YAW_SPEED = 0xDAC/10;
 
 void EnVm_SetupAttack(EnVm* this) {
     Animation_Change(&this->skelAnime, &gBeamosAnim, 3.0f, 3.0f, 7.0f, ANIMMODE_ONCE, 0.0f);
@@ -290,9 +295,9 @@ void EnVm_Attack(EnVm* this, GlobalContext* globalCtx) {
             return;
         }
 
-        Math_SmoothStepToS(&this->headRotY, -this->actor.shape.rot.y + this->actor.yawTowardsPlayer, 10, 0xDAC, 0);
-        Math_SmoothStepToS(&this->beamRot.y, this->actor.yawTowardsPlayer, 10, 0xDAC, 0);
-        Math_SmoothStepToS(&this->beamRot.x, pitch, 10, 0xDAC, 0);
+        Math_SmoothStepToS(&this->headRotY, -this->actor.shape.rot.y + this->actor.yawTowardsPlayer, FRAME_SCALE_Y, 0xDAC, 0);
+        Math_SmoothStepToS(&this->beamRot.y, this->actor.yawTowardsPlayer, FRAME_SCALE_Y, 0xDAC, 0);
+        Math_SmoothStepToS(&this->beamRot.x, pitch, FRAME_SCALE_X, 0xDAC, MIN_PITCH_SPEED);
         playerPos = player->actor.world.pos;
 
         if (player->actor.floorHeight > BGCHECK_Y_MIN) {
