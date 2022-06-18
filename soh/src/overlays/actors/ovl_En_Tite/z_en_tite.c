@@ -727,12 +727,12 @@ void EnTite_Recoil(EnTite* this, GlobalContext* globalCtx) {
             (ABS(this->actor.shape.rot.x) < 4000) && (ABS(this->actor.shape.rot.z) < 4000) &&
             ((this->actor.bgCheckFlags & 1) ||
              ((this->actor.params == TEKTITE_BLUE) && (this->actor.bgCheckFlags & 0x20)))) {
-            EnTite_SetupIdle(this);
+            EnTite_SetupMoveTowardPlayer(this, globalCtx);
         } else if ((this->actor.xzDistToPlayer < ATTACK_DIST) && (this->actor.yDistToPlayer <= VERTICAL_DIST) &&
                    (ABS(angleToPlayer) <= 6000)) {
             EnTite_SetupAttack(this);
         } else {
-            EnTite_SetupMoveTowardPlayer(this, globalCtx);
+            EnTite_SetupDodgePlayer(this, globalCtx);
         }
     }
     SkelAnime_Update(&this->skelAnime);
