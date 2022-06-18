@@ -498,7 +498,7 @@ void EnTite_TurnTowardPlayer(EnTite* this, GlobalContext* globalCtx) {
 }
 
 s32 EnTite_ProjectWallColision(EnTite* this, GlobalContext* globalCtx, f32 dist, s16 relAngle) {
-    s16 angle = (s16)(this->actor.shape.rot.y) + relAngle;
+    s16 angle = (s16)(this->actor.yawTowardsPlayer + relAngle);
     f32 dx = Math_SinS(angle) * dist;
     f32 dz = Math_CosS(angle) * dist;
     Vec3f newPos = this->actor.world.pos;
@@ -515,23 +515,11 @@ s32 EnTite_ProjectWallColision(EnTite* this, GlobalContext* globalCtx, f32 dist,
 void EnTite_SetupMoveTowardPlayer(EnTite* this, GlobalContext* globalCtx) {
     Animation_PlayLoop(&this->skelAnime, &object_tite_Anim_000C70);
     this->action = TEKTITE_MOVE_TOWARD_PLAYER;
-    this->vQueuedJumps = Rand_S16Offset(0, 3);
+    this->vQueuedJumps = Rand_S16Offset(0, 2);
     
-    f32 distance = 60.0*(this->vQueuedJumps+1);
+    f32 distance = 75.0*(this->vQueuedJumps+1);
     s16 angle = 0x4000;
-    //f32 dx = Math_SinS(angle) * distance;
-    //f32 dz = Math_CosS(angle) * distance;
-    //Vec3f newPos = this->actor.world.pos;
-    //newPos.x += dx;
-    //newPos.z += dz;
-    //Vec3f finalPos;
-    //s32 bgId;
     s32 wallHitL = EnTite_ProjectWallColision(this, globalCtx, distance, angle);
-    //newPos = this->actor.world.pos;
-    //newPos.x -= dx;
-    //newPos.z -= dz;
-    //s32 wallHitR = BgCheck_EntitySphVsWall3(&globalCtx->colCtx,&finalPos,&newPos, &this->actor.prevPos,20.0f,
-                //&this->actor.wallPoly, &bgId, &this->actor, 5.0f);
     s32 wallHitR = EnTite_ProjectWallColision(this, globalCtx, distance, -angle);//(s16)0x4000+(s16)0x4000+(s16)0x4000
     
     this->actor.world.rot.y = this->actor.yawTowardsPlayer + 
