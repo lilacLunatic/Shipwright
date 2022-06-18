@@ -15,7 +15,7 @@
 // EnTite_Idle
 #define vIdleTimer actionVar1
 
-// EnTite_Attack (vQueuedJumps also used by EnTite_MoveTowardPlayer)
+// EnTite_Attack (vQueuedJumps also used by EnTite_FreeHopping)
 #define vAttackState actionVar1
 #define vQueuedJumps actionVar2
 
@@ -59,14 +59,15 @@ void EnTite_Draw(Actor* thisx, GlobalContext* globalCtx);
 
 void EnTite_SetupIdle(EnTite* this);
 void EnTite_SetupTurnTowardPlayer(EnTite* this);
-void EnTite_SetupMoveTowardPlayer(EnTite* this);
+void EnTite_SetupMoveTowardPlayer(EnTite* this, GlobalContext* globalCtx);
+void EnTite_SetupDodgePlayer(EnTite* this, GlobalContext* globalCtx);
 void EnTite_SetupDeathCry(EnTite* this);
 void EnTite_SetupFlipUpright(EnTite* this);
 
 void EnTite_Idle(EnTite* this, GlobalContext* globalCtx);
 void EnTite_Attack(EnTite* this, GlobalContext* globalCtx);
 void EnTite_TurnTowardPlayer(EnTite* this, GlobalContext* globalCtx);
-void EnTite_MoveTowardPlayer(EnTite* this, GlobalContext* globalCtx);
+void EnTite_FreeHopping(EnTite* this, GlobalContext* globalCtx);
 void EnTite_Recoil(EnTite* this, GlobalContext* globalCtx);
 void EnTite_Stunned(EnTite* this, GlobalContext* globalCtx);
 void EnTite_DeathCry(EnTite* this, GlobalContext* globalCtx);
@@ -491,31 +492,103 @@ void EnTite_TurnTowardPlayer(EnTite* this, GlobalContext* globalCtx) {
         if ((this->actor.xzDistToPlayer <= ATTACK_DIST) && (this->actor.yDistToPlayer <= VERTICAL_DIST)) {
             EnTite_SetupAttack(this);
         } else {
-            EnTite_SetupMoveTowardPlayer(this);
+            EnTite_SetupMoveTowardPlayer(this, globalCtx);
         }
     }
 }
 
-void EnTite_SetupMoveTowardPlayer(EnTite* this) {
+s32 EnTite_ProjectWallColision(EnTite* this, GlobalContext* globalCtx, f32 dist, s16 relAngle) {
+    s16 angle = (s16)(this->actor.shape.rot.y) + relAngle;
+    f32 dx = Math_SinS(angle) * dist;
+    f32 dz = Math_CosS(angle) * dist;
+    Vec3f newPos = this->actor.world.pos;
+    newPos.x += dx;
+    newPos.z += dz;
+    Vec3f finalPos;
+    s32 bgId;
+    s32 wallHit = BgCheck_EntitySphVsWall3(&globalCtx->colCtx,&finalPos,&newPos, &this->actor.prevPos,20.0f,
+                &this->actor.wallPoly, &bgId, &this->actor, 5.0f);
+    
+    return wallHit;
+}
+
+void EnTite_SetupMoveTowardPlayer(EnTite* this, GlobalContext* globalCtx) {
     Animation_PlayLoop(&this->skelAnime, &object_tite_Anim_000C70);
     this->action = TEKTITE_MOVE_TOWARD_PLAYER;
-    this->actor.world.rot.y = this->actor.yawTowardsPlayer + (Rand_ZeroOne() < 0.5f ? 0x4800 : -0x4800);
+    this->vQueuedJumps = Rand_S16Offset(0, 3);
+    
+    f32 distance = 60.0*(this->vQueuedJumps+1);
+    s16 angle = (s16)(this->actor.shape.rot.y + 0x4000);
+    f32 dx = Math_SinS(angle) * distance;
+    f32 dz = Math_CosS(angle) * distance;
+    Vec3f newPos = this->actor.world.pos;
+    newPos.x += dx;
+    newPos.z += dz;
+    Vec3f finalPos;
+    s32 bgId;
+    s32 wallHitL = BgCheck_EntitySphVsWall3(&globalCtx->colCtx,&finalPos,&newPos, &this->actor.prevPos,20.0f,
+                &this->actor.wallPoly, &bgId, &this->actor, 5.0f);
+    newPos = this->actor.world.pos;
+    newPos.x -= dx;
+    newPos.z -= dz;
+    s32 wallHitR = BgCheck_EntitySphVsWall3(&globalCtx->colCtx,&finalPos,&newPos, &this->actor.prevPos,20.0f,
+                &this->actor.wallPoly, &bgId, &this->actor, 5.0f);
+    //s32 wallHitR = EnTite_ProjectWallColision(this, globalCtx, distance, (s16)0x4000+(s16)0x4000+(s16)0x4000);
+    
+    this->actor.world.rot.y = this->actor.yawTowardsPlayer +
+                (wallHitL ? (wallHitR ? 0 : angle) : (wallHitR ? -angle : (Rand_ZeroOne() < 0.5f ? angle : -angle)) );
     this->actor.velocity.y = MOVEMENT_SPEED;
     this->actor.gravity = -1.0f;
     this->actor.speedXZ = MOVEMENT_SPEED;
-    this->vQueuedJumps = Rand_S16Offset(0, 3);
+    
     if ((this->actor.params == TEKTITE_BLUE) && (this->actor.bgCheckFlags & 0x20)) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_TEKU_JUMP_WATER);
     } else {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_STAL_JUMP);
     }
-    EnTite_SetupAction(this, EnTite_MoveTowardPlayer);
+    EnTite_SetupAction(this, EnTite_FreeHopping);
+}
+
+void EnTite_SetupDodgePlayer(EnTite* this, GlobalContext* globalCtx) {
+    Animation_PlayLoop(&this->skelAnime, &object_tite_Anim_000C70);
+    this->action = TEKTITE_MOVE_TOWARD_PLAYER;
+    this->vQueuedJumps = Rand_S16Offset(0, 3);
+    
+    f32 distance = 75.0*(this->vQueuedJumps+1);
+    s16 angle = (s16)(this->actor.shape.rot.y + 0x4000);
+    f32 dx = Math_SinS(angle) * distance;
+    f32 dz = Math_CosS(angle) * distance;
+    Vec3f newPos = this->actor.world.pos;
+    newPos.x += dx;
+    newPos.z += dz;
+    Vec3f finalPos;
+    s32 bgId;
+    s32 wallHitL = BgCheck_EntitySphVsWall3(&globalCtx->colCtx,&finalPos,&newPos, &this->actor.prevPos,20.0f,
+                &this->actor.wallPoly, &bgId, &this->actor, 5.0f);
+    newPos = this->actor.world.pos;
+    newPos.x -= dx;
+    newPos.z -= dz;
+    s32 wallHitR = BgCheck_EntitySphVsWall3(&globalCtx->colCtx,&finalPos,&newPos, &this->actor.prevPos,20.0f,
+                &this->actor.wallPoly, &bgId, &this->actor, 5.0f);
+    
+    this->actor.world.rot.y = this->actor.yawTowardsPlayer +
+                (wallHitL ? (wallHitR ? 0 : angle) : (wallHitR ? -angle : (Rand_ZeroOne() < 0.5f ? angle : -angle)) );
+    this->actor.velocity.y = MOVEMENT_SPEED;
+    this->actor.gravity = -1.0f;
+    this->actor.speedXZ = MOVEMENT_SPEED;
+    
+    if ((this->actor.params == TEKTITE_BLUE) && (this->actor.bgCheckFlags & 0x20)) {
+        Audio_PlayActorSound2(&this->actor, NA_SE_EN_TEKU_JUMP_WATER);
+    } else {
+        Audio_PlayActorSound2(&this->actor, NA_SE_EN_STAL_JUMP);
+    }
+    EnTite_SetupAction(this, EnTite_FreeHopping);
 }
 
 /**
  *  Jumping toward player as a method of travel (different from attacking, has no hitbox)
  */
-void EnTite_MoveTowardPlayer(EnTite* this, GlobalContext* globalCtx) {
+void EnTite_FreeHopping(EnTite* this, GlobalContext* globalCtx) {
     Math_SmoothStepToF(&this->actor.speedXZ, 0.0f, 0.1f, 1.0f, 0.0f);
     SkelAnime_Update(&this->skelAnime);
 
@@ -672,7 +745,7 @@ void EnTite_Recoil(EnTite* this, GlobalContext* globalCtx) {
                    (ABS(angleToPlayer) <= 6000)) {
             EnTite_SetupAttack(this);
         } else {
-            EnTite_SetupMoveTowardPlayer(this);
+            EnTite_SetupMoveTowardPlayer(this, globalCtx);
         }
     }
     SkelAnime_Update(&this->skelAnime);
@@ -744,7 +817,7 @@ void EnTite_Stunned(EnTite* this, GlobalContext* globalCtx) {
                    (ABS(angleToPlayer) <= 6000)) {
             EnTite_SetupAttack(this);
         } else {
-            EnTite_SetupMoveTowardPlayer(this);
+            EnTite_SetupMoveTowardPlayer(this, globalCtx);
         }
     }
     SkelAnime_Update(&this->skelAnime);
