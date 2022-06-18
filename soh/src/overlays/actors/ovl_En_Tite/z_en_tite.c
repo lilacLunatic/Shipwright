@@ -507,7 +507,7 @@ s32 EnTite_ProjectWallColision(EnTite* this, GlobalContext* globalCtx, f32 dist,
     Vec3f finalPos;
     s32 bgId;
     s32 wallHit = BgCheck_EntitySphVsWall3(&globalCtx->colCtx,&finalPos,&newPos, &this->actor.prevPos,20.0f,
-                &this->actor.wallPoly, &bgId, &this->actor, 5.0f);
+                &this->actor.wallPoly, &bgId, &this->actor, 40.0f);
     
     return wallHit;
 }
@@ -518,7 +518,7 @@ void EnTite_SetupMoveTowardPlayer(EnTite* this, GlobalContext* globalCtx) {
     this->vQueuedJumps = Rand_S16Offset(0, 2);
     
     f32 distance = 75.0*(this->vQueuedJumps+1);
-    s16 angle = 0x4000;
+    s16 angle = 0x1500;
     s32 wallHitL = EnTite_ProjectWallColision(this, globalCtx, distance, angle);
     s32 wallHitR = EnTite_ProjectWallColision(this, globalCtx, distance, -angle);//(s16)0x4000+(s16)0x4000+(s16)0x4000
     
