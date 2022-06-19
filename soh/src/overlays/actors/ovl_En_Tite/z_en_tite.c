@@ -539,27 +539,25 @@ void EnTite_SetupMoveTowardPlayer(EnTite* this, GlobalContext* globalCtx) {
 void EnTite_SetupDodgePlayer(EnTite* this, GlobalContext* globalCtx) {
     Animation_PlayLoop(&this->skelAnime, &object_tite_Anim_000C70);
     this->action = TEKTITE_MOVE_TOWARD_PLAYER;
-    this->vQueuedJumps = Rand_S16Offset(0, 3);
+    this->vQueuedJumps = Rand_S16Offset(0, 1);
     
     f32 distance = 75.0*(this->vQueuedJumps+1);
-    s16 angle = (s16)(this->actor.shape.rot.y + 0x4000);
-    f32 dx = Math_SinS(angle) * distance;
-    f32 dz = Math_CosS(angle) * distance;
-    Vec3f newPos = this->actor.world.pos;
-    newPos.x += dx;
-    newPos.z += dz;
-    Vec3f finalPos;
-    s32 bgId;
-    s32 wallHitL = BgCheck_EntitySphVsWall3(&globalCtx->colCtx,&finalPos,&newPos, &this->actor.prevPos,20.0f,
-                &this->actor.wallPoly, &bgId, &this->actor, 5.0f);
-    newPos = this->actor.world.pos;
-    newPos.x -= dx;
-    newPos.z -= dz;
-    s32 wallHitR = BgCheck_EntitySphVsWall3(&globalCtx->colCtx,&finalPos,&newPos, &this->actor.prevPos,20.0f,
-                &this->actor.wallPoly, &bgId, &this->actor, 5.0f);
+    s16 angle = 0x5000;
+    s32 wallHitL = EnTite_ProjectWallColision(this, globalCtx, distance, angle);
+    s32 wallHitR = EnTite_ProjectWallColision(this, globalCtx, distance, -angle);//(s16)0x4000+(s16)0x4000+(s16)0x4000
     
-    this->actor.world.rot.y = this->actor.yawTowardsPlayer +
-                (wallHitL ? (wallHitR ? 0 : angle) : (wallHitR ? -angle : (Rand_ZeroOne() < 0.5f ? angle : -angle)) );
+    if (!wallHitL && !wallHitR)
+        this->actor.world.rot.y = this->actor.yawTowardsPlayer + (Rand_ZeroOne() < 0.5f ? -angle : angle);
+    else if (!wallHitL)
+        this->actor.world.rot.y = this->actor.yawTowardsPlayer + angle;
+    else if (!wallHitR)
+        this->actor.world.rot.y = this->actor.yawTowardsPlayer + -angle;
+    else {
+        if (!EnTite_ProjectWallColision(this, globalCtx, distance, 0x7FFF))
+            this->actor.world.rot.y = this->actor.yawTowardsPlayer + 0x7FFF;
+    }
+                
+                
     this->actor.velocity.y = MOVEMENT_SPEED;
     this->actor.gravity = -1.0f;
     this->actor.speedXZ = MOVEMENT_SPEED;
