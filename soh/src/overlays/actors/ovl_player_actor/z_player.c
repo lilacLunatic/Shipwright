@@ -3151,6 +3151,13 @@ void func_80836BEC(Player* this, GlobalContext* globalCtx) {
                 this->unk_664 = this->unk_684;
             }
         }
+        
+        if (this->unk_664 != NULL) {
+            if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_R) &&
+                        this->unk_664->xzDistToPlayer < 30.0f && this->unk_664->yDistToPlayer < -20.0f)
+                func_8008EDF0(this);
+        }
+
 
         if (this->unk_664 != NULL) {
             this->stateFlags1 &= ~(PLAYER_STATE1_16 | PLAYER_STATE1_17);
