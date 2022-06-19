@@ -5187,7 +5187,7 @@ void func_8083BA90(GlobalContext* globalCtx, Player* this, s32 arg2, f32 xzVeloc
 }
 
 s32 func_8083BB20(Player* this) {
-    if (!(this->stateFlags1 & PLAYER_STATE1_22) && (Player_GetSwordHeld(this) != 0)) {
+    if (!(this->stateFlags1 & PLAYER_STATE1_22) && (Player_GetSwordHeld(this) != 0) && (this->shieldRelaxTimer == 0)) {
         if (D_80853614 ||
             ((this->actor.category != ACTORCAT_PLAYER) && CHECK_BTN_ALL(sControlInput->press.button, BTN_B))) {
             return 1;
@@ -9427,6 +9427,8 @@ void Player_InitCommon(Player* this, GlobalContext* globalCtx, FlexSkeletonHeade
     Collider_SetQuad(globalCtx, &this->swordQuads[1], &this->actor, &D_80854650);
     Collider_InitQuad(globalCtx, &this->shieldQuad);
     Collider_SetQuad(globalCtx, &this->shieldQuad, &this->actor, &D_808546A0);
+    
+    this->shieldRelaxTimer = 0;
 }
 
 static void (*D_80854738[])(GlobalContext* globalCtx, Player* this) = {
@@ -10422,6 +10424,15 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
 
     if (this->unk_890 != 0) {
         this->unk_890--;
+    }
+    
+    if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)){
+    	if (this->shieldRelaxTimer <= 10)
+    	    this->shieldRelaxTimer = 10;
+    }
+    else {
+        if (this->shieldRelaxTimer > 0)
+            this->shieldRelaxTimer--;
     }
 
     func_808473D4(globalCtx, this);
