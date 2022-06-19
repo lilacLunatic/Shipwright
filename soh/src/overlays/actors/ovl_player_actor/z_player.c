@@ -10427,7 +10427,7 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
         this->unk_890--;
     }
     
-    if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)){
+    if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_R) || (this->stateFlags1 & PLAYER_STATE1_22)){
     	if (this->shieldRelaxTimer <= 10)
     	    this->shieldRelaxTimer = 10;
     }
