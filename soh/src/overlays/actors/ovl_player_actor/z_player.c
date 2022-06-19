@@ -5257,7 +5257,8 @@ s32 func_8083BDBC(Player* this, GlobalContext* globalCtx) {
                 }
                 else {
                     if (Player_GetSwordHeld(this) && func_808365C8(this)) {
-                        func_8083BA90(globalCtx, this, 17, 5.0f, 5.0f);
+                        if (this->shieldRelaxTimer == 0)
+                            func_8083BA90(globalCtx, this, 17, 5.0f, 5.0f);
                     }
                     else {
                         func_8083BC04(this, globalCtx);
