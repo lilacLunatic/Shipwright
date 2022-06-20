@@ -11016,6 +11016,10 @@ void Player_Draw(Actor* thisx, GlobalContext* globalCtx2) {
             POLY_OPA_DISP =
                 Gfx_SetFog2(POLY_OPA_DISP, 255, 0, 0, 0, 0, 4000 - (s32)(Math_CosS(this->unk_88F * 256) * 2000.0f));
         }
+        if (this->shieldRelaxTimer > 0) {
+            POLY_OPA_DISP =
+                Gfx_SetFog2(POLY_OPA_DISP, 0, 0, 255, 0, 0, 4000 - 200*this->shieldRelaxTimer);
+        }
 
         func_8002EBCC(&this->actor, globalCtx, 0);
         func_8002ED80(&this->actor, globalCtx, 0);
@@ -11061,7 +11065,7 @@ void Player_Draw(Actor* thisx, GlobalContext* globalCtx2) {
 
         Player_DrawGameplay(globalCtx, this, lod, gCullBackDList, overrideLimbDraw);
 
-        if (this->invincibilityTimer > 0) {
+        if (this->invincibilityTimer > 0 || this->shieldRelaxTimer > 0) {
             POLY_OPA_DISP = Gameplay_SetFog(globalCtx, POLY_OPA_DISP);
         }
 
