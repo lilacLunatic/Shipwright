@@ -9430,6 +9430,8 @@ void Player_InitCommon(Player* this, GlobalContext* globalCtx, FlexSkeletonHeade
     Collider_SetQuad(globalCtx, &this->shieldQuad, &this->actor, &D_808546A0);
     
     this->shieldRelaxTimer = 0;
+    this->shieldUpTimer = 0;
+    this->shieldEntry = 0;
 }
 
 static void (*D_80854738[])(GlobalContext* globalCtx, Player* this) = {
@@ -10389,6 +10391,8 @@ static Vec3f D_80854814 = { 0.0f, 0.0f, 200.0f };
 static f32 D_80854820[] = { 2.0f, 4.0f, 7.0f };
 static f32 D_8085482C[] = { 0.5f, 1.0f, 3.0f };
 
+const static u8 SHIELD_TIME_MAX = 14;
+
 void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
     s32 pad;
 
@@ -10428,12 +10432,25 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
     }
     
     if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_R) || (this->stateFlags1 & PLAYER_STATE1_22)){
-    	if (this->shieldRelaxTimer <= 10)
-    	    this->shieldRelaxTimer = 10;
+        if (this->shieldUpTimer < SHIELD_TIME_MAX/2)
+            this->shieldUpTimer++;
+    	if (this->shieldRelaxTimer <= SHIELD_TIME_MAX) {
+    	    if ((this->shieldUpTimer-1 > 0 || this->shieldRelaxTimer == 0) && this->shieldEntry == 0) {
+    	        this->shieldRelaxTimer = this->shieldUpTimer*2;
+    	    }
+    	    else
+    	        this->shieldRelaxTimer = SHIELD_TIME_MAX;
+    	}
     }
     else {
+    	if (this->shieldUpTimer > 0) {
+    	    this->shieldEntry = SHIELD_TIME_MAX;
+    	    this->shieldUpTimer = 0;
+    	}
         if (this->shieldRelaxTimer > 0)
             this->shieldRelaxTimer--;
+        if (this->shieldEntry > 0)
+            this->shieldEntry--;
     }
 
     func_808473D4(globalCtx, this);
@@ -11018,7 +11035,7 @@ void Player_Draw(Actor* thisx, GlobalContext* globalCtx2) {
         }
         if (this->shieldRelaxTimer > 0) {
             POLY_OPA_DISP =
-                Gfx_SetFog2(POLY_OPA_DISP, 0, 0, 255, 0, 0, 4000 - 200*this->shieldRelaxTimer);
+                Gfx_SetFog2(POLY_OPA_DISP, 0, 0, 255, 0, 0, 4000 - (2000/SHIELD_TIME_MAX)*this->shieldRelaxTimer);
         }
 
         func_8002EBCC(&this->actor, globalCtx, 0);
