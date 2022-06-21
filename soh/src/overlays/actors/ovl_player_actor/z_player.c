@@ -10434,8 +10434,9 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
     if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_R) || (this->stateFlags1 & PLAYER_STATE1_22)){
         if (this->shieldUpTimer < SHIELD_TIME_MAX/2)
             this->shieldUpTimer++;
-    	if (this->shieldRelaxTimer <= SHIELD_TIME_MAX) {
-    	    if ((this->shieldUpTimer-1 > 0 || this->shieldRelaxTimer == 0) && this->shieldEntry == 0) {
+    	if (this->shieldRelaxTimer <= SHIELD_TIME_MAX && this->func_82C != func_80843188
+    	            && this->skelAnime.animation != D_808543C4[0]) {
+    	    if ((this->shieldUpTimer > 1 || this->shieldRelaxTimer == 0) && this->shieldEntry == 0) {
     	        this->shieldRelaxTimer = this->shieldUpTimer*2;
     	    }
     	    else
