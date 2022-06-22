@@ -3817,6 +3817,9 @@ s32 func_808382DC(Player* this, GlobalContext* globalCtx) {
             // This behavior was later fixed in MM, most likely by removing both the `atHit` and `atFlags` checks.
             if (sp64 || ((this->invincibilityTimer < 0) && (this->cylinder.base.acFlags & AC_HIT) &&
                 (this->cylinder.info.atHit != NULL) && (this->cylinder.info.atHit->atFlags & 0x20000000))) {
+                
+                if (this->shieldRelaxTimer <= 6)
+                    return 0;
 
                 func_8083264C(this, 180, 20, 100, 0);
 
