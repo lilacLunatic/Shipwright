@@ -1118,9 +1118,9 @@ void func_80090604(GlobalContext* globalCtx, Player* this, ColliderQuad* collide
     };
 
     if (this->stateFlags1 & 0x400000)
-        collider->info.bumper.dmgFlags = 0xDFCFCFFF;
+        collider->info.bumper.dmgFlags = 0xDFCFFFFF;
     else
-        collider->info.bumper.dmgFlags = 0x00003000;
+        collider->info.bumper.dmgFlags = 0x00100000;
 
     if (this->stateFlags1 & 0x400000 || this->unk_664 != NULL) {
         Vec3f quadDest[4];
