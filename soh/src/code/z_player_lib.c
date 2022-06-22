@@ -1117,7 +1117,12 @@ void func_80090604(GlobalContext* globalCtx, Player* this, ColliderQuad* collide
         COLTYPE_METAL,
     };
 
-    if (this->stateFlags1 & 0x400000) {
+    if (this->stateFlags1 & 0x400000)
+        collider->info.bumper.dmgFlags = 0xDFCFCFFF;
+    else
+        collider->info.bumper.dmgFlags = 0x00003000;
+
+    if (this->stateFlags1 & 0x400000 || this->unk_664 != NULL) {
         Vec3f quadDest[4];
 
         this->shieldQuad.base.colType = shieldColTypes[this->currentShield];
