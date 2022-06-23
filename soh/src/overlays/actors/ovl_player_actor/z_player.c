@@ -3818,7 +3818,7 @@ s32 func_808382DC(Player* this, GlobalContext* globalCtx) {
             if (sp64 || ((this->invincibilityTimer < 0) && (this->cylinder.base.acFlags & AC_HIT) &&
                 (this->cylinder.info.atHit != NULL) && (this->cylinder.info.atHit->atFlags & 0x20000000))) {
                 
-                if (this->shieldRelaxTimer <= 6)
+                if (this->shieldRelaxTimer <= 6 && !Player_HoldsTwoHandedWeapon(this))
                     return 0;
 
                 func_8083264C(this, 180, 20, 100, 0);
