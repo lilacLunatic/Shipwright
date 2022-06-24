@@ -438,7 +438,6 @@ void func_80A74EBC(EnIk* this, GlobalContext* globalCtx) {
     if ((this->skelAnime.curFrame > 17.0f) && (this->skelAnime.curFrame < 23.0f)) {
         this->unk_2FE = 1;
     } else {
-        
         Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0xDAC, 0);
         this->actor.shape.rot.y = this->actor.world.rot.y;
         this->unk_2FE = 0;
@@ -502,7 +501,7 @@ void func_80A75260(EnIk* this, GlobalContext* globalCtx) {
     }
     if (((this->skelAnime.curFrame > 1.0f) && (this->skelAnime.curFrame < 9.0f)) ||
         ((this->skelAnime.curFrame > 13.0f) && (this->skelAnime.curFrame < 18.0f))) {
-        if (1 || (this->unk_2FC == 0) && (this->unk_2FB != 0) && (this->skelAnime.curFrame < 10.0f)) {
+        if (this->unk_2FC == 0) {
             Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0xDAC, 0);
             this->actor.shape.rot.y = this->actor.world.rot.y;
         }
