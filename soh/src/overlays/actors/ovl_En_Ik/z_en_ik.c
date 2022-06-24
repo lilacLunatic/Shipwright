@@ -419,8 +419,11 @@ void func_80A74E2C(EnIk* this) {
 
 void func_80A74EBC(EnIk* this, GlobalContext* globalCtx) {
     Vec3f sp2C;
-
-    if (this->skelAnime.curFrame == 15.0f) {
+    
+    this->actor.speedXZ = 0.0f;
+    if (this->skelAnime.curFrame < 15.0f)
+        this->actor.speedXZ = 6.0f;
+    else if (this->skelAnime.curFrame == 15.0f) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_IRONNACK_SWING_AXE);
     } else if (this->skelAnime.curFrame == 21.0f) {
         sp2C.x = this->actor.world.pos.x + Math_SinS(this->actor.shape.rot.y + 0x6A4) * 70.0f;
@@ -435,10 +438,9 @@ void func_80A74EBC(EnIk* this, GlobalContext* globalCtx) {
     if ((this->skelAnime.curFrame > 17.0f) && (this->skelAnime.curFrame < 23.0f)) {
         this->unk_2FE = 1;
     } else {
-        if ((this->unk_2FB != 0) && (this->skelAnime.curFrame < 10.0f)) {
-            Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0x5DC, 0);
-            this->actor.shape.rot.y = this->actor.world.rot.y;
-        }
+        
+        Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0xDAC, 0);
+        this->actor.shape.rot.y = this->actor.world.rot.y;
         this->unk_2FE = 0;
     }
 
@@ -491,14 +493,17 @@ void func_80A75260(EnIk* this, GlobalContext* globalCtx) {
     this->unk_300 += 0x1C2;
     temp_f0 = Math_SinS(this->unk_300);
     this->skelAnime.playSpeed = ABS(temp_f0);
-
-    if (this->skelAnime.curFrame > 11.0f) {
+    
+    this->actor.speedXZ = 0.0f;
+    if (this->skelAnime.curFrame < 11.0f)
+        this->actor.speedXZ = 4.0f;
+    else if (this->skelAnime.curFrame > 11.0f) {
         this->unk_2FF = 3;
     }
     if (((this->skelAnime.curFrame > 1.0f) && (this->skelAnime.curFrame < 9.0f)) ||
         ((this->skelAnime.curFrame > 13.0f) && (this->skelAnime.curFrame < 18.0f))) {
-        if ((this->unk_2FC == 0) && (this->unk_2FB != 0) && (this->skelAnime.curFrame < 10.0f)) {
-            Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0x5DC, 0);
+        if (1 || (this->unk_2FC == 0) && (this->unk_2FB != 0) && (this->skelAnime.curFrame < 10.0f)) {
+            Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0xDAC, 0);
             this->actor.shape.rot.y = this->actor.world.rot.y;
         }
         if (this->unk_2FE < 0) {
@@ -540,7 +545,7 @@ void func_80A754A0(EnIk* this) {
 }
 
 void func_80A75530(EnIk* this, GlobalContext* globalCtx) {
-    Math_StepUntilS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 0x7D0);
+    Math_StepUntilS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 0xDAC);
     this->actor.shape.rot.y = this->actor.world.rot.y;
     if ((this->skelAnime.curFrame > 13.0f) && (this->skelAnime.curFrame < 18.0f)) {
         if (this->unk_2FE < 0) {
