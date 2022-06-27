@@ -109,7 +109,7 @@ static DamageTable sDamageTable = {
     /* Unknown 2     */ DMG_ENTRY(0, 0x0),
 };
 
-const static f32 ROCK_SPEED = 10.0f;
+const static f32 ROCK_SPEED = 20.0f;
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_S8(naviEnemyId, 0x42, ICHAIN_CONTINUE),
@@ -122,6 +122,8 @@ void EnOkuta_Init(Actor* thisx, GlobalContext* globalCtx) {
     WaterBox* outWaterBox;
     f32 ySurface;
     s32 sp30;
+    this->randomOffset = 0.0f;
+    this->randomFlag = 0;
 
     Actor_ProcessInitChain(thisx, sInitChain);
     this->numShots = (thisx->params >> 8) & 0xFF;
@@ -226,6 +228,7 @@ void EnOkuta_SetupWaitToShoot(EnOkuta* this) {
 }
 
 void EnOkuta_SetupShoot(EnOkuta* this, GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
     Animation_PlayOnce(&this->skelAnime, &gOctorokShootAnim);
     if (this->actionFunc != EnOkuta_Shoot) {
         this->timer = this->numShots;
@@ -238,6 +241,11 @@ void EnOkuta_SetupShoot(EnOkuta* this, GlobalContext* globalCtx) {
     if (this->jumpHeight > 50.0f) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_OCTAROCK_JUMP);
     }
+    this->randomOffset = Rand_CenteredFloat(6.0f);
+    this->randomFlag = Rand_S16Offset(0, 3);
+    if (player->actor.speedXZ > 3.0f && this->randomFlag == 2)
+        this->randomFlag = 1;
+    
     this->actionFunc = EnOkuta_Shoot;
 }
 
@@ -335,9 +343,47 @@ void EnOkuta_Hide(EnOkuta* this, GlobalContext* globalCtx) {
     }
 }
 
+s16 aimToActorMovement(Actor* this, Actor* target, f32 projectileSpeed, GlobalContext* globalCtx, f32* time, f32* projectedY) {
+    f32 posX = target->world.pos.x - this->world.pos.x;
+    f32 posZ = target->world.pos.z - this->world.pos.z;
+    f32 velX = Math_SinS(target->world.rot.y) * target->speedXZ;
+    f32 velZ = Math_CosS(target->world.rot.y) * target->speedXZ;
+    
+    CollisionPoly* outPoly;
+    *projectedY = BgCheck_EntityRaycastFloor2(globalCtx,&globalCtx->colCtx,&outPoly,&target->world.pos);
+    if (BGCHECK_Y_MIN == *projectedY)
+        *projectedY = target->world.pos.y;
+    
+    if (projectileSpeed < target->speedXZ){
+        *time = 0.0f;
+        return this->yawTowardsPlayer;
+    }
+    else {
+        f32 a = velX*velX + velZ*velZ - projectileSpeed*projectileSpeed;
+        f32 b = 2.0f*(velX*posX+velZ*posZ);
+        f32 c = posX*posX + posZ*posZ;
+        f32 det = b*b - 4.0f*a*c;
+        
+        if (a == 0.0f || a == -0.0f || det < 0.0f)
+            return this->yawTowardsPlayer;
+        //Assumes that the sqrt of det is larger than b and that a is negative. 
+        *time = (-b - sqrtf(det))/(2.0f*a);
+        
+        f32 projectedX = posX+velX**time;
+        f32 projectedZ = posZ+velZ**time;
+        //Vec3f savedPos = target->world.pos;
+        //target->world.pos.x = projectedX;
+        //target->world.pos.z = projectedZ;
+        
+        return Math_Atan2S(projectedZ, projectedX);
+    }
+}
+
 s16 aimToPlayerMovement(EnOkuta* this, GlobalContext* globalCtx) {
     Player* player = GET_PLAYER(globalCtx);
-    
+    f32 time;
+    f32 projectedY;
+    /*
     f32 posX = player->actor.world.pos.x - this->actor.world.pos.x;
     f32 posZ = player->actor.world.pos.z - this->actor.world.pos.z;
     f32 velX = Math_SinS(player->actor.world.rot.y) * player->actor.speedXZ;
@@ -358,7 +404,44 @@ s16 aimToPlayerMovement(EnOkuta* this, GlobalContext* globalCtx) {
         f32 time = (-b - sqrtf(det))/(2.0f*a);
         
         return Math_Atan2S(posZ+velZ*time, posX+velX*time);
+    }*/
+    
+    return aimToActorMovement(this, &player->actor, ROCK_SPEED, globalCtx, &time, &projectedY);
+}
+
+s16 randomizeAim(EnOkuta* this, GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    f32 time;
+    f32 projectedY;
+    s16 projectedAng = aimToActorMovement(&this->actor,&player->actor,ROCK_SPEED,globalCtx,&time,&projectedY);
+    s32 targetMaxSpeed = 6.0f;
+    Vec3f dir = {player->actor.world.pos.x - this->actor.world.pos.x, 0.0f, player->actor.world.pos.z - this->actor.world.pos.z};
+    f32 norm = dir.x*dir.x + dir.z*dir.z; 
+    Vec3f normalizedDir = {0.0f,0.0f,0.0f};
+    if (norm > 0.0f) {
+        norm = 1.0f/sqrt(norm);
+        normalizedDir.x = dir.x*norm;
+        normalizedDir.z = dir.z*norm;
     }
+    else
+        return 0;
+    Vec3f leftDir = {-normalizedDir.z,0.0f,normalizedDir.x};
+    
+    f32 velX = Math_SinS(player->actor.world.rot.y) * player->actor.speedXZ;
+    f32 velZ = Math_CosS(player->actor.world.rot.y) * player->actor.speedXZ;
+    f32 projectedX = dir.x+(0.5f*velX+this->randomOffset*leftDir.x)*time;
+    f32 projectedZ = dir.z+(0.5f*velZ+this->randomOffset*leftDir.z)*time;
+    
+    Vec3f savedPos = player->actor.world.pos;
+    f32 savedSpeed = player->actor.speedXZ;
+    player->actor.world.pos.x = this->actor.world.pos.x+projectedX;
+    player->actor.world.pos.z = this->actor.world.pos.z+projectedZ;
+    player->actor.speedXZ = 0.0f;
+    s16 projectedAng2 = aimToActorMovement(&this->actor,&player->actor,ROCK_SPEED,globalCtx,&time,&projectedY); 
+    player->actor.world.pos = savedPos;
+    player->actor.speedXZ = savedSpeed;
+    
+    return this->randomFlag&1 ? projectedAng : (this->randomFlag&2 ? this->actor.yawTowardsPlayer : projectedAng2);
 }
 
 void EnOkuta_WaitToShoot(EnOkuta* this, GlobalContext* globalCtx) {
@@ -378,7 +461,7 @@ void EnOkuta_WaitToShoot(EnOkuta* this, GlobalContext* globalCtx) {
     if (this->actor.xzDistToPlayer < 160.0f || this->actor.xzDistToPlayer > 560.0f) {
         EnOkuta_SetupHide(this);
     } else {
-        temp_v0_2 = Math_SmoothStepToS(&this->actor.shape.rot.y, aimToPlayerMovement(this,globalCtx), 3, 0x71C, 0x38E);
+        temp_v0_2 = Math_SmoothStepToS(&this->actor.shape.rot.y, randomizeAim(this,globalCtx), 3, 0x71C, 0x38E);
         phi_v1 = ABS(temp_v0_2);
         if ((phi_v1 < 0x38E) && (this->timer == 0) && (this->actor.yDistToPlayer < 200.0f)) {
             EnOkuta_SetupShoot(this, globalCtx);
@@ -387,7 +470,7 @@ void EnOkuta_WaitToShoot(EnOkuta* this, GlobalContext* globalCtx) {
 }
 
 void EnOkuta_Shoot(EnOkuta* this, GlobalContext* globalCtx) {
-    Math_ApproachS(&this->actor.shape.rot.y, aimToPlayerMovement(this,globalCtx), 3, 0x71C);
+    Math_ApproachS(&this->actor.shape.rot.y, randomizeAim(this,globalCtx), 3, 0x71C);
     if (SkelAnime_Update(&this->skelAnime)) {
         if (this->timer != 0) {
             this->timer--;
