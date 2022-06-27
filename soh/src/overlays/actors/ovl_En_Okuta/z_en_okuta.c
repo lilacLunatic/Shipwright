@@ -109,6 +109,8 @@ static DamageTable sDamageTable = {
     /* Unknown 2     */ DMG_ENTRY(0, 0x0),
 };
 
+const static f32 ROCK_SPEED = 10.0f;
+
 static InitChainEntry sInitChain[] = {
     ICHAIN_S8(naviEnemyId, 0x42, ICHAIN_CONTINUE),
     ICHAIN_F32(targetArrowOffset, 6500, ICHAIN_STOP),
@@ -154,7 +156,7 @@ void EnOkuta_Init(Actor* thisx, GlobalContext* globalCtx) {
         this->timer = 30;
         thisx->shape.rot.y = 0;
         this->actionFunc = EnOkuta_ProjectileFly;
-        thisx->speedXZ = 10.0f;
+        thisx->speedXZ = ROCK_SPEED;
     }
 }
 
@@ -333,6 +335,32 @@ void EnOkuta_Hide(EnOkuta* this, GlobalContext* globalCtx) {
     }
 }
 
+s16 aimToPlayerMovement(EnOkuta* this, GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    
+    f32 posX = player->actor.world.pos.x - this->actor.world.pos.x;
+    f32 posZ = player->actor.world.pos.z - this->actor.world.pos.z;
+    f32 velX = Math_SinS(player->actor.world.rot.y) * player->actor.speedXZ;
+    f32 velZ = Math_CosS(player->actor.world.rot.y) * player->actor.speedXZ;
+    f32 projectileSpeed = ROCK_SPEED;
+    
+    if (projectileSpeed < player->actor.speedXZ)
+        return this->actor.yawTowardsPlayer;
+    else {
+        f32 a = velX*velX + velZ*velZ - projectileSpeed*projectileSpeed;
+        f32 b = 2.0f*(velX*posX+velZ*posZ);
+        f32 c = posX*posX + posZ*posZ;
+        f32 det = b*b - 4.0f*a*c;
+        
+        if (a == 0.0f || a == -0.0f || det < 0.0f)
+            return this->actor.yawTowardsPlayer;
+        //Assumes that the sqrt of det is larger than b and that a is negative. 
+        f32 time = (-b - sqrtf(det))/(2.0f*a);
+        
+        return Math_Atan2S(posZ+velZ*time, posX+velX*time);
+    }
+}
+
 void EnOkuta_WaitToShoot(EnOkuta* this, GlobalContext* globalCtx) {
     s16 temp_v0_2;
     s32 phi_v1;
@@ -350,7 +378,7 @@ void EnOkuta_WaitToShoot(EnOkuta* this, GlobalContext* globalCtx) {
     if (this->actor.xzDistToPlayer < 160.0f || this->actor.xzDistToPlayer > 560.0f) {
         EnOkuta_SetupHide(this);
     } else {
-        temp_v0_2 = Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 3, 0x71C, 0x38E);
+        temp_v0_2 = Math_SmoothStepToS(&this->actor.shape.rot.y, aimToPlayerMovement(this,globalCtx), 3, 0x71C, 0x38E);
         phi_v1 = ABS(temp_v0_2);
         if ((phi_v1 < 0x38E) && (this->timer == 0) && (this->actor.yDistToPlayer < 200.0f)) {
             EnOkuta_SetupShoot(this, globalCtx);
@@ -359,7 +387,7 @@ void EnOkuta_WaitToShoot(EnOkuta* this, GlobalContext* globalCtx) {
 }
 
 void EnOkuta_Shoot(EnOkuta* this, GlobalContext* globalCtx) {
-    Math_ApproachS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 3, 0x71C);
+    Math_ApproachS(&this->actor.shape.rot.y, aimToPlayerMovement(this,globalCtx), 3, 0x71C);
     if (SkelAnime_Update(&this->skelAnime)) {
         if (this->timer != 0) {
             this->timer--;
