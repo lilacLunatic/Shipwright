@@ -3153,9 +3153,50 @@ void func_80836BEC(Player* this, GlobalContext* globalCtx) {
         }
         
         if (this->unk_664 != NULL) {
-            if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_R) &&
-                        this->unk_664->xzDistToPlayer < 30.0f && this->unk_664->yDistToPlayer < -20.0f)
-                func_8008EDF0(this);
+            switch (this->crossoverState) {
+                case 0://No crossover is occurring yet
+                if (this->unk_664->xzDistToPlayer < 60.0f && this->unk_664->yDistToPlayer < -20.0f) {
+                    this->crossoverState |= 1;
+                    this->entryDiff.x = this->unk_664->prevPos.x - this->actor.world.pos.x;
+                    this->entryDiff.y = this->unk_664->prevPos.y - this->actor.world.pos.y;
+                    this->entryDiff.z = this->unk_664->prevPos.z - this->actor.world.pos.z;
+                }//FALLTHROUGH
+                else
+                    break;
+                
+                case 1:
+                case 2:
+                case 3:
+                if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_R))
+                    this->crossoverState |= 2;
+                
+                if (this->entryDiff.x*(this->unk_664->world.pos.x-this->actor.world.pos.x) +
+                            this->entryDiff.z*(this->unk_664->world.pos.z-this->actor.world.pos.z) < 0.0f) {//Dot product is negative
+                    if (this->crossoverState & 2)
+                        this->crossoverState |= 4;
+                    else {
+                        //this->crossoverState = 0;
+                        func_8008EDF0(this);//breaks lockon
+                        break;
+                    }
+                }
+
+                if (!this->unk_664->xzDistToPlayer < 60.0f || !this->unk_664->yDistToPlayer < -20.0f) {
+                    this->crossoverState = 0;
+                }
+                break;
+                
+                case 5:
+                case 6:
+                case 7:
+                if (!this->unk_664->xzDistToPlayer < 60.0f || !this->unk_664->yDistToPlayer < -20.0f) {
+                    this->crossoverState = 0;
+                }
+                break;
+            }
+        }
+        else {
+            this->crossoverState = 0;
         }
 
 
@@ -9435,6 +9476,10 @@ void Player_InitCommon(Player* this, GlobalContext* globalCtx, FlexSkeletonHeade
     this->shieldRelaxTimer = 0;
     this->shieldUpTimer = 0;
     this->shieldEntry = 0;
+    this->crossoverState = 0;
+    this->entryDiff.x = 0.0f;
+    this->entryDiff.y = 0.0f;
+    this->entryDiff.z = 0.0f;
 }
 
 static void (*D_80854738[])(GlobalContext* globalCtx, Player* this) = {

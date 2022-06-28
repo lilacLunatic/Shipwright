@@ -615,6 +615,8 @@ typedef struct Player {
                  u8         shieldRelaxTimer;
                  u8         shieldUpTimer;
                  u8         shieldEntry;
+                 u8         crossoverState;
+                 Vec3f      entryDiff;
 } Player; // size = 0xA94
 
 #endif
