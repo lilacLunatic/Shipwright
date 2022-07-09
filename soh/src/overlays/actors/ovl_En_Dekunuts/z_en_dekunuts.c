@@ -101,8 +101,10 @@ static DamageTable sDamageTable = {
     /* Unknown 2     */ DMG_ENTRY(0, 0x0),
 };
 
-const static f32 BURROW_DIST_CLOSE = 240.0f;
-const static f32 BURROW_DIST_FAR = 640.0f;
+const static f32 BURROW_DIST_CLOSE = 160.0f;
+const static f32 BURROW_DIST_MID = 300.0f;
+const static f32 BURROW_DIST_FAR = 580.0f;
+const static f32 BURROW_DIST_VERY_FAR = 620.0f;
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_S8(naviEnemyId, 0x4D, ICHAIN_CONTINUE),
@@ -316,7 +318,9 @@ void EnDekunuts_ThrowNut(EnDekunuts* this, GlobalContext* globalCtx) {
                         this->actor.shape.rot.x, this->actor.shape.rot.y, this->actor.shape.rot.z, 0) != NULL) {
             Audio_PlayActorSound2(&this->actor, NA_SE_EN_NUTS_THROW);
         }
-    } else if ((this->animFlagAndTimer > 1) && Animation_OnFrame(&this->skelAnime, 12.0f)) {
+    } else if ((this->actor.xzDistToPlayer > BURROW_DIST_VERY_FAR) || (this->actor.xzDistToPlayer < BURROW_DIST_CLOSE)) {
+        EnDekunuts_SetupBurrow(this);
+    }else if ((this->animFlagAndTimer > 1) && Animation_OnFrame(&this->skelAnime, 12.0f)) {
         Animation_MorphToPlayOnce(&this->skelAnime, &gDekuNutsSpitAnim, -3.0f);
         if (this->animFlagAndTimer != 0) {
             this->animFlagAndTimer--;
@@ -340,7 +344,7 @@ void EnDekunuts_Burrow(EnDekunuts* this, GlobalContext* globalCtx) {
 void EnDekunuts_BeginRun(EnDekunuts* this, GlobalContext* globalCtx) {
     if (SkelAnime_Update(&this->skelAnime)) {
         this->runDirection = this->actor.yawTowardsPlayer + 0x8000;
-        this->runAwayCount = 3;
+        this->runAwayCount = 2;
         EnDekunuts_SetupRun(this);
     }
     Math_ApproachS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 2, 0xE38);
@@ -369,6 +373,10 @@ void EnDekunuts_Run(EnDekunuts* this, GlobalContext* globalCtx) {
         } else if (this->actor.bgCheckFlags & 8) {
             this->runDirection = this->actor.wallYaw;
         } else if (this->runAwayCount == 0) {
+            Math_Vec3f_Copy(&this->actor.home.pos, &this->actor.world.pos);
+            if (this->actor.child != NULL) {
+                Math_Vec3f_Copy(&this->actor.child->world.pos, &this->actor.world.pos);
+            }
             diffRotInit = Actor_WorldYawTowardPoint(&this->actor, &this->actor.home.pos);
             diffRot = diffRotInit - this->actor.yawTowardsPlayer;
             if (ABS(diffRot) > 0x2000) {
