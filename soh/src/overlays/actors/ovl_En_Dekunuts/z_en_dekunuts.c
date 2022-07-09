@@ -5,6 +5,7 @@
  */
 
 #include "z_en_dekunuts.h"
+#include "overlays/actors/ovl_En_Nutsball/z_en_nutsball.h"
 #include "overlays/effects/ovl_Effect_Ss_Hahen/z_eff_ss_hahen.h"
 #include "objects/object_dekunuts/object_dekunuts.h"
 
@@ -288,7 +289,7 @@ void EnDekunuts_Stand(EnDekunuts* this, GlobalContext* globalCtx) {
         this->animFlagAndTimer--;
     }
     if (!(this->animFlagAndTimer & 0x1000)) {
-        Math_ApproachS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 2, 0xE38);
+        Math_ApproachS(&this->actor.shape.rot.y, aimToPlayerMovement(this, NUTS_SPEED, globalCtx), 2, 0xE38);
     }
     if (this->animFlagAndTimer == 0x1000) {
         if ((this->actor.xzDistToPlayer > BURROW_DIST_FAR) || (this->actor.xzDistToPlayer < BURROW_DIST_CLOSE)) {
@@ -304,7 +305,7 @@ void EnDekunuts_Stand(EnDekunuts* this, GlobalContext* globalCtx) {
 void EnDekunuts_ThrowNut(EnDekunuts* this, GlobalContext* globalCtx) {
     Vec3f spawnPos;
 
-    Math_ApproachS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 2, 0xE38);
+    Math_ApproachS(&this->actor.shape.rot.y, aimToPlayerMovement(this, NUTS_SPEED, globalCtx), 2, 0xE38);
     if (SkelAnime_Update(&this->skelAnime)) {
         EnDekunuts_SetupStand(this);
     } else if (Animation_OnFrame(&this->skelAnime, 6.0f)) {

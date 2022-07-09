@@ -285,6 +285,54 @@ void func_8002BE04(GlobalContext* globalCtx, Vec3f* arg1, Vec3f* arg2, f32* arg3
     *arg3 = (*arg3 < 1.0f) ? 1.0f : (1.0f / *arg3);
 }
 
+s16 aimToActorMovement(Actor* this, Actor* target, f32 projectileSpeed, GlobalContext* globalCtx, f32* time, f32* projectedY, f32 maxTargetSpeed) {
+    //maxTargetSpeed should be set to 0.0f to allow for unlimited target speed
+    f32 tSpeed;
+    if (maxTargetSpeed > 0.0f && target->speedXZ > maxTargetSpeed)
+        tSpeed = maxTargetSpeed;
+    else
+        tSpeed = target->speedXZ;
+    f32 posX = target->world.pos.x - this->world.pos.x;
+    f32 posZ = target->world.pos.z - this->world.pos.z;
+    f32 velX = Math_SinS(target->world.rot.y) * tSpeed;
+    f32 velZ = Math_CosS(target->world.rot.y) * tSpeed;
+
+    CollisionPoly* outPoly;
+    *projectedY = BgCheck_EntityRaycastFloor2(globalCtx,&globalCtx->colCtx,&outPoly,&target->world.pos);
+    if (BGCHECK_Y_MIN == *projectedY)
+        *projectedY = target->world.pos.y;
+
+    if (projectileSpeed < target->speedXZ){
+        *time = 0.0f;
+        return this->yawTowardsPlayer;
+    }
+    else {
+        f32 a = velX*velX + velZ*velZ - projectileSpeed*projectileSpeed;
+        f32 b = 2.0f*(velX*posX+velZ*posZ);
+        f32 c = posX*posX + posZ*posZ;
+        f32 det = b*b - 4.0f*a*c;
+
+        if (a == 0.0f || a == -0.0f || det < 0.0f)
+            return this->yawTowardsPlayer;
+        //Assumes that the sqrt of det is larger than b and that a is negative.
+        *time = (-b - sqrtf(det))/(2.0f*a);
+
+        f32 projectedX = posX+velX**time;
+        f32 projectedZ = posZ+velZ**time;
+
+        return Math_Atan2S(projectedZ, projectedX);
+    }
+}
+
+s16 aimToPlayerMovement(Actor* this, f32 speed, GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    f32 time;
+    f32 projectedY;
+
+    //Assumes that the player's normal running speed is 6.0f
+    return aimToActorMovement(this, &player->actor, speed, globalCtx, &time, &projectedY, 6.0f);
+}
+
 typedef struct {
     /* 0x00 */ Color_RGBA8 inner;
     /* 0x04 */ Color_RGBA8 outer;

@@ -363,6 +363,8 @@ void ActorShadow_DrawHorse(Actor* actor, Lights* lights, GlobalContext* globalCt
 void ActorShadow_DrawFeet(Actor* actor, Lights* lights, GlobalContext* globalCtx);
 void Actor_SetFeetPos(Actor* actor, s32 limbIndex, s32 leftFootIndex, Vec3f* leftFootPos, s32 rightFootIndex,
                       Vec3f* rightFootPos);
+s16 aimToActorMovement(Actor* this, Actor* target, f32 projectileSpeed, GlobalContext* globalCtx, f32* time, f32* projectedY, f32 maxTargetSpeed);
+s16 aimToPlayerMovement(Actor* this, f32 speed, GlobalContext* globalCtx);
 void func_8002BE04(GlobalContext* globalCtx, Vec3f* arg1, Vec3f* arg2, f32* arg3);
 void func_8002C124(TargetContext* targetCtx, GlobalContext* globalCtx);
 s32 Flags_GetSwitch(GlobalContext* globalCtx, s32 flag);

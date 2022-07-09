@@ -343,77 +343,13 @@ void EnOkuta_Hide(EnOkuta* this, GlobalContext* globalCtx) {
     }
 }
 
-s16 aimToActorMovement(Actor* this, Actor* target, f32 projectileSpeed, GlobalContext* globalCtx, f32* time, f32* projectedY) {
-    f32 posX = target->world.pos.x - this->world.pos.x;
-    f32 posZ = target->world.pos.z - this->world.pos.z;
-    f32 velX = Math_SinS(target->world.rot.y) * target->speedXZ;
-    f32 velZ = Math_CosS(target->world.rot.y) * target->speedXZ;
-    
-    CollisionPoly* outPoly;
-    *projectedY = BgCheck_EntityRaycastFloor2(globalCtx,&globalCtx->colCtx,&outPoly,&target->world.pos);
-    if (BGCHECK_Y_MIN == *projectedY)
-        *projectedY = target->world.pos.y;
-    
-    if (projectileSpeed < target->speedXZ){
-        *time = 0.0f;
-        return this->yawTowardsPlayer;
-    }
-    else {
-        f32 a = velX*velX + velZ*velZ - projectileSpeed*projectileSpeed;
-        f32 b = 2.0f*(velX*posX+velZ*posZ);
-        f32 c = posX*posX + posZ*posZ;
-        f32 det = b*b - 4.0f*a*c;
-        
-        if (a == 0.0f || a == -0.0f || det < 0.0f)
-            return this->yawTowardsPlayer;
-        //Assumes that the sqrt of det is larger than b and that a is negative. 
-        *time = (-b - sqrtf(det))/(2.0f*a);
-        
-        f32 projectedX = posX+velX**time;
-        f32 projectedZ = posZ+velZ**time;
-        //Vec3f savedPos = target->world.pos;
-        //target->world.pos.x = projectedX;
-        //target->world.pos.z = projectedZ;
-        
-        return Math_Atan2S(projectedZ, projectedX);
-    }
-}
 
-s16 aimToPlayerMovement(EnOkuta* this, GlobalContext* globalCtx) {
-    Player* player = GET_PLAYER(globalCtx);
-    f32 time;
-    f32 projectedY;
-    /*
-    f32 posX = player->actor.world.pos.x - this->actor.world.pos.x;
-    f32 posZ = player->actor.world.pos.z - this->actor.world.pos.z;
-    f32 velX = Math_SinS(player->actor.world.rot.y) * player->actor.speedXZ;
-    f32 velZ = Math_CosS(player->actor.world.rot.y) * player->actor.speedXZ;
-    f32 projectileSpeed = ROCK_SPEED;
-    
-    if (projectileSpeed < player->actor.speedXZ)
-        return this->actor.yawTowardsPlayer;
-    else {
-        f32 a = velX*velX + velZ*velZ - projectileSpeed*projectileSpeed;
-        f32 b = 2.0f*(velX*posX+velZ*posZ);
-        f32 c = posX*posX + posZ*posZ;
-        f32 det = b*b - 4.0f*a*c;
-        
-        if (a == 0.0f || a == -0.0f || det < 0.0f)
-            return this->actor.yawTowardsPlayer;
-        //Assumes that the sqrt of det is larger than b and that a is negative. 
-        f32 time = (-b - sqrtf(det))/(2.0f*a);
-        
-        return Math_Atan2S(posZ+velZ*time, posX+velX*time);
-    }*/
-    
-    return aimToActorMovement(this, &player->actor, ROCK_SPEED, globalCtx, &time, &projectedY);
-}
 
 s16 randomizeAim(EnOkuta* this, GlobalContext* globalCtx) {
     Player* player = GET_PLAYER(globalCtx);
     f32 time;
     f32 projectedY;
-    s16 projectedAng = aimToActorMovement(&this->actor,&player->actor,ROCK_SPEED,globalCtx,&time,&projectedY);
+    s16 projectedAng = aimToActorMovement(&this->actor,&player->actor,ROCK_SPEED,globalCtx,&time,&projectedY,0.0f);
     s32 targetMaxSpeed = 6.0f;
     Vec3f dir = {player->actor.world.pos.x - this->actor.world.pos.x, 0.0f, player->actor.world.pos.z - this->actor.world.pos.z};
     f32 norm = dir.x*dir.x + dir.z*dir.z; 
@@ -437,7 +373,7 @@ s16 randomizeAim(EnOkuta* this, GlobalContext* globalCtx) {
     player->actor.world.pos.x = this->actor.world.pos.x+projectedX;
     player->actor.world.pos.z = this->actor.world.pos.z+projectedZ;
     player->actor.speedXZ = 0.0f;
-    s16 projectedAng2 = aimToActorMovement(&this->actor,&player->actor,ROCK_SPEED,globalCtx,&time,&projectedY); 
+    s16 projectedAng2 = aimToActorMovement(&this->actor,&player->actor,ROCK_SPEED,globalCtx,&time,&projectedY,0.0f);
     player->actor.world.pos = savedPos;
     player->actor.speedXZ = savedSpeed;
     
