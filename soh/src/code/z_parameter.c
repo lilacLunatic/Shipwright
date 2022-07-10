@@ -2238,7 +2238,7 @@ s32 Health_ChangeBy(GlobalContext* globalCtx, s16 healthChange) {
     // clang-format off
     if (healthChange > 0) { Audio_PlaySoundGeneral(NA_SE_SY_HP_RECOVER, &D_801333D4, 4,
                                                    &D_801333E0, &D_801333E0, &D_801333E8);
-    } else if ((gSaveContext.doubleDefense != 0) && (healthChange < 0)) {
+    } else if ((gSaveContext.doubleDefense != 0) && (gSaveContext.health <= gSaveContext.inventory.defenseHearts*0x10) && (healthChange < 0)) {
         healthChange >>= 1;
         osSyncPrintf("ハート減少半分！！＝%d\n", healthChange); // "Heart decrease halved!!＝%d"
     }
@@ -2398,8 +2398,8 @@ s32 func_80087708(GlobalContext* globalCtx, s16 arg1, s16 arg2) {
             }
         case 3:
             if (gSaveContext.unk_13F0 == 0) {
-                if (gSaveContext.magic != 0) {
-                    globalCtx->interfaceCtx.unk_230 = 80;
+                if (gSaveContext.magic > arg1) {
+                    globalCtx->interfaceCtx.unk_230 = 1;
                     gSaveContext.unk_13F0 = 7;
                     return 1;
                 } else {
@@ -2651,16 +2651,13 @@ void Interface_UpdateMagicBar(GlobalContext* globalCtx) {
 
 void Interface_DrawMagicBar(GlobalContext* globalCtx) {
     InterfaceContext* interfaceCtx = &globalCtx->interfaceCtx;
+    s16 magicDrop = R_MAGIC_BAR_LARGE_Y-R_MAGIC_BAR_SMALL_Y+2;
     s16 magicBarY;
 
     OPEN_DISPS(globalCtx->state.gfxCtx, "../z_parameter.c", 2650);
 
     if (gSaveContext.magicLevel != 0) {
-        if (gSaveContext.healthCapacity > 0xA0) {
-            magicBarY = R_MAGIC_BAR_LARGE_Y + (Top_HUD_Margin*-1);
-        } else {
-            magicBarY = R_MAGIC_BAR_SMALL_Y + (Top_HUD_Margin*-1);
-        }
+        magicBarY =  R_MAGIC_BAR_SMALL_Y-2 + magicDrop*((gSaveContext.healthCapacity-1)/0xA0) + (Top_HUD_Margin*-1);
 
         func_80094520(globalCtx->state.gfxCtx);
 
