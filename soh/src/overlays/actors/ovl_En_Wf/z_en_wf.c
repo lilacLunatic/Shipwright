@@ -47,7 +47,7 @@ static ColliderJntSphElementInit sJntSphItemsInit[4] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0xFFCFFFFF, 0x00, 0x04 },
+            { 0xFFCFFFFF, 0x00, 0x10 },
             { 0x00000000, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_NORMAL,
             BUMP_NONE,
@@ -58,7 +58,7 @@ static ColliderJntSphElementInit sJntSphItemsInit[4] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0xFFCFFFFF, 0x00, 0x04 },
+            { 0xFFCFFFFF, 0x00, 0x10 },
             { 0x00000000, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_NORMAL,
             BUMP_NONE,
@@ -746,7 +746,7 @@ void EnWf_Slash(EnWf* this, GlobalContext* globalCtx) {
         this->slashStatus = 0;
     }
 
-    if (((curFrame == 15) && !Actor_IsTargeted(globalCtx, &this->actor) &&
+    if (((curFrame == 15) && /*!Actor_IsTargeted(globalCtx, &this->actor) &&*/
          (!Actor_IsFacingPlayer(&this->actor, 0x2000) || (this->actor.xzDistToPlayer >= 100.0f))) ||
         SkelAnime_Update(&this->skelAnime)) {
         if ((curFrame != 15) && (this->actionTimer != 0)) {
