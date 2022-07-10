@@ -188,7 +188,7 @@ void func_80ACE5C8(EnPart* this, GlobalContext* globalCtx) {
                     player->invincibilityTimer = 0;
                 } else {
                     player->invincibilityTimer = 0;
-                    globalCtx->damagePlayer(globalCtx, -8);
+                    globalCtx->damagePlayer(globalCtx, -0x20);
                 }
             }
             func_8002F71C(globalCtx, this->actor.parent, (650.0f - this->actor.parent->xzDistToPlayer) * 0.04f + 4.0f,
