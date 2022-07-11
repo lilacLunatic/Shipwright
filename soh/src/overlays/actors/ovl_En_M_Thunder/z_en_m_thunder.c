@@ -84,7 +84,7 @@ void EnMThunder_Init(Actor* thisx, GlobalContext* globalCtx2) {
     Actor_SetScale(&this->actor, 0.1f);
     this->unk_1CA = 0;
 
-    if (player->stateFlags2 & 0x20000) {
+    if (player->stateFlags2 & PLAYER_STATE2_17) {//0x20000 is PLAYER_STATE2_17 in z_player.c
         if (!gSaveContext.magicAcquired || gSaveContext.unk_13F0 ||
             (((this->actor.params & 0xFF00) >> 8) &&
              !(func_80087708(globalCtx, (this->actor.params & 0xFF00) >> 8, 0)))) {
@@ -96,7 +96,7 @@ void EnMThunder_Init(Actor* thisx, GlobalContext* globalCtx2) {
             return;
         }
 
-        player->stateFlags2 &= ~0x20000;
+        player->stateFlags2 &= ~PLAYER_STATE2_17;
         this->unk_1CA = 1;
         this->collider.info.toucher.dmgFlags = D_80AA044C[this->unk_1C7];
         this->unk_1C6 = 1;
@@ -131,7 +131,7 @@ void func_80A9F314(GlobalContext* globalCtx, f32 arg1) {
 void func_80A9F350(EnMThunder* this, GlobalContext* globalCtx) {
     Player* player = GET_PLAYER(globalCtx);
 
-    if (player->stateFlags2 & 0x20000) {
+    if (player->stateFlags2 & PLAYER_STATE2_17) {
         if (player->swordAnimation >= 0x18) {
             Audio_PlaySoundGeneral(NA_SE_IT_ROLLING_CUT, &player->actor.projectedPos, 4, &D_801333E0, &D_801333E0,
                                    &D_801333E8);
@@ -148,6 +148,10 @@ void func_80A9F350(EnMThunder* this, GlobalContext* globalCtx) {
     }
 }
 
+static const f32 NORMAL_SPIN_TIME = 0.01f;
+static const f32 BLUE_SPIN_TIME = 0.07f;
+static const f32 ORANGE_SPIN_TIME = 0.79f;
+
 void func_80A9F408(EnMThunder* this, GlobalContext* globalCtx) {
     Player* player = GET_PLAYER(globalCtx);
     Actor* child = this->actor.child;
@@ -157,7 +161,7 @@ void func_80A9F408(EnMThunder* this, GlobalContext* globalCtx) {
     this->actor.shape.rot.y = player->actor.shape.rot.y + 0x8000;
 
     if (this->unk_1CA == 0) {
-        if (player->unk_858 >= 0.1f) {
+        if (player->unk_858 >= NORMAL_SPIN_TIME) {
             if ((gSaveContext.unk_13F0) || (((this->actor.params & 0xFF00) >> 8) &&
                                             !(func_80087708(globalCtx, (this->actor.params & 0xFF00) >> 8, 4)))) {
                 func_80A9F350(this, globalCtx);
@@ -172,17 +176,17 @@ void func_80A9F408(EnMThunder* this, GlobalContext* globalCtx) {
         }
     }
 
-    if (player->unk_858 >= 0.1f) {
+    if (player->unk_858 >= NORMAL_SPIN_TIME) {
         func_800AA000(0.0f, (s32)(player->unk_858 * 150.0f) & 0xFF, 2, (s32)(player->unk_858 * 150.0f) & 0xFF);
     }
 
-    if (player->stateFlags2 & 0x20000) {
+    if (player->stateFlags2 & PLAYER_STATE2_17) {
         if ((child != NULL) && (child->update != NULL)) {
             child->parent = NULL;
         }
 
-        if (player->unk_858 <= 0.15f) {
-            if ((player->unk_858 >= 0.1f) && (player->swordAnimation >= 0x18)) {
+        if (player->unk_858 <= BLUE_SPIN_TIME) {
+            if ((player->unk_858 >= NORMAL_SPIN_TIME) && (player->swordAnimation >= 0x18)) {
                 Audio_PlaySoundGeneral(NA_SE_IT_ROLLING_CUT, &player->actor.projectedPos, 4, &D_801333E0, &D_801333E0,
                                        &D_801333E8);
                 Audio_PlaySoundGeneral(NA_SE_IT_SWORD_SWING_HARD, &player->actor.projectedPos, 4, &D_801333E0,
@@ -191,11 +195,11 @@ void func_80A9F408(EnMThunder* this, GlobalContext* globalCtx) {
             Actor_Kill(&this->actor);
             return;
         } else {
-            player->stateFlags2 &= ~0x20000;
+            player->stateFlags2 &= ~PLAYER_STATE2_17;
             if ((this->actor.params & 0xFF00) >> 8) {
                 gSaveContext.unk_13F0 = 1;
             }
-            if (player->unk_858 < 0.85f) {
+            if (player->unk_858 < ORANGE_SPIN_TIME) {
                 this->collider.info.toucher.dmgFlags = D_80AA044C[this->unk_1C7];
                 this->unk_1C6 = 1;
                 this->unk_1C9 = ((this->unk_1C7 == 1) ? 2 : 4);
@@ -222,27 +226,27 @@ void func_80A9F408(EnMThunder* this, GlobalContext* globalCtx) {
         return;
     }
 
-    if (player->unk_858 > 0.15f) {
+    if (player->unk_858 > BLUE_SPIN_TIME) {
         this->unk_1C8 = 255;
         if (this->actor.child == NULL) {
             Actor_SpawnAsChild(&globalCtx->actorCtx, &this->actor, globalCtx, ACTOR_EFF_DUST, this->actor.world.pos.x,
                                this->actor.world.pos.y, this->actor.world.pos.z, 0, this->actor.shape.rot.y, 0,
                                this->unk_1C7 + 2);
         }
-        this->unk_1BC += ((((player->unk_858 - 0.15f) * 1.5f) - this->unk_1BC) * 0.5f);
+        this->unk_1BC += ((((player->unk_858 - BLUE_SPIN_TIME) * 1.5f) - this->unk_1BC) * 0.5f);
 
-    } else if (player->unk_858 > .1f) {
-        this->unk_1C8 = (s32)((player->unk_858 - .1f) * 255.0f * 20.0f);
-        this->unk_1AC = (player->unk_858 - .1f) * 10.0f;
+    } else if (player->unk_858 > NORMAL_SPIN_TIME) {
+        this->unk_1C8 = (s32)((player->unk_858 - NORMAL_SPIN_TIME) * 255.0f * 20.0f);
+        this->unk_1AC = (player->unk_858 - NORMAL_SPIN_TIME) * 10.0f;
     } else {
         this->unk_1C8 = 0;
     }
 
-    if (player->unk_858 > 0.85f) {
+    if (player->unk_858 > ORANGE_SPIN_TIME) {
         func_800F4254(&player->actor.projectedPos, 2);
-    } else if (player->unk_858 > 0.15f) {
+    } else if (player->unk_858 > BLUE_SPIN_TIME) {
         func_800F4254(&player->actor.projectedPos, 1);
-    } else if (player->unk_858 > 0.1f) {
+    } else if (player->unk_858 > NORMAL_SPIN_TIME) {
         func_800F4254(&player->actor.projectedPos, 0);
     }
 
@@ -371,7 +375,7 @@ void EnMThunder_Draw(Actor* thisx, GlobalContext* globalCtx2) {
             break;
     }
 
-    if (this->unk_1B8 >= 0.85f) {
+    if (this->unk_1B8 >= ORANGE_SPIN_TIME) {
         phi_f14 = (D_80AA046C[(globalCtx->gameplayFrames & 7)] * 6.0f) + 1.0f;
         gDPSetPrimColor(POLY_XLU_DISP++, 0, 0x80, 255, 255, 170, this->unk_1C8);
         gDPSetEnvColor(POLY_XLU_DISP++, 255, 100, 0, 128);
