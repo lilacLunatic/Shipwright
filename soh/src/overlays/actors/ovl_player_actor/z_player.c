@@ -2124,7 +2124,7 @@ s32 func_80834758(GlobalContext* globalCtx, Player* this) {
     if (!(this->stateFlags1 & (PLAYER_STATE1_22 | PLAYER_STATE1_23 | PLAYER_STATE1_29)) &&
         (globalCtx->shootingGalleryStatus == 0) && (this->heldItemActionParam == this->itemActionParam) &&
         (this->currentShield != PLAYER_SHIELD_NONE) && !Player_IsChildWithHylianShield(this) && func_80833BCC(this) &&
-        CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) {
+        CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) {//Eliminating this section prevents you from going into a shield state while targeting
 
         anim = func_808346C4(globalCtx, this);
         frame = Animation_GetLastFrame(anim);
@@ -2134,7 +2134,7 @@ s32 func_80834758(GlobalContext* globalCtx, Player* this) {
         return 1;
     }
     else {
-        return 0;
+        return 0;//Returning 1 here causes your crouching shield animation to not change the shield position, causing the shield to be oriented to the right
     }
 }
 
@@ -2219,11 +2219,11 @@ s32 func_80834A2C(Player* this, GlobalContext* globalCtx) {
 s32 func_80834B5C(Player* this, GlobalContext* globalCtx) {
     LinkAnimation_Update(globalCtx, &this->skelAnime2);
 
-    if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) {
+    if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) {//Forcing this to true prevents Link from finishing the holding shield animation
         func_80834894(this);
         return 1;
     }
-    else {
+    else {//Forcing the conditon false prevents Link from putting down the Z-shield, leaving the shield up unless forced to or this is done from crouch
         this->stateFlags1 |= PLAYER_STATE1_22;
         Player_SetModelsForHoldingShield(this);
         return 1;
@@ -3159,6 +3159,54 @@ void func_80836BEC(Player* this, GlobalContext* globalCtx) {
         }
 
         if (this->unk_664 != NULL) {
+            switch (this->crossoverState) {
+                case 0://No crossover is occurring yet
+                if (this->unk_664->xzDistToPlayer < 60.0f && this->unk_664->yDistToPlayer < -20.0f) {
+                    this->crossoverState |= 1;
+                    this->entryDiff.x = this->unk_664->prevPos.x - this->actor.world.pos.x;
+                    this->entryDiff.y = this->unk_664->prevPos.y - this->actor.world.pos.y;
+                    this->entryDiff.z = this->unk_664->prevPos.z - this->actor.world.pos.z;
+                }//FALLTHROUGH
+                else
+                    break;
+
+                case 1:
+                case 2:
+                case 3:
+                if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_R))
+                    this->crossoverState |= 2;
+
+                if (this->entryDiff.x*(this->unk_664->world.pos.x-this->actor.world.pos.x) +
+                            this->entryDiff.z*(this->unk_664->world.pos.z-this->actor.world.pos.z) < 0.0f) {//Dot product is negative
+                    if (this->crossoverState & 2)
+                        this->crossoverState |= 4;
+                    else {
+                        //this->crossoverState = 0;
+                        func_8008EDF0(this);//breaks lockon
+                        break;
+                    }
+                }
+
+                if (!this->unk_664->xzDistToPlayer < 60.0f || !this->unk_664->yDistToPlayer < -20.0f) {
+                    this->crossoverState = 0;
+                }
+                break;
+
+                case 5:
+                case 6:
+                case 7:
+                if (!this->unk_664->xzDistToPlayer < 60.0f || !this->unk_664->yDistToPlayer < -20.0f) {
+                    this->crossoverState = 0;
+                }
+                break;
+            }
+        }
+        else {
+            this->crossoverState = 0;
+        }
+
+
+        if (this->unk_664 != NULL) {
             this->stateFlags1 &= ~(PLAYER_STATE1_16 | PLAYER_STATE1_17);
             if ((this->stateFlags1 & PLAYER_STATE1_11) ||
                 !CHECK_FLAG_ALL(this->unk_664->flags, ACTOR_FLAG_0 | ACTOR_FLAG_2)) {
@@ -3826,6 +3874,9 @@ s32 func_808382DC(Player* this, GlobalContext* globalCtx) {
             // This behavior was later fixed in MM, most likely by removing both the `atHit` and `atFlags` checks.
             if (sp64 || ((this->invincibilityTimer < 0) && (this->cylinder.base.acFlags & AC_HIT) &&
                 (this->cylinder.info.atHit != NULL) && (this->cylinder.info.atHit->atFlags & 0x20000000))) {
+
+                if (this->shieldRelaxTimer <= 6 && !Player_HoldsTwoHandedWeapon(this))
+                    return 0;
 
                 func_8083264C(this, 180, 20, 100, 0);
 
@@ -5197,7 +5248,7 @@ void func_8083BA90(GlobalContext* globalCtx, Player* this, s32 arg2, f32 xzVeloc
 }
 
 s32 func_8083BB20(Player* this) {
-    if (!(this->stateFlags1 & PLAYER_STATE1_22) && (Player_GetSwordHeld(this) != 0)) {
+    if (!(this->stateFlags1 & PLAYER_STATE1_22) && (Player_GetSwordHeld(this) != 0) && (this->shieldRelaxTimer == 0)) {
         if (D_80853614 ||
             ((this->actor.category != ACTORCAT_PLAYER) && CHECK_BTN_ALL(sControlInput->press.button, BTN_B))) {
             return 1;
@@ -5271,7 +5322,9 @@ s32 func_8083BDBC(Player* this, GlobalContext* globalCtx) {
                 }
                 else {
                     if (Player_GetSwordHeld(this) && func_808365C8(this) && (sp2C < 0)) {
-                        func_8083BA90(globalCtx, this, 17, 5.0f, 5.0f);
+                        //Performs Jumping Attack
+                        if (this->shieldRelaxTimer == 0)
+                            func_8083BA90(globalCtx, this, 17, 5.0f, 5.0f);
                     }
                     else {
                         //Performs roll
@@ -9317,7 +9370,7 @@ static ColliderCylinderInit D_80854624 = {
     {
         ELEMTYPE_UNK1,
         { 0x00000000, 0x00, 0x00 },
-        { 0xFFCFFFFF, 0x00, 0x00 },
+        { 0xFFDFFFFF, 0x00, 0x00 },
         TOUCH_NONE,
         BUMP_ON,
         OCELEM_ON,
@@ -9492,6 +9545,14 @@ void Player_InitCommon(Player* this, GlobalContext* globalCtx, FlexSkeletonHeade
     Collider_SetQuad(globalCtx, &this->swordQuads[1], &this->actor, &D_80854650);
     Collider_InitQuad(globalCtx, &this->shieldQuad);
     Collider_SetQuad(globalCtx, &this->shieldQuad, &this->actor, &D_808546A0);
+
+    this->shieldRelaxTimer = 0;
+    this->shieldUpTimer = 0;
+    this->shieldEntry = 0;
+    this->crossoverState = 0;
+    this->entryDiff.x = 0.0f;
+    this->entryDiff.y = 0.0f;
+    this->entryDiff.z = 0.0f;
 }
 
 static void (*D_80854738[])(GlobalContext* globalCtx, Player* this) = {
@@ -10451,6 +10512,8 @@ static Vec3f D_80854814 = { 0.0f, 0.0f, 200.0f };
 static f32 D_80854820[] = { 2.0f, 4.0f, 7.0f };
 static f32 D_8085482C[] = { 0.5f, 1.0f, 3.0f };
 
+const static u8 SHIELD_TIME_MAX = 14;
+
 void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
     s32 pad;
 
@@ -10487,6 +10550,29 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
 
     if (this->unk_890 != 0) {
         this->unk_890--;
+    }
+
+    if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_R) || (this->stateFlags1 & PLAYER_STATE1_22)){
+        if (this->shieldUpTimer < SHIELD_TIME_MAX/2)
+            this->shieldUpTimer++;
+        if (this->shieldRelaxTimer <= SHIELD_TIME_MAX && this->func_82C != func_80843188
+                    && this->skelAnime.animation != D_808543C4[0]) {
+           if ((this->shieldUpTimer > 1 || this->shieldRelaxTimer == 0) && this->shieldEntry == 0) {
+               this->shieldRelaxTimer = this->shieldUpTimer*2;
+           }
+           else
+               this->shieldRelaxTimer = SHIELD_TIME_MAX;
+        }
+    }
+    else {
+       if (this->shieldUpTimer > 0) {
+           this->shieldEntry = SHIELD_TIME_MAX;
+           this->shieldUpTimer = 0;
+        }
+        if (this->shieldRelaxTimer > 0)
+            this->shieldRelaxTimer--;
+        if (this->shieldEntry > 0)
+            this->shieldEntry--;
     }
 
     func_808473D4(globalCtx, this);
@@ -10826,7 +10912,7 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
         this->cylinder.dim.yShift = phi_f12 - this->actor.world.pos.y;
 
         if (this->stateFlags1 & PLAYER_STATE1_22) {
-            this->cylinder.dim.height = this->cylinder.dim.height * 0.8f;
+            this->cylinder.dim.height = this->cylinder.dim.height * 1.2f;
         }
 
         Collider_UpdateCylinder(&this->actor, &this->cylinder);
@@ -11069,6 +11155,10 @@ void Player_Draw(Actor* thisx, GlobalContext* globalCtx2) {
             POLY_OPA_DISP =
                 Gfx_SetFog2(POLY_OPA_DISP, 255, 0, 0, 0, 0, 4000 - (s32)(Math_CosS(this->unk_88F * 256) * 2000.0f));
         }
+        if (this->shieldRelaxTimer > 0) {
+            POLY_OPA_DISP =
+                Gfx_SetFog2(POLY_OPA_DISP, 0, 0, 255, 0, 0, 4000 - (2000/SHIELD_TIME_MAX)*this->shieldRelaxTimer);
+        }
 
         func_8002EBCC(&this->actor, globalCtx, 0);
         func_8002ED80(&this->actor, globalCtx, 0);
@@ -11114,7 +11204,7 @@ void Player_Draw(Actor* thisx, GlobalContext* globalCtx2) {
 
         Player_DrawGameplay(globalCtx, this, lod, gCullBackDList, overrideLimbDraw);
 
-        if (this->invincibilityTimer > 0) {
+        if (this->invincibilityTimer > 0 || this->shieldRelaxTimer > 0) {
             POLY_OPA_DISP = Gameplay_SetFog(globalCtx, POLY_OPA_DISP);
         }
 

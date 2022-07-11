@@ -1117,7 +1117,12 @@ void func_80090604(GlobalContext* globalCtx, Player* this, ColliderQuad* collide
         COLTYPE_METAL,
     };
 
-    if (this->stateFlags1 & 0x400000) {
+    if (this->stateFlags1 & 0x400000)
+        collider->info.bumper.dmgFlags = 0xDFCFFFFF;
+    else
+        collider->info.bumper.dmgFlags = 0x00100000;
+
+    if (this->stateFlags1 & 0x400000 || this->unk_664 != NULL) {
         Vec3f quadDest[4];
 
         this->shieldQuad.base.colType = shieldColTypes[this->currentShield];
@@ -1266,21 +1271,30 @@ BowStringData sBowStringData[] = {
     { gLinkChildSlinghotStringDL, { 606.0f, 236.0f, 0.0f } }, // slingshot
 };
 
+//Shield data
 Vec3f D_80126154[] = {
-    { -4500.0f, -3000.0f, -600.0f },
-    { 1500.0f, -3000.0f, -600.0f },
-    { -4500.0f, 3000.0f, -600.0f },
-    { 1500.0f, 3000.0f, -600.0f },
+    { -1500.0f, -1500.0f, -600.0f },
+    { 1500.0f, -1500.0f, -600.0f },
+    { -1500.0f, 1500.0f, -600.0f },
+    { 1500.0f, 1500.0f, -600.0f },
+};
+
+Vec3f D_BigSword[] = {
+    { -1000.0f, -1000.0f, -600.0f },
+    { 3500.0f, -1000.0f, -600.0f },
+    { -1000.0f, 1000.0f, -600.0f },
+    { 3500.0f, 1000.0f, -600.0f },
 };
 
 Vec3f D_80126184 = { 100.0f, 1500.0f, 0.0f };
 Vec3f D_80126190 = { 100.0f, 1640.0f, 0.0f };
 
+//Shield data
 Vec3f D_8012619C[] = {
-    { -3000.0f, -3000.0f, -900.0f },
-    { 3000.0f, -3000.0f, -900.0f },
-    { -3000.0f, 3000.0f, -900.0f },
-    { 3000.0f, 3000.0f, -900.0f },
+    { -1500.0f, -1500.0f, -900.0f },
+    { 1500.0f, -1500.0f, -900.0f },
+    { -1500.0f, 1500.0f, -900.0f },
+    { 1500.0f, 1500.0f, -900.0f },
 };
 
 Vec3f D_801261CC = { 630.0f, 100.0f, -30.0f };
@@ -1423,9 +1437,10 @@ void func_80090D20(GlobalContext* globalCtx, s32 limbIndex, Gfx** dList, Vec3s* 
             Matrix_Pop();
 
             CLOSE_DISPS(globalCtx->state.gfxCtx, "../z_player_lib.c", 2809);
-        } else if ((this->actor.scale.y >= 0.0f) && (this->rightHandType == 10)) {
+        } else if ((this->actor.scale.y >= 0.0f) && ((this->rightHandType == 10) ||
+                    (Player_HoldsTwoHandedWeapon(this) && (this->stateFlags1 & 0x400000) && this->shieldRelaxTimer <= 6))) {
             Matrix_Get(&this->shieldMf);
-            func_80090604(globalCtx, this, &this->shieldQuad, D_80126154);
+            func_80090604(globalCtx, this, &this->shieldQuad, Player_HoldsTwoHandedWeapon(this) ? D_BigSword : D_80126154);
         }
 
         if (this->actor.scale.y >= 0.0f) {
