@@ -5271,7 +5271,6 @@ s32 func_8083BDBC(Player* this, GlobalContext* globalCtx) {
                 }
                 else {
                     if (Player_GetSwordHeld(this) && func_808365C8(this) && (sp2C < 0)) {
-                        //Performs Jumping Attack
                         func_8083BA90(globalCtx, this, 17, 5.0f, 5.0f);
                     }
                     else {
