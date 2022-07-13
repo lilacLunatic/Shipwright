@@ -262,6 +262,8 @@ void EnDekubaba_Init(Actor* thisx, GlobalContext* globalCtx) {
             sBigDekuBabaDamageTable.table[0x1B] = DMG_ENTRY(4, DEKUBABA_DMGEFF_NONE); // DMG_JUMP_MASTER
         }
 
+        this->collider.elements[0].info.toucher.damage *= 2;
+
         CollisionCheck_SetInfo(&this->actor.colChkInfo, &sBigDekuBabaDamageTable, &sColChkInfoInit);
         this->actor.colChkInfo.health = BABA_HP_BIG;
         this->actor.naviEnemyId = 0x08; // Big Deku Baba
@@ -1091,7 +1093,7 @@ void EnDekubaba_UpdateDamage(EnDekubaba* this, GlobalContext* globalCtx) {
             s32 damageDone = this->actor.colChkInfo.health - phi_s0;
             this->actor.colChkInfo.health = CLAMP_MIN(phi_s0, 0);
             if (damageDone > 0 && this->actor.colChkInfo.health > 0)
-                EnDekubaba_ChangeSize(this,this->size+0.25f*damageDone);
+                EnDekubaba_ChangeSize(this,this->size+0.10f*damageDone);
 
             if (this->actor.colChkInfo.damageEffect == DEKUBABA_DMGEFF_FIRE) {
                 firePos = &this->actor.world.pos;
