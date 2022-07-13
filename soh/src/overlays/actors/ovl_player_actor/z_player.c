@@ -8588,7 +8588,8 @@ void func_80844708(Player* this, GlobalContext* globalCtx) {
 
             u8 D_808546F0[] = { ITEM_SWORD_MASTER, ITEM_SWORD_KOKIRI };
 
-            if (this->skelAnime.curFrame >= 10.0f && CHECK_BTN_ALL(sControlInput->press.button, BTN_B)) {
+            if (this->skelAnime.curFrame >= 12.0f && (this->shieldRelaxTimer == 0) &&
+                        CHECK_BTN_ALL(sControlInput->press.button, BTN_B)) {
                 if (Player_GetSwordHeld(this) == 0) {
                     func_808328EC(this, NA_SE_IT_SWORD_PICKOUT);
                 }
@@ -10569,10 +10570,13 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
            this->shieldEntry = SHIELD_TIME_MAX;
            this->shieldUpTimer = 0;
         }
-        if (this->shieldRelaxTimer > 0)
-            this->shieldRelaxTimer--;
-        if (this->shieldEntry > 0)
-            this->shieldEntry--;
+        //Shield timer state is preserved through a roll, to balance stab out of roll
+        //if (this->func_674 != func_80844708) {
+            if (this->shieldRelaxTimer > 0)
+                this->shieldRelaxTimer--;
+            if (this->shieldEntry > 0)
+                this->shieldEntry--;
+        //}
     }
 
     func_808473D4(globalCtx, this);
