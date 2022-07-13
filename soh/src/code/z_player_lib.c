@@ -357,6 +357,57 @@ s32 Player_ActionToModelGroup(Player* this, s32 actionParam) {
     }
 }
 
+s32 isPlayerInBasicHorizontalSlash(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    return((player->swordAnimation >= 4 && player->swordAnimation <= 11) ||
+                              (player->swordAnimation == 20 || player->swordAnimation == 21));
+}
+
+s32 isPlayerInBasicVerticalSlash(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    return player->swordAnimation >= 0 && player->swordAnimation <= PLAYER_MWA_FORWARD_COMBO_2H;
+}
+
+s32 isPlayerInSpinAttack(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    switch (player->swordAnimation) {
+        case PLAYER_MWA_SPIN_ATTACK_1H:
+        case PLAYER_MWA_SPIN_ATTACK_2H:
+        case PLAYER_MWA_BIG_SPIN_1H:
+        case PLAYER_MWA_BIG_SPIN_2H:
+        return 1;
+        
+        default:
+        return 0;
+    }
+}
+
+
+s32 isPlayerInHorizontalSlash(GlobalContext* globalCtx) {
+    return isPlayerInBasicHorizontalSlash(globalCtx) || isPlayerInSpinAttack(globalCtx);
+}
+
+s32 isPlayerInVerticalSlash(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    return isPlayerInBasicVerticalSlash(globalCtx) ||
+                player->swordAnimation == PLAYER_MWA_JUMPSLASH_START || player->swordAnimation == PLAYER_MWA_JUMPSLASH_FINISH;
+}
+
+s32 isPlayerInStab(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    return player->swordAnimation >= PLAYER_MWA_STAB_1H && player->swordAnimation <= PLAYER_MWA_STAB_COMBO_2H;
+}
+
+s32 isPlayerInHorizontalAttack(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    return isPlayerInHorizontalSlash(globalCtx) || player->swordAnimation == PLAYER_MWA_HAMMER_SIDE;
+}
+
+s32 isPlayerInVerticalAttack(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    return isPlayerInVerticalSlash(globalCtx) || player->swordAnimation == PLAYER_MWA_HAMMER_FORWARD;
+}
+
 void Player_SetModelsForHoldingShield(Player* this) {
     if ((this->stateFlags1 & 0x400000) &&
         ((this->itemActionParam < 0) || (this->itemActionParam == this->heldItemActionParam))) {
