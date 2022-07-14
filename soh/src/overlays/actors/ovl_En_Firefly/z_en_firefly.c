@@ -122,6 +122,7 @@ static InitChainEntry sInitChain[] = {
 void EnFirefly_Extinguish(EnFirefly* this) {
     this->actor.params += 2;
     this->collider.elements[0].info.toucher.effect = 0; // None
+    this->collider.elements[0].info.toucher.damage = 0x08;
     this->auraType = KEESE_AURA_NONE;
     this->onFire = false;
     this->actor.naviEnemyId = 0x12; // Keese
@@ -134,6 +135,7 @@ void EnFirefly_Ignite(EnFirefly* this) {
         this->actor.params -= 2;
     }
     this->collider.elements[0].info.toucher.effect = 1; // Fire
+    this->collider.elements[0].info.toucher.damage = 0x10;
     this->auraType = KEESE_AURA_FIRE;
     this->onFire = true;
     this->actor.naviEnemyId = 0x11; // Fire Keese
@@ -168,6 +170,7 @@ void EnFirefly_Init(Actor* thisx, GlobalContext* globalCtx) {
         this->timer = Rand_S16Offset(20, 60);
         this->actor.shape.rot.x = 0x1554;
         this->auraType = KEESE_AURA_FIRE;
+        this->collider.elements[0].info.toucher.damage = 0x10;
         this->actor.naviEnemyId = 0x11; // Fire Keese
         this->maxAltitude = this->actor.home.pos.y;
     } else {
@@ -676,8 +679,8 @@ void EnFirefly_Update(Actor* thisx, GlobalContext* globalCtx2) {
         if (this->onFire) {
             EnFirefly_Extinguish(this);
         }
-        if (this->actionFunc != EnFirefly_DisturbDiveAttack) {
-            //EnFirefly_SetupRebound(this);
+        if (this->actionFunc != EnFirefly_DisturbDiveAttack && !(this->collider.base.atFlags & 4)) {
+            EnFirefly_SetupRebound(this);
         }
     }
 
@@ -701,7 +704,8 @@ void EnFirefly_Update(Actor* thisx, GlobalContext* globalCtx2) {
     this->collider.elements[0].dim.worldSphere.center.y = this->actor.world.pos.y + 10.0f;
     this->collider.elements[0].dim.worldSphere.center.z = this->actor.world.pos.z;
 
-    if ((this->actionFunc == EnFirefly_DiveAttack) || (this->actionFunc == EnFirefly_DisturbDiveAttack)) {
+    if ((this->actionFunc == EnFirefly_DiveAttack) || (this->actionFunc == EnFirefly_DisturbDiveAttack) ||
+                !(this->auraType == KEESE_AURA_NONE)) {
         CollisionCheck_SetAT(globalCtx, &globalCtx->colChkCtx, &this->collider.base);
     }
 
