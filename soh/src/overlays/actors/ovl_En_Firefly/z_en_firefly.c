@@ -438,6 +438,12 @@ void EnFirefly_Fall(EnFirefly* this, GlobalContext* globalCtx) {
             this->timer--;
         }
         if ((this->actor.bgCheckFlags & 1) || (this->timer == 0)) {
+            EnFirefly *buddy;
+            buddy = (EnFirefly*)Actor_FindNearby(globalCtx, (Actor*)(this), ACTOR_EN_FIREFLY, ACTORCAT_ENEMY, 400.0f);
+            if (buddy != NULL) {
+                if (buddy->actionFunc == EnFirefly_Perch)
+                    EnFirefly_SetupDisturbDiveAttack(buddy);
+            }
             EnFirefly_SetupDie(this);
         }
     }
@@ -561,6 +567,12 @@ void EnFirefly_Stunned(EnFirefly* this, GlobalContext* globalCtx) {
 
 void EnFirefly_FrozenFall(EnFirefly* this, GlobalContext* globalCtx) {
     if ((this->actor.bgCheckFlags & 1) || (this->actor.floorHeight == BGCHECK_Y_MIN)) {
+        EnFirefly *buddy;
+        buddy = (EnFirefly*)Actor_FindNearby(globalCtx, (Actor*)(this), ACTOR_EN_FIREFLY, ACTORCAT_ENEMY, 400.0f);
+        if (buddy != NULL) {
+            if (buddy->actionFunc == EnFirefly_Perch)
+                EnFirefly_SetupDisturbDiveAttack(buddy);
+        }
         this->actor.colorFilterTimer = 0;
         EnFirefly_SetupDie(this);
     } else {
@@ -581,7 +593,7 @@ void EnFirefly_Perch(EnFirefly* this, GlobalContext* globalCtx) {
         this->timer = 1;
     }
 
-    if (this->actor.xzDistToPlayer < 180.0f) {
+    if (this->actor.xzDistToPlayer < 220.0f && Rand_ZeroOne() < 0.1f) {
         EnFirefly_SetupDisturbDiveAttack(this);
     }
 }
@@ -704,8 +716,8 @@ void EnFirefly_Update(Actor* thisx, GlobalContext* globalCtx2) {
     this->collider.elements[0].dim.worldSphere.center.y = this->actor.world.pos.y + 10.0f;
     this->collider.elements[0].dim.worldSphere.center.z = this->actor.world.pos.z;
 
-    if ((this->actionFunc == EnFirefly_DiveAttack) || (this->actionFunc == EnFirefly_DisturbDiveAttack) ||
-                !(this->auraType == KEESE_AURA_NONE)) {
+    if ((this->actionFunc == EnFirefly_DiveAttack) || (this->actionFunc == EnFirefly_DisturbDiveAttack)/* ||
+                !(this->auraType == KEESE_AURA_NONE)*/) {
         CollisionCheck_SetAT(globalCtx, &globalCtx->colChkCtx, &this->collider.base);
     }
 
