@@ -55,7 +55,7 @@ static ColliderCylinderInit sCylinderInit = {
     },
     {
         ELEMTYPE_UNK0,
-        { 0xFFCFFFFF, 0x00, 0x08 },
+        { 0x02000000, 0x00, 0x08 },
         { 0xFFC5FFFF, 0x00, 0x00 },
         TOUCH_ON | TOUCH_SFX_NORMAL,
         BUMP_ON,
@@ -161,12 +161,14 @@ s32 func_809F68B0(EnDodojr* this, GlobalContext* globalCtx) {
     return 0;
 }
 
+static f32 SPEED_MULTIPLIER = 1.5f;
+
 void func_809F6994(EnDodojr* this) {
     f32 lastFrame = Animation_GetLastFrame(&object_dodojr_Anim_000860);
 
     Animation_Change(&this->skelAnime, &object_dodojr_Anim_000860, 1.8f, 0.0f, lastFrame, ANIMMODE_LOOP_INTERP, -10.0f);
     this->actor.velocity.y = 0.0f;
-    this->actor.speedXZ = 2.6f;
+    this->actor.speedXZ = 2.6f*SPEED_MULTIPLIER;
     this->actor.gravity = -0.8f;
 }
 
@@ -318,6 +320,7 @@ void func_809F709C(EnDodojr* this) {
     Audio_PlayActorSound2(&this->actor, NA_SE_EN_DODO_M_DEAD);
     this->actor.flags &= ~ACTOR_FLAG_0;
     func_809F6A20(this);
+    this->timer2 = 8;
     this->actionFunc = func_809F7AB8;
 }
 
@@ -423,7 +426,7 @@ void func_809F74C4(EnDodojr* this, GlobalContext* globalCtx) {
     if (sp2C == 0.0f) {
         this->actor.shape.shadowDraw = ActorShadow_DrawCircle;
         this->actor.world.rot.x = this->actor.shape.rot.x;
-        this->actor.speedXZ = 2.6f;
+        this->actor.speedXZ = 2.6f*SPEED_MULTIPLIER;
         this->actionFunc = func_809F758C;
     }
 }
@@ -562,10 +565,17 @@ void func_809F7AB8(EnDodojr* this, GlobalContext* globalCtx) {
     Math_SmoothStepToS(&this->actor.shape.rot.y, 0, 4, 1000, 10);
     this->actor.world.rot.x = this->actor.shape.rot.x;
 
+    if (this->timer2 != 0) {
+        if (this->actor.colorFilterTimer == 0) {
+            Actor_SetColorFilter(&this->actor, 0x4000, 200, 0, this->timer2);
+            this->timer2--;
+        }
+    }
+
     if (func_809F68B0(this, globalCtx) != 0) {
         this->timer3 = 60;
         func_809F6AC4(this);
-        this->unk_1FC = 7;
+        this->unk_1FC = 0;
         this->actionFunc = func_809F7B3C;
     }
 }
@@ -586,7 +596,7 @@ void func_809F7B3C(EnDodojr* this, GlobalContext* globalCtx) {
             bomb->timer = 0;
         }
 
-        this->timer3 = 8;
+        this->timer3 = 0;
         this->actionFunc = func_809F7BE4;
     }
 }
