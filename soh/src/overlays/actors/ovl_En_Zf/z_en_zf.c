@@ -1154,11 +1154,11 @@ void func_80B463E4(EnZf* this, GlobalContext* globalCtx) {
 }
 
 void EnZf_SetupSlash(EnZf* this) {
-    Animation_Change(&this->skelAnime, &gZfSlashAnim, 1.25f, 0.0f, Animation_GetLastFrame(&gZfSlashAnim), ANIMMODE_ONCE,
+    Animation_Change(&this->skelAnime, &gZfSlashAnim, 2.0f, 0.0f, Animation_GetLastFrame(&gZfSlashAnim), ANIMMODE_ONCE,
                      -4.0f);
 
     if (this->actor.params == ENZF_TYPE_DINOLFOS) {
-        this->skelAnime.playSpeed = 1.75f;
+        this->skelAnime.playSpeed = 2.25f;
     }
 
     this->swordCollider.base.atFlags &= ~AT_BOUNCED;
@@ -1174,6 +1174,11 @@ void EnZf_Slash(EnZf* this, GlobalContext* globalCtx) {
     s16 yawDiff;
 
     this->actor.speedXZ = 0.0f;
+    
+    if (this->actor.xzDistToPlayer > 40.0f)
+        this->actor.speedXZ = 3.0f;
+    Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0xA00, 0);
+    Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 1, 0x800, 0);
 
     if ((s32)this->skelAnime.curFrame == 10) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_RIZA_ATTACK);
@@ -1206,7 +1211,7 @@ void EnZf_Slash(EnZf* this, GlobalContext* globalCtx) {
                         this->actor.world.rot.y = this->actor.yawTowardsPlayer;
                         func_80B483E4(this, globalCtx);
                     } else if (player->stateFlags1 & 0x6010) {
-                        if (this->actor.isTargeted) {
+                        if (1 || this->actor.isTargeted) {
                             EnZf_SetupSlash(this);
                         } else {
                             func_80B483E4(this, globalCtx);
@@ -2123,6 +2128,21 @@ s32 EnZf_OverrideLimbDraw(GlobalContext* globalCtx, s32 limbIndex, Gfx** dList, 
     switch (limbIndex) {
         case ENZF_LIMB_HEAD_ROOT:
             rot->y -= this->headRot;
+            break;
+        case ENZF_LIMB_RIGHT_ARM_ROOT:
+            rot->x += CVar_GetS32("gArmX",0);
+            rot->y += CVar_GetS32("gArmY",0);
+            rot->z += CVar_GetS32("gArmZ",0);
+            break;
+        case ENZF_LIMB_RIGHT_UPPER_ARM_ROOT:
+            rot->x += CVar_GetS32("gUArmX",0);
+            rot->y += CVar_GetS32("gUArmY",0);
+            rot->z += CVar_GetS32("gUArmZ",0);
+            break;
+        case ENZF_LIMB_RIGHT_FOREARM_ROOT:
+            rot->x += CVar_GetS32("gFArmX",0);
+            rot->y += CVar_GetS32("gFArmY",0);
+            rot->z += CVar_GetS32("gFArmZ",0);
             break;
         case ENZF_LIMB_SWORD:
             if (this->swordSheathed) {
