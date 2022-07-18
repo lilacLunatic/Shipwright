@@ -1229,6 +1229,7 @@ void EnZf_Slash(EnZf* this, GlobalContext* globalCtx) {
 
 void EnZf_SetupRecoilFromBlockedSlash(EnZf* this) {
     f32 frame = this->skelAnime.curFrame - 3.0f;
+    this->actor.speedXZ *= -0.5;
 
     Animation_Change(&this->skelAnime, &gZfSlashAnim, -1.0f, frame, 0.0f, ANIMMODE_ONCE, 0.0f);
     this->action = ENZF_ACTION_RECOIL_FROM_BLOCKED_SLASH;
@@ -2133,16 +2134,6 @@ s32 EnZf_OverrideLimbDraw(GlobalContext* globalCtx, s32 limbIndex, Gfx** dList, 
             rot->x += CVar_GetS32("gArmX",0);
             rot->y += CVar_GetS32("gArmY",0);
             rot->z += CVar_GetS32("gArmZ",0);
-            break;
-        case ENZF_LIMB_RIGHT_UPPER_ARM_ROOT:
-            rot->x += CVar_GetS32("gUArmX",0);
-            rot->y += CVar_GetS32("gUArmY",0);
-            rot->z += CVar_GetS32("gUArmZ",0);
-            break;
-        case ENZF_LIMB_RIGHT_FOREARM_ROOT:
-            rot->x += CVar_GetS32("gFArmX",0);
-            rot->y += CVar_GetS32("gFArmY",0);
-            rot->z += CVar_GetS32("gFArmZ",0);
             break;
         case ENZF_LIMB_SWORD:
             if (this->swordSheathed) {

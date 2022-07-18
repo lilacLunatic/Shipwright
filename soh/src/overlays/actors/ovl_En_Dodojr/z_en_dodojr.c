@@ -55,7 +55,7 @@ static ColliderCylinderInit sCylinderInit = {
     },
     {
         ELEMTYPE_UNK0,
-        { 0x02000000, 0x00, 0x08 },
+        { 0x20000000, 0x00, 0x08 },
         { 0xFFC5FFFF, 0x00, 0x00 },
         TOUCH_ON | TOUCH_SFX_NORMAL,
         BUMP_ON,
@@ -81,6 +81,7 @@ void EnDodojr_Init(Actor* thisx, GlobalContext* globalCtx) {
 
     Actor_SetScale(&this->actor, 0.02f);
 
+    this->timer3 = 0;
     this->actionFunc = func_809F73AC;
 }
 
@@ -395,8 +396,9 @@ void func_809F73AC(EnDodojr* this, GlobalContext* globalCtx) {
     f32 lastFrame = Animation_GetLastFrame(&object_dodojr_Anim_000860);
     Player* player = GET_PLAYER(globalCtx);
     f32 dist;
+    DECR(this->timer3);
 
-    if (!(this->actor.xzDistToPlayer >= 320.0f)) {
+    if (!(this->actor.xzDistToPlayer >= 320.0f) && (this->timer3 == 0)) {
         dist = this->actor.world.pos.y - player->actor.world.pos.y;
 
         if (!(dist >= 40.0f)) {
@@ -554,7 +556,11 @@ void func_809F7A00(EnDodojr* this, GlobalContext* globalCtx) {
         tmp = (30 - this->timer3) / 30.0f;
         this->actor.world.pos.y = this->actor.home.pos.y - (60.0f * tmp);
     } else {
-        Actor_Kill(&this->actor);
+        this->timer3 = 30;
+        this->actor.world.rot.y += 0x8000;
+        this->actor.shape.rot.y = this->actor.world.rot.y;
+        this->actionFunc = func_809F73AC;
+        //Actor_Kill(&this->actor);
     }
 
     func_809F6510(this, globalCtx, 3);

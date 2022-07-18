@@ -850,15 +850,10 @@ namespace SohImGui {
                 {
                     EnhancementSliderInt("Text Speed: %dx", "##TEXTSPEED", "gTextSpeed", 1, 5, "");
                     EnhancementSliderInt("King Zora Speed: %dx", "##WEEPSPEED", "gMweepSpeed", 1, 5, "");
-                    EnhancementSliderInt("Lizalfos arm rot x: %dx", "##ARMX", "gArmX", -0x7999, 0x8000, "");
-                    EnhancementSliderInt("Lizalfos arm rot y: %dx", "##ARMY", "gArmY", -0x7999, 0x8000, "");
-                    EnhancementSliderInt("Lizalfos arm rot z: %dx", "##ARMZ", "gArmZ", -0x7999, 0x8000, "");
-                    EnhancementSliderInt("Lizalfos uarm rot x: %dx", "##UARMX", "gUArmX", -0x7999, 0x8000, "");
-                    EnhancementSliderInt("Lizalfos uarm rot y: %dx", "##UARMY", "gUArmY", -0x7999, 0x8000, "");
-                    EnhancementSliderInt("Lizalfos uarm rot z: %dx", "##UARMZ", "gUArmZ", -0x7999, 0x8000, "");
-                    EnhancementSliderInt("Lizalfos farm rot x: %dx", "##FARMX", "gFArmX", -0x7999, 0x8000, "");
-                    EnhancementSliderInt("Lizalfos farm rot y: %dx", "##FARMY", "gFArmY", -0x7999, 0x8000, "");
-                    EnhancementSliderInt("Lizalfos farm rot z: %dx", "##FARMZ", "gFArmZ", -0x7999, 0x8000, "");
+                    EnhancementSliderInt("Iron Knuckle limb index: %dx", "##LIMBI", "gLimbI", 0, 40, "");
+                    EnhancementSliderInt("Iron Knuckle limb rot x: %dx", "##LIMBX", "gLimbX", -0x7FFF, 0x8000, "");
+                    EnhancementSliderInt("Iron Knuckle limb rot y: %dx", "##LIMBY", "gLimbY", -0x7FFF, 0x8000, "");
+                    EnhancementSliderInt("Iron Knuckle limb rot z: %dx", "##LIMBZ", "gLimbZ", -0x7FFF, 0x8000, "");
 
                     EnhancementCheckbox("Skip Text", "gSkipText");
                     Tooltip("Holding down B skips text");

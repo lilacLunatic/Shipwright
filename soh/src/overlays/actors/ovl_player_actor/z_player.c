@@ -8400,6 +8400,7 @@ void func_8084409C(GlobalContext* globalCtx, Player* this, f32 speedXZ, f32 velo
     }
 }
 
+//Determines what occurs when dodging (backflip or side-hop)
 void func_8084411C(Player* this, GlobalContext* globalCtx) {
     f32 sp4C;
     s16 sp4A;
@@ -8586,7 +8587,7 @@ void func_80844708(Player* this, GlobalContext* globalCtx) {
                 }
             }
 
-            u8 D_808546F0[] = { ITEM_SWORD_MASTER, ITEM_SWORD_KOKIRI };
+            /*u8 D_808546F0[] = { ITEM_SWORD_MASTER, ITEM_SWORD_KOKIRI };
 
             if (this->skelAnime.curFrame >= 12.0f && (this->shieldRelaxTimer == 0) &&
                         CHECK_BTN_ALL(sControlInput->press.button, BTN_B)) {
@@ -8613,7 +8614,7 @@ void func_80844708(Player* this, GlobalContext* globalCtx) {
                 this->linearVelocity = 5;
 
                 return;
-            }
+            }*/
 
 
             if ((this->skelAnime.curFrame < 15.0f) || !func_80850224(this, globalCtx)) {
