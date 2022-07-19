@@ -33,7 +33,8 @@ typedef enum {
     /* 19 */ ENZF_ACTION_HOP_AWAY,
     /* 20 */ ENZF_ACTION_HOP_AND_TAUNT,
     /* 21 */ ENZF_ACTION_DRAW_SWORD,
-    /* 22 */ ENZF_ACTION_JUMP_UP
+    /* 22 */ ENZF_ACTION_JUMP_UP,
+             ENZF_SPIN_DODGE
 } EnZfAction;
 
 typedef enum {
@@ -119,6 +120,7 @@ typedef struct EnZf {
     /* 0x04E4 */ Vec3f rightFootPos;
     /* 0x04F0 */ Vec3f leftFootPos;
     /* 0x04FC */ Vec3f bodyPartsPos[9];
+                 f32 approachRate;
 } EnZf; // size = 0x0568
 
 #endif

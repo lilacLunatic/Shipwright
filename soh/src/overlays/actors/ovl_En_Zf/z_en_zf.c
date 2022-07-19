@@ -31,6 +31,7 @@ void func_80B463E4(EnZf* this, GlobalContext* globalCtx);
 void EnZf_SetupSlash(EnZf* this);
 void EnZf_Slash(EnZf* this, GlobalContext* globalCtx);
 void EnZf_RecoilFromBlockedSlash(EnZf* this, GlobalContext* globalCtx);
+void EnZf_SpinDodge(EnZf* this, GlobalContext* globalCtx);
 void EnZf_SetupJumpBack(EnZf* this);
 void EnZf_JumpBack(EnZf* this, GlobalContext* globalCtx);
 void EnZf_Stunned(EnZf* this, GlobalContext* globalCtx);
@@ -1175,7 +1176,7 @@ void EnZf_Slash(EnZf* this, GlobalContext* globalCtx) {
 
     this->actor.speedXZ = 0.0f;
     
-    if (this->actor.xzDistToPlayer > 40.0f)
+    if (this->actor.xzDistToPlayer > 60.0f)
         this->actor.speedXZ = 3.0f;
     Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0xA00, 0);
     Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 1, 0x800, 0);
@@ -1244,6 +1245,104 @@ void EnZf_RecoilFromBlockedSlash(EnZf* this, GlobalContext* globalCtx) {
             EnZf_SetupSlash(this);
         } else {
             func_80B483E4(this, globalCtx);
+        }
+    }
+}
+
+void EnZf_SetupSpinDodge(EnZf* this, GlobalContext* globalCtx) {
+    s16 sp3E;
+    Player* player = GET_PLAYER(globalCtx);
+    f32 lastFrame = Animation_GetLastFrame(&gZfSidesteppingAnim);
+
+    Animation_Change(&this->skelAnime, &gZfSidesteppingAnim, 1.0f, 0.0f, lastFrame, ANIMMODE_LOOP_INTERP, 0.0f);
+    sp3E = player->actor.shape.rot.y;
+    if (Math_SinS(sp3E - this->actor.shape.rot.y) > 0.0f) {
+        this->actor.speedXZ = -10.0f;
+    } else if (Math_SinS(sp3E - this->actor.shape.rot.y) < 0.0f) {
+        this->actor.speedXZ = 10.0f;
+    } else if (Rand_ZeroOne() > 0.5f) {
+        this->actor.speedXZ = 10.0f;
+    } else {
+        this->actor.speedXZ = -10.0f;
+    }
+    this->skelAnime.playSpeed = -this->actor.speedXZ * 0.5f;
+    this->actor.world.rot.y = this->actor.shape.rot.y;
+    this->unk_3F0 = 6;
+    this->approachRate = 0.0f;
+    this->action = ENZF_SPIN_DODGE;
+
+    EnZf_SetupAction(this, EnZf_SpinDodge);
+}
+
+void EnZf_SpinDodge(EnZf* this, GlobalContext* globalCtx) {
+    s16 phi_v1;
+    s32 thisKeyFrame;
+    s32 pad;
+    s32 lastKeyFrame;
+    s32 nextKeyFrame;
+
+    this->actor.world.rot.y = this->actor.yawTowardsPlayer + 0x3A98;
+    if ((this->actor.bgCheckFlags & 8) ||
+        !Actor_TestFloorInDirection(&this->actor, globalCtx, this->actor.speedXZ, this->actor.shape.rot.y + 0x3E80)) {
+        if (this->actor.bgCheckFlags & 8) {
+            if (this->actor.speedXZ >= 0.0f) {
+                phi_v1 = this->actor.shape.rot.y + 0x3E80;
+            } else {
+                phi_v1 = this->actor.shape.rot.y - 0x3E80;
+            }
+            phi_v1 = this->actor.wallYaw - phi_v1;
+        } else {
+            this->actor.speedXZ *= -0.8f;
+            phi_v1 = 0;
+        }
+        if (ABS(phi_v1) > 0x4000) {
+            EnZf_SetupJumpUp(this);
+            return;
+        }
+    }
+    if (this->actor.xzDistToPlayer <= 45.0f) {
+        Math_SmoothStepToF(&this->approachRate, -4.0f, 1.0f, 1.5f, 0.0f);
+    } else if (this->actor.xzDistToPlayer > 40.0f) {
+        Math_SmoothStepToF(&this->approachRate, 4.0f, 1.0f, 1.5f, 0.0f);
+    } else {
+        Math_SmoothStepToF(&this->approachRate, 0.0f, 1.0f, 6.65f, 0.0f);
+    }
+    if (this->approachRate != 0.0f) {
+        this->actor.world.pos.x += Math_SinS(this->actor.yawTowardsPlayer) * this->approachRate;
+        this->actor.world.pos.z += Math_CosS(this->actor.yawTowardsPlayer) * this->approachRate;
+    }
+    if (ABS(this->approachRate) < ABS(this->actor.speedXZ)) {
+        this->skelAnime.playSpeed = -this->actor.speedXZ * 0.5f;
+    } else {
+        this->skelAnime.playSpeed = -this->approachRate * 0.5f;
+    }
+    this->skelAnime.playSpeed = CLAMP(this->skelAnime.playSpeed, -3.0f, 3.0f);
+    thisKeyFrame = this->skelAnime.curFrame;
+    SkelAnime_Update(&this->skelAnime);
+    lastKeyFrame = this->skelAnime.curFrame - ABS(this->skelAnime.playSpeed);
+    nextKeyFrame = (s32)ABS(this->skelAnime.playSpeed) + thisKeyFrame;
+    if ((thisKeyFrame != (s32)this->skelAnime.curFrame) &&
+        ((lastKeyFrame < 0 && 0 < nextKeyFrame) || (lastKeyFrame < 5 && 5 < nextKeyFrame))) {
+        Audio_PlayActorSound2(&this->actor, NA_SE_EN_MUSI_LAND);
+    }
+    if ((globalCtx->gameplayFrames & 0x5F) == 0) {
+        Audio_PlayActorSound2(&this->actor, NA_SE_EN_RIZA_CRY);
+    }
+    this->unk_3F0--;
+    if (this->unk_3F0 == 0) {
+        this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
+        if (!EnZf_DodgeRangedWaiting(globalCtx, this)) {
+            if (this->actor.xzDistToPlayer <= 70.0f) {
+                EnZf_SetupSlash(this);
+            } else {
+                func_80B462E4(this, globalCtx);
+            }
+        }
+    } else {
+        if (this->actor.speedXZ >= 0.0f) {
+            this->actor.shape.rot.y += 0x4000;
+        } else {
+            this->actor.shape.rot.y -= 0x4000;
         }
     }
 }
