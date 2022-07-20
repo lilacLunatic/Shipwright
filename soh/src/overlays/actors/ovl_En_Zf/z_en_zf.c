@@ -1176,7 +1176,7 @@ void EnZf_Slash(EnZf* this, GlobalContext* globalCtx) {
 
     this->actor.speedXZ = 0.0f;
     
-    if (this->actor.xzDistToPlayer > 60.0f)
+    if (this->actor.xzDistToPlayer > 70.0f)
         this->actor.speedXZ = 3.0f;
     Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0xA00, 0);
     Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 1, 0x800, 0);
@@ -2217,6 +2217,14 @@ void EnZf_Update(Actor* thisx, GlobalContext* globalCtx) {
             this->swordCollider.base.atFlags &= ~AT_BOUNCED;
             this->swordCollider.base.acFlags &= ~AC_HIT;
             EnZf_SetupRecoilFromBlockedSlash(this);
+        }
+    }
+
+    if ((this->action >= ENZF_ACTION_3 && this->action <= ENZF_ACTION_7) || (this->action == ENZF_ACTION_CIRCLE_AROUND_PLAYER)) {
+        if (isPlayerInHorizontalAttack(globalCtx) || isPlayerInStab(globalCtx))
+            EnZf_SetupJumpUp(this);
+        else if (isPlayerInVerticalAttack(globalCtx) || isPlayerInStab(globalCtx)) {
+            EnZf_SetupSpinDodge(this,globalCtx);
         }
     }
 }
