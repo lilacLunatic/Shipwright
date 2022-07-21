@@ -90,6 +90,11 @@ typedef enum {
     /* 0x31 */ ENZF_LIMB_MAX
 } EnZfLimb; // used for both Lizalfos and Dinalfos
 
+typedef enum {
+    ENZF_HIGH = 0,
+    ENFZ_SIDE = 1
+} EnZfStance;
+
 typedef struct EnZf {
     /* 0x0000 */ Actor actor;
     /* 0x014C */ SkelAnime skelAnime;
@@ -121,6 +126,9 @@ typedef struct EnZf {
     /* 0x04F0 */ Vec3f leftFootPos;
     /* 0x04FC */ Vec3f bodyPartsPos[9];
     /* 0x0500 */ f32 approachRate;
+    /* 0x0504 */ u8 stance;
+                 s32 stanceTimer;
+                 f32 stanceTransition;
 } EnZf; // size = 0x0572
 
 #endif

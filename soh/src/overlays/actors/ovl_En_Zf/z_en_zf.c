@@ -203,6 +203,9 @@ static InitChainEntry sInitChain[] = {
     ICHAIN_F32_DIV1000(gravity, -3500, ICHAIN_STOP),
 };
 
+static const s16 STICKY_FRAMES = 20;
+static const s16 TRANSITION_FRAMES = 4;
+
 static AnimationHeader* sHoppingAnims[] = { &gZfHopCrouchingAnim, &gZfHopLeapingAnim, &gZfHopLandingAnim };
 
 static s32 D_80B4AB30; // Set to 0 and incremented in EnZf_HopAway, but not actually used
@@ -352,6 +355,10 @@ void EnZf_Init(Actor* thisx, GlobalContext* globalCtx) {
             Actor_Kill(thisx);
         }
     }
+    
+    this->stance = ENZF_HIGH;
+    this->stanceTimer = STICKY_FRAMES;
+    this->stanceTransition = 0;
 }
 
 void EnZf_Destroy(Actor* thisx, GlobalContext* globalCtx) {
@@ -529,6 +536,9 @@ s32 EnZf_CanAttack(GlobalContext* globalCtx, EnZf* this) {
     Actor* targetedActor;
     Player* player = GET_PLAYER(globalCtx);
 
+    if (this->stanceTransition > 0)
+        return false;
+
     if (this->actor.params >= ENZF_TYPE_LIZALFOS_MINIBOSS_A) { // miniboss
         if (player->stateFlags1 & 0x6000) {                    // Hanging or climbing
             return false;
@@ -585,7 +595,8 @@ s32 EnZf_ChooseAction(GlobalContext* globalCtx, EnZf* this) {
     if (func_800354B4(globalCtx, &this->actor, 100.0f, 0x5DC0, 0x2AA8, this->actor.shape.rot.y)) {
         this->actor.shape.rot.y = this->actor.world.rot.y = this->actor.yawTowardsPlayer;
 
-        if ((this->actor.bgCheckFlags & 8) && (ABS(angleToWall) < 0x2EE0) && (this->actor.xzDistToPlayer < 80.0f)) {
+        if ((this->actor.bgCheckFlags & 8) && (ABS(angleToWall) < 0x2EE0) && (this->actor.xzDistToPlayer < 80.0f) &&
+                    EnZf_CanAttack(globalCtx, this)) {
             EnZf_SetupJumpUp(this);
             return true;
         } else if ((this->actor.xzDistToPlayer < 90.0f) && ((globalCtx->gameplayFrames % 2) != 0)) {
@@ -1212,14 +1223,15 @@ void EnZf_Slash(EnZf* this, GlobalContext* globalCtx) {
                         this->actor.world.rot.y = this->actor.yawTowardsPlayer;
                         func_80B483E4(this, globalCtx);
                     } else if (player->stateFlags1 & 0x6010) {
-                        if (1 || this->actor.isTargeted) {
+                        if (EnZf_CanAttack(globalCtx, this)) {
                             EnZf_SetupSlash(this);
                         } else {
                             func_80B483E4(this, globalCtx);
                         }
-                    } else {
+                    } else if (EnZf_CanAttack(globalCtx, this)) {
                         EnZf_SetupSlash(this);
-                    }
+                    } else
+                        func_80B483E4(this, globalCtx);
                 } else {
                     func_80B483E4(this, globalCtx);
                 }
@@ -1332,7 +1344,7 @@ void EnZf_SpinDodge(EnZf* this, GlobalContext* globalCtx) {
     if (this->unk_3F0 == 0) {
         this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
         if (!EnZf_DodgeRangedWaiting(globalCtx, this)) {
-            if (this->actor.xzDistToPlayer <= 70.0f) {
+            if (this->actor.xzDistToPlayer <= 70.0f && EnZf_CanAttack(globalCtx,this)) {
                 EnZf_SetupSlash(this);
             } else {
                 func_80B462E4(this, globalCtx);
@@ -1757,7 +1769,8 @@ void EnZf_Damaged(EnZf* this, GlobalContext* globalCtx) {
 
                 if (!EnZf_PrimaryFloorCheck(this, globalCtx, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)) {
                     EnZf_SetupJumpUp(this);
-                } else if ((this->actor.xzDistToPlayer <= 100.0f) && ((globalCtx->gameplayFrames % 4) == 0)) {
+                } else if ((this->actor.xzDistToPlayer <= 100.0f) && ((globalCtx->gameplayFrames % 4) == 0) &&
+                           EnZf_CanAttack(globalCtx, this)) {
                     EnZf_SetupSlash(this);
                 } else {
                     func_80B44DC4(this, globalCtx);
@@ -1777,7 +1790,8 @@ void EnZf_Damaged(EnZf* this, GlobalContext* globalCtx) {
 
                     if (!EnZf_PrimaryFloorCheck(this, globalCtx, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)) {
                         EnZf_SetupJumpUp(this);
-                    } else if ((this->actor.xzDistToPlayer <= 100.0f) && ((globalCtx->gameplayFrames % 4) == 0)) {
+                    } else if ((this->actor.xzDistToPlayer <= 100.0f) && ((globalCtx->gameplayFrames % 4) == 0) &&
+                                EnZf_CanAttack(globalCtx, this)) {
                         EnZf_SetupSlash(this);
                     } else {
                         func_80B44DC4(this, globalCtx);
@@ -1821,9 +1835,12 @@ void EnZf_JumpUp(EnZf* this, GlobalContext* globalCtx) {
             this->actor.world.rot.y = this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
             this->actor.speedXZ = 0.0f;
             this->actor.world.pos.y = this->actor.floorHeight;
-            EnZf_SetupSlash(this);
-            Audio_PlayActorSound2(&this->actor, NA_SE_EN_RIZA_ATTACK);
-            this->skelAnime.curFrame = 13.0f;
+            if (EnZf_CanAttack(globalCtx, this)) {
+                EnZf_SetupSlash(this);
+                Audio_PlayActorSound2(&this->actor, NA_SE_EN_RIZA_ATTACK);
+                this->skelAnime.curFrame = 13.0f;
+            } else
+                func_80B483E4(this,globalCtx);
         }
     }
 }
@@ -2227,6 +2244,18 @@ void EnZf_Update(Actor* thisx, GlobalContext* globalCtx) {
             EnZf_SetupSpinDodge(this,globalCtx);
         }
     }
+
+    DECR(this->stanceTimer);
+    if ((this->action < ENZF_ACTION_STUNNED && this->action != ENZF_ACTION_SLASH) &&
+        (this->stanceTransition > 0 || (this->stanceTimer <= 0 && Rand_ZeroOne() < 0.05))) {
+        this->stanceTransition++;
+
+        if (this->stanceTransition >= TRANSITION_FRAMES) {
+            this->stance = !this->stance;
+            this->stanceTransition = 0;
+            this->stanceTimer = STICKY_FRAMES;
+        }
+    }
 }
 
 s32 EnZf_OverrideLimbDraw(GlobalContext* globalCtx, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx,
@@ -2238,7 +2267,8 @@ s32 EnZf_OverrideLimbDraw(GlobalContext* globalCtx, s32 limbIndex, Gfx** dList, 
             rot->y -= this->headRot;
             break;
         case ENZF_LIMB_RIGHT_ARM_ROOT:
-            rot->x += CVar_GetS32("gArmX",0);
+            rot->x += CVar_GetS32("gArmX",0) + this->stance == ENZF_HIGH ? 0x4000*this->stanceTransition/TRANSITION_FRAMES :
+                                                                  0x4000 - 0x4000*this->stanceTransition/TRANSITION_FRAMES;
             rot->y += CVar_GetS32("gArmY",0);
             rot->z += CVar_GetS32("gArmZ",0);
             break;
