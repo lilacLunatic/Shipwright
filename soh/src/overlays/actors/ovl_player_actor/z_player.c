@@ -10516,6 +10516,12 @@ static f32 D_8085482C[] = { 0.5f, 1.0f, 3.0f };
 
 const static u8 SHIELD_TIME_MAX = 14;
 
+void Player_SetShieldRecoveryDefault(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+
+    player->shieldRelaxTimer = SHIELD_TIME_MAX;
+}
+
 void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
     s32 pad;
 
@@ -10560,7 +10566,8 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
         if (this->shieldRelaxTimer <= SHIELD_TIME_MAX && this->func_82C != func_80843188
                     && this->skelAnime.animation != D_808543C4[0]) {
            if ((this->shieldUpTimer > 1 || this->shieldRelaxTimer == 0) && this->shieldEntry == 0) {
-               this->shieldRelaxTimer = this->shieldUpTimer*2;
+               if (this->shieldRelaxTimer < this->shieldUpTimer*2)
+                   this->shieldRelaxTimer = this->shieldUpTimer*2;
            }
            else
                this->shieldRelaxTimer = SHIELD_TIME_MAX;

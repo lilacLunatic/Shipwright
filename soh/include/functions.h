@@ -1081,6 +1081,7 @@ void Player_SetModelGroup(Player* player, s32 modelGroup);
 void func_8008EC70(Player* player);
 void Player_SetEquipmentData(GlobalContext* globalCtx, Player* player);
 void Player_UpdateBottleHeld(GlobalContext* globalCtx, Player* player, s32 item, s32 actionParam);
+void Player_SetShieldRecoveryDefault(GlobalContext* globalCtx);
 void func_8008EDF0(Player* player);
 void func_8008EE08(Player* player);
 void func_8008EEAC(GlobalContext* globalCtx, Actor* actor);

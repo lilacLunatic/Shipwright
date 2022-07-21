@@ -2228,6 +2228,10 @@ void EnZf_Update(Actor* thisx, GlobalContext* globalCtx) {
 
     if ((this->action == ENZF_ACTION_SLASH) && (this->skelAnime.curFrame >= 14.0f) &&
         (this->skelAnime.curFrame <= 20.0f)) {
+        this->swordCollider.info.toucher.dmgFlags = this->stance ? 0x00100000 : 0xFFCFFFFF;
+        if ((this->stance == ENFZ_SIDE && this->swordCollider.base.atFlags & AT_BOUNCED) ||
+                    this->swordCollider.base.atFlags & AT_HIT)
+            Player_SetShieldRecoveryDefault(globalCtx);
         if (!(this->swordCollider.base.atFlags & AT_BOUNCED) && !(this->swordCollider.base.acFlags & AC_HIT)) {
             CollisionCheck_SetAT(globalCtx, &globalCtx->colChkCtx, &this->swordCollider.base);
         } else {
@@ -2238,7 +2242,9 @@ void EnZf_Update(Actor* thisx, GlobalContext* globalCtx) {
     }
 
     if ((this->action >= ENZF_ACTION_3 && this->action <= ENZF_ACTION_7) || (this->action == ENZF_ACTION_CIRCLE_AROUND_PLAYER)) {
-        if (isPlayerInHorizontalAttack(globalCtx) || isPlayerInStab(globalCtx))
+        if (isPlayerInHorizontalAttack(globalCtx))
+            EnZf_SetupJumpUp(this);
+        else if (isPlayerInStab(globalCtx) && Rand_ZeroOne() < 0.5)
             EnZf_SetupJumpUp(this);
         else if (isPlayerInVerticalAttack(globalCtx) || isPlayerInStab(globalCtx)) {
             EnZf_SetupSpinDodge(this,globalCtx);
