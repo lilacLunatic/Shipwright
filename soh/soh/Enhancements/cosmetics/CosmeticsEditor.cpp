@@ -425,6 +425,8 @@ void Draw_Placements(){
             SohImGui::Tooltip("This will make your elements to not follow any side\nBetter used for center elements.");
             SohImGui::EnhancementRadioButton("Hidden", "gMagicBarPosType", 4);
             SohImGui::Tooltip("This will make your elements hidden");
+            SohImGui::EnhancementRadioButton("Anchor to life bar", "gMagicBarPosType", 5);
+            SohImGui::Tooltip("This will make your elements follow the bottom of the life meter");
             SohImGui::EnhancementSliderInt("Up <-> Down : %d", "##MagicBarPosY", "gMagicBarPosY", 0, ImGui::GetWindowViewport()->Size.y/2, "");
             SohImGui::Tooltip("This slider is used to move Up and Down your elements.");
             SohImGui::EnhancementSliderInt("Left <-> Right : %d", "##MagicBarPosX", "gMagicBarPosX", -5, ImGui::GetWindowViewport()->Size.x/2, "");
