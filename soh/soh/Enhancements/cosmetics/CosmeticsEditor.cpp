@@ -403,6 +403,8 @@ void Draw_Placements(){
             SohImGui::Tooltip("This slider is used to move Up and Down your elements.");
             SohImGui::EnhancementSliderInt("Left <-> Right : %d", "##HeartCountPosX", "gHeartsPosX", -25, ImGui::GetWindowViewport()->Size.x, "");
             SohImGui::Tooltip("This slider is used to move Left and Right your elements.");
+            SohImGui::EnhancementSliderInt("Heart line length : %d", "##HeartLineLength", "gHeartsLineLength", 1, 20, "", 10);
+            SohImGui::Tooltip("This will set the length of a row of hearts.");
             ImGui::NewLine();
             ImGui::EndTable();
         }

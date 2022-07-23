@@ -3058,7 +3058,7 @@ void Interface_DrawMagicBar(GlobalContext* globalCtx) {
                 rMagicFillX = -9999;
             }
         } else {
-            magicBarY =  R_MAGIC_BAR_SMALL_Y-2 + magicDrop*((gSaveContext.healthCapacity-1)/0xA0) + (Top_HUD_Margin*-1);
+            magicBarY =  R_MAGIC_BAR_SMALL_Y-2 + magicDrop*((gSaveContext.healthCapacity-1)/(0x10*CVar_GetS32("gHeartsLineLength", 10))) + (Top_HUD_Margin*-1);
             PosX_Start = PosX_Start_original;
             rMagicBarX = rMagicBarX_original;
             PosX_MidEnd = PosX_MidEnd_original;
