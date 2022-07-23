@@ -1437,7 +1437,7 @@ static void* sWolfosWhiteEyeTextures[] = { gWolfosWhiteEyeOpenTex, gWolfosWhiteE
 void EnWf_Draw(Actor* thisx, GlobalContext* globalCtx) {
     EnWf* this = (EnWf*)thisx;
 
-    OPEN_DISPS(globalCtx->state.gfxCtx, "../z_en_wf.c", 2157);
+    OPEN_DISPS(globalCtx->state.gfxCtx);
 
     // This conditional will always evaluate to true, since unk_300 is false whenever action is
     // WOLFOS_ACTION_WAIT_TO_APPEAR.
@@ -1455,7 +1455,6 @@ void EnWf_Draw(Actor* thisx, GlobalContext* globalCtx) {
 
         if (this->fireTimer != 0) {
             this->actor.colorFilterTimer++;
-            if (1) {}
             this->fireTimer--;
 
             if ((this->fireTimer % 4) == 0) {
@@ -1466,7 +1465,7 @@ void EnWf_Draw(Actor* thisx, GlobalContext* globalCtx) {
         }
     }
 
-    CLOSE_DISPS(globalCtx->state.gfxCtx, "../z_en_wf.c", 2190);
+    CLOSE_DISPS(globalCtx->state.gfxCtx);
 }
 
 s32 EnWf_DodgeRanged(GlobalContext* globalCtx, EnWf* this) {
