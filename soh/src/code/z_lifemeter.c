@@ -431,6 +431,7 @@ void HealthMeter_Draw(GlobalContext* globalCtx) {
     s32 pad[5];
     void* heartBgImg;
     u32 curColorSet;
+    f32 PosX_anchor;
     f32 offsetX;
     f32 offsetY;
     s32 i;
@@ -457,36 +458,8 @@ void HealthMeter_Draw(GlobalContext* globalCtx) {
     }
 
     curColorSet = -1;
-    s16 X_Margins;
-    s16 Y_Margins;
-    if (CVar_GetS32("gHeartsUseMargins", 0) != 0) {
-        X_Margins = Left_LM_Margin;
-        Y_Margins = (Top_LM_Margin*-1);
-    } else {
-        X_Margins = 0;
-        Y_Margins = 0;
-    }
-    s16 PosX_original = OTRGetDimensionFromLeftEdge(0.0f)+X_Margins;
-    s16 PosX_modded = PosX_original;
-    s16 PosY_original = 0.0f+Y_Margins;
-    if (CVar_GetS32("gHeartsCountPosType", 0) != 0) {
-        offsetY = CVar_GetS32("gHeartsPosY", 0)+Y_Margins;
-        if (CVar_GetS32("gHeartsCountPosType", 0) == 1) {//Anchor Left
-            PosX_modded = OTRGetDimensionFromLeftEdge(CVar_GetS32("gHeartsPosX", 0)+X_Margins);
-        } else if (CVar_GetS32("gHeartsCountPosType", 0) == 2) {//Anchor Right
-            X_Margins = Right_LM_Margin;
-            PosX_modded = OTRGetDimensionFromRightEdge(CVar_GetS32("gHeartsPosX", 0)+X_Margins);
-        } else if (CVar_GetS32("gHeartsCountPosType", 0) == 3) {//Anchor None
-            PosX_modded = CVar_GetS32("gHeartsPosX", 0);
-        } else if (CVar_GetS32("gHeartsCountPosType", 0) == 4) {//Hidden
-            PosX_modded = -9999;
-        }
-        
-        offsetX = PosX_modded;
-    } else {
-        offsetY = PosY_original;
-        offsetX = PosX_original;
-    }
+    offsetX = PosX_anchor = getHealthMeterXOffset();
+    offsetY = getHealthMeterYOffset();
 
     for (i = 0; i < totalHeartCount; i++) {
         if ((ddHeartCountMinusOne < 0) || (i > ddHeartCountMinusOne)) {
@@ -644,8 +617,9 @@ void HealthMeter_Draw(GlobalContext* globalCtx) {
         }
 
         offsetX += 10.0f;
-        if ((i+1)%CVar_GetS32("gHeartsLineLength", 10) == 0) {
-            offsetX = PosX_modded;
+        s32 lineLength = CVar_GetS32("gHeartsLineLength", 10);
+        if (lineLength != 0 && (i+1)%lineLength == 0) {
+            offsetX = PosX_anchor;
             offsetY += 10.0f;
         }
     }
