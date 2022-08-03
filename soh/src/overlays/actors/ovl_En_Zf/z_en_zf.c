@@ -2242,9 +2242,11 @@ void EnZf_Update(Actor* thisx, GlobalContext* globalCtx) {
     }
 
     if ((this->action >= ENZF_ACTION_3 && this->action <= ENZF_ACTION_7) || (this->action == ENZF_ACTION_CIRCLE_AROUND_PLAYER)) {
-        if (isPlayerInHorizontalAttack(globalCtx))
+        if (isPlayerInHorizontalAttack(globalCtx) && (!EnZf_PrimaryFloorCheck(this, globalCtx, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)))
             EnZf_SetupJumpUp(this);
-        else if (isPlayerInStab(globalCtx) && Rand_ZeroOne() < 0.5)
+        else if (isPlayerInSpinAttack(globalCtx))
+           EnZf_SetupJumpBack(this);
+        else if (isPlayerInStab(globalCtx) && Rand_ZeroOne() < 0.5 && (!EnZf_PrimaryFloorCheck(this, globalCtx, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)))
             EnZf_SetupJumpUp(this);
         else if (isPlayerInVerticalAttack(globalCtx) || isPlayerInStab(globalCtx)) {
             EnZf_SetupSpinDodge(this,globalCtx);
