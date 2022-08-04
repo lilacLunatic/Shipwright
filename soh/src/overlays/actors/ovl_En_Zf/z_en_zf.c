@@ -1343,13 +1343,15 @@ void EnZf_SpinDodge(EnZf* this, GlobalContext* globalCtx) {
     this->unk_3F0--;
     if (this->unk_3F0 == 0) {
         this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
-        if (!EnZf_DodgeRangedWaiting(globalCtx, this)) {
-            if (this->actor.xzDistToPlayer <= 70.0f && EnZf_CanAttack(globalCtx,this)) {
+        if (!EnZf_DodgeRangedEngaging(globalCtx, this)) {
+            if (0 || this->actor.xzDistToPlayer <= 70.0f && EnZf_CanAttack(globalCtx,this)) {
                 EnZf_SetupSlash(this);
             } else {
                 func_80B462E4(this, globalCtx);
             }
         }
+        else
+            EnZf_SetupSpinDodge(this,globalCtx);
     } else {
         if (this->actor.speedXZ >= 0.0f) {
             this->actor.shape.rot.y += 0x4000;
@@ -2242,14 +2244,16 @@ void EnZf_Update(Actor* thisx, GlobalContext* globalCtx) {
     }
 
     if ((this->action >= ENZF_ACTION_3 && this->action <= ENZF_ACTION_7) || (this->action == ENZF_ACTION_CIRCLE_AROUND_PLAYER)) {
-        if (isPlayerInHorizontalAttack(globalCtx) && (!EnZf_PrimaryFloorCheck(this, globalCtx, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)))
-            EnZf_SetupJumpUp(this);
-        else if (isPlayerInSpinAttack(globalCtx))
-           EnZf_SetupJumpBack(this);
-        else if (isPlayerInStab(globalCtx) && Rand_ZeroOne() < 0.5 && (!EnZf_PrimaryFloorCheck(this, globalCtx, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)))
-            EnZf_SetupJumpUp(this);
-        else if (isPlayerInVerticalAttack(globalCtx) || isPlayerInStab(globalCtx)) {
-            EnZf_SetupSpinDodge(this,globalCtx);
+        if (!EnZf_DodgeRangedEngaging(globalCtx,this)) {
+            if (isPlayerInHorizontalAttack(globalCtx) && (!EnZf_PrimaryFloorCheck(this, globalCtx, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)))
+                EnZf_SetupJumpUp(this);
+            else if (((isPlayerInHorizontalAttack(globalCtx) && (this->actor.xzDistToPlayer < 100.0f)) || (isPlayerInSpinAttack(globalCtx) && (this->actor.xzDistToPlayer < 400.0f))) && !EnZf_PrimaryFloorCheck(this, globalCtx, -160.0f))
+               EnZf_SetupJumpBack(this);
+            else if (isPlayerInStab(globalCtx) && Rand_ZeroOne() < 0.5 && (!EnZf_PrimaryFloorCheck(this, globalCtx, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)))
+                EnZf_SetupJumpUp(this);
+            else if ((isPlayerInVerticalAttack(globalCtx) || isPlayerInStab(globalCtx)) && (this->actor.xzDistToPlayer < 120.0f)) {
+                EnZf_SetupSpinDodge(this,globalCtx);
+            }
         }
     }
 
@@ -2487,18 +2491,22 @@ s32 EnZf_DodgeRangedEngaging(GlobalContext* globalCtx, EnZf* this) {
 
         if ((ABS(yawToProjectile) < 0x2000) || (ABS(yawToProjectile) >= 0x6000)) {
             if (phi_v1 & 1) {
-                EnZf_SetupCircleAroundPlayer(this, 8.0f);
+                //EnZf_SetupCircleAroundPlayer(this, 8.0f);
+                EnZf_SetupSpinDodge(this,globalCtx);
                 return true;
             }
             EnZf_SetupCircleAroundPlayer(this, -8.0f);
+            EnZf_SetupSpinDodge(this,globalCtx);
             return true;
         }
         if (ABS(yawToProjectile) < 0x5FFF) {
             if (phi_v1 & 1) {
-                EnZf_SetupCircleAroundPlayer(this, 4.0f);
+                //EnZf_SetupCircleAroundPlayer(this, 4.0f);
+                EnZf_SetupSpinDodge(this,globalCtx);
                 return true;
             }
-            EnZf_SetupCircleAroundPlayer(this, -4.0f);
+            //EnZf_SetupCircleAroundPlayer(this, -4.0f);
+            EnZf_SetupSpinDodge(this,globalCtx);
         }
         return true;
     }
