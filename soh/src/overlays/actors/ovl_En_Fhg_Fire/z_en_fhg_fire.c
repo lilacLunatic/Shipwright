@@ -68,7 +68,7 @@ static ColliderCylinderInit sCylinderInit = {
     },
     {
         ELEMTYPE_UNK6,
-        { 0x00100700, 0x03, 0x20 },
+        { 0x20000000, 0x03, 0x20 },
         { 0x0D900700, 0x00, 0x00 },
         TOUCH_ON,
         BUMP_ON,
@@ -221,20 +221,23 @@ void EnFhgFire_LightningStrike(EnFhgFire* this, GlobalContext* globalCtx) {
             this->actor.shape.rot.y =
                 Camera_GetInputDirYaw(camera) + (this->work[FHGFIRE_VARIANCE_TIMER] & 0xFF) * 0x8000;
 
+            static const s16 NUM_TRAILS = 32;
+            static const s16 TRAIL_ANGLE_BASE = (0x8000 / NUM_TRAILS)*2;
+
             Math_ApproachF(&this->fwork[FHGFIRE_SCALE], 0.0f, 1.0f, 0.2f);
             if (this->work[FHGFIRE_TIMER] == 30) {
                 s16 randY = (Rand_ZeroOne() < 0.5f) ? 0x1000 : 0;
 
-                for (i = 0; i < 8; i++) {
+                for (i = 0; i < NUM_TRAILS; i++) {
                     Actor_SpawnAsChild(&globalCtx->actorCtx, &this->actor, globalCtx, ACTOR_EN_FHG_FIRE,
                                        this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, 0,
-                                       (i * 0x2000) + randY, 0x4000, FHGFIRE_LIGHTNING_TRAIL + i);
+                                       (i * TRAIL_ANGLE_BASE) + randY, 0x4000, FHGFIRE_LIGHTNING_TRAIL + i);
                 }
 
-                for (i = 0; i < 8; i++) {
+                for (i = 0; i < NUM_TRAILS; i++) {
                     Actor_SpawnAsChild(&globalCtx->actorCtx, &this->actor, globalCtx, ACTOR_EN_FHG_FIRE,
                                        this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, 0,
-                                       (i * 0x2000) + randY, 0, FHGFIRE_LIGHTNING_SHOCK);
+                                       (i * TRAIL_ANGLE_BASE) + randY, 0, FHGFIRE_LIGHTNING_SHOCK);
                 }
             }
 
@@ -302,7 +305,7 @@ void EnFhgFire_LightningShock(EnFhgFire* this, GlobalContext* globalCtx) {
         CollisionCheck_SetAT(globalCtx, &globalCtx->colChkCtx, &this->collider.base);
     }
 
-    Actor_UpdateBgCheckInfo(globalCtx, &this->actor, 50.0f, 50.0f, 100.0f, 1);
+    Actor_UpdateBgCheckInfo(globalCtx, &this->actor, 50.0f, 5.0f, 100.0f, 1);
     if (this->actor.bgCheckFlags & 8) {
         Actor_Kill(&this->actor);
     }
@@ -412,6 +415,8 @@ void EnFhgFire_SpearLight(EnFhgFire* this, GlobalContext* globalCtx) {
     }
 }
 
+static const f32 MAX_BALL_SPEED = 20.0f;
+
 void EnFhgFire_EnergyBall(EnFhgFire* this, GlobalContext* globalCtx) {
     f32 dxL;
     f32 dyL;
@@ -499,7 +504,7 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, GlobalContext* globalCtx) {
                         func_800AA000(this->actor.xyzDistToPlayerSq, 0xFF, 0x14, 0x96);
                     } else {
                         if (bossGnd->flyMode == GND_FLY_NEUTRAL) {
-                            angleModX = Rand_CenteredFloat(0x2000);
+                            angleModX = Rand_ZeroFloat(0x1000);
                             angleModY = Rand_CenteredFloat(0x2000);
                             this->actor.speedXZ = 15.0f;
                         } else {
@@ -511,7 +516,7 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, GlobalContext* globalCtx) {
                             }
 
                             if (!canBottleReflect2 && (player->swordAnimation >= 24)) {
-                                this->actor.speedXZ = 20.0f;
+                                this->actor.speedXZ = MAX_BALL_SPEED;
                                 this->work[FHGFIRE_RETURN_COUNT] = 4;
                             } else {
                                 this->actor.speedXZ += 1.0f;
@@ -575,7 +580,7 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, GlobalContext* globalCtx) {
                         EffectSsFhgFlash_SpawnLightBall(globalCtx, &this->actor.world.pos, &sp88, &sp7C,
                                                         (s16)(Rand_ZeroOne() * 40.0f) + 80, FHGFLASH_LIGHTBALL_GREEN);
                     }
-                    this->actor.world.rot.y = Math_FAtan2F(dxL, dzL) * (0x8000 / M_PI);
+                    this->actor.world.rot.y = Math_FAtan2F(dxL, dzL) * (0x8000 / M_PI) + (s16)(0x1800*Rand_CenteredFloat(1.0f));
                     dxzL = sqrtf(SQ(dxL) + SQ(dzL));
                     this->actor.world.rot.x = Math_FAtan2F(dyL, dxzL) * (0x8000 / M_PI);
                     this->work[FHGFIRE_FIRE_MODE] = FHGFIRE_LIGHT_GREEN;
@@ -615,7 +620,11 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, GlobalContext* globalCtx) {
                 this->work[FHGFIRE_KILL_TIMER] = 30;
                 this->actor.draw = NULL;
                 if (killMode == BALL_FIZZLE) {
+                    this->work[FHGFIRE_KILL_TIMER] = 50;
                     Audio_PlayActorSound2(&this->actor, NA_SE_EN_FANTOM_THUNDER_GND);
+                    Actor_SpawnAsChild(&globalCtx->actorCtx, &this->actor, globalCtx, ACTOR_EN_FHG_FIRE,
+                                   this->actor.world.pos.x, (this->actor.world.pos.y + 200.0f),
+                                   this->actor.world.pos.z, 0, 0, 0, FHGFIRE_LIGHTNING_STRIKE);
                 }
                 return;
             } else {
@@ -627,8 +636,8 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, GlobalContext* globalCtx) {
         }
         Lights_PointNoGlowSetInfo(&this->lightInfo, (s16)this->actor.world.pos.x, (s16)this->actor.world.pos.y,
                                   (s16)this->actor.world.pos.z, 255, 255, 255, 200);
-        if (this->actor.speedXZ > 20.0f) {
-            this->actor.speedXZ = 20.0f;
+        if (this->actor.speedXZ > MAX_BALL_SPEED) {
+            this->actor.speedXZ = MAX_BALL_SPEED;
         }
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_FANTOM_FIRE - SFX_FLAG);
         // "Why ah ah ah ah"
