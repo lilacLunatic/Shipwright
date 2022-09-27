@@ -415,7 +415,7 @@ void EnFhgFire_SpearLight(EnFhgFire* this, GlobalContext* globalCtx) {
     }
 }
 
-static const f32 MAX_BALL_SPEED = 20.0f;
+static const f32 MAX_BALL_SPEED = 23.0f;
 
 void EnFhgFire_EnergyBall(EnFhgFire* this, GlobalContext* globalCtx) {
     f32 dxL;
@@ -569,9 +569,12 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, GlobalContext* globalCtx) {
                 break;
             case FHGFIRE_LIGHT_REFLECT:
                 if (this->work[FHGFIRE_TIMER] == 0) {
+                    static const s16 MAX_ANGLE = 0x1100;
                     s16 i3;
                     Vec3f sp88;
                     Vec3f sp7C = { 0.0f, -0.5f, 0.0f };
+                    f32 randAng = Rand_CenteredFloat(2.0f);
+                    f32 tempMaxSpeed = MAX_BALL_SPEED*(1.0f-0.8f*fabsf(randAng));
 
                     for (i3 = 0; i3 < 30; i3++) {
                         sp88.x = Rand_CenteredFloat(20.0f);
@@ -580,12 +583,14 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, GlobalContext* globalCtx) {
                         EffectSsFhgFlash_SpawnLightBall(globalCtx, &this->actor.world.pos, &sp88, &sp7C,
                                                         (s16)(Rand_ZeroOne() * 40.0f) + 80, FHGFLASH_LIGHTBALL_GREEN);
                     }
-                    this->actor.world.rot.y = Math_FAtan2F(dxL, dzL) * (0x8000 / M_PI) + (s16)(0x1800*Rand_CenteredFloat(1.0f));
+                    this->actor.world.rot.y = Math_FAtan2F(dxL, dzL) * (0x8000 / M_PI) + (s16)(MAX_ANGLE*randAng);
                     dxzL = sqrtf(SQ(dxL) + SQ(dzL));
                     this->actor.world.rot.x = Math_FAtan2F(dyL, dxzL) * (0x8000 / M_PI);
                     this->work[FHGFIRE_FIRE_MODE] = FHGFIRE_LIGHT_GREEN;
                     Audio_PlayActorSound2(&this->actor, NA_SE_IT_SWORD_REFLECT_MG);
                     this->actor.speedXZ += 2.0f;
+                    if (this->actor.speedXZ > tempMaxSpeed)
+                        this->actor.speedXZ = tempMaxSpeed;
                 }
                 break;
         }
