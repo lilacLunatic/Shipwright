@@ -610,6 +610,12 @@ s32 func_8008F128(Player* this) {
     return Player_HoldsHookshot(this) && (this->heldActor == NULL);
 }
 
+s32 isProjectileNotched(GlobalContext* globalCtx) {
+    Player* this = GET_PLAYER(globalCtx);
+    return  this->heldItemActionParam >= PLAYER_AP_BOW && this->heldItemActionParam <= PLAYER_AP_LONGSHOT &&
+            this->heldActor != NULL;
+}
+
 s32 Player_ActionToSword(s32 actionParam) {
     s32 sword = actionParam - PLAYER_AP_FISHING_POLE;
 

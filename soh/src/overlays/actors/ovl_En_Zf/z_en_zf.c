@@ -2253,7 +2253,7 @@ void EnZf_Update(Actor* thisx, GlobalContext* globalCtx) {
                 EnZf_SetupJumpUp(this);
             else if (((isPlayerInHorizontalAttack(globalCtx) && (this->actor.xzDistToPlayer < 100.0f)) ||
                         (isPlayerInSpinAttack(globalCtx) && (this->actor.xzDistToPlayer < 400.0f)) ||
-                        (player->heldItemActionParam >= PLAYER_AP_BOW && player->heldItemActionParam <= PLAYER_AP_LONGSHOT)) &&
+                        isProjectileNotched(globalCtx)) &&
                     !EnZf_PrimaryFloorCheck(this, globalCtx, -160.0f))
                EnZf_SetupJumpBack(this);
             else if (isPlayerInStab(globalCtx) && Rand_ZeroOne() < 0.5 && (!EnZf_PrimaryFloorCheck(this, globalCtx, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)))
