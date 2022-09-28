@@ -229,15 +229,17 @@ void EnFhgFire_LightningStrike(EnFhgFire* this, GlobalContext* globalCtx) {
                 s16 randY = (Rand_ZeroOne() < 0.5f) ? 0x1000 : 0;
 
                 for (i = 0; i < NUM_TRAILS; i++) {
-                    Actor_SpawnAsChild(&globalCtx->actorCtx, &this->actor, globalCtx, ACTOR_EN_FHG_FIRE,
-                                       this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, 0,
-                                       (i * TRAIL_ANGLE_BASE) + randY, 0x4000, FHGFIRE_LIGHTNING_TRAIL + i);
-                }
+                    s16 pitch = 0;
+                    if (this->actor.world.pos.y > GND_BOSSROOM_CENTER_Y + 150.f)
+                        pitch = (s16)(Rand_CenteredFloat(0x8000));
 
-                for (i = 0; i < NUM_TRAILS; i++) {
                     Actor_SpawnAsChild(&globalCtx->actorCtx, &this->actor, globalCtx, ACTOR_EN_FHG_FIRE,
                                        this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, 0,
-                                       (i * TRAIL_ANGLE_BASE) + randY, 0, FHGFIRE_LIGHTNING_SHOCK);
+                                       (i * TRAIL_ANGLE_BASE) + randY, 0x4000+ pitch, FHGFIRE_LIGHTNING_TRAIL + i);
+
+                    Actor_SpawnAsChild(&globalCtx->actorCtx, &this->actor, globalCtx, ACTOR_EN_FHG_FIRE,
+                                       this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, 0,
+                                       (i * TRAIL_ANGLE_BASE) + randY, 0+pitch, FHGFIRE_LIGHTNING_SHOCK);
                 }
             }
 
