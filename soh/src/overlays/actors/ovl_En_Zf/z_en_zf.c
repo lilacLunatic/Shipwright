@@ -2152,6 +2152,7 @@ void EnZf_Update(Actor* thisx, GlobalContext* globalCtx) {
     s32 pad;
     EnZf* this = (EnZf*)thisx;
     s32 pad2;
+    Player* player = GET_PLAYER(globalCtx);
 
     EnZf_UpdateDamage(this, globalCtx);
     if (this->actor.colChkInfo.damageEffect != ENZF_DMGEFF_IMMUNE) {
@@ -2250,7 +2251,10 @@ void EnZf_Update(Actor* thisx, GlobalContext* globalCtx) {
         if (!EnZf_DodgeRangedEngaging(globalCtx,this)) {
             if (isPlayerInHorizontalAttack(globalCtx) && (!EnZf_PrimaryFloorCheck(this, globalCtx, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)))
                 EnZf_SetupJumpUp(this);
-            else if (((isPlayerInHorizontalAttack(globalCtx) && (this->actor.xzDistToPlayer < 100.0f)) || (isPlayerInSpinAttack(globalCtx) && (this->actor.xzDistToPlayer < 400.0f))) && !EnZf_PrimaryFloorCheck(this, globalCtx, -160.0f))
+            else if (((isPlayerInHorizontalAttack(globalCtx) && (this->actor.xzDistToPlayer < 100.0f)) ||
+                        (isPlayerInSpinAttack(globalCtx) && (this->actor.xzDistToPlayer < 400.0f)) ||
+                        (player->heldItemActionParam >= PLAYER_AP_BOW && player->heldItemActionParam <= PLAYER_AP_LONGSHOT)) &&
+                    !EnZf_PrimaryFloorCheck(this, globalCtx, -160.0f))
                EnZf_SetupJumpBack(this);
             else if (isPlayerInStab(globalCtx) && Rand_ZeroOne() < 0.5 && (!EnZf_PrimaryFloorCheck(this, globalCtx, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)))
                 EnZf_SetupJumpUp(this);
