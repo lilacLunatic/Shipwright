@@ -1459,6 +1459,7 @@ void func_808327F8(Player* this, f32 arg1) {
     func_800F4010(&this->actor.projectedPos, sfxId, arg1);
 }
 
+//Plays jump sfx
 void func_80832854(Player* this) {
     s32 sfxId;
 
@@ -1471,6 +1472,7 @@ void func_80832854(Player* this) {
     func_8002F7DC(&this->actor, sfxId);
 }
 
+//Plays landing-from-jump sfx
 void func_808328A0(Player* this) {
     s32 sfxId;
 
@@ -1662,6 +1664,7 @@ void func_8083313C(GlobalContext* globalCtx, Player* this, LinkAnimationHeader* 
     func_80833114(globalCtx, this, anim, 0x1C);
 }
 
+//Updates C-stick position values (possibly relative to the player)
 void func_8083315C(GlobalContext* globalCtx, Player* this) {
     s8 phi_v1;
     s8 phi_v0;
@@ -1669,10 +1672,11 @@ void func_8083315C(GlobalContext* globalCtx, Player* this) {
     this->unk_A7C = D_808535D4;
     this->unk_A80 = D_808535D8;
 
+    //This provides the distance of the C-stick in the first argument, and angle in the second
     func_80077D10(&D_808535D4, &D_808535D8, sControlInput);
 
     D_808535DC = Camera_GetInputDirYaw(GET_ACTIVE_CAM(globalCtx)) + D_808535D8;
-
+    //This seems to store 4 'previous values' of the stick direction
     this->unk_846 = (this->unk_846 + 1) % 4;
 
     if (D_808535D4 < 55.0f) {
@@ -2276,7 +2280,7 @@ s32 func_80834758(GlobalContext* globalCtx, Player* this) {
     if (!(this->stateFlags1 & (PLAYER_STATE1_22 | PLAYER_STATE1_23 | PLAYER_STATE1_29)) &&
         (globalCtx->shootingGalleryStatus == 0) && (this->heldItemActionParam == this->itemActionParam) &&
         (this->currentShield != PLAYER_SHIELD_NONE) && !Player_IsChildWithHylianShield(this) && func_80833BCC(this) &&
-        CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) {
+        CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) {//Eliminating this section prevents you from going into a shield state while targeting
 
         anim = func_808346C4(globalCtx, this);
         frame = Animation_GetLastFrame(anim);
@@ -2285,7 +2289,7 @@ s32 func_80834758(GlobalContext* globalCtx, Player* this) {
 
         return 1;
     } else {
-        return 0;
+        return 0;//Returning 1 here causes your crouching shield animation to not change the shield position, causing the shield to be oriented to the right
     }
 }
 
@@ -2366,10 +2370,10 @@ s32 func_80834A2C(Player* this, GlobalContext* globalCtx) {
 s32 func_80834B5C(Player* this, GlobalContext* globalCtx) {
     LinkAnimation_Update(globalCtx, &this->skelAnime2);
 
-    if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) {
+    if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) {//Forcing this to true prevents Link from finishing the holding shield animation
         func_80834894(this);
         return 1;
-    } else {
+    } else {//Forcing the conditon false prevents Link from putting down the Z-shield, leaving the shield up unless forced to or this is done from crouch
         this->stateFlags1 |= PLAYER_STATE1_22;
         Player_SetModelsForHoldingShield(this);
         return 1;
@@ -2946,11 +2950,17 @@ void func_80835F44(GlobalContext* globalCtx, Player* this, s32 item) {
             }
 
             if (actionParam == PLAYER_AP_LENS) {
+//<<<<<<< HEAD
                 if (func_80087708(globalCtx, 0, 3)) {
                     if (globalCtx->actorCtx.lensActive) {
                         Actor_DisableLens(globalCtx);
                     } else {
                         globalCtx->actorCtx.lensActive = true;
+//=======
+//                if (func_80087708(globalCtx, 1, 3)) {
+//                    if (globalCtx->actorCtx.unk_03 != 0) {
+//                        func_800304B0(globalCtx);
+//>>>>>>> limb_experiment_rachael
                     }
                     func_80078884((globalCtx->actorCtx.lensActive) ? NA_SE_SY_GLASSMODE_ON : NA_SE_SY_GLASSMODE_OFF);
                 } else {
@@ -3026,6 +3036,7 @@ void func_80835F44(GlobalContext* globalCtx, Player* this, s32 item) {
     }
 }
 
+//This determines whether the player can be revived by a fairy
 void func_80836448(GlobalContext* globalCtx, Player* this, LinkAnimationHeader* anim) {
     s32 cond = func_808332B8(this);
 
@@ -3185,6 +3196,7 @@ s32 func_80836AB8(Player* this, s32 arg1) {
     return var;
 }
 
+//Function that seems to determine Z-targeting selection
 void func_80836BEC(Player* this, GlobalContext* globalCtx) {
     s32 sp1C = 0;
     s32 zTrigPressed = CHECK_BTN_ALL(sControlInput->cur.button, BTN_Z);
@@ -3260,7 +3272,7 @@ void func_80836BEC(Player* this, GlobalContext* globalCtx) {
 
             if (this->unk_664 != NULL) {
                 if ((this->actor.category == ACTORCAT_PLAYER) && (this->unk_664 != this->unk_684) &&
-                    func_8002F0C8(this->unk_664, this, sp1C)) {
+                    func_8002F0C8(this->unk_664, this, sp1C)) {//Causes Z-targeting to disengage if player is too far away
                     func_8008EDF0(this);
                     this->stateFlags1 |= PLAYER_STATE1_30;
                 } else if (this->unk_664 != NULL) {
@@ -3270,6 +3282,54 @@ void func_80836BEC(Player* this, GlobalContext* globalCtx) {
                 this->unk_664 = this->unk_684;
             }
         }
+
+        if (this->unk_664 != NULL) {
+            switch (this->crossoverState) {
+                case 0://No crossover is occurring yet
+                if (this->unk_664->xzDistToPlayer < 60.0f && this->unk_664->yDistToPlayer < -20.0f) {
+                    this->crossoverState |= 1;
+                    this->entryDiff.x = this->unk_664->prevPos.x - this->actor.world.pos.x;
+                    this->entryDiff.y = this->unk_664->prevPos.y - this->actor.world.pos.y;
+                    this->entryDiff.z = this->unk_664->prevPos.z - this->actor.world.pos.z;
+                }//FALLTHROUGH
+                else
+                    break;
+
+                case 1:
+                case 2:
+                case 3:
+                if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_R) && (this->swordState == 0))
+                    this->crossoverState |= 2;
+
+                if (this->entryDiff.x*(this->unk_664->world.pos.x-this->actor.world.pos.x) +
+                            this->entryDiff.z*(this->unk_664->world.pos.z-this->actor.world.pos.z) < 0.0f) {//Dot product is negative
+                    if (this->crossoverState & 2)
+                        this->crossoverState |= 4;
+                    else {
+                        //this->crossoverState = 0;
+                        func_8008EDF0(this);//breaks lockon
+                        break;
+                    }
+                }
+
+                if (!this->unk_664->xzDistToPlayer < 60.0f || !this->unk_664->yDistToPlayer < -20.0f) {
+                    this->crossoverState = 0;
+                }
+                break;
+
+                case 5:
+                case 6:
+                case 7:
+                if (!this->unk_664->xzDistToPlayer < 60.0f || !this->unk_664->yDistToPlayer < -20.0f) {
+                    this->crossoverState = 0;
+                }
+                break;
+            }
+        }
+        else {
+            this->crossoverState = 0;
+        }
+
 
         if (this->unk_664 != NULL) {
             this->stateFlags1 &= ~(PLAYER_STATE1_16 | PLAYER_STATE1_17);
@@ -3299,8 +3359,8 @@ s32 func_80836FAC(GlobalContext* globalCtx, Player* this, f32* arg2, s16* arg3, 
         *arg2 = 0.0f;
         *arg3 = this->actor.shape.rot.y;
     } else {
-        *arg2 = D_808535D4;
-        *arg3 = D_808535D8;
+        *arg2 = D_808535D4;//polar ABS DIST
+        *arg3 = D_808535D8;//polar ANGLE
 
         if (arg4 != 0.0f) {
             *arg2 -= 20.0f;
@@ -3372,7 +3432,8 @@ static s8 D_80854430[] = { 13, 1, 2, 3, 12, 5, 4, 9, 10, 11, 8, 7, -6 };
 static s8 D_80854440[] = { 10, 8, -7 };
 static s8 D_80854444[] = { 0, 12, 5, -4 };
 
-static s32 (*D_80854448[])(Player* this, GlobalContext* globalCtx) = {
+//Seems to possibly be a list of 'sword preperation' functions
+static s32(*D_80854448[])(Player* this, GlobalContext* globalCtx) = {
     func_8083B998, func_80839800, func_8083E5A8, func_8083E0FC, func_8083B644, func_8083F7BC, func_8083C1DC,
     func_80850224, func_8083C544, func_8083EB44, func_8083BDBC, func_8083C2B0, func_80838A14, func_8083B040,
 };
@@ -3443,6 +3504,7 @@ void func_80837530(GlobalContext* globalCtx, Player* this, s32 arg2) {
     }
 }
 
+//Checks the values stored in the unk_847 buffer to determine whether Link should perform an instant spin attack
 s32 func_808375D8(Player* this) {
     s8 sp3C[4];
     s8* iter;
@@ -3514,7 +3576,7 @@ s32 func_80837818(Player* this) {
         sp18 = D_80854484[sp1C];
         this->unk_845 = 0;
     } else {
-        if (func_808375D8(this)) {
+        if (func_808375D8(this)) {//Instant spin attack
             sp18 = 24;
         } else {
             if (sp1C < 0) {
@@ -3559,6 +3621,7 @@ static u32 D_80854488[][2] = {
     { 0x00000002, 0x08000000 }, { 0x00000040, 0x40000000 },
 };
 
+//Seems to activate all of Link's sword attacks
 void func_80837948(GlobalContext* globalCtx, Player* this, s32 arg2) {
     s32 pad;
     u32 flags;
@@ -3581,7 +3644,7 @@ void func_80837948(GlobalContext* globalCtx, Player* this, s32 arg2) {
 
     this->swordAnimation = arg2;
 
-    func_808322D0(globalCtx, this, D_80854190[arg2].unk_00);
+    func_808322D0(globalCtx, this, D_80854190[arg2].unk_00);//PlayOnceSetSpeed
     if ((arg2 != 16) && (arg2 != 17)) {
         func_80832F54(globalCtx, this, 0x209);
     }
@@ -3850,7 +3913,15 @@ s32 func_808382DC(Player* this, GlobalContext* globalCtx) {
 
     if (this->unk_A86 != 0) {
         if (!Player_InBlockingCsMode(globalCtx, this)) {
-            Player_InflictDamageModified(globalCtx, -16 * (1 << CVar_GetS32("gVoidDamageMul", 0)), false);
+            s32 damageToInflict;
+            if (gSaveContext.health <= 0x30)
+                damageToInflict = 0x10;
+            else {
+                s32 majorDamage = 0x10*(1+(gSaveContext.health/0x10 - 1)/3);
+                s32 minorDamage = (gSaveContext.health/0x10)%3 == 0 ? gSaveContext.health%0x10 : 0x00;
+                damageToInflict = majorDamage+minorDamage;
+            }
+            Player_InflictDamageModified(globalCtx, -damageToInflict * (1 << CVar_GetS32("gVoidDamageMul", 0)), false);
             this->unk_A86 = 0;
         }
     } else {
@@ -3908,6 +3979,9 @@ s32 func_808382DC(Player* this, GlobalContext* globalCtx) {
             // This behavior was later fixed in MM, most likely by removing both the `atHit` and `atFlags` checks.
             if (sp64 || ((this->invincibilityTimer < 0) && (this->cylinder.base.acFlags & AC_HIT) &&
                          (this->cylinder.info.atHit != NULL) && (this->cylinder.info.atHit->atFlags & 0x20000000))) {
+
+                if (this->shieldRelaxTimer <= 6 && !Player_HoldsTwoHandedWeapon(this))
+                    return 0;
 
                 func_8083264C(this, 180, 20, 100, 0);
 
@@ -4577,7 +4651,7 @@ void func_8083A060(Player* this, GlobalContext* globalCtx) {
 
 void func_8083A098(Player* this, LinkAnimationHeader* anim, GlobalContext* globalCtx) {
     func_8083A060(this, globalCtx);
-    func_8083328C(globalCtx, this, anim);
+    func_8083328C(globalCtx, this, anim);//PlayOnceSetSpeed
 }
 
 s32 func_8083A0D4(Player* this) {
@@ -5212,6 +5286,7 @@ s32 func_8083B998(Player* this, GlobalContext* globalCtx) {
     return 0;
 }
 
+//Begins a jump slash
 void func_8083BA90(GlobalContext* globalCtx, Player* this, s32 arg2, f32 xzVelocity, f32 yVelocity) {
     func_80837948(globalCtx, this, arg2);
     func_80835C58(globalCtx, this, func_80844AF4, 0);
@@ -5230,7 +5305,7 @@ void func_8083BA90(GlobalContext* globalCtx, Player* this, s32 arg2, f32 xzVeloc
 }
 
 s32 func_8083BB20(Player* this) {
-    if (!(this->stateFlags1 & PLAYER_STATE1_22) && (Player_GetSwordHeld(this) != 0)) {
+    if (!(this->stateFlags1 & PLAYER_STATE1_22) && (Player_GetSwordHeld(this) != 0) && (this->shieldRelaxTimer == 0)) {
         if (D_80853614 ||
             ((this->actor.category != ACTORCAT_PLAYER) && CHECK_BTN_ALL(sControlInput->press.button, BTN_B))) {
             return 1;
@@ -5240,6 +5315,7 @@ s32 func_8083BB20(Player* this) {
     return 0;
 }
 
+//Causes Jump Slashing to activate after B is pressed in the air
 s32 func_8083BBA0(Player* this, GlobalContext* globalCtx) {
     if (func_8083BB20(this) && (D_808535E4 != 7)) {
         func_8083BA90(globalCtx, this, 17, 3.0f, 4.5f);
@@ -5249,6 +5325,7 @@ s32 func_8083BBA0(Player* this, GlobalContext* globalCtx) {
     return 0;
 }
 
+//Sets Link's rolling animation state
 void func_8083BC04(Player* this, GlobalContext* globalCtx) {
     func_80835C58(globalCtx, this, func_80844708, 0);
     LinkAnimation_PlayOnceSetSpeed(globalCtx, &this->skelAnime, D_80853914[PLAYER_ANIMGROUP_16][this->modelAnimType],
@@ -5264,7 +5341,9 @@ s32 func_8083BC7C(Player* this, GlobalContext* globalCtx) {
     return 0;
 }
 
+//Allows the player to side-dodge/backflip
 void func_8083BCD0(Player* this, GlobalContext* globalCtx, s32 arg2) {
+    //Puts player in dodge or backflip state
     func_80838940(this, D_80853D4C[arg2][0], !(arg2 & 1) ? 5.8f : 3.5f, globalCtx, NA_SE_VO_LI_SWORD_N);
 
     if (arg2) {}
@@ -5297,15 +5376,19 @@ s32 func_8083BDBC(Player* this, GlobalContext* globalCtx) {
                         func_8083BC04(this, globalCtx);
                     }
                 } else {
-                    if (Player_GetSwordHeld(this) && func_808365C8(this)) {
-                        func_8083BA90(globalCtx, this, 17, 5.0f, 5.0f);
+                    if (Player_GetSwordHeld(this) && func_808365C8(this) && (sp2C < 0)) {
+                        //Performs Jumping Attack
+                        if (this->shieldRelaxTimer == 0)
+                            func_8083BA90(globalCtx, this, 17, 5.0f, 5.0f);
                     } else {
+                        //Performs roll
                         func_8083BC04(this, globalCtx);
                     }
                 }
                 return 1;
             }
         } else {
+            //Allows the player to side-dodge/backflip
             func_8083BCD0(this, globalCtx, sp2C);
             return 1;
         }
@@ -5371,6 +5454,7 @@ void func_8083C148(Player* this, GlobalContext* globalCtx) {
     this->stateFlags1 &= ~(PLAYER_STATE1_13 | PLAYER_STATE1_14 | PLAYER_STATE1_20);
 }
 
+//This function will determine if the player can roll while moving, but not while targeting without a melee weapon
 s32 func_8083C1DC(Player* this, GlobalContext* globalCtx) {
     if (!func_80833B54(this) && (D_808535E0 == 0) && !(this->stateFlags1 & PLAYER_STATE1_23) &&
         CHECK_BTN_ALL(sControlInput->press.button, BTN_A)) {
@@ -5455,6 +5539,7 @@ void func_8083C50C(Player* this) {
     }
 }
 
+//Allows Link to enter spin-attack charge stance
 s32 func_8083C544(Player* this, GlobalContext* globalCtx) {
     if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_B)) {
         if (!(this->stateFlags1 & PLAYER_STATE1_22) && (Player_GetSwordHeld(this) != 0) && (this->unk_844 == 1) &&
@@ -8240,6 +8325,7 @@ void func_80843A38(Player* this, GlobalContext* globalCtx) {
 
 static Vec3f D_808545E4 = { 0.0f, 0.0f, 5.0f };
 
+//This may deal with fairy auto revival (its one of the 3 places in this file that uses the hex value 0x140 to indicate full heart recovery)
 void func_80843AE8(GlobalContext* globalCtx, Player* this) {
     if (this->unk_850 != 0) {
         if (this->unk_850 > 0) {
@@ -8405,6 +8491,7 @@ void func_8084409C(GlobalContext* globalCtx, Player* this, f32 speedXZ, f32 velo
     }
 }
 
+//Determines what occurs when dodging (backflip or side-hop)
 void func_8084411C(Player* this, GlobalContext* globalCtx) {
     f32 sp4C;
     s16 sp4A;
@@ -8581,6 +8668,36 @@ void func_80844708(Player* this, GlobalContext* globalCtx) {
                 }
             }
 
+            /*u8 D_808546F0[] = { ITEM_SWORD_MASTER, ITEM_SWORD_KOKIRI };
+
+            if (this->skelAnime.curFrame >= 12.0f && (this->shieldRelaxTimer == 0) &&
+                        CHECK_BTN_ALL(sControlInput->press.button, BTN_B)) {
+                if (Player_GetSwordHeld(this) == 0) {
+                    func_808328EC(this, NA_SE_IT_SWORD_PICKOUT);
+                }
+
+                func_808328EC(this, NA_SE_IT_SWORD_SWING);
+
+                s32 item = D_808546F0[(void)0, gSaveContext.linkAge];
+                s32 actionParam = sItemActionParams[item];
+
+                func_80835EFC(this);
+                func_808323B4(globalCtx, this);
+
+                this->heldItemId = item;
+                this->nextModelGroup = Player_ActionToModelGroup(this, actionParam);
+
+                func_8083399C(globalCtx, this, actionParam);
+                func_80834644(globalCtx, this);
+
+                func_80837948(globalCtx, this, 13);
+
+                this->linearVelocity = 5;
+
+                return;
+            }*/
+
+
             if ((this->skelAnime.curFrame < 15.0f) || !func_80850224(this, globalCtx)) {
                 if (this->skelAnime.curFrame >= 20.0f) {
                     func_8083A060(this, globalCtx);
@@ -8621,6 +8738,8 @@ void func_80844A44(Player* this, GlobalContext* globalCtx) {
     }
 }
 
+
+//Seems to control jump slash physics after the jump apex
 void func_80844AF4(Player* this, GlobalContext* globalCtx) {
     f32 sp2C;
     s16 sp2A;
@@ -8648,6 +8767,7 @@ void func_80844AF4(Player* this, GlobalContext* globalCtx) {
     }
 }
 
+//Determines actions taken in spin attack stance
 s32 func_80844BE4(Player* this, GlobalContext* globalCtx) {
     s32 temp;
 
@@ -8655,13 +8775,13 @@ s32 func_80844BE4(Player* this, GlobalContext* globalCtx) {
         this->stateFlags2 |= PLAYER_STATE2_17;
     } else {
         if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_B)) {
-            if ((this->unk_858 >= 0.85f) || func_808375D8(this)) {
-                temp = D_80854384[Player_HoldsTwoHandedWeapon(this)];
+            if ((this->unk_858 >= 0.79f) || func_808375D8(this)) {
+                temp = D_80854384[Player_HoldsTwoHandedWeapon(this)];//Performs double spin slash
             } else {
-                temp = D_80854380[Player_HoldsTwoHandedWeapon(this)];
+                temp = D_80854380[Player_HoldsTwoHandedWeapon(this)];//Performs triple spin slash
             }
 
-            func_80837948(globalCtx, this, temp);
+            func_80837948(globalCtx, this, temp);//Initiate spin attack
             func_80837AFC(this, -8);
 
             this->stateFlags2 |= PLAYER_STATE2_17;
@@ -8675,11 +8795,11 @@ s32 func_80844BE4(Player* this, GlobalContext* globalCtx) {
 
     return 1;
 }
-
+//Charge variation B transition
 void func_80844CF8(Player* this, GlobalContext* globalCtx) {
     func_80835C58(globalCtx, this, func_80845000, 1);
 }
-
+//Charge variation C transition
 void func_80844D30(Player* this, GlobalContext* globalCtx) {
     func_80835C58(globalCtx, this, func_80845308, 1);
 }
@@ -8687,21 +8807,30 @@ void func_80844D30(Player* this, GlobalContext* globalCtx) {
 void func_80844D68(Player* this, GlobalContext* globalCtx) {
     func_80839FFC(this, globalCtx);
     func_80832318(this);
-    func_80832B0C(globalCtx, this, D_80854368[Player_HoldsTwoHandedWeapon(this)]);
+    func_80832B0C(globalCtx, this, D_80854368[Player_HoldsTwoHandedWeapon(this)]);//Calls LinkAnimation_Change
     this->currentYaw = this->actor.shape.rot.y;
 }
-
+//Charge variation A transition
 void func_80844DC8(Player* this, GlobalContext* globalCtx) {
     func_80835C58(globalCtx, this, func_80844E68, 1);
-    this->unk_868 = 0.0f;
+    this->unk_868 = 0.0f;//Sets charge timer to 0
     func_80832284(globalCtx, this, D_80854360[Player_HoldsTwoHandedWeapon(this)]);
     this->unk_850 = 1;
 }
 
+static const f32 INITIAL_CHARGE_RATE = 2.0f;
+
+// Spin attack charge timer
 void func_80844E3C(Player* this) {
     Math_StepToF(&this->unk_858, 1.0f, 0.02f);
 }
 
+// Spin attack initial charge timer
+void initial_spin_timer(Player* this) {
+    Math_StepToF(&this->unk_858, 1.0f, INITIAL_CHARGE_RATE*0.02f);
+}
+
+//Charge variation A - Neutral
 void func_80844E68(Player* this, GlobalContext* globalCtx) {
     f32 sp34;
     s16 sp32;
@@ -8709,39 +8838,45 @@ void func_80844E68(Player* this, GlobalContext* globalCtx) {
 
     this->stateFlags1 |= PLAYER_STATE1_12;
 
-    if (LinkAnimation_Update(globalCtx, &this->skelAnime)) {
+    f32 oldSpeed = this->skelAnime.playSpeed;
+    this->skelAnime.playSpeed *= INITIAL_CHARGE_RATE;
+    if (this->unk_850 != 0) this->skelAnime.playSpeed = oldSpeed;
+    if (LinkAnimation_Update(globalCtx, &this->skelAnime)) {//LinkAnimation_Update returns 1 if an animation has reached a finished state, and 0 otherwise
+        this->skelAnime.playSpeed = oldSpeed;
         func_80832DBC(this);
-        func_808355DC(this);
-        this->stateFlags1 &= ~PLAYER_STATE1_17;
+        func_808355DC(this);//Puts stateFlags1 into PLAYER_STATE1_17
+        this->stateFlags1 &= ~PLAYER_STATE1_17;//Removes PLAYER_STATE1_17 from stateFlags1
         func_80832284(globalCtx, this, D_80854360[Player_HoldsTwoHandedWeapon(this)]);
-        this->unk_850 = -1;
+        this->unk_850 = -1;//Should initially be 0, transitioning from other charge animations puts this value to 1, this changes it to -1
     }
+    this->skelAnime.playSpeed = oldSpeed;
 
     func_8083721C(this);
 
-    if (!func_80842964(this, globalCtx) && (this->unk_850 != 0)) {
+    if (!func_80842964(this, globalCtx) && (this->unk_850 != 0)) {//This section will not be entered until the initial animation is finished
         func_80844E3C(this);
 
         if (this->unk_850 < 0) {
-            if (this->unk_858 >= 0.1f) {
+            if (this->unk_858 >= 0.01f) {
                 this->unk_845 = 0;
                 this->unk_850 = 1;
-            } else if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_B)) {
-                func_80844D68(this, globalCtx);
+            }
+            else if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_B)) {
+                //func_80844D68(this, globalCtx);//Causes the charge stance to be canceled before it is fully entered
             }
         } else if (!func_80844BE4(this, globalCtx)) {
-            func_80837268(this, &sp34, &sp32, 0.0f, globalCtx);
+            func_80837268(this, &sp34, &sp32, 0.0f, globalCtx);//Puts C-stick dist and angle in sp
 
             temp = func_80840058(this, &sp34, &sp32, globalCtx);
-            if (temp > 0) {
-                func_80844CF8(this, globalCtx);
+            if (temp > 0) {//Selects variation to change to depending on if the Z or X relative axis has more motion
+                func_80844CF8(this, globalCtx);//Charge variation B
             } else if (temp < 0) {
-                func_80844D30(this, globalCtx);
+                func_80844D30(this, globalCtx);//Charge variation C
             }
         }
     }
 }
-
+//Charge variation B - F/R Step
 void func_80845000(Player* this, GlobalContext* globalCtx) {
     s16 temp1;
     s32 temp2;
@@ -8805,11 +8940,11 @@ void func_80845000(Player* this, GlobalContext* globalCtx) {
         Math_ScaledStepToS(&this->currentYaw, sp52, sp44 * 0.1f);
 
         if ((sp54 == 0.0f) && (this->linearVelocity == 0.0f)) {
-            func_80844DC8(this, globalCtx);
+            func_80844DC8(this, globalCtx);//Charge variation A
         }
     }
 }
-
+//Charge variation C - Side Step
 void func_80845308(Player* this, GlobalContext* globalCtx) {
     f32 sp5C;
     f32 sp58;
@@ -9309,7 +9444,7 @@ static ColliderCylinderInit D_80854624 = {
     {
         ELEMTYPE_UNK1,
         { 0x00000000, 0x00, 0x00 },
-        { 0xFFCFFFFF, 0x00, 0x00 },
+        { 0xFFDFFFFF, 0x00, 0x00 },
         TOUCH_NONE,
         BUMP_ON,
         OCELEM_ON,
@@ -9485,6 +9620,14 @@ void Player_InitCommon(Player* this, GlobalContext* globalCtx, FlexSkeletonHeade
     Collider_SetQuad(globalCtx, &this->swordQuads[1], &this->actor, &D_80854650);
     Collider_InitQuad(globalCtx, &this->shieldQuad);
     Collider_SetQuad(globalCtx, &this->shieldQuad, &this->actor, &D_808546A0);
+
+    this->shieldRelaxTimer = 0;
+    this->shieldUpTimer = 0;
+    this->shieldEntry = 0;
+    this->crossoverState = 0;
+    this->entryDiff.x = 0.0f;
+    this->entryDiff.y = 0.0f;
+    this->entryDiff.z = 0.0f;
 }
 
 static void (*D_80854738[])(GlobalContext* globalCtx, Player* this) = {
@@ -10459,6 +10602,14 @@ static Vec3f D_80854814 = { 0.0f, 0.0f, 200.0f };
 static f32 D_80854820[] = { 2.0f, 4.0f, 7.0f };
 static f32 D_8085482C[] = { 0.5f, 1.0f, 3.0f };
 
+const static u8 SHIELD_TIME_MAX = 14;
+
+void Player_SetShieldRecoveryDefault(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+
+    player->shieldRelaxTimer = SHIELD_TIME_MAX;
+}
+
 void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
     s32 pad;
 
@@ -10494,6 +10645,33 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
 
     if (this->unk_890 != 0) {
         this->unk_890--;
+    }
+
+    if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_R) || (this->stateFlags1 & PLAYER_STATE1_22)){
+        if (this->shieldUpTimer < SHIELD_TIME_MAX/2)
+            this->shieldUpTimer++;
+        if (this->shieldRelaxTimer <= SHIELD_TIME_MAX && this->func_82C != func_80843188
+                    && this->skelAnime.animation != D_808543C4[0]) {
+           if ((this->shieldUpTimer > 1 || this->shieldRelaxTimer == 0) && this->shieldEntry == 0) {
+               if (this->shieldRelaxTimer < this->shieldUpTimer*2)
+                   this->shieldRelaxTimer = this->shieldUpTimer*2;
+           }
+           else
+               this->shieldRelaxTimer = SHIELD_TIME_MAX;
+        }
+    }
+    else {
+       if (this->shieldUpTimer > 0) {
+           this->shieldEntry = SHIELD_TIME_MAX;
+           this->shieldUpTimer = 0;
+        }
+        //Shield timer state is preserved through a roll, to balance stab out of roll
+        //if (this->func_674 != func_80844708) {
+            if (this->shieldRelaxTimer > 0)
+                this->shieldRelaxTimer--;
+            if (this->shieldEntry > 0)
+                this->shieldEntry--;
+        //}
     }
 
     func_808473D4(globalCtx, this);
@@ -10814,7 +10992,7 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
         this->cylinder.dim.yShift = phi_f12 - this->actor.world.pos.y;
 
         if (this->stateFlags1 & PLAYER_STATE1_22) {
-            this->cylinder.dim.height = this->cylinder.dim.height * 0.8f;
+            this->cylinder.dim.height = this->cylinder.dim.height * 1.2f;
         }
 
         Collider_UpdateCylinder(&this->actor, &this->cylinder);
@@ -11084,6 +11262,10 @@ void Player_Draw(Actor* thisx, GlobalContext* globalCtx2) {
             POLY_OPA_DISP =
                 Gfx_SetFog2(POLY_OPA_DISP, 255, 0, 0, 0, 0, 4000 - (s32)(Math_CosS(this->unk_88F * 256) * 2000.0f));
         }
+        if (this->shieldRelaxTimer > 0) {
+            POLY_OPA_DISP =
+                Gfx_SetFog2(POLY_OPA_DISP, 0, 0, 255, 0, 0, 4000 - (2000/SHIELD_TIME_MAX)*this->shieldRelaxTimer);
+        }
 
         func_8002EBCC(&this->actor, globalCtx, 0);
         func_8002ED80(&this->actor, globalCtx, 0);
@@ -11128,7 +11310,7 @@ void Player_Draw(Actor* thisx, GlobalContext* globalCtx2) {
 
         Player_DrawGameplay(globalCtx, this, lod, gCullBackDList, overrideLimbDraw);
 
-        if (this->invincibilityTimer > 0) {
+        if (this->invincibilityTimer > 0 || this->shieldRelaxTimer > 0) {
             POLY_OPA_DISP = Gameplay_SetFog(globalCtx, POLY_OPA_DISP);
         }
 
@@ -12841,10 +13023,12 @@ void func_8084E9AC(Player* this, GlobalContext* globalCtx) {
     }
 }
 
+//Table of values for potion effects
 static u8 D_808549FC[] = {
     0x01, 0x03, 0x02, 0x04, 0x04,
 };
 
+//Seems to handle the effects of the player using 'drinkable' items
 void func_8084EAC0(Player* this, GlobalContext* globalCtx) {
     if (LinkAnimation_Update(globalCtx, &this->skelAnime)) {
         if (this->unk_850 == 0) {
@@ -13048,6 +13232,7 @@ void func_8084ECA4(Player* this, GlobalContext* globalCtx) {
 
 static Vec3f D_80854A1C = { 0.0f, 0.0f, 5.0f };
 
+//This seems to handle the player being healed by a fairy from a bottle, but there may be counterpart functions that deals with manual healing and revival seperately
 void func_8084EED8(Player* this, GlobalContext* globalCtx) {
     if (LinkAnimation_Update(globalCtx, &this->skelAnime)) {
         func_8083C0E8(this, globalCtx);
@@ -13522,9 +13707,14 @@ void func_8085002C(Player* this) {
 
 s32 func_80850224(Player* this, GlobalContext* globalCtx) {
     if (func_8083C6B8(globalCtx, this) == 0) {
-        if (func_8083BB20(this) != 0) {
-            s32 sp24 = func_80837818(this);
-
+        if (func_8083BB20(this) != 0) { //Did the player press B with a sword available?
+            s32 sp24 = func_80837818(this);//Determine sword move to do
+            //Allow instant spin attack command to move the player into charge stance instead
+            if (func_808375D8(this)){
+                func_808377DC(globalCtx,this);
+                return 1;
+            }
+            //Transition into attack states
             func_80837948(globalCtx, this, sp24);
 
             if (sp24 >= 0x18) {
@@ -13562,7 +13752,7 @@ void func_808502D0(Player* this, GlobalContext* globalCtx) {
 
         Math_StepToF(&this->linearVelocity, 0.0f, 5.0f);
         func_8083C50C(this);
-
+//Determines Link's actions finishing a sword move
         if (LinkAnimation_Update(globalCtx, &this->skelAnime)) {
             if (!func_80850224(this, globalCtx)) {
                 u8 sp43 = this->skelAnime.moveFlags;
@@ -13582,7 +13772,7 @@ void func_808502D0(Player* this, GlobalContext* globalCtx) {
                     sp3C = &gPlayerAnim_link_fighter_power_jump_kiru_end;
                 }
 
-                func_8083A098(this, sp3C, globalCtx);
+                func_8083A098(this, sp3C, globalCtx);//Allow the next state to follow
 
                 this->skelAnime.moveFlags = sp43;
                 this->stateFlags3 |= PLAYER_STATE3_3;

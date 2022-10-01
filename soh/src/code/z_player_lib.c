@@ -285,6 +285,10 @@ Vec3f sGetItemRefPos;
 s32 D_80160014;
 s32 D_80160018;
 
+extern void func_80844E68(Player* this, GlobalContext* globalCtx);
+extern void func_80845000(Player* this, GlobalContext* globalCtx);
+extern void func_80845308(Player* this, GlobalContext* globalCtx);
+
 void Player_SetBootData(GlobalContext* globalCtx, Player* this) {
     s32 currentBoots;
     s16* bootRegs;
@@ -357,6 +361,72 @@ s32 Player_ActionToModelGroup(Player* this, s32 actionParam) {
     } else {
         return modelGroup;
     }
+}
+
+s32 isPlayerInBasicHorizontalSlash(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    if (player->swordState == 0)
+        return 0;
+    return((player->swordAnimation >= 4 && player->swordAnimation <= 11) ||
+                              (player->swordAnimation == 20 || player->swordAnimation == 21));
+}
+
+s32 isPlayerInBasicVerticalSlash(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    if (player->swordState == 0)
+        return 0;
+    return player->swordAnimation >= 0 && player->swordAnimation <= PLAYER_MWA_FORWARD_COMBO_2H;
+}
+
+s32 isPlayerInSpinAttack(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+
+    if (player->func_674 == func_80844E68 || player->func_674 == func_80845000 || player->func_674 == func_80845308)
+        return 1;
+
+    if (player->swordState == 0)
+        return 0;
+
+    switch (player->swordAnimation) {
+        case PLAYER_MWA_SPIN_ATTACK_1H:
+        case PLAYER_MWA_SPIN_ATTACK_2H:
+        case PLAYER_MWA_BIG_SPIN_1H:
+        case PLAYER_MWA_BIG_SPIN_2H:
+        return 1;
+
+        default:
+        return 0;
+    }
+}
+
+
+s32 isPlayerInHorizontalSlash(GlobalContext* globalCtx) {
+    return isPlayerInBasicHorizontalSlash(globalCtx) || isPlayerInSpinAttack(globalCtx);
+}
+
+s32 isPlayerInVerticalSlash(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    if (player->swordState == 0)
+        return 0;
+    return isPlayerInBasicVerticalSlash(globalCtx) ||
+                player->swordAnimation == PLAYER_MWA_JUMPSLASH_START || player->swordAnimation == PLAYER_MWA_JUMPSLASH_FINISH;
+}
+
+s32 isPlayerInStab(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    if (player->swordState == 0)
+        return 0;
+    return player->swordAnimation >= PLAYER_MWA_STAB_1H && player->swordAnimation <= PLAYER_MWA_STAB_COMBO_2H;
+}
+
+s32 isPlayerInHorizontalAttack(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    return isPlayerInHorizontalSlash(globalCtx) || (player->swordAnimation == PLAYER_MWA_HAMMER_SIDE && player->swordState);
+}
+
+s32 isPlayerInVerticalAttack(GlobalContext* globalCtx) {
+    Player* player = GET_PLAYER(globalCtx);
+    return isPlayerInVerticalSlash(globalCtx) || (player->swordAnimation == PLAYER_MWA_HAMMER_FORWARD && player->swordState);
 }
 
 void Player_SetModelsForHoldingShield(Player* this) {
@@ -540,6 +610,12 @@ s32 Player_HoldsHookshot(Player* this) {
 
 s32 func_8008F128(Player* this) {
     return Player_HoldsHookshot(this) && (this->heldActor == NULL);
+}
+
+s32 isProjectileNotched(GlobalContext* globalCtx) {
+    Player* this = GET_PLAYER(globalCtx);
+    return  this->heldItemActionParam >= PLAYER_AP_BOW && this->heldItemActionParam <= PLAYER_AP_LONGSHOT &&
+            this->heldActor != NULL;
 }
 
 s32 Player_ActionToSword(s32 actionParam) {
@@ -1118,6 +1194,15 @@ void func_80090604(GlobalContext* globalCtx, Player* this, ColliderQuad* collide
     };
 
     if (this->stateFlags1 & 0x400000) {
+        collider->info.toucher.dmgFlags = 0x00100000;
+        collider->info.bumper.dmgFlags  = 0xDFCFFFFF;
+    }
+    else {
+        collider->info.toucher.dmgFlags = 0x00000000;
+        collider->info.bumper.dmgFlags  = 0x00100000;
+    }
+
+    if (this->stateFlags1 & 0x400000 || this->unk_664 != NULL) {
         Vec3f quadDest[4];
 
         this->shieldQuad.base.colType = shieldColTypes[this->currentShield];
@@ -1276,21 +1361,30 @@ BowStringData sBowStringData[] = {
     { gLinkChildSlinghotStringDL, { 606.0f, 236.0f, 0.0f } }, // slingshot
 };
 
+//Shield data
 Vec3f D_80126154[] = {
-    { -4500.0f, -3000.0f, -600.0f },
-    { 1500.0f, -3000.0f, -600.0f },
-    { -4500.0f, 3000.0f, -600.0f },
-    { 1500.0f, 3000.0f, -600.0f },
+    { -1500.0f, -1500.0f, -600.0f },
+    { 1500.0f, -1500.0f, -600.0f },
+    { -1500.0f, 1500.0f, -600.0f },
+    { 1500.0f, 1500.0f, -600.0f },
+};
+
+Vec3f D_BigSword[] = {
+    { -1000.0f, -1000.0f, -600.0f },
+    { 3500.0f, -1000.0f, -600.0f },
+    { -1000.0f, 1000.0f, -600.0f },
+    { 3500.0f, 1000.0f, -600.0f },
 };
 
 Vec3f D_80126184 = { 100.0f, 1500.0f, 0.0f };
 Vec3f D_80126190 = { 100.0f, 1640.0f, 0.0f };
 
+//Shield data
 Vec3f D_8012619C[] = {
-    { -3000.0f, -3000.0f, -900.0f },
-    { 3000.0f, -3000.0f, -900.0f },
-    { -3000.0f, 3000.0f, -900.0f },
-    { 3000.0f, 3000.0f, -900.0f },
+    { -1500.0f, -1500.0f, -900.0f },
+    { 1500.0f, -1500.0f, -900.0f },
+    { -1500.0f, 1500.0f, -900.0f },
+    { 1500.0f, 1500.0f, -900.0f },
 };
 
 Vec3f D_801261CC = { 630.0f, 100.0f, -30.0f };
@@ -1438,9 +1532,10 @@ void func_80090D20(GlobalContext* globalCtx, s32 limbIndex, Gfx** dList, Vec3s* 
             Matrix_Pop();
 
             CLOSE_DISPS(globalCtx->state.gfxCtx);
-        } else if ((this->actor.scale.y >= 0.0f) && (this->rightHandType == 10)) {
+        } else if ((this->actor.scale.y >= 0.0f) && ((this->rightHandType == 10) ||
+                    (Player_HoldsTwoHandedWeapon(this) && (this->stateFlags1 & 0x400000) && this->shieldRelaxTimer <= 6))) {
             Matrix_Get(&this->shieldMf);
-            func_80090604(globalCtx, this, &this->shieldQuad, D_80126154);
+            func_80090604(globalCtx, this, &this->shieldQuad, Player_HoldsTwoHandedWeapon(this) ? D_BigSword : D_80126154);
         }
 
         if (this->actor.scale.y >= 0.0f) {

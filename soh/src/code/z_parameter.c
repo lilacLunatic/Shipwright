@@ -2931,7 +2931,7 @@ s32 Health_ChangeBy(GlobalContext* globalCtx, s16 healthChange) {
     // clang-format off
     if (healthChange > 0) { Audio_PlaySoundGeneral(NA_SE_SY_HP_RECOVER, &D_801333D4, 4,
                                                    &D_801333E0, &D_801333E0, &D_801333E8);
-    } else if ((gSaveContext.doubleDefense != 0) && (healthChange < 0)) {
+    } else if ((gSaveContext.doubleDefense != 0) && (gSaveContext.health <= gSaveContext.inventory.defenseHearts*0x10) && (healthChange < 0)) {
         healthChange >>= 1;
         osSyncPrintf("ハート減少半分！！＝%d\n", healthChange); // "Heart decrease halved!!＝%d"
     }
@@ -3103,8 +3103,8 @@ s32 func_80087708(GlobalContext* globalCtx, s16 arg1, s16 arg2) {
             }
         case 3:
             if (gSaveContext.unk_13F0 == 0) {
-                if (gSaveContext.magic != 0) {
-                    globalCtx->interfaceCtx.unk_230 = 80;
+                if (gSaveContext.magic > arg1) {
+                    globalCtx->interfaceCtx.unk_230 = 1;
                     gSaveContext.unk_13F0 = 7;
                     return 1;
                 } else {
@@ -3381,6 +3381,7 @@ void Interface_UpdateMagicBar(GlobalContext* globalCtx) {
 
 void Interface_DrawMagicBar(GlobalContext* globalCtx) {
     InterfaceContext* interfaceCtx = &globalCtx->interfaceCtx;
+    s16 magicDrop = R_MAGIC_BAR_LARGE_Y-R_MAGIC_BAR_SMALL_Y+2;
     s16 magicBarY;
     Color_RGB8 magicbar_yellow = {250,250,0}; //Magic bar being used
     Color_RGB8 magicbar_green = {R_MAGIC_FILL_COLOR(0),R_MAGIC_FILL_COLOR(1),R_MAGIC_FILL_COLOR(2)}; //Magic bar fill
@@ -3388,6 +3389,7 @@ void Interface_DrawMagicBar(GlobalContext* globalCtx) {
     OPEN_DISPS(globalCtx->state.gfxCtx);
 
     if (gSaveContext.magicLevel != 0) {
+
         s16 X_Margins;
         s16 Y_Margins;
         if (CVar_GetS32("gMagicBarUseMargins", 0) != 0) {
@@ -3432,6 +3434,16 @@ void Interface_DrawMagicBar(GlobalContext* globalCtx) {
                 rMagicBarX = -9999;
                 PosX_MidEnd = -9999;
                 rMagicFillX = -9999;
+            } else if (CVar_GetS32("gMagicBarPosType", 0) == 5) {//Anchor To life meter
+                s32 lineLength = CVar_GetS32("gHeartsLineLength", 10);
+                magicBarY = R_MAGIC_BAR_SMALL_Y-2 +
+                            magicDrop*(lineLength == 0 ? 0 : (gSaveContext.healthCapacity-1)/(0x10*lineLength)) +
+                            CVar_GetS32("gMagicBarPosY", 0) + getHealthMeterYOffset();
+                s16 xPushover = CVar_GetS32("gMagicBarPosX", 0) + getHealthMeterXOffset() + R_MAGIC_BAR_X;
+                PosX_Start = xPushover;
+                rMagicBarX = xPushover;
+                PosX_MidEnd = xPushover+8;
+                rMagicFillX = CVar_GetS32("gMagicBarPosX", 0) + getHealthMeterXOffset() + R_MAGIC_FILL_X;
             }
         } else {
             if (gSaveContext.healthCapacity > 0xA0) {

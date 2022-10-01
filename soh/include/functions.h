@@ -375,6 +375,8 @@ void ActorShadow_DrawHorse(Actor* actor, Lights* lights, GlobalContext* globalCt
 void ActorShadow_DrawFeet(Actor* actor, Lights* lights, GlobalContext* globalCtx);
 void Actor_SetFeetPos(Actor* actor, s32 limbIndex, s32 leftFootIndex, Vec3f* leftFootPos, s32 rightFootIndex,
                       Vec3f* rightFootPos);
+s16 aimToActorMovement(Actor* this, Actor* target, f32 projectileSpeed, GlobalContext* globalCtx, f32* time, f32* projectedY, f32 maxTargetSpeed);
+s16 aimToPlayerMovement(Actor* this, f32 speed, GlobalContext* globalCtx);
 void func_8002BE04(GlobalContext* globalCtx, Vec3f* arg1, Vec3f* arg2, f32* arg3);
 void func_8002C124(TargetContext* targetCtx, GlobalContext* globalCtx);
 s32 Flags_GetSwitch(GlobalContext* globalCtx, s32 flag);
@@ -976,6 +978,8 @@ void Color_RGBA8_Copy(Color_RGBA8* dst, Color_RGBA8* src);
 void func_80078884(u16 sfxId);
 void func_800788CC(u16 sfxId);
 void func_80078914(Vec3f* arg0, u16 sfxId);
+s16 getHealthMeterXOffset();
+s16 getHealthMeterYOffset();
 void HealthMeter_Init(GlobalContext* globalCtx);
 void HealthMeter_Update(GlobalContext* globalCtx);
 void HealthMeter_Draw(GlobalContext* globalCtx);
@@ -1107,6 +1111,7 @@ void func_8008EC70(Player* player);
 void Player_SetEquipmentData(GlobalContext* globalCtx, Player* player);
 void Player_UpdateBottleHeld(GlobalContext* globalCtx, Player* player, s32 item, s32 actionParam);
 void func_80837C0C(GlobalContext* globalCtx, Player* this, s32 arg2, f32 arg3, f32 arg4, s16 arg5, s32 arg6);
+void Player_SetShieldRecoveryDefault(GlobalContext* globalCtx);
 void func_8008EDF0(Player* player);
 void func_8008EE08(Player* player);
 void func_8008EEAC(GlobalContext* globalCtx, Actor* actor);

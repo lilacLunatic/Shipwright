@@ -97,7 +97,7 @@ void func_80ABBB34(EnNutsball* this, GlobalContext* globalCtx) {
         this->actor.shape.rot.y = 0;
         this->timer = 30;
         this->actionFunc = func_80ABBBA8;
-        this->actor.speedXZ = 10.0f;
+        this->actor.speedXZ = NUTS_SPEED;
     }
 }
 

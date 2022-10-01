@@ -380,10 +380,52 @@ static void* sHeartDDTextures[] = {
     gDefenseHeartThreeQuarterTex,
 };
 
+s16 getHealthMeterXOffset() {
+    s16 X_Margins;
+    if (CVar_GetS32("gHeartsUseMargins", 0) != 0)
+        X_Margins = Left_LM_Margin;
+    else
+        X_Margins = 0;
+    
+    if (CVar_GetS32("gHeartsCountPosType", 0) != 0) {
+        if (CVar_GetS32("gHeartsCountPosType", 0) == 1) {//Anchor Left
+            return OTRGetDimensionFromLeftEdge(CVar_GetS32("gHeartsCountPosX", 0)+X_Margins+70.0f);
+        } else if (CVar_GetS32("gHeartsCountPosType", 0) == 2) {//Anchor Right
+            X_Margins = Right_LM_Margin;
+            return OTRGetDimensionFromRightEdge(CVar_GetS32("gHeartsCountPosX", 0)+X_Margins+70.0f);
+        } else if (CVar_GetS32("gHeartsCountPosType", 0) == 3) {//Anchor None
+            return CVar_GetS32("gHeartsCountPosX", 0)+70.0f;
+        } else if (CVar_GetS32("gHeartsCountPosType", 0) == 4) {//Hidden
+            return -9999;
+        }
+    } else {
+        return OTRGetDimensionFromLeftEdge(0.0f)+X_Margins;
+    }    
+}
+
+s16 getHealthMeterYOffset() {
+    s16 Y_Margins;
+    if (CVar_GetS32("gHeartsUseMargins", 0) != 0)
+        Y_Margins = (Top_LM_Margin*-1);
+    else
+        Y_Margins = 0;
+    
+    if (CVar_GetS32("gHeartsCountPosType", 0) != 0) {
+        float HeartsScale = 0.7f; 
+        if (CVar_GetS32("gHeartsCountPosType", 0) != 0) {
+            HeartsScale = CVar_GetFloat("gHeartsCountScale", 0.7f);
+        }
+        return CVar_GetS32("gHeartsCountPosY", 0)+Y_Margins+(HeartsScale*15);
+    } else {
+        return 0.0f+Y_Margins;
+    }    
+}
+
 void HealthMeter_Draw(GlobalContext* globalCtx) {
     s32 pad[5];
     void* heartBgImg;
     u32 curColorSet;
+    f32 PosX_anchor;
     f32 offsetX;
     f32 offsetY;
     s32 i;
@@ -416,6 +458,7 @@ void HealthMeter_Draw(GlobalContext* globalCtx) {
     }
 
     curColorSet = -1;
+/*
     s16 X_Margins;
     s16 Y_Margins;
     if (CVar_GetS32("gHeartsUseMargins", 0) != 0) {
@@ -443,6 +486,9 @@ void HealthMeter_Draw(GlobalContext* globalCtx) {
         offsetY = PosY_original;
         offsetX = PosX_original;
     }
+*/
+    offsetX = PosX_anchor = getHealthMeterXOffset();
+    offsetY = getHealthMeterYOffset();
 
     for (i = 0; i < totalHeartCount; i++) {
         FrameInterpolation_RecordOpenChild("HealthMeter Heart", i);
@@ -616,7 +662,7 @@ void HealthMeter_Draw(GlobalContext* globalCtx) {
             }
         }
 
-        //offsetX += 10.0f;
+        /*//offsetX += 10.0f;
         offsetX += (HeartsScale*14.5f);
         if (i == 9) {
             PosX_original = OTRGetDimensionFromLeftEdge(0.0f)+X_Margins;
@@ -637,6 +683,12 @@ void HealthMeter_Draw(GlobalContext* globalCtx) {
                 offsetY = PosY_original;
                 offsetX = PosX_original;
             }
+*/
+        offsetX += (HeartsScale*14.5f);
+        s32 lineLength = CVar_GetS32("gHeartsLineLength", 10);
+        if (lineLength != 0 && (i+1)%lineLength == 0) {
+            offsetX = PosX_anchor;
+            offsetY += 10.0f;
         }
         
         FrameInterpolation_RecordCloseChild();
