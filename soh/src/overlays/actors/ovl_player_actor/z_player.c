@@ -1670,8 +1670,6 @@ void func_8083315C(GlobalContext* globalCtx, Player* this) {
     s8 phi_v1;
     s8 phi_v0;
 
-    //MOUSE (RR)
-
 
     this->unk_A7C = D_808535D4;
     this->unk_A80 = D_808535D8;
@@ -1680,6 +1678,7 @@ void func_8083315C(GlobalContext* globalCtx, Player* this) {
 
     D_808535DC = Camera_GetInputDirYaw(GET_ACTIVE_CAM(globalCtx)) + D_808535D8;
 
+    //MOUSE (RR)
     this->quickspinCount = (this->quickspinCount + 1) % 5;
     this->unk_846 = (this->unk_846 + 1) % 4;
 
@@ -2725,7 +2724,10 @@ s32 func_80835800(Player* this, GlobalContext* globalCtx) {
     return 0;
 }
 
+#define BOOM_THRESHOLD (0.85f)
 s32 func_80835884(Player* this, GlobalContext* globalCtx) {
+
+
     if (LinkAnimation_Update(globalCtx, &this->skelAnime2)) {
         func_80833638(this, func_808358F0);
         LinkAnimation_PlayLoop(globalCtx, &this->skelAnime2, &gPlayerAnim_link_boom_throw_waitR);
@@ -2737,6 +2739,18 @@ s32 func_80835884(Player* this, GlobalContext* globalCtx) {
 }
 
 s32 func_808358F0(Player* this, GlobalContext* globalCtx) {
+    func_80844E3C(this);
+
+    this->stateFlags1 |= PLAYER_STATE1_12;
+
+    if (this->unk_858 >= BOOM_THRESHOLD &&
+        this->unk_858 <= BOOM_THRESHOLD + .1 &&
+            this->actor.category == ACTORCAT_PLAYER) {
+        Actor* chargeVfx = Actor_Spawn(&globalCtx->actorCtx, globalCtx, ACTOR_EN_M_THUNDER, this->bodyPartsPos[PLAYER_BODYPART_WAIST].x,
+                this->bodyPartsPos[PLAYER_BODYPART_WAIST].y, this->bodyPartsPos[PLAYER_BODYPART_WAIST].z, 0, 0, 0,
+                Player_GetSwordHeld(this) | 1 | 0x200 );
+    }
+
     LinkAnimationHeader* animSeg = this->skelAnime.animation;
 
     if ((func_808334E4(this) == animSeg) || (func_80833528(this) == animSeg) || (func_808335B0(this) == animSeg) ||
@@ -2758,6 +2772,8 @@ s32 func_808358F0(Player* this, GlobalContext* globalCtx) {
     return 1;
 }
 
+#define UPGRADED_BOOM 1
+#define EXTENDED_BOOM (UPGRADED_BOOM && (this->unk_858 >= BOOM_THRESHOLD))
 s32 func_808359FC(Player* this, GlobalContext* globalCtx) {
     if (LinkAnimation_Update(globalCtx, &this->skelAnime2)) {
         func_80833638(this, func_80835B60);
@@ -2773,7 +2789,15 @@ s32 func_808359FC(Player* this, GlobalContext* globalCtx) {
         this->boomerangActor = &boomerang->actor;
         if (boomerang != NULL) {
             boomerang->moveTo = this->unk_664;
-            boomerang->returnTimer = 20;
+            boomerang->returnTimer = 20 + 20 * EXTENDED_BOOM;
+
+            if(EXTENDED_BOOM){
+                u16 temp = gSaveContext.unk_13F0;
+                gSaveContext.unk_13F0 = 2;
+                Interface_UpdateMagicBar(globalCtx);
+                gSaveContext.unk_13F0 = temp;
+            }
+            this->unk_858 = 0;
             this->stateFlags1 |= PLAYER_STATE1_25;
             if (!func_8008E9C4(this)) {
                 func_808355DC(this);
