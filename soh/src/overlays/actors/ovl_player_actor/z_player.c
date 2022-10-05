@@ -6517,6 +6517,7 @@ s32 func_8083EB44(Player* this, GlobalContext* globalCtx) {
                 }
                 else {
                     func_80835C58(globalCtx, this, func_808464B0, 1);
+                    func_80832264(globalCtx, this, &gPlayerAnim_link_boom_throw_wait2waitR); // &gPlayerAnim_link_bow_defense_wait
                     //call default boomerang behavior
                     func_8083399C(globalCtx, this, PLAYER_AP_BOOMERANG);
 
@@ -6525,12 +6526,11 @@ s32 func_8083EB44(Player* this, GlobalContext* globalCtx) {
                     anim = func_808346C4(globalCtx, this);
                     frame = Animation_GetLastFrame(anim);
                     LinkAnimation_Change(globalCtx, &this->skelAnime2, &gPlayerAnim_link_boom_throw_wait2waitR, 1.0f, frame, frame, ANIMMODE_ONCE, 0.0f);
-                    //func_8002F7DC(&this->actor, NA_SE_IT_SHIELD_POSTURE);
 
                     func_80833638(this, func_80835884);
                     this->unk_834 = 10;
-                    LinkAnimation_PlayOnce(globalCtx, &this->skelAnime2, &gPlayerAnim_link_boom_throw_wait2waitR);
-                    //this->heldActor = NULL;
+                    //LinkAnimation_PlayOnce(globalCtx, &this->skelAnime2, &gPlayerAnim_link_boom_throw_wait2waitR);
+                    func_80834EB8(this, globalCtx);
                 }
             } else {
                 func_8083EA94(this, globalCtx);
