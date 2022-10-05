@@ -2724,7 +2724,7 @@ s32 func_80835800(Player* this, GlobalContext* globalCtx) {
     return 0;
 }
 
-#define BOOM_THRESHOLD (0.85f)
+#define BOOM_THRESHOLD (0.35f)
 s32 func_80835884(Player* this, GlobalContext* globalCtx) {
 
 
