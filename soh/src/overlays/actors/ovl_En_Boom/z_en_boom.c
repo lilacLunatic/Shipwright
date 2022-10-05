@@ -197,6 +197,7 @@ void EnBoom_Fly(EnBoom* this, GlobalContext* globalCtx) {
             player->boomerangQuickRecall = false;
             Actor_Kill(&this->actor);
             player->boomSpawnGrab = 0;
+            func_8084DF6C(globalCtx, player);
         }
     } else {
         collided = (this->collider.base.atFlags & AT_HIT);

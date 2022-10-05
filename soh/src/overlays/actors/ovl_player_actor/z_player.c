@@ -2731,6 +2731,10 @@ s32 func_80835884(Player* this, GlobalContext* globalCtx) {
     if (LinkAnimation_Update(globalCtx, &this->skelAnime2)) {
         func_80833638(this, func_808358F0);
         LinkAnimation_PlayLoop(globalCtx, &this->skelAnime2, &gPlayerAnim_link_boom_throw_waitR);
+
+        this->itemActionParam = PLAYER_AP_BOOMERANG;
+        this->heldItemActionParam = PLAYER_AP_BOOMERANG;
+        this->heldItemId = ITEM_BOOMERANG;
     }
 
     func_80834EB8(this, globalCtx);
@@ -2741,8 +2745,12 @@ s32 func_80835884(Player* this, GlobalContext* globalCtx) {
 s32 func_808358F0(Player* this, GlobalContext* globalCtx) {
     func_80844E3C(this);
 
-    this->stateFlags1 |= PLAYER_STATE1_12;
-
+    if(!CHECK_BTN_ANY(sControlInput->cur.button, BTN_Z)){
+        this->stateFlags1 |= PLAYER_STATE1_12;
+    }
+    else {
+        this->stateFlags1 &= ~PLAYER_STATE1_12;
+    }
     if (this->unk_858 >= BOOM_THRESHOLD &&
         this->unk_858 <= BOOM_THRESHOLD + .1 &&
             this->actor.category == ACTORCAT_PLAYER) {
@@ -2775,6 +2783,7 @@ s32 func_808358F0(Player* this, GlobalContext* globalCtx) {
 #define UPGRADED_BOOM 1
 #define EXTENDED_BOOM (UPGRADED_BOOM && (this->unk_858 >= BOOM_THRESHOLD))
 s32 func_808359FC(Player* this, GlobalContext* globalCtx) {
+
     if (LinkAnimation_Update(globalCtx, &this->skelAnime2)) {
         func_80833638(this, func_80835B60);
         this->unk_834 = 0;
