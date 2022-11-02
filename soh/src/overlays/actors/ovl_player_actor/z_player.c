@@ -10991,7 +10991,7 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
 
         this->cylinder.dim.yShift = phi_f12 - this->actor.world.pos.y;
 
-        if (this->stateFlags1 & PLAYER_STATE1_22) {
+        if (this->stateFlags1 & PLAYER_STATE1_22 && ((this->unk_6AE & 0xC1) == 0xC1) && (this->skelAnime.animation == &gPlayerAnim_link_normal_defense_wait)) {
             this->cylinder.dim.height = this->cylinder.dim.height * 1.2f;
         }
 
