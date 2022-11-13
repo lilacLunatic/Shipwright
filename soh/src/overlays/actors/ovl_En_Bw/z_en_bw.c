@@ -153,14 +153,24 @@ void EnBw_Init(Actor* thisx, GlobalContext* globalCtx) {
     this->unk_236 = this->actor.world.rot.y;
     this->actor.params = sSlugGroup;
     sSlugGroup = (sSlugGroup + 1) & 3;
+    Actor_SpawnAsChild(&globalCtx->actorCtx, thisx,globalCtx, ACTOR_BG_HIDAN_CURTAIN,
+                    thisx->world.pos.x,thisx->world.pos.y, thisx->world.pos.z, thisx->world.rot.x, thisx->world.rot.y, thisx->world.rot.z, 0x0 | (8 << 0xC));
 }
 
 void EnBw_Destroy(Actor* thisx, GlobalContext* globalCtx) {
     s32 pad;
     EnBw* this = (EnBw*)thisx;
 
+    Actor_Kill(this->actor.child);
     Collider_DestroyCylinder(globalCtx, &this->collider1);
     Collider_DestroyCylinder(globalCtx, &this->collider2);
+}
+
+s32 EnBw_Is_On_Fire(Actor* thisx) {
+    EnBw* this = (EnBw*)thisx;
+    //EnBwActionFunc BWfunc = (this->actionFunc);
+    //s32 ret = (BWfunc == func_809CEA24 || BWfunc == func_809CF984 || BWfunc == func_809CF7AC);
+    return this->unk_221 == 3;;
 }
 
 void func_809CE884(EnBw* this, GlobalContext* globalCtx) {
