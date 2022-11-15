@@ -1369,6 +1369,13 @@ Vec3f D_80126154[] = {
     { 1500.0f, 1500.0f, -600.0f },
 };
 
+Vec3f originalShield1[] = {
+    { -4500.0f, -3000.0f, -600.0f },
+    { 1500.0f, -3000.0f, -600.0f },
+    { -4500.0f, 3000.0f, -600.0f },
+    { 1500.0f, 3000.0f, -600.0f },
+};
+
 Vec3f D_BigSword[] = {
     { -1000.0f, -1000.0f, -600.0f },
     { 3500.0f, -1000.0f, -600.0f },
@@ -1535,7 +1542,8 @@ void func_80090D20(GlobalContext* globalCtx, s32 limbIndex, Gfx** dList, Vec3s* 
         } else if ((this->actor.scale.y >= 0.0f) && ((this->rightHandType == 10) ||
                     (Player_HoldsTwoHandedWeapon(this) && (this->stateFlags1 & 0x400000) && this->shieldRelaxTimer <= 6))) {
             Matrix_Get(&this->shieldMf);
-            func_80090604(globalCtx, this, &this->shieldQuad, Player_HoldsTwoHandedWeapon(this) ? D_BigSword : D_80126154);
+            Player* player = GET_PLAYER(globalCtx);
+            func_80090604(globalCtx, this, &this->shieldQuad, Player_HoldsTwoHandedWeapon(this) ? D_BigSword : (this == player) ? D_80126154 : originalShield1);
         }
 
         if (this->actor.scale.y >= 0.0f) {
