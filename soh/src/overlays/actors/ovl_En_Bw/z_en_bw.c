@@ -168,9 +168,9 @@ void EnBw_Destroy(Actor* thisx, GlobalContext* globalCtx) {
 
 s32 EnBw_Is_On_Fire(Actor* thisx) {
     EnBw* this = (EnBw*)thisx;
-    //EnBwActionFunc BWfunc = (this->actionFunc);
+    EnBwActionFunc BWfunc = (this->actionFunc);
     //s32 ret = (BWfunc == func_809CEA24 || BWfunc == func_809CF984 || BWfunc == func_809CF7AC);
-    return this->unk_221 == 3;;
+    return (this->unk_221 == 3 || this->unk_221 == 0 || BWfunc == func_809CF984 || BWfunc == func_809CF7AC);
 }
 
 void func_809CE884(EnBw* this, GlobalContext* globalCtx) {
