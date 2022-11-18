@@ -1920,76 +1920,76 @@ void BossVa_ZapperAttack(BossVa* this, GlobalContext* globalCtx) {
     Player* player = GET_PLAYER(globalCtx);
     EnBoom* boomerang;
     Actor* boomTarget;
-    s16 yaw;
-    s16 sp98;
-    s16 sp96;
-    s16 sp94;
-    s16 tmp17;
-    s16 sp90 = 0x1F4;
-    s16 sp8E;
-    u32 sp88;
-    Vec3f sp7C;
+    s16 angle;//yaw
+    s16 playerToArmYaw;//sp98
+    s16 totalSkelPitch;//sp96
+    s16 clampedYawDiffs;//sp94
+    s16 playerShapeYawDiff;//tmp17
+    s16 yawDiffThresholdB = 0x1F4;//sp90 = 0x1F4;
+    s16 yawDiffThreshold;//sp8E
+    u32 cumulativeYawDiffMag;//sp88;
+    Vec3f playerPosTop;//sp7C
     s32 pad3;
-    f32 sp74;
+    f32 halfUpdateRate;//sp74
     s32 i;
-    s16 sp6E;
-    s16 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    s16 sp5A;
-    s16 sp58;
-    s16 sp56;
-    s16 sp54;
-    f32 sp50;
+    s16 playerToBoomTargYaw;//sp6E
+    s16 boomYaw;//sp6C
+    f32 scaledBoomDrop;//sp68
+    f32 scaledBoomReach;//sp64
+    f32 scaledBoomSideways;//sp60
+    f32 scaledBoomRange;//sp5C
+    s16 boomTargYawDiff;//sp5A
+    s16 playerToBoomTargPitch;//sp58
+    s16 boomPitch;//sp56
+    s16 boomTargPitchDiff;//sp54;
+    f32 boomHomingAngleFactor;//sp50;
 
     boomerang = BossVa_FindBoomerang(globalCtx);
 
     if ((boomerang == NULL) || (boomerang->moveTo == NULL) || (boomerang->moveTo == &player->actor)) {
-        sp7C = player->actor.world.pos;
-        sp7C.y += 10.0f;
-        sp8E = 0x3E80;
+        playerPosTop = player->actor.world.pos;
+        playerPosTop.y += 10.0f;
+        yawDiffThreshold = 0x3E80;
     } else {
-        sp74 = R_UPDATE_RATE * 0.5f;
-        sp8E = 0x4650;
+        halfUpdateRate = R_UPDATE_RATE * 0.5f;
+        yawDiffThreshold = 0x4650;
 
         boomTarget = boomerang->moveTo;
-        sp7C = boomerang->actor.world.pos;
-        sp6C = boomerang->actor.world.rot.y;
-        sp56 = boomerang->actor.world.rot.x;
+        playerPosTop = boomerang->actor.world.pos;
+        boomYaw = boomerang->actor.world.rot.y;
+        boomPitch = boomerang->actor.world.rot.x;
 
         for (i = boomerang->returnTimer; i >= 3; i--) {
-            sp6E = Math_Vec3f_Yaw(&sp7C, &boomTarget->focus.pos);
-            sp5A = sp6C - sp6E;
-            sp58 = Math_Vec3f_Pitch(&sp7C, &boomTarget->focus.pos);
-            sp54 = sp56 - sp58;
+            playerToBoomTargYaw = Math_Vec3f_Yaw(&playerPosTop, &boomTarget->focus.pos);
+            boomTargYawDiff = boomYaw - playerToBoomTargYaw;
+            playerToBoomTargPitch = Math_Vec3f_Pitch(&playerPosTop, &boomTarget->focus.pos);
+            boomTargPitchDiff = boomPitch - playerToBoomTargPitch;
 
-            sp50 = (200.0f - Math_Vec3f_DistXYZ(&sp7C, &boomTarget->focus.pos)) * 0.005f;
-            if (sp50 < 0.12f) {
-                sp50 = 0.12f;
+            boomHomingAngleFactor = (200.0f - Math_Vec3f_DistXYZ(&playerPosTop, &boomTarget->focus.pos)) * 0.005f;
+            if (boomHomingAngleFactor < 0.12f) {
+                boomHomingAngleFactor = 0.12f;
             }
 
-            if (sp5A < 0) {
-                sp5A = -sp5A;
+            if (boomTargYawDiff < 0) {
+                boomTargYawDiff = -boomTargYawDiff;
             }
 
-            if (sp54 < 0) {
-                sp54 = -sp54;
+            if (boomTargPitchDiff < 0) {
+                boomTargPitchDiff = -boomTargPitchDiff;
             }
 
-            Math_ScaledStepToS(&sp6C, sp6E, sp5A * sp50);
-            Math_ScaledStepToS(&sp56, sp58, sp54 * sp50);
+            Math_ScaledStepToS(&boomYaw, playerToBoomTargYaw, boomTargYawDiff * boomHomingAngleFactor);
+            Math_ScaledStepToS(&boomPitch, playerToBoomTargPitch, boomTargPitchDiff * boomHomingAngleFactor);
 
-            sp68 = -Math_SinS(sp56) * 12.0f;
-            sp5C = Math_CosS(sp56) * 12.0f;
-            sp64 = Math_SinS(sp6C) * sp5C;
-            sp60 = Math_CosS(sp6C);
-            sp7C.x += sp64 * sp74;
-            sp7C.y += sp68 * sp74;
-            sp7C.z += sp60 * sp5C * sp74;
+            scaledBoomDrop = -Math_SinS(boomPitch) * 12.0f;
+            scaledBoomRange = Math_CosS(boomPitch) * 12.0f;
+            scaledBoomReach = Math_SinS(boomYaw) * scaledBoomRange;
+            scaledBoomSideways = Math_CosS(boomYaw);
+            playerPosTop.x += scaledBoomReach * halfUpdateRate;
+            playerPosTop.y += scaledBoomDrop * halfUpdateRate;
+            playerPosTop.z += scaledBoomSideways * scaledBoomRange * halfUpdateRate;
         }
-        sp90 = 0x3E80;
+        yawDiffThresholdB = 0x3E80;
     }
 
     SkelAnime_Update(&this->skelAnime);
@@ -2009,51 +2009,51 @@ void BossVa_ZapperAttack(BossVa* this, GlobalContext* globalCtx) {
         return;
     }
 
-    sp98 = Math_Vec3f_Yaw(&sp7C, &this->armTip);
-    tmp17 = sp98 - this->actor.shape.rot.y;
+    playerToArmYaw = Math_Vec3f_Yaw(&playerPosTop, &this->armTip);
+    playerShapeYawDiff = playerToArmYaw - this->actor.shape.rot.y;
 
-    if ((sp8E >= ABS(tmp17) || this->burst) && !(sBodyState & 0x80) && !(player->stateFlags1 & 0x04000000)) {
+    if ((yawDiffThreshold >= ABS(playerShapeYawDiff) || this->burst) && !(sBodyState & 0x80) && !(player->stateFlags1 & 0x04000000)) {
 
         if (!this->burst) {
-            sp94 = sp98 - this->actor.shape.rot.y;
+            clampedYawDiffs = playerToArmYaw - this->actor.shape.rot.y;
 
-            if (ABS(sp94) > 0x1770) {
-                sp94 = (sp94 > 0) ? 0x1770 : -0x1770;
+            if (ABS(clampedYawDiffs) > 0x1770) {
+                clampedYawDiffs = (clampedYawDiffs > 0) ? 0x1770 : -0x1770;
             }
 
-            tmp17 = Math_SmoothStepToS(&this->unk_1E6, sp94, 1, 0x6D6, 0);
-            sp88 = ABS(tmp17);
+            playerShapeYawDiff = Math_SmoothStepToS(&this->unk_1E6, clampedYawDiffs, 1, 0x6D6, 0);
+            cumulativeYawDiffMag = ABS(playerShapeYawDiff);
 
-            sp94 = sp98 - sp94;
+            clampedYawDiffs = playerToArmYaw - clampedYawDiffs;
 
-            if (ABS(sp94) > 0x1770) {
-                sp94 = (sp94 > 0) ? 0x1770 : -0x1770;
+            if (ABS(clampedYawDiffs) > 0x1770) {
+                clampedYawDiffs = (clampedYawDiffs > 0) ? 0x1770 : -0x1770;
             }
 
-            tmp17 = Math_SmoothStepToS(&this->unk_1EC, sp94, 1, 0x6D6, 0);
-            sp88 += ABS(tmp17);
+            playerShapeYawDiff = Math_SmoothStepToS(&this->unk_1EC, clampedYawDiffs, 1, 0x6D6, 0);
+            cumulativeYawDiffMag += ABS(playerShapeYawDiff);
 
-            yaw = Math_Vec3f_Yaw(&this->zapHeadPos, &sp7C);
-            tmp17 = Math_SmoothStepToS(&this->unk_1F2, yaw - 0x4000, 1, 0x9C4, 0);
-            sp88 += ABS(tmp17);
+            angle = Math_Vec3f_Yaw(&this->zapHeadPos, &playerPosTop);
+            playerShapeYawDiff = Math_SmoothStepToS(&this->unk_1F2, angle - 0x4000, 1, 0x9C4, 0);
+            cumulativeYawDiffMag += ABS(playerShapeYawDiff);
 
-            sp96 = this->actor.shape.rot.x + this->skelAnime.jointTable[1].z + this->skelAnime.jointTable[2].z +
+            totalSkelPitch = this->actor.shape.rot.x + this->skelAnime.jointTable[1].z + this->skelAnime.jointTable[2].z +
                    this->skelAnime.jointTable[3].z + this->skelAnime.jointTable[4].z + this->skelAnime.jointTable[5].z;
 
-            yaw = Math_Vec3f_Pitch(&sp7C, &this->zapNeckPos);
-            tmp17 = Math_SmoothStepToS(&this->unk_1EA, yaw - sp96, 1, 0xFA0, 0);
-            sp88 += ABS(tmp17);
+            angle = Math_Vec3f_Pitch(&playerPosTop, &this->zapNeckPos);
+            playerShapeYawDiff = Math_SmoothStepToS(&this->unk_1EA, angle - totalSkelPitch, 1, 0xFA0, 0);
+            cumulativeYawDiffMag += ABS(playerShapeYawDiff);
 
-            yaw = Math_Vec3f_Pitch(&this->zapHeadPos, &sp7C);
-            tmp17 = Math_SmoothStepToS(&this->unk_1F0, -yaw, 1, 0xFA0, 0);
-            sp88 += ABS(tmp17);
+            angle = Math_Vec3f_Pitch(&this->zapHeadPos, &playerPosTop);
+            playerShapeYawDiff = Math_SmoothStepToS(&this->unk_1F0, -angle, 1, 0xFA0, 0);
+            cumulativeYawDiffMag += ABS(playerShapeYawDiff);
 
             this->skelAnime.playSpeed = 0.0f;
             if (Math_SmoothStepToF(&this->skelAnime.curFrame, 0.0f, 1.0f, 2.0f, 0.0f) == 0.0f) {
-                if (sp88 < sp90) {
+                if (cumulativeYawDiffMag < yawDiffThresholdB) {
                     this->timer2 = 0;
                     this->burst++;
-                    this->unk_1D8 = sp7C;
+                    this->unk_1D8 = playerPosTop;
                 }
 
                 if (Rand_ZeroOne() < 0.1f) {
