@@ -45,6 +45,7 @@ typedef struct BossVa {
     /* 0x02D8 */ ColliderJntSph colliderSph;
     /* 0x02F8 */ ColliderJntSphElement elements[1];
     /* 0x0338 */ ColliderQuad colliderLightning;
+                 s16 decisionState;
 } BossVa; // size = 0x03B8
 
 typedef enum {

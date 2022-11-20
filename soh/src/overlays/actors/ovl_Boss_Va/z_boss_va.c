@@ -219,8 +219,8 @@ static ColliderCylinderInit sCylinderInit = {
     },
     {
         ELEMTYPE_UNK0,
-        { 0xFFCFFFEF, 0x03, 0x08 },
-        { 0x00000010, 0x00, 0x00 },
+        { 0xFFCFFFEF, 0x03, 0x10 },
+        { 0x0FC00072, 0x00, 0x00 }, /*0x00000010*/
         TOUCH_ON | TOUCH_SFX_NORMAL,
         BUMP_ON,
         OCELEM_ON,
@@ -259,8 +259,8 @@ static ColliderJntSphElementInit sJntSphElementsInitBari[1] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0xFFCFFFFF, 0x03, 0x04 },
-            { 0xFFCFFFFF, 0x00, 0x00 },
+            { 0xFFCFFFFF, 0x03, 0x10 },
+            { 0x00000010, 0x00, 0x00 },//0xFFCFFFFF
             TOUCH_ON | TOUCH_SFX_NORMAL,
             BUMP_ON,
             OCELEM_NONE,
@@ -293,7 +293,7 @@ static ColliderQuadInit sQuadInit = {
     },
     {
         ELEMTYPE_UNK0,
-        { 0x20000000, 0x03, 0x04 },
+        { 0x20000000, 0x03, 0x10 },
         { 0x00000010, 0x00, 0x00 },
         TOUCH_ON | TOUCH_SFX_NORMAL | TOUCH_UNK7,
         BUMP_ON,
@@ -1913,6 +1913,7 @@ void BossVa_SetupZapperAttack(BossVa* this, GlobalContext* globalCtx) {
     Animation_Change(&this->skelAnime, &gBarinadeZapperIdleAnim, 1.0f, lastFrame - 1.0f, lastFrame,
                      ANIMMODE_LOOP_INTERP, -6.0f);
     this->actor.flags &= ~ACTOR_FLAG_0;
+    this->decisionState = 0;
     BossVa_SetupAction(this, BossVa_ZapperAttack);
 }
 
@@ -1920,6 +1921,7 @@ void BossVa_ZapperAttack(BossVa* this, GlobalContext* globalCtx) {
     Player* player = GET_PLAYER(globalCtx);
     EnBoom* boomerang;
     Actor* boomTarget;
+    const s16 burstTime = 16;
     s16 angle;//yaw
     s16 playerToArmYaw;//sp98
     s16 totalSkelPitch;//sp96
@@ -1947,8 +1949,39 @@ void BossVa_ZapperAttack(BossVa* this, GlobalContext* globalCtx) {
     boomerang = BossVa_FindBoomerang(globalCtx);
 
     if ((boomerang == NULL) || (boomerang->moveTo == NULL) || (boomerang->moveTo == &player->actor)) {
-        playerPosTop = player->actor.world.pos;
-        playerPosTop.y += 10.0f;
+        if (this->burst) {
+            playerPosTop = this->unk_1D8;
+        } else if (this->decisionState == 0) {
+            f32 tSpeed;
+            f32 tTime = 2*burstTime;
+            f32 maxTargetSpeed = 5.5f;
+            if (maxTargetSpeed > 0.0f && player->actor.speedXZ > maxTargetSpeed)
+                tSpeed = maxTargetSpeed;
+            else
+                tSpeed = player->actor.speedXZ;
+            f32 posX = player->actor.world.pos.x;
+            f32 posZ = player->actor.world.pos.z;
+            f32 velX = Math_SinS(player->actor.world.rot.y) * tSpeed;
+            f32 velZ = Math_CosS(player->actor.world.rot.y) * tSpeed;
+            playerPosTop = player->actor.world.pos;
+            playerPosTop.y += 10.0f;
+            playerPosTop.x += velX*tTime;
+            playerPosTop.z += velZ*tTime;
+
+            // Vec3f interiorDifference;
+            // Math_Vec3f_Diff(&playerPosTop,&this->actor.world.pos,&interiorDifference);
+            // f32 sqDist = SQ(interiorDifference.x)+SQ(interiorDifference.z);
+            // if (sqDist < SQ(85+80)) {
+            //     f32 invDist = (85+80)/sqrt(sqDist);
+            //     interiorDifference.x *= invDist;
+            //     interiorDifference.z *= invDist;
+            //     playerPosTop.x = this->actor.world.pos.x + interiorDifference.x;
+            //     playerPosTop.z = this->actor.world.pos.z + interiorDifference.z;
+            // }
+        } else {
+            playerPosTop = player->actor.world.pos;
+            playerPosTop.y += 10.0f;
+        }
         yawDiffThreshold = 0x3E80;
     } else {
         halfUpdateRate = R_UPDATE_RATE * 0.5f;
@@ -2004,10 +2037,10 @@ void BossVa_ZapperAttack(BossVa* this, GlobalContext* globalCtx) {
         return;
     }
 
-    if ((sFightPhase < PHASE_4) && (GET_BODY(this)->actor.speedXZ != 0.0f)) {
-        BossVa_SetupZapperHold(this, globalCtx);
-        return;
-    }
+    //if ((sFightPhase < PHASE_4) && (GET_BODY(this)->actor.speedXZ != 0.0f)) {
+    //    BossVa_SetupZapperHold(this, globalCtx);
+    //    return;
+    //}
 
     playerToArmYaw = Math_Vec3f_Yaw(&playerPosTop, &this->armTip);
     playerShapeYawDiff = playerToArmYaw - this->actor.shape.rot.y;
@@ -2059,6 +2092,15 @@ void BossVa_ZapperAttack(BossVa* this, GlobalContext* globalCtx) {
                 if (Rand_ZeroOne() < 0.1f) {
                     Audio_PlayActorSound2(&this->actor, NA_SE_EN_BALINADE_BL_SPARK - SFX_FLAG);
                 }
+            } else if (this->decisionState == 0) {
+                f32 randVal = Rand_ZeroOne();
+                if (randVal <= 0.02)
+                    this->decisionState = 1;
+                else if (randVal <= 0.03) {
+                    this->timer2 = 0;
+                    this->burst++;
+                    this->unk_1D8 = playerPosTop;
+                }
             }
         }
     } else {
@@ -2089,8 +2131,8 @@ void BossVa_ZapperAttack(BossVa* this, GlobalContext* globalCtx) {
     }
 
     if (this->burst && (this->burst != 2)) { // burst can never be 2
-        if (this->timer2 >= 32) {
-            if (this->timer2 == 32) {
+        if (this->timer2 >= burstTime) {
+            if (this->timer2 == burstTime) {
                 Audio_PlayActorSound2(&this->actor, NA_SE_EN_BALINADE_THUNDER);
             }
             BossVa_Spark(globalCtx, this, 2, 110, 15.0f, 15.0f, SPARK_BLAST, 5.0f, true);
@@ -2100,10 +2142,10 @@ void BossVa_ZapperAttack(BossVa* this, GlobalContext* globalCtx) {
             CollisionCheck_SetAC(globalCtx, &globalCtx->colChkCtx, &this->colliderLightning.base);
         } else {
             BossVa_Spark(globalCtx, this, 2, 50, 15.0f, 0.0f, SPARK_BODY, (this->timer2 >> 3) + 1, true);
-            if (this->timer2 == 30) {
+            if (this->timer2 == burstTime-2) {
                 BossVa_SetSparkEnv(globalCtx);
             }
-            if (this->timer2 == 20) {
+            if (this->timer2 == (burstTime-2)/2) {
                 Vec3f sp44 = this->zapHeadPos;
 
                 BossVa_SpawnZapperCharge(globalCtx, sVaEffects, this, &sp44, &this->headRot, 100, 0);
@@ -2111,8 +2153,9 @@ void BossVa_ZapperAttack(BossVa* this, GlobalContext* globalCtx) {
         }
 
         this->timer2++;
-        if (this->timer2 >= 40) {
+        if (this->timer2 >= burstTime*2) {
             this->burst = false;
+            this->decisionState = Rand_ZeroOne() < 0.2;
         }
     }
 }
@@ -2248,6 +2291,7 @@ void BossVa_SetupZapperEnraged(BossVa* this, GlobalContext* globalCtx) {
 
 void BossVa_ZapperEnraged(BossVa* this, GlobalContext* globalCtx) {
     Player* player = GET_PLAYER(globalCtx);
+    const s16 burstTime = 8;
     s32 pad;
     s16 tmp16;
     s16 sp6C;
@@ -2256,8 +2300,27 @@ void BossVa_ZapperEnraged(BossVa* this, GlobalContext* globalCtx) {
     s16 yaw;
     u32 sp60;
     Vec3f sp54 = player->actor.world.pos;
+    if (this->burst) {
+        sp54 = this->unk_1D8;
+        sp54.y -= 25.0;
+    } else {
+        f32 tSpeed;
+        f32 tTime = 2*burstTime;
+        f32 maxTargetSpeed = 5.5f;
+        if (maxTargetSpeed > 0.0f && player->actor.speedXZ > maxTargetSpeed)
+            tSpeed = maxTargetSpeed;
+        else
+            tSpeed = player->actor.speedXZ;
+        f32 posX = player->actor.world.pos.x;
+        f32 posZ = player->actor.world.pos.z;
+        f32 velX = Math_SinS(player->actor.world.rot.y) * tSpeed;
+        f32 velZ = Math_CosS(player->actor.world.rot.y) * tSpeed;
+        sp54 = player->actor.world.pos;
+        sp54.y += 10.0f;
+        sp54.x += velX*tTime;
+        sp54.z += velZ*tTime;
+    }
 
-    sp54.y += 10.0f;
     SkelAnime_Update(&this->skelAnime);
     BossVa_AttachToBody(this);
     if (sFightPhase >= PHASE_DEATH) {
@@ -2347,8 +2410,8 @@ void BossVa_ZapperEnraged(BossVa* this, GlobalContext* globalCtx) {
     }
 
     if (this->burst && (this->burst != 2)) { // burst can never be 2
-        if (this->timer2 >= 16) {
-            if (this->timer2 == 18) {
+        if (this->timer2 >= burstTime) {
+            if (this->timer2 == burstTime+2) {
                 Audio_PlayActorSound2(&this->actor, NA_SE_EN_BALINADE_THUNDER);
             }
 
@@ -2359,10 +2422,10 @@ void BossVa_ZapperEnraged(BossVa* this, GlobalContext* globalCtx) {
             CollisionCheck_SetAC(globalCtx, &globalCtx->colChkCtx, &this->colliderLightning.base);
         } else {
             BossVa_Spark(globalCtx, this, 2, 50, 15.0f, 0.0f, SPARK_BODY, (this->timer2 >> 1) + 1, true);
-            if (this->timer2 == 14) {
+            if (this->timer2 == burstTime-2) {
                 BossVa_SetSparkEnv(globalCtx);
             }
-            if (this->timer2 == 4) {
+            if (this->timer2 == 2) {
                 Vec3f sp48 = this->zapHeadPos;
 
                 BossVa_SpawnZapperCharge(globalCtx, sVaEffects, this, &sp48, &this->headRot, 100, 0);
@@ -2370,7 +2433,7 @@ void BossVa_ZapperEnraged(BossVa* this, GlobalContext* globalCtx) {
         }
 
         this->timer2++;
-        if (this->timer2 >= 24) {
+        if (this->timer2 >= burstTime*2) {
             this->burst = false;
         }
     }
