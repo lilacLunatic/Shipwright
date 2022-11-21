@@ -43,6 +43,13 @@ void ResourceMgr_PatchGfxByName(const char* path, const char* patchName, int ind
 void ResourceMgr_UnpatchGfxByName(const char* path, const char* patchName);
 }
 
+bool operator!=(Color_RGBA8 a, Color_RGBA8 b){
+    return a.r != b.r ||
+        a.g != b.g ||
+        a.b != b.b ||
+        a.a != b.a;
+}
+
 void ApplyOrResetCustomGfxPatches(bool rainbowTick);
 
 typedef enum {
@@ -311,6 +318,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(linkGoronTunic.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {linkGoronTunic.defaultColor.x, linkGoronTunic.defaultColor.y, linkGoronTunic.defaultColor.z, linkGoronTunic.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(linkGoronTunic.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(linkGoronTunic.changedCvar, 1);
+        }
         PATCH_GFX(gGiGoronTunicColorDL,                           "Link_GoronTunic1",         linkGoronTunic.changedCvar,           6, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiGoronCollarColorDL,                          "Link_GoronTunic2",         linkGoronTunic.changedCvar,           6, gsDPSetPrimColor(0, 0, color.r / 2, color.g / 2, color.b / 2, 255));
         PATCH_GFX(gGiGoronTunicColorDL,                           "Link_GoronTunic3",         linkGoronTunic.changedCvar,           8, gsDPSetEnvColor(color.r / 2, color.g / 2, color.b / 2, 255));
@@ -321,6 +331,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(linkZoraTunic.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {linkZoraTunic.defaultColor.x, linkZoraTunic.defaultColor.y, linkZoraTunic.defaultColor.z, linkZoraTunic.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(linkZoraTunic.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(linkZoraTunic.changedCvar, 1);
+        }
         PATCH_GFX(gGiZoraTunicColorDL,                            "Link_ZoraTunic1",          linkZoraTunic.changedCvar,            6, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiZoraCollarColorDL,                           "Link_ZoraTunic2",          linkZoraTunic.changedCvar,            6, gsDPSetPrimColor(0, 0, color.r / 2, color.g / 2, color.b / 2, 255));
         PATCH_GFX(gGiZoraTunicColorDL,                            "Link_ZoraTunic3",          linkZoraTunic.changedCvar,            8, gsDPSetEnvColor(color.r / 2, color.g / 2, color.b / 2, 255));
@@ -331,6 +344,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(linkHair.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {linkHair.defaultColor.x, linkHair.defaultColor.y, linkHair.defaultColor.z, linkHair.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(linkHair.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(linkHair.changedCvar, 1);
+        }
         PATCH_GFX(gLinkChildHeadNearDL,                           "Link_Hair1",               linkHair.changedCvar,                20, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkChildHeadFarDL,                            "Link_Hair2",               linkHair.changedCvar,                20, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkAdultHeadNearDL,                           "Link_Hair3",               linkHair.changedCvar,                20, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
@@ -354,6 +370,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(linkLinen.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {linkLinen.defaultColor.x, linkLinen.defaultColor.y, linkLinen.defaultColor.z, linkLinen.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(linkLinen.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(linkLinen.changedCvar, 1);
+        }
         PATCH_GFX(gLinkAdultLeftArmNearDL,                        "Link_Linen1",              linkLinen.changedCvar,               60, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkAdultLeftArmNearDL,                        "Link_Linen2",              linkLinen.changedCvar,              166, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkAdultLeftArmOutNearDL,                     "Link_Linen3",              linkLinen.changedCvar,               50, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -396,6 +415,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(linkBoots.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {linkBoots.defaultColor.x, linkBoots.defaultColor.y, linkBoots.defaultColor.z, linkBoots.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(linkBoots.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(linkBoots.changedCvar, 1);
+        }
         PATCH_GFX(gLinkChildRightShinNearDL,                      "Link_Boots1",              linkBoots.changedCvar,               20, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkChildRightShinFarDL,                       "Link_Boots2",              linkBoots.changedCvar,               20, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkAdultRightLegNearDL,                       "Link_Boots3",              linkBoots.changedCvar,               20, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
@@ -433,6 +455,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(mirrorShieldBody.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {mirrorShieldBody.defaultColor.x, mirrorShieldBody.defaultColor.y, mirrorShieldBody.defaultColor.z, mirrorShieldBody.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(mirrorShieldBody.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(mirrorShieldBody.changedCvar, 1);
+        }
         PATCH_GFX(gGiMirrorShieldDL,                              "MirrorShield_Body1",       mirrorShieldBody.changedCvar,        10, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiMirrorShieldDL,                              "MirrorShield_Body2",       mirrorShieldBody.changedCvar,        12, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gLinkAdultMirrorShieldSwordAndSheathNearDL,     "MirrorShield_Body3",       mirrorShieldBody.changedCvar,        56, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -446,6 +471,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(mirrorShieldMirror.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {mirrorShieldMirror.defaultColor.x, mirrorShieldMirror.defaultColor.y, mirrorShieldMirror.defaultColor.z, mirrorShieldMirror.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(mirrorShieldMirror.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(mirrorShieldMirror.changedCvar, 1);
+        }
         PATCH_GFX(gGiMirrorShieldDL,                              "MirrorShield_Mirror1",     mirrorShieldMirror.changedCvar,      94, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiMirrorShieldDL,                              "MirrorShield_Mirror2",     mirrorShieldMirror.changedCvar,      96, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gLinkAdultMirrorShieldSwordAndSheathNearDL,     "MirrorShield_Mirror3",     mirrorShieldMirror.changedCvar,      34, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -459,6 +487,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(mirrorShieldEmblem.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {mirrorShieldEmblem.defaultColor.x, mirrorShieldEmblem.defaultColor.y, mirrorShieldEmblem.defaultColor.z, mirrorShieldEmblem.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(mirrorShieldEmblem.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(mirrorShieldEmblem.changedCvar, 1);
+        }
         PATCH_GFX(gGiMirrorShieldSymbolDL,                        "MirrorShield_Emblem1",     mirrorShieldEmblem.changedCvar,      10, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 140));
         PATCH_GFX(gGiMirrorShieldSymbolDL,                        "MirrorShield_Emblem2",     mirrorShieldEmblem.changedCvar,      12, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gLinkAdultMirrorShieldSwordAndSheathNearDL,     "MirrorShield_Emblem3",     mirrorShieldEmblem.changedCvar,     330, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -473,6 +504,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(swordsKokiriBlade.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {swordsKokiriBlade.defaultColor.x, swordsKokiriBlade.defaultColor.y, swordsKokiriBlade.defaultColor.z, swordsKokiriBlade.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(swordsKokiriBlade.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(swordsKokiriBlade.changedCvar, 1);
+        }
         PATCH_GFX(gLinkChildLeftFistAndKokiriSwordNearDL,         "Swords_KokiriBlade1",      swordsKokiriBlade.changedCvar,      158, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkChildLeftFistAndKokiriSwordFarDL,          "Swords_KokiriBlade2",      swordsKokiriBlade.changedCvar,      150, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiKokiriSwordDL,                               "Swords_KokiriBlade3",      swordsKokiriBlade.changedCvar,       10, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -482,6 +516,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(swordsKokiriHilt.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {swordsKokiriHilt.defaultColor.x, swordsKokiriHilt.defaultColor.y, swordsKokiriHilt.defaultColor.z, swordsKokiriHilt.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(swordsKokiriHilt.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(swordsKokiriHilt.changedCvar, 1);
+        }
         PATCH_GFX(gLinkChildLeftFistAndKokiriSwordNearDL,         "Swords_KokiriHilt1",       swordsKokiriHilt.changedCvar,         4, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkChildLeftFistAndKokiriSwordFarDL,          "Swords_KokiriHilt2",       swordsKokiriHilt.changedCvar,         4, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkChildSwordAndSheathNearDL,                 "Swords_KokiriHilt3",       swordsKokiriHilt.changedCvar,         4, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
@@ -519,6 +556,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(swordsMasterBlade.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {swordsMasterBlade.defaultColor.x, swordsMasterBlade.defaultColor.y, swordsMasterBlade.defaultColor.z, swordsMasterBlade.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(swordsMasterBlade.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(swordsMasterBlade.changedCvar, 1);
+        }
         PATCH_GFX(gLinkAdultLeftHandHoldingMasterSwordFarDL,      "Swords_MasterBlade1",      swordsMasterBlade.changedCvar,      120, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkAdultLeftHandHoldingMasterSwordNearDL,     "Swords_MasterBlade2",      swordsMasterBlade.changedCvar,       34, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(object_toki_objects_DL_001BD0,                  "Swords_MasterBlade3",      swordsMasterBlade.changedCvar,       26, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -528,6 +568,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(swordsMasterHilt.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {swordsMasterHilt.defaultColor.x, swordsMasterHilt.defaultColor.y, swordsMasterHilt.defaultColor.z, swordsMasterHilt.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(swordsMasterHilt.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(swordsMasterHilt.changedCvar, 1);
+        }
         PATCH_GFX(gLinkAdultLeftHandHoldingMasterSwordNearDL,     "Swords_MasterHilt1",       swordsMasterHilt.changedCvar,        20, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkAdultLeftHandHoldingMasterSwordFarDL,      "Swords_MasterHilt2",       swordsMasterHilt.changedCvar,        20, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
         PATCH_GFX(object_toki_objects_DL_001BD0,                  "Swords_MasterHilt3",       swordsMasterHilt.changedCvar,        16, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
@@ -546,6 +589,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(swordsBiggoronBlade.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {swordsBiggoronBlade.defaultColor.x, swordsBiggoronBlade.defaultColor.y, swordsBiggoronBlade.defaultColor.z, swordsBiggoronBlade.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(swordsBiggoronBlade.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(swordsBiggoronBlade.changedCvar, 1);
+        }
         PATCH_GFX(gLinkAdultLeftHandHoldingBgsFarDL,              "Swords_BiggoronBlade1",    swordsBiggoronBlade.changedCvar,    216, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkAdultLeftHandHoldingBgsNearDL,             "Swords_BiggoronBlade2",    swordsBiggoronBlade.changedCvar,    126, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiBiggoronSwordDL,                             "Swords_BiggoronBlade3",    swordsBiggoronBlade.changedCvar,     10, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -555,6 +601,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(swordsBiggoronHilt.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {swordsBiggoronHilt.defaultColor.x, swordsBiggoronHilt.defaultColor.y, swordsBiggoronHilt.defaultColor.z, swordsBiggoronHilt.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(swordsBiggoronHilt.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(swordsBiggoronHilt.changedCvar, 1);
+        }
         PATCH_GFX(gLinkAdultLeftHandHoldingBgsNearDL,             "Swords_BiggoronHilt1",     swordsBiggoronHilt.changedCvar,      20, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
         PATCH_GFX(gLinkAdultLeftHandHoldingBgsFarDL,              "Swords_BiggoronHilt2",     swordsBiggoronHilt.changedCvar,      20, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
         PATCH_GFX(gGiBiggoronSwordDL,                             "Swords_BiggoronHilt3",     swordsBiggoronHilt.changedCvar,      74, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -575,6 +624,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(glovesGoronBracelet.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {glovesGoronBracelet.defaultColor.x, glovesGoronBracelet.defaultColor.y, glovesGoronBracelet.defaultColor.z, glovesGoronBracelet.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(glovesGoronBracelet.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(glovesGoronBracelet.changedCvar, 1);
+        }
         PATCH_GFX(gGiGoronBraceletDL,                             "Gloves_GoronBracelet1",    glovesGoronBracelet.changedCvar,     10, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiGoronBraceletDL,                             "Gloves_GoronBracelet2",    glovesGoronBracelet.changedCvar,     12, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gLinkChildGoronBraceletDL,                      "Gloves_GoronBracelet3",    glovesGoronBracelet.changedCvar,      6, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
@@ -588,6 +640,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(glovesSilverGauntlets.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {glovesSilverGauntlets.defaultColor.x, glovesSilverGauntlets.defaultColor.y, glovesSilverGauntlets.defaultColor.z, glovesSilverGauntlets.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(glovesSilverGauntlets.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(glovesSilverGauntlets.changedCvar, 1);
+        }
         PATCH_GFX(gGiSilverGauntletsColorDL,                      "Gloves_SilverGauntlets1",  glovesSilverGauntlets.changedCvar,    6, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiSilverGauntletsColorDL,                      "Gloves_SilverGauntlets2",  glovesSilverGauntlets.changedCvar,    8, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
     }
@@ -595,6 +650,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(glovesGoldenGauntlets.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {glovesGoldenGauntlets.defaultColor.x, glovesGoldenGauntlets.defaultColor.y, glovesGoldenGauntlets.defaultColor.z, glovesGoldenGauntlets.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(glovesGoldenGauntlets.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(glovesGoldenGauntlets.changedCvar, 1);
+        }
         PATCH_GFX(gGiGoldenGauntletsColorDL,                      "Gloves_GoldenGauntlets1",  glovesGoldenGauntlets.changedCvar,    6, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiGoldenGauntletsColorDL,                      "Gloves_GoldenGauntlets2",  glovesGoldenGauntlets.changedCvar,    8, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
     }
@@ -602,6 +660,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(glovesGauntletsGem.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {glovesGauntletsGem.defaultColor.x, glovesGauntletsGem.defaultColor.y, glovesGauntletsGem.defaultColor.z, glovesGauntletsGem.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(glovesGauntletsGem.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(glovesGauntletsGem.changedCvar, 1);
+        }
         PATCH_GFX(gGiGauntletsDL,                                 "Gloves_GauntletsGem1",     glovesGauntletsGem.changedCvar,     168, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiGauntletsDL,                                 "Gloves_GauntletsGem2",     glovesGauntletsGem.changedCvar,     170, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gLinkAdultLeftGauntletPlate2DL,                 "Gloves_GauntletsGem3",     glovesGauntletsGem.changedCvar,      84, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -614,6 +675,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(equipmentBoomerangBody.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {equipmentBoomerangBody.defaultColor.x, equipmentBoomerangBody.defaultColor.y, equipmentBoomerangBody.defaultColor.z, equipmentBoomerangBody.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(equipmentBoomerangBody.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(equipmentBoomerangBody.changedCvar, 1);
+        }
         PATCH_GFX(gGiBoomerangDL,                                 "Equipment_BoomerangBody1", equipmentBoomerangBody.changedCvar,  10, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiBoomerangDL,                                 "Equipment_BoomerangBody2", equipmentBoomerangBody.changedCvar,  12, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gLinkChildLeftFistAndBoomerangNearDL,           "Equipment_BoomerangBody3", equipmentBoomerangBody.changedCvar,  68, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -624,6 +688,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(equipmentBoomerangGem.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {equipmentBoomerangGem.defaultColor.x, equipmentBoomerangGem.defaultColor.y, equipmentBoomerangGem.defaultColor.z, equipmentBoomerangGem.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(equipmentBoomerangGem.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(equipmentBoomerangGem.changedCvar, 1);
+        }
         PATCH_GFX(gGiBoomerangDL,                                 "Equipment_BoomerangGem1",  equipmentBoomerangGem.changedCvar,  168, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiBoomerangDL,                                 "Equipment_BoomerangGem2",  equipmentBoomerangGem.changedCvar,  170, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gLinkChildLeftFistAndBoomerangNearDL,           "Equipment_BoomerangGem3",  equipmentBoomerangGem.changedCvar,   32, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -636,6 +703,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(equipmentBowTips.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {equipmentBowTips.defaultColor.x, equipmentBowTips.defaultColor.y, equipmentBowTips.defaultColor.z, equipmentBowTips.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(equipmentBowTips.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(equipmentBowTips.changedCvar, 1);
+        }
         PATCH_GFX(gGiBowDL,                                       "Equipment_BowTips1",       equipmentBowTips.changedCvar,       172, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiBowDL,                                       "Equipment_BowTips2",       equipmentBowTips.changedCvar,       174, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gLinkAdultRightHandHoldingBowFirstPersonDL,     "Equipment_BowTips3",       equipmentBowTips.changedCvar,        68, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -646,6 +716,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(equipmentBowString.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {equipmentBowString.defaultColor.x, equipmentBowString.defaultColor.y, equipmentBowString.defaultColor.z, equipmentBowString.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(equipmentBowString.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(equipmentBowString.changedCvar, 1);
+        }
         PATCH_GFX(gGiBowDL,                                       "Equipment_BowString1",     equipmentBowString.changedCvar,     210, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiBowDL,                                       "Equipment_BowString2",     equipmentBowString.changedCvar,     212, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gLinkAdultBowStringDL,                          "Equipment_BowString3",     equipmentBowString.changedCvar,      18, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -654,6 +727,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(equipmentBowBody.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {equipmentBowBody.defaultColor.x, equipmentBowBody.defaultColor.y, equipmentBowBody.defaultColor.z, equipmentBowBody.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(equipmentBowBody.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(equipmentBowBody.changedCvar, 1);
+        }
         PATCH_GFX(gGiBowDL,                                       "Equipment_BowBody1",       equipmentBowBody.changedCvar,        10, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiBowDL,                                       "Equipment_BowBody2",       equipmentBowBody.changedCvar,        12, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gLinkAdultRightHandHoldingBowFirstPersonDL,     "Equipment_BowBody3",       equipmentBowBody.changedCvar,        84, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -664,6 +740,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(equipmentBowHandle.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {equipmentBowHandle.defaultColor.x, equipmentBowHandle.defaultColor.y, equipmentBowHandle.defaultColor.z, equipmentBowHandle.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(equipmentBowHandle.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(equipmentBowHandle.changedCvar, 1);
+        }
         PATCH_GFX(gGiBowDL,                                       "Equipment_BowHandle1",     equipmentBowHandle.changedCvar,     102, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiBowDL,                                       "Equipment_BowHandle2",     equipmentBowHandle.changedCvar,     104, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gLinkAdultRightHandHoldingBowFirstPersonDL,     "Equipment_BowHandle3",     equipmentBowHandle.changedCvar,      36, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -675,6 +754,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(equipmentHammerHead.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {equipmentHammerHead.defaultColor.x, equipmentHammerHead.defaultColor.y, equipmentHammerHead.defaultColor.z, equipmentHammerHead.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(equipmentHammerHead.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(equipmentHammerHead.changedCvar, 1);
+        }
         PATCH_GFX(gGiHammerDL,                                    "Equipment_HammerHead1",    equipmentHammerHead.changedCvar,     10, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiHammerDL,                                    "Equipment_HammerHead2",    equipmentHammerHead.changedCvar,     12, gsDPSetEnvColor(color.r / 5, color.g / 5, color.b / 5, 255));
         PATCH_GFX(gGiHammerDL,                                    "Equipment_HammerHead3",    equipmentHammerHead.changedCvar,    136, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -686,6 +768,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(equipmentHammerHandle.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {equipmentHammerHandle.defaultColor.x, equipmentHammerHandle.defaultColor.y, equipmentHammerHandle.defaultColor.z, equipmentHammerHandle.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(equipmentHammerHandle.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(equipmentHammerHandle.changedCvar, 1);
+        }
         PATCH_GFX(gGiHammerDL,                                    "Equipment_HammerHandle1",  equipmentHammerHandle.changedCvar,  168, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiHammerDL,                                    "Equipment_HammerHandle2",  equipmentHammerHandle.changedCvar,  170, gsDPSetEnvColor(color.r / 2, color.g / 2, color.b / 2, 255));
         PATCH_GFX(gLinkAdultLeftHandHoldingHammerNearDL,          "Equipment_HammerHandle5",  equipmentHammerHandle.changedCvar,   36, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -696,6 +781,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(equipmentChuFace.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {equipmentChuFace.defaultColor.x, equipmentChuFace.defaultColor.y, equipmentChuFace.defaultColor.z, equipmentChuFace.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(equipmentChuFace.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(equipmentChuFace.changedCvar, 1);
+        }
         PATCH_GFX(gGiBombchuDL,                                   "Equipment_ChuFace1",       equipmentChuFace.changedCvar,        10, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiBombchuDL,                                   "Equipment_ChuFace2",       equipmentChuFace.changedCvar,        12, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gBombchuDL,                                     "Equipment_ChuFace3",       equipmentChuFace.changedCvar,         4, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
@@ -709,6 +797,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(equipmentChuBody.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {equipmentChuBody.defaultColor.x, equipmentChuBody.defaultColor.y, equipmentChuBody.defaultColor.z, equipmentChuBody.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(equipmentChuBody.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(equipmentChuBody.changedCvar, 1);
+        }
         PATCH_GFX(gGiBombchuDL,                                   "Equipment_ChuBody1",       equipmentChuBody.changedCvar,        78, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiBombchuDL,                                   "Equipment_ChuBody2",       equipmentChuBody.changedCvar,        80, gsDPSetEnvColor(color.r / 3, color.g / 3, color.b / 3, 255));
         PATCH_GFX(gGiBombchuDL,                                   "Equipment_ChuBody3",       equipmentChuBody.changedCvar,       120, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -720,6 +811,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(consumableGreenRupee.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {consumableGreenRupee.defaultColor.x, consumableGreenRupee.defaultColor.y, consumableGreenRupee.defaultColor.z, consumableGreenRupee.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(consumableGreenRupee.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(consumableGreenRupee.changedCvar, 1);
+        }
         PATCH_GFX(gGiGreenRupeeInnerColorDL,                      "Consumable_GreenRupee1",   consumableGreenRupee.changedCvar,     6, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiGreenRupeeInnerColorDL,                      "Consumable_GreenRupee2",   consumableGreenRupee.changedCvar,     8, gsDPSetEnvColor(color.r / 5, color.g / 5, color.b / 5, 255));
         PATCH_GFX(gGiGreenRupeeOuterColorDL,                      "Consumable_GreenRupee3",   consumableGreenRupee.changedCvar,     6, gsDPSetPrimColor(0, 0, MIN(color.r + 100, 255), MIN(color.g + 100, 255), MIN(color.b + 100, 255), 255));
@@ -729,6 +823,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(consumableBlueRupee.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {consumableBlueRupee.defaultColor.x, consumableBlueRupee.defaultColor.y, consumableBlueRupee.defaultColor.z, consumableBlueRupee.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(consumableBlueRupee.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(consumableBlueRupee.changedCvar, 1);
+        }
         PATCH_GFX(gGiBlueRupeeInnerColorDL,                       "Consumable_BlueRupee1",    consumableBlueRupee.changedCvar,      6, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiBlueRupeeInnerColorDL,                       "Consumable_BlueRupee2",    consumableBlueRupee.changedCvar,      8, gsDPSetEnvColor(color.r / 5, color.g / 5, color.b / 5, 255));
         PATCH_GFX(gGiBlueRupeeOuterColorDL,                       "Consumable_BlueRupee3",    consumableBlueRupee.changedCvar,      6, gsDPSetPrimColor(0, 0, MIN(color.r + 100, 255), MIN(color.g + 100, 255), MIN(color.b + 100, 255), 255));
@@ -738,6 +835,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(consumableRedRupee.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {consumableRedRupee.defaultColor.x, consumableRedRupee.defaultColor.y, consumableRedRupee.defaultColor.z, consumableRedRupee.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(consumableRedRupee.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(consumableRedRupee.changedCvar, 1);
+        }
         PATCH_GFX(gGiRedRupeeInnerColorDL,                        "Consumable_RedRupee1",     consumableRedRupee.changedCvar,       6, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiRedRupeeInnerColorDL,                        "Consumable_RedRupee2",     consumableRedRupee.changedCvar,       8, gsDPSetEnvColor(color.r / 5, color.g / 5, color.b / 5, 255));
         PATCH_GFX(gGiRedRupeeOuterColorDL,                        "Consumable_RedRupee3",     consumableRedRupee.changedCvar,       6, gsDPSetPrimColor(0, 0, MIN(color.r + 100, 255), MIN(color.g + 100, 255), MIN(color.b + 100, 255), 255));
@@ -747,6 +847,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(consumablePurpleRupee.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {consumablePurpleRupee.defaultColor.x, consumablePurpleRupee.defaultColor.y, consumablePurpleRupee.defaultColor.z, consumablePurpleRupee.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(consumablePurpleRupee.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(consumablePurpleRupee.changedCvar, 1);
+        }
         PATCH_GFX(gGiPurpleRupeeInnerColorDL,                     "Consumable_PurpleRupee1",  consumablePurpleRupee.changedCvar,    6, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiPurpleRupeeInnerColorDL,                     "Consumable_PurpleRupee2",  consumablePurpleRupee.changedCvar,    8, gsDPSetEnvColor(color.r / 5, color.g / 5, color.b / 5, 255));
         PATCH_GFX(gGiPurpleRupeeOuterColorDL,                     "Consumable_PurpleRupee3",  consumablePurpleRupee.changedCvar,    6, gsDPSetPrimColor(0, 0, MIN(color.r + 100, 255), MIN(color.g + 100, 255), MIN(color.b + 100, 255), 255));
@@ -756,6 +859,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(consumableGoldRupee.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {consumableGoldRupee.defaultColor.x, consumableGoldRupee.defaultColor.y, consumableGoldRupee.defaultColor.z, consumableGoldRupee.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(consumableGoldRupee.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(consumableGoldRupee.changedCvar, 1);
+        }
         PATCH_GFX(gGiGoldRupeeInnerColorDL,                       "Consumable_GoldRupee1",    consumableGoldRupee.changedCvar,      6, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiGoldRupeeInnerColorDL,                       "Consumable_GoldRupee2",    consumableGoldRupee.changedCvar,      8, gsDPSetEnvColor(color.r / 5, color.g / 5, color.b / 5, 255));
         PATCH_GFX(gGiGoldRupeeOuterColorDL,                       "Consumable_GoldRupee3",    consumableGoldRupee.changedCvar,      6, gsDPSetPrimColor(0, 0, MIN(color.r + 100, 255), MIN(color.g + 100, 255), MIN(color.b + 100, 255), 255));
@@ -766,6 +872,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(consumableHearts.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {consumableHearts.defaultColor.x, consumableHearts.defaultColor.y, consumableHearts.defaultColor.z, consumableHearts.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(consumableHearts.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(consumableHearts.changedCvar, 1);
+        }
         PATCH_GFX(gGiRecoveryHeartDL,                             "Consumable_Hearts1",       consumableHearts.changedCvar,         4, gsDPSetGrayscaleColor(color.r, color.g, color.b, 255));
         PATCH_GFX(gGiRecoveryHeartDL,                             "Consumable_Hearts2",       consumableHearts.changedCvar,        26, gsSPGrayscale(true));
         PATCH_GFX(gGiRecoveryHeartDL,                             "Consumable_Hearts3",       consumableHearts.changedCvar,        72, gsSPGrayscale(false));
@@ -781,6 +890,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(consumableMagic.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {consumableMagic.defaultColor.x, consumableMagic.defaultColor.y, consumableMagic.defaultColor.z, consumableMagic.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(consumableMagic.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(consumableMagic.changedCvar, 1);
+        }
         PATCH_GFX(gGiMagicJarSmallDL,                             "Consumable_Magic1",        consumableMagic.changedCvar,         62, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiMagicJarSmallDL,                             "Consumable_Magic2",        consumableMagic.changedCvar,         64, gsDPSetEnvColor(color.r / 2, color.g / 2, color.b / 2, 255));
         PATCH_GFX(gGiMagicJarLargeDL,                             "Consumable_Magic3",        consumableMagic.changedCvar,         62, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -793,6 +905,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(npcGoldenSkulltula.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {npcGoldenSkulltula.defaultColor.x, npcGoldenSkulltula.defaultColor.y, npcGoldenSkulltula.defaultColor.z, npcGoldenSkulltula.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(npcGoldenSkulltula.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(npcGoldenSkulltula.changedCvar, 1);
+        }
         PATCH_GFX(gGiSkulltulaTokenDL,                            "NPC_GoldenSkulltula1",     npcGoldenSkulltula.changedCvar,      10, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
         PATCH_GFX(gGiSkulltulaTokenDL,                            "NPC_GoldenSkulltula2",     npcGoldenSkulltula.changedCvar,      12, gsDPSetEnvColor(color.r / 2, color.g / 2, color.b / 2, 255));
         PATCH_GFX(gGiSkulltulaTokenFlameDL,                       "NPC_GoldenSkulltula3",     npcGoldenSkulltula.changedCvar,      64, gsDPSetPrimColor(0, 0, color.r, color.g, color.b, 255));
@@ -805,6 +920,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(npcGerudo.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {npcGerudo.defaultColor.x, npcGerudo.defaultColor.y, npcGerudo.defaultColor.z, npcGerudo.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(npcGerudo.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(npcGerudo.changedCvar, 1);
+        }
         PATCH_GFX(gGerudoPurpleTorsoDL,                           "NPC_Gerudo1",              npcGerudo.changedCvar,              278, gsDPSetEnvColor( color.r, color.g, color.b, 255));
         PATCH_GFX(gGerudoPurpleRightThighDL,                      "NPC_Gerudo2",              npcGerudo.changedCvar,               22, gsDPSetEnvColor(color.r, color.g, color.b, 255));
         PATCH_GFX(gGerudoPurpleLeftThighDL,                       "NPC_Gerudo3",              npcGerudo.changedCvar,               22, gsDPSetEnvColor(color.r, color.g, color.b, 255));
@@ -819,6 +937,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(n64LogoRed.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {n64LogoRed.defaultColor.x, n64LogoRed.defaultColor.y, n64LogoRed.defaultColor.z, n64LogoRed.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(n64LogoRed.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(n64LogoRed.changedCvar, 1);
+        }
         PATCH_GFX(gNintendo64LogoDL,                              "Title_N64LogoRed1",          n64LogoRed.changedCvar,              34, gsDPSetPrimColor(0, 0, 255, 255, 255, 255))
         PATCH_GFX(gNintendo64LogoDL,                              "Title_N64LogoRed2",          n64LogoRed.changedCvar,              36, gsDPSetEnvColor(color.r, color.g, color.b, 128));
     }
@@ -826,6 +947,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(n64LogoBlue.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {n64LogoBlue.defaultColor.x, n64LogoBlue.defaultColor.y, n64LogoBlue.defaultColor.z, n64LogoBlue.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(n64LogoBlue.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(n64LogoBlue.changedCvar, 1);
+        }
         PATCH_GFX(gNintendo64LogoDL,                              "Title_N64LogoBlue1",         n64LogoBlue.changedCvar,             58, gsDPSetPrimColor(0, 0, 255, 255, 255, 255))
         PATCH_GFX(gNintendo64LogoDL,                              "Title_N64LogoBlue2",         n64LogoBlue.changedCvar,             60, gsDPSetEnvColor(color.r, color.g, color.b, 128));
     }
@@ -833,6 +957,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(n64LogoGreen.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {n64LogoGreen.defaultColor.x, n64LogoGreen.defaultColor.y, n64LogoGreen.defaultColor.z, n64LogoGreen.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(n64LogoGreen.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(n64LogoGreen.changedCvar, 1);
+        }
         PATCH_GFX(gNintendo64LogoDL,                              "Title_N64LogoGreen1",        n64LogoGreen.changedCvar,           112, gsDPSetPrimColor(0, 0, 255, 255, 255, 255))
         PATCH_GFX(gNintendo64LogoDL,                              "Title_N64LogoGreen2",        n64LogoGreen.changedCvar,           114, gsDPSetEnvColor(color.r, color.g, color.b, 128));
     }
@@ -840,6 +967,9 @@ void ApplyOrResetCustomGfxPatches(bool rainbowTick = false) {
     if (rainbowTick == false || CVar_GetS32(n64LogoYellow.rainbowCvar, 0)) {
         static Color_RGBA8 defaultColor = {n64LogoYellow.defaultColor.x, n64LogoYellow.defaultColor.y, n64LogoYellow.defaultColor.z, n64LogoYellow.defaultColor.w};
         Color_RGBA8 color = CVar_GetRGBA(n64LogoYellow.cvar, defaultColor);
+        if (color != defaultColor){
+            CVar_SetS32(n64LogoYellow.changedCvar, 1);
+        }
         PATCH_GFX(gNintendo64LogoDL,                              "Title_N64LogoYellow1",       n64LogoYellow.changedCvar,          162, gsDPSetPrimColor(0, 0, 255, 255, 255, 255))
         PATCH_GFX(gNintendo64LogoDL,                              "Title_N64LogoYellow2",       n64LogoYellow.changedCvar,          164, gsDPSetEnvColor(color.r, color.g, color.b, 128));
     }
