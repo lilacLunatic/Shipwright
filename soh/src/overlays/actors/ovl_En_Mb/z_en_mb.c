@@ -159,7 +159,7 @@ static ColliderQuadInit sAttackColliderInit = {
     },
     {
         ELEMTYPE_UNK0,
-        { 0xFFCFFFFF, 0x00, 0x08 },
+        { 0xFFCFFFFF, 0x00, 0x20 },
         { 0x00000000, 0x00, 0x00 },
         TOUCH_ON | TOUCH_SFX_NORMAL,
         BUMP_NONE,
@@ -252,6 +252,8 @@ static InitChainEntry sInitChain[] = {
     ICHAIN_F32(targetArrowOffset, 5300, ICHAIN_STOP),
 };
 
+static const WALK_SPEED = 1.8f;
+
 void EnMb_SetupAction(EnMb* this, EnMbActionFunc actionFunc) {
     this->actionFunc = actionFunc;
 }
@@ -320,7 +322,7 @@ void EnMb_Init(Actor* thisx, PlayState* play) {
             this->path = (thisx->params & 0xFF00) >> 8;
             this->actor.params = ENMB_TYPE_SPEAR_PATROL;
             this->waypoint = 0;
-            this->actor.colChkInfo.health = 1;
+            this->actor.colChkInfo.health = 4;
             this->actor.colChkInfo.mass = MASS_HEAVY;
             this->maxHomeDist = 350.0f;
             this->playerDetectionRange = 1750.0f;
@@ -460,7 +462,7 @@ void EnMb_SetupSpearPatrolTurnTowardsWaypoint(EnMb* this, PlayState* play) {
 void EnMb_SetupSpearGuardWalk(EnMb* this) {
     Animation_Change(&this->skelAnime, &gEnMbSpearWalkAnim, 0.0f, 0.0f, Animation_GetLastFrame(&gEnMbSpearWalkAnim),
                      ANIMMODE_LOOP, -4.0f);
-    this->actor.speedXZ = 0.59999996f;
+    this->actor.speedXZ = WALK_SPEED;
     this->timer1 = Rand_S16Offset(50, 70);
     this->unk_332 = 1;
     this->state = ENMB_STATE_WALK;
@@ -470,7 +472,7 @@ void EnMb_SetupSpearGuardWalk(EnMb* this) {
 void EnMb_SetupSpearPatrolWalkTowardsWaypoint(EnMb* this) {
     f32 frameCount = Animation_GetLastFrame(&gEnMbSpearWalkAnim);
 
-    this->actor.speedXZ = 0.59999996f;
+    this->actor.speedXZ = WALK_SPEED;
     this->timer1 = Rand_S16Offset(50, 70);
     this->unk_332 = 1;
     this->state = ENMB_STATE_WALK;
@@ -836,7 +838,7 @@ void EnMb_ClubAttack(EnMb* this, PlayState* play) {
                     player->invincibilityTimer = 0;
                 } else {
                     player->invincibilityTimer = 0;
-                    play->damagePlayer(play, -8);
+                    play->damagePlayer(play, -0x20);
                 }
             }
 
@@ -915,7 +917,7 @@ void EnMb_SpearPatrolPrepareAndCharge(EnMb* this, PlayState* play) {
                         player->invincibilityTimer = 0;
                     } else {
                         player->invincibilityTimer = 0;
-                        play->damagePlayer(play, -8);
+                        play->damagePlayer(play, -0x20);
                     }
                 }
                 if (!(this->attackCollider.base.atFlags & AT_BOUNCED)) {
@@ -984,7 +986,7 @@ void EnMb_SpearPatrolImmediateCharge(EnMb* this, PlayState* play) {
                         player->invincibilityTimer = 0;
                     } else {
                         player->invincibilityTimer = 0;
-                        play->damagePlayer(play, -8);
+                        play->damagePlayer(play, -0x20);
                     }
                 }
                 if (!(this->attackCollider.base.atFlags & AT_BOUNCED)) {
@@ -1124,7 +1126,7 @@ void EnMb_SpearGuardWalk(EnMb* this, PlayState* play) {
     f32 playSpeedAbs;
 
     relYawTowardsPlayer = ABS(relYawTowardsPlayer);
-    Math_SmoothStepToF(&this->actor.speedXZ, 0.59999996f, 0.1f, 1.0f, 0.0f);
+    Math_SmoothStepToF(&this->actor.speedXZ, WALK_SPEED, 0.1f, 1.0f, 0.0f);
     this->skelAnime.playSpeed = this->actor.speedXZ;
     prevFrame = this->skelAnime.curFrame;
     SkelAnime_Update(&this->skelAnime);
@@ -1186,7 +1188,7 @@ void EnMb_SpearPatrolWalkTowardsWaypoint(EnMb* this, PlayState* play) {
         (Rand_ZeroOne() < 0.1f && Math_Vec3f_DistXZ(&this->actor.home.pos, &this->actor.world.pos) <= 4.0f)) {
         EnMb_SetupSpearPatrolTurnTowardsWaypoint(this, play);
     } else {
-        Math_SmoothStepToF(&this->actor.speedXZ, 0.59999996f, 0.1f, 1.0f, 0.0f);
+        Math_SmoothStepToF(&this->actor.speedXZ, WALK_SPEED, 0.1f, 1.0f, 0.0f);
         this->skelAnime.playSpeed = 2.0f * this->actor.speedXZ;
     }
 

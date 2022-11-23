@@ -110,6 +110,8 @@ static DamageTable sDamageTable = {
     /* Unknown 2     */ DMG_ENTRY(0, 0x0),
 };
 
+const static f32 ROCK_SPEED = 20.0f;
+
 static InitChainEntry sInitChain[] = {
     ICHAIN_S8(naviEnemyId, 0x42, ICHAIN_CONTINUE),
     ICHAIN_F32(targetArrowOffset, 6500, ICHAIN_STOP),
@@ -121,6 +123,8 @@ void EnOkuta_Init(Actor* thisx, PlayState* play) {
     WaterBox* outWaterBox;
     f32 ySurface;
     s32 sp30;
+    this->randomOffset = 0.0f;
+    this->randomFlag = 0;
 
     Actor_ProcessInitChain(thisx, sInitChain);
     this->numShots = (thisx->params >> 8) & 0xFF;
@@ -155,7 +159,7 @@ void EnOkuta_Init(Actor* thisx, PlayState* play) {
         this->timer = 30;
         thisx->shape.rot.y = 0;
         this->actionFunc = EnOkuta_ProjectileFly;
-        thisx->speedXZ = 10.0f;
+        thisx->speedXZ = ROCK_SPEED;
     }
 }
 
@@ -225,6 +229,7 @@ void EnOkuta_SetupWaitToShoot(EnOkuta* this) {
 }
 
 void EnOkuta_SetupShoot(EnOkuta* this, PlayState* play) {
+    Player* player = GET_PLAYER(play);
     Animation_PlayOnce(&this->skelAnime, &gOctorokShootAnim);
     if (this->actionFunc != EnOkuta_Shoot) {
         this->timer = this->numShots;
@@ -237,6 +242,11 @@ void EnOkuta_SetupShoot(EnOkuta* this, PlayState* play) {
     if (this->jumpHeight > 50.0f) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_OCTAROCK_JUMP);
     }
+    this->randomOffset = Rand_CenteredFloat(6.0f);
+    this->randomFlag = Rand_S16Offset(0, 3);
+    if (player->actor.speedXZ > 3.0f && this->randomFlag == 2)
+        this->randomFlag = 1;
+    
     this->actionFunc = EnOkuta_Shoot;
 }
 
@@ -334,6 +344,43 @@ void EnOkuta_Hide(EnOkuta* this, PlayState* play) {
     }
 }
 
+
+
+s16 randomizeAim(EnOkuta* this, PlayState* play) {
+    Player* player = GET_PLAYER(play);
+    f32 time;
+    f32 projectedY;
+    s16 projectedAng = aimToActorMovement(&this->actor,&player->actor,ROCK_SPEED,play,&time,&projectedY,0.0f);
+    s32 targetMaxSpeed = 6.0f;
+    Vec3f dir = {player->actor.world.pos.x - this->actor.world.pos.x, 0.0f, player->actor.world.pos.z - this->actor.world.pos.z};
+    f32 norm = dir.x*dir.x + dir.z*dir.z; 
+    Vec3f normalizedDir = {0.0f,0.0f,0.0f};
+    if (norm > 0.0f) {
+        norm = 1.0f/sqrt(norm);
+        normalizedDir.x = dir.x*norm;
+        normalizedDir.z = dir.z*norm;
+    }
+    else
+        return 0;
+    Vec3f leftDir = {-normalizedDir.z,0.0f,normalizedDir.x};
+    
+    f32 velX = Math_SinS(player->actor.world.rot.y) * player->actor.speedXZ;
+    f32 velZ = Math_CosS(player->actor.world.rot.y) * player->actor.speedXZ;
+    f32 projectedX = dir.x+(0.5f*velX+this->randomOffset*leftDir.x)*time;
+    f32 projectedZ = dir.z+(0.5f*velZ+this->randomOffset*leftDir.z)*time;
+    
+    Vec3f savedPos = player->actor.world.pos;
+    f32 savedSpeed = player->actor.speedXZ;
+    player->actor.world.pos.x = this->actor.world.pos.x+projectedX;
+    player->actor.world.pos.z = this->actor.world.pos.z+projectedZ;
+    player->actor.speedXZ = 0.0f;
+    s16 projectedAng2 = aimToActorMovement(&this->actor,&player->actor,ROCK_SPEED,play,&time,&projectedY,0.0f);
+    player->actor.world.pos = savedPos;
+    player->actor.speedXZ = savedSpeed;
+    
+    return this->randomFlag&1 ? projectedAng : (this->randomFlag&2 ? this->actor.yawTowardsPlayer : projectedAng2);
+}
+
 void EnOkuta_WaitToShoot(EnOkuta* this, PlayState* play) {
     s16 temp_v0_2;
     s32 phi_v1;
@@ -351,7 +398,7 @@ void EnOkuta_WaitToShoot(EnOkuta* this, PlayState* play) {
     if (this->actor.xzDistToPlayer < 160.0f || this->actor.xzDistToPlayer > 560.0f) {
         EnOkuta_SetupHide(this);
     } else {
-        temp_v0_2 = Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 3, 0x71C, 0x38E);
+        temp_v0_2 = Math_SmoothStepToS(&this->actor.shape.rot.y, randomizeAim(this,play), 3, 0x71C, 0x38E);
         phi_v1 = ABS(temp_v0_2);
         if ((phi_v1 < 0x38E) && (this->timer == 0) && (this->actor.yDistToPlayer < 200.0f)) {
             EnOkuta_SetupShoot(this, play);
@@ -360,7 +407,7 @@ void EnOkuta_WaitToShoot(EnOkuta* this, PlayState* play) {
 }
 
 void EnOkuta_Shoot(EnOkuta* this, PlayState* play) {
-    Math_ApproachS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 3, 0x71C);
+    Math_ApproachS(&this->actor.shape.rot.y, randomizeAim(this,play), 3, 0x71C);
     if (SkelAnime_Update(&this->skelAnime)) {
         if (this->timer != 0) {
             this->timer--;

@@ -6,6 +6,7 @@
 
 #include "z_bg_hidan_curtain.h"
 #include "objects/gameplay_keep/gameplay_keep.h"
+#include "overlays/actors/ovl_En_Bw/z_en_bw.h"
 
 #define FLAGS ACTOR_FLAG_4
 
@@ -20,6 +21,7 @@ void BgHidanCurtain_WaitForClear(BgHidanCurtain* this, PlayState* play);
 void BgHidanCurtain_TurnOn(BgHidanCurtain* this, PlayState* play);
 void BgHidanCurtain_TurnOff(BgHidanCurtain* this, PlayState* play);
 void BgHidanCurtain_WaitForTimer(BgHidanCurtain* this, PlayState* play);
+void BgHidanCurtain_WaitForSlugPower(BgHidanCurtain* this, PlayState* play);
 
 typedef struct {
     /* 0x00 */ s16 radius;
@@ -40,7 +42,7 @@ static ColliderCylinderInit sCylinderInit = {
     },
     {
         ELEMTYPE_UNK0,
-        { 0x20000000, 0x01, 0x04 },
+        { 0x20000000, 0x01, 0x08 },
         { 0xFFCFFFFF, 0x00, 0x00 },
         TOUCH_ON | TOUCH_SFX_NONE,
         BUMP_NONE,
@@ -74,7 +76,7 @@ void BgHidanCurtain_Init(Actor* thisx, PlayState* play) {
     osSyncPrintf("Curtain (arg_data 0x%04x)\n", this->actor.params);
     Actor_SetFocus(&this->actor, 20.0f);
     this->type = (thisx->params >> 0xC) & 0xF;
-    if (this->type > 6) {
+    if (this->type > 8) {
         // "Type is not set"
         osSyncPrintf("Error : object のタイプが設定されていない(%s %d)(arg_data 0x%04x)\n", __FILE__,
                      __LINE__, this->actor.params);
@@ -104,11 +106,13 @@ void BgHidanCurtain_Init(Actor* thisx, PlayState* play) {
     CollisionCheck_SetInfo(&thisx->colChkInfo, NULL, &sCcInfoInit);
     if (this->type == 0) {
         this->actionFunc = BgHidanCurtain_WaitForClear;
-    } else {
+    } else if (this->type <= 6) {
         this->actionFunc = BgHidanCurtain_WaitForSwitchOn;
         if ((this->type == 4) || (this->type == 5)) {
             this->actor.world.pos.y = this->actor.home.pos.y - hcParams->riseDist;
         }
+    } else {
+        this->actionFunc = BgHidanCurtain_WaitForSlugPower;
     }
     if (((this->type == 1) && Flags_GetTreasure(play, this->treasureFlag)) ||
         (((this->type == 0) || (this->type == 6)) && Flags_GetClear(play, this->actor.room))) {
@@ -198,6 +202,30 @@ void BgHidanCurtain_WaitForTimer(BgHidanCurtain* this, PlayState* play) {
     if ((this->type == 1) || (this->type == 3)) {
         func_8002F994(&this->actor, this->timer);
     }
+}
+
+void BgHidanCurtain_WaitForSlugCease(BgHidanCurtain* this, PlayState* play) {
+    this->actor.world.pos.y = this->actor.home.pos.y;
+}
+
+void BgHidanCurtain_WaitForSlugPower(BgHidanCurtain* this, PlayState* play) {
+    Actor* par = this->actor.parent;
+    if (!par) {
+        this->actionFunc = BgHidanCurtain_WaitForSlugCease;
+        return;
+    }
+    this->actor.home.pos = par->world.pos;
+    this->actor.world.pos.x = this->actor.home.pos.x;
+    this->actor.world.pos.z = this->actor.home.pos.z;
+    //EnBwActionFunc BWfunc;
+    if ((this->actor.parent->id == ACTOR_EN_BW) && EnBw_Is_On_Fire(this->actor.parent)) {
+        Math_StepToF(&this->actor.world.pos.y, this->actor.home.pos.y, sHCParams[this->size].riseSpeed);
+    } else {
+        Math_StepToF(&this->actor.world.pos.y,this->actor.home.pos.y - sHCParams[this->size].riseDist,sHCParams[this->size].riseSpeed);
+    }
+    this->collider.dim.pos.x = this->actor.world.pos.x;
+    this->collider.dim.pos.y = this->actor.world.pos.y;
+    this->collider.dim.pos.z = this->actor.world.pos.z;
 }
 
 void BgHidanCurtain_Update(Actor* thisx, PlayState* play2) {

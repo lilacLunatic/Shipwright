@@ -36,7 +36,7 @@ static ColliderCylinderInit sCylinderInit = {
     },
     {
         ELEMTYPE_UNK0,
-        { 0xFFCFFFFF, 0x01, 0x08 },
+        { 0x20000000, 0x01, 0x08 },
         { 0x0D840008, 0x00, 0x00 },
         TOUCH_ON | TOUCH_SFX_NORMAL,
         BUMP_ON,
@@ -167,6 +167,20 @@ void func_80A0E70C(EnFdFire* this, PlayState* play) {
 }
 
 void EnFdFire_WaitToDie(EnFdFire* this, PlayState* play) {
+    if (this->deathTimer == 280) {
+        s16 valType = (this->actor.params & 0xF);
+        if ((valType % 12) == 0) {
+            Actor_Spawn(&play->actorCtx, play, ACTOR_EN_FIREFLY, this->actor.world.pos.x, this->actor.world.pos.y+30,
+                                       this->actor.world.pos.z, 0, this->actor.world.rot.y, 0, 0x0);
+            this->actionFunc = EnFdFire_Disappear;
+        }
+        else if ((valType % 4) == 0) {
+            Actor_Spawn(&play->actorCtx, play, ACTOR_EN_BW, this->actor.world.pos.x, this->actor.world.pos.y,
+                                       this->actor.world.pos.z, 0, this->actor.world.rot.y+0x4000, 0, 0x0/*(valType>>1)*/);
+            this->actionFunc = EnFdFire_Disappear;
+        }
+    }
+
     if (DECR(this->deathTimer) == 0) {
         this->actionFunc = EnFdFire_Disappear;
     }
@@ -180,7 +194,7 @@ void EnFdFire_DanceTowardsPlayer(EnFdFire* this, PlayState* play) {
     Vec3f pos;
     s16 idx;
 
-    idx = ((play->state.frames / 10) + (this->actor.params & 0x7FFF)) % ARRAY_COUNT(angles);
+    idx = ((play->state.frames / 10) + (this->actor.params & 0xF)) % ARRAY_COUNT(angles);
     pos = player->actor.world.pos;
     pos.x += 120.0f * sinf(angles[idx]);
     pos.z += 120.0f * cosf(angles[idx]);

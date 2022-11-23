@@ -386,7 +386,6 @@ s16 getHealthMeterXOffset() {
         X_Margins = Left_LM_Margin;
     else
         X_Margins = 0;
-
     if (CVar_GetS32("gHeartsCountPosType", 0) != 0) {
         if (CVar_GetS32("gHeartsCountPosType", 0) == 1) {//Anchor Left
             return OTRGetDimensionFromLeftEdge(CVar_GetS32("gHeartsCountPosX", 0)+X_Margins+70.0f);
@@ -394,7 +393,7 @@ s16 getHealthMeterXOffset() {
             X_Margins = Right_LM_Margin;
             return OTRGetDimensionFromRightEdge(CVar_GetS32("gHeartsCountPosX", 0)+X_Margins+70.0f);
         } else if (CVar_GetS32("gHeartsCountPosType", 0) == 3) {//Anchor None
-            return CVar_GetS32("gHeartsCountPosX", 0)+70.0f;;
+            return CVar_GetS32("gHeartsCountPosX", 0)+70.0f;
         } else if (CVar_GetS32("gHeartsCountPosType", 0) == 4) {//Hidden
             return -9999;
         }

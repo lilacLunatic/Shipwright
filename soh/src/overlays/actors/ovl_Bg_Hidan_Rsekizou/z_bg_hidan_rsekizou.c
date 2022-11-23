@@ -31,7 +31,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[6] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0x20000000, 0x01, 0x04 },
+            { 0x20000000, 0x01, 0x10 },
             { 0x00000000, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_NONE,
             BUMP_NONE,
@@ -42,7 +42,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[6] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0x20000000, 0x01, 0x04 },
+            { 0x20000000, 0x01, 0x10 },
             { 0x00000000, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_NONE,
             BUMP_NONE,
@@ -53,7 +53,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[6] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0x20000000, 0x01, 0x04 },
+            { 0x20000000, 0x01, 0x10 },
             { 0x00000000, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_NONE,
             BUMP_NONE,
@@ -64,7 +64,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[6] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0x20000000, 0x01, 0x04 },
+            { 0x20000000, 0x01, 0x10 },
             { 0x00000000, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_NONE,
             BUMP_NONE,
@@ -75,7 +75,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[6] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0x20000000, 0x01, 0x04 },
+            { 0x20000000, 0x01, 0x10 },
             { 0x00000000, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_NONE,
             BUMP_NONE,
@@ -86,7 +86,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[6] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0x20000000, 0x01, 0x04 },
+            { 0x20000000, 0x01, 0x10 },
             { 0x00000000, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_NONE,
             BUMP_NONE,

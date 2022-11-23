@@ -219,8 +219,8 @@ static ColliderCylinderInit sCylinderInit = {
     },
     {
         ELEMTYPE_UNK0,
-        { 0xFFCFFFEF, 0x03, 0x08 },
-        { 0x00000010, 0x00, 0x00 },
+        { 0xFFCFFFEF, 0x03, 0x10 },
+        { 0x0FC00072, 0x00, 0x00 }, /*0x00000010*/
         TOUCH_ON | TOUCH_SFX_NORMAL,
         BUMP_ON,
         OCELEM_ON,
@@ -259,8 +259,8 @@ static ColliderJntSphElementInit sJntSphElementsInitBari[1] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0xFFCFFFFF, 0x03, 0x04 },
-            { 0xFFCFFFFF, 0x00, 0x00 },
+            { 0xFFCFFFFF, 0x03, 0x10 },
+            { 0x00000010, 0x00, 0x00 },//0xFFCFFFFF
             TOUCH_ON | TOUCH_SFX_NORMAL,
             BUMP_ON,
             OCELEM_NONE,
@@ -293,7 +293,7 @@ static ColliderQuadInit sQuadInit = {
     },
     {
         ELEMTYPE_UNK0,
-        { 0x20000000, 0x03, 0x04 },
+        { 0x20000000, 0x03, 0x10 },
         { 0x00000010, 0x00, 0x00 },
         TOUCH_ON | TOUCH_SFX_NORMAL | TOUCH_UNK7,
         BUMP_ON,
@@ -1913,6 +1913,7 @@ void BossVa_SetupZapperAttack(BossVa* this, PlayState* play) {
     Animation_Change(&this->skelAnime, &gBarinadeZapperIdleAnim, 1.0f, lastFrame - 1.0f, lastFrame,
                      ANIMMODE_LOOP_INTERP, -6.0f);
     this->actor.flags &= ~ACTOR_FLAG_0;
+    this->decisionState = 0;
     BossVa_SetupAction(this, BossVa_ZapperAttack);
 }
 
@@ -1920,76 +1921,108 @@ void BossVa_ZapperAttack(BossVa* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
     EnBoom* boomerang;
     Actor* boomTarget;
-    s16 yaw;
-    s16 sp98;
-    s16 sp96;
-    s16 sp94;
-    s16 tmp17;
-    s16 sp90 = 0x1F4;
-    s16 sp8E;
-    u32 sp88;
-    Vec3f sp7C;
+    const s16 burstTime = 16;
+    s16 angle;//yaw
+    s16 playerToArmYaw;//sp98
+    s16 totalSkelPitch;//sp96
+    s16 clampedYawDiffs;//sp94
+    s16 playerShapeYawDiff;//tmp17
+    s16 yawDiffThresholdB = 0x1F4;//sp90 = 0x1F4;
+    s16 yawDiffThreshold;//sp8E
+    u32 cumulativeYawDiffMag;//sp88;
+    Vec3f playerPosTop;//sp7C
     s32 pad3;
-    f32 sp74;
+    f32 halfUpdateRate;//sp74
     s32 i;
-    s16 sp6E;
-    s16 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    s16 sp5A;
-    s16 sp58;
-    s16 sp56;
-    s16 sp54;
-    f32 sp50;
+    s16 playerToBoomTargYaw;//sp6E
+    s16 boomYaw;//sp6C
+    f32 scaledBoomDrop;//sp68
+    f32 scaledBoomReach;//sp64
+    f32 scaledBoomSideways;//sp60
+    f32 scaledBoomRange;//sp5C
+    s16 boomTargYawDiff;//sp5A
+    s16 playerToBoomTargPitch;//sp58
+    s16 boomPitch;//sp56
+    s16 boomTargPitchDiff;//sp54;
+    f32 boomHomingAngleFactor;//sp50;
 
     boomerang = BossVa_FindBoomerang(play);
 
     if ((boomerang == NULL) || (boomerang->moveTo == NULL) || (boomerang->moveTo == &player->actor)) {
-        sp7C = player->actor.world.pos;
-        sp7C.y += 10.0f;
-        sp8E = 0x3E80;
+        if (this->burst) {
+            playerPosTop = this->unk_1D8;
+        } else if (this->decisionState == 0) {
+            f32 tSpeed;
+            f32 tTime = 2*burstTime;
+            f32 maxTargetSpeed = 5.5f;
+            if (maxTargetSpeed > 0.0f && player->actor.speedXZ > maxTargetSpeed)
+                tSpeed = maxTargetSpeed;
+            else
+                tSpeed = player->actor.speedXZ;
+            f32 posX = player->actor.world.pos.x;
+            f32 posZ = player->actor.world.pos.z;
+            f32 velX = Math_SinS(player->actor.world.rot.y) * tSpeed;
+            f32 velZ = Math_CosS(player->actor.world.rot.y) * tSpeed;
+            playerPosTop = player->actor.world.pos;
+            playerPosTop.y += 10.0f;
+            playerPosTop.x += velX*tTime;
+            playerPosTop.z += velZ*tTime;
+
+            // Vec3f interiorDifference;
+            // Math_Vec3f_Diff(&playerPosTop,&this->actor.world.pos,&interiorDifference);
+            // f32 sqDist = SQ(interiorDifference.x)+SQ(interiorDifference.z);
+            // if (sqDist < SQ(85+80)) {
+            //     f32 invDist = (85+80)/sqrt(sqDist);
+            //     interiorDifference.x *= invDist;
+            //     interiorDifference.z *= invDist;
+            //     playerPosTop.x = this->actor.world.pos.x + interiorDifference.x;
+            //     playerPosTop.z = this->actor.world.pos.z + interiorDifference.z;
+            // }
+        } else {
+            playerPosTop = player->actor.world.pos;
+            playerPosTop.y += 10.0f;
+        }
+        yawDiffThreshold = 0x3E80;
     } else {
-        sp74 = R_UPDATE_RATE * 0.5f;
-        sp8E = 0x4650;
+        halfUpdateRate = R_UPDATE_RATE * 0.5f;
+        yawDiffThreshold = 0x4650;
 
         boomTarget = boomerang->moveTo;
-        sp7C = boomerang->actor.world.pos;
-        sp6C = boomerang->actor.world.rot.y;
-        sp56 = boomerang->actor.world.rot.x;
+        playerPosTop = boomerang->actor.world.pos;
+        boomYaw = boomerang->actor.world.rot.y;
+        boomPitch = boomerang->actor.world.rot.x;
 
         for (i = boomerang->returnTimer; i >= 3; i--) {
-            sp6E = Math_Vec3f_Yaw(&sp7C, &boomTarget->focus.pos);
-            sp5A = sp6C - sp6E;
-            sp58 = Math_Vec3f_Pitch(&sp7C, &boomTarget->focus.pos);
-            sp54 = sp56 - sp58;
+            playerToBoomTargYaw = Math_Vec3f_Yaw(&playerPosTop, &boomTarget->focus.pos);
+            boomTargYawDiff = boomYaw - playerToBoomTargYaw;
+            playerToBoomTargPitch = Math_Vec3f_Pitch(&playerPosTop, &boomTarget->focus.pos);
+            boomTargPitchDiff = boomPitch - playerToBoomTargPitch;
 
-            sp50 = (200.0f - Math_Vec3f_DistXYZ(&sp7C, &boomTarget->focus.pos)) * 0.005f;
-            if (sp50 < 0.12f) {
-                sp50 = 0.12f;
+            boomHomingAngleFactor = (200.0f - Math_Vec3f_DistXYZ(&playerPosTop, &boomTarget->focus.pos)) * 0.005f;
+            if (boomHomingAngleFactor < 0.12f) {
+                boomHomingAngleFactor = 0.12f;
             }
 
-            if (sp5A < 0) {
-                sp5A = -sp5A;
+            if (boomTargYawDiff < 0) {
+                boomTargYawDiff = -boomTargYawDiff;
             }
 
-            if (sp54 < 0) {
-                sp54 = -sp54;
+            if (boomTargPitchDiff < 0) {
+                boomTargPitchDiff = -boomTargPitchDiff;
             }
 
-            Math_ScaledStepToS(&sp6C, sp6E, sp5A * sp50);
-            Math_ScaledStepToS(&sp56, sp58, sp54 * sp50);
+            Math_ScaledStepToS(&boomYaw, playerToBoomTargYaw, boomTargYawDiff * boomHomingAngleFactor);
+            Math_ScaledStepToS(&boomPitch, playerToBoomTargPitch, boomTargPitchDiff * boomHomingAngleFactor);
 
-            sp68 = -Math_SinS(sp56) * 12.0f;
-            sp5C = Math_CosS(sp56) * 12.0f;
-            sp64 = Math_SinS(sp6C) * sp5C;
-            sp60 = Math_CosS(sp6C);
-            sp7C.x += sp64 * sp74;
-            sp7C.y += sp68 * sp74;
-            sp7C.z += sp60 * sp5C * sp74;
+            scaledBoomDrop = -Math_SinS(boomPitch) * 12.0f;
+            scaledBoomRange = Math_CosS(boomPitch) * 12.0f;
+            scaledBoomReach = Math_SinS(boomYaw) * scaledBoomRange;
+            scaledBoomSideways = Math_CosS(boomYaw);
+            playerPosTop.x += scaledBoomReach * halfUpdateRate;
+            playerPosTop.y += scaledBoomDrop * halfUpdateRate;
+            playerPosTop.z += scaledBoomSideways * scaledBoomRange * halfUpdateRate;
         }
-        sp90 = 0x3E80;
+        yawDiffThresholdB = 0x3E80;
     }
 
     SkelAnime_Update(&this->skelAnime);
@@ -2004,60 +2037,69 @@ void BossVa_ZapperAttack(BossVa* this, PlayState* play) {
         return;
     }
 
-    if ((sFightPhase < PHASE_4) && (GET_BODY(this)->actor.speedXZ != 0.0f)) {
-        BossVa_SetupZapperHold(this, play);
-        return;
-    }
+    // if ((sFightPhase < PHASE_4) && (GET_BODY(this)->actor.speedXZ != 0.0f)) {
+    //     BossVa_SetupZapperHold(this, play);
+    //     return;
+    // }
 
-    sp98 = Math_Vec3f_Yaw(&sp7C, &this->armTip);
-    tmp17 = sp98 - this->actor.shape.rot.y;
+    playerToArmYaw = Math_Vec3f_Yaw(&playerPosTop, &this->armTip);
+    playerShapeYawDiff = playerToArmYaw - this->actor.shape.rot.y;
 
-    if ((sp8E >= ABS(tmp17) || this->burst) && !(sBodyState & 0x80) && !(player->stateFlags1 & 0x04000000)) {
+    if ((yawDiffThreshold >= ABS(playerShapeYawDiff) || this->burst) && !(sBodyState & 0x80) && !(player->stateFlags1 & 0x04000000)) {
 
         if (!this->burst) {
-            sp94 = sp98 - this->actor.shape.rot.y;
+            clampedYawDiffs = playerToArmYaw - this->actor.shape.rot.y;
 
-            if (ABS(sp94) > 0x1770) {
-                sp94 = (sp94 > 0) ? 0x1770 : -0x1770;
+            if (ABS(clampedYawDiffs) > 0x1770) {
+                clampedYawDiffs = (clampedYawDiffs > 0) ? 0x1770 : -0x1770;
             }
 
-            tmp17 = Math_SmoothStepToS(&this->unk_1E6, sp94, 1, 0x6D6, 0);
-            sp88 = ABS(tmp17);
+            playerShapeYawDiff = Math_SmoothStepToS(&this->unk_1E6, clampedYawDiffs, 1, 0x6D6, 0);
+            cumulativeYawDiffMag = ABS(playerShapeYawDiff);
 
-            sp94 = sp98 - sp94;
+            clampedYawDiffs = playerToArmYaw - clampedYawDiffs;
 
-            if (ABS(sp94) > 0x1770) {
-                sp94 = (sp94 > 0) ? 0x1770 : -0x1770;
+            if (ABS(clampedYawDiffs) > 0x1770) {
+                clampedYawDiffs = (clampedYawDiffs > 0) ? 0x1770 : -0x1770;
             }
 
-            tmp17 = Math_SmoothStepToS(&this->unk_1EC, sp94, 1, 0x6D6, 0);
-            sp88 += ABS(tmp17);
+            playerShapeYawDiff = Math_SmoothStepToS(&this->unk_1EC, clampedYawDiffs, 1, 0x6D6, 0);
+            cumulativeYawDiffMag += ABS(playerShapeYawDiff);
 
-            yaw = Math_Vec3f_Yaw(&this->zapHeadPos, &sp7C);
-            tmp17 = Math_SmoothStepToS(&this->unk_1F2, yaw - 0x4000, 1, 0x9C4, 0);
-            sp88 += ABS(tmp17);
+            angle = Math_Vec3f_Yaw(&this->zapHeadPos, &playerPosTop);
+            playerShapeYawDiff = Math_SmoothStepToS(&this->unk_1F2, angle - 0x4000, 1, 0x9C4, 0);
+            cumulativeYawDiffMag += ABS(playerShapeYawDiff);
 
-            sp96 = this->actor.shape.rot.x + this->skelAnime.jointTable[1].z + this->skelAnime.jointTable[2].z +
+            totalSkelPitch = this->actor.shape.rot.x + this->skelAnime.jointTable[1].z + this->skelAnime.jointTable[2].z +
                    this->skelAnime.jointTable[3].z + this->skelAnime.jointTable[4].z + this->skelAnime.jointTable[5].z;
 
-            yaw = Math_Vec3f_Pitch(&sp7C, &this->zapNeckPos);
-            tmp17 = Math_SmoothStepToS(&this->unk_1EA, yaw - sp96, 1, 0xFA0, 0);
-            sp88 += ABS(tmp17);
+            angle = Math_Vec3f_Pitch(&playerPosTop, &this->zapNeckPos);
+            playerShapeYawDiff = Math_SmoothStepToS(&this->unk_1EA, angle - totalSkelPitch, 1, 0xFA0, 0);
+            cumulativeYawDiffMag += ABS(playerShapeYawDiff);
 
-            yaw = Math_Vec3f_Pitch(&this->zapHeadPos, &sp7C);
-            tmp17 = Math_SmoothStepToS(&this->unk_1F0, -yaw, 1, 0xFA0, 0);
-            sp88 += ABS(tmp17);
+            angle = Math_Vec3f_Pitch(&this->zapHeadPos, &playerPosTop);
+            playerShapeYawDiff = Math_SmoothStepToS(&this->unk_1F0, -angle, 1, 0xFA0, 0);
+            cumulativeYawDiffMag += ABS(playerShapeYawDiff);
 
             this->skelAnime.playSpeed = 0.0f;
             if (Math_SmoothStepToF(&this->skelAnime.curFrame, 0.0f, 1.0f, 2.0f, 0.0f) == 0.0f) {
-                if (sp88 < sp90) {
+                if (cumulativeYawDiffMag < yawDiffThresholdB) {
                     this->timer2 = 0;
                     this->burst++;
-                    this->unk_1D8 = sp7C;
+                    this->unk_1D8 = playerPosTop;
                 }
 
                 if (Rand_ZeroOne() < 0.1f) {
                     Audio_PlayActorSound2(&this->actor, NA_SE_EN_BALINADE_BL_SPARK - SFX_FLAG);
+                }
+            } else if (this->decisionState == 0) {
+                f32 randVal = Rand_ZeroOne();
+                if (randVal <= 0.02)
+                    this->decisionState = 1;
+                else if (randVal <= 0.03) {
+                    this->timer2 = 0;
+                    this->burst++;
+                    this->unk_1D8 = playerPosTop;
                 }
             }
         }
@@ -2089,8 +2131,8 @@ void BossVa_ZapperAttack(BossVa* this, PlayState* play) {
     }
 
     if (this->burst && (this->burst != 2)) { // burst can never be 2
-        if (this->timer2 >= 32) {
-            if (this->timer2 == 32) {
+        if (this->timer2 >= burstTime) {
+            if (this->timer2 == burstTime) {
                 Audio_PlayActorSound2(&this->actor, NA_SE_EN_BALINADE_THUNDER);
             }
             BossVa_Spark(play, this, 2, 110, 15.0f, 15.0f, SPARK_BLAST, 5.0f, true);
@@ -2100,10 +2142,10 @@ void BossVa_ZapperAttack(BossVa* this, PlayState* play) {
             CollisionCheck_SetAC(play, &play->colChkCtx, &this->colliderLightning.base);
         } else {
             BossVa_Spark(play, this, 2, 50, 15.0f, 0.0f, SPARK_BODY, (this->timer2 >> 3) + 1, true);
-            if (this->timer2 == 30) {
+            if (this->timer2 == burstTime-2) {
                 BossVa_SetSparkEnv(play);
             }
-            if (this->timer2 == 20) {
+            if (this->timer2 == (burstTime-2)/2) {
                 Vec3f sp44 = this->zapHeadPos;
 
                 BossVa_SpawnZapperCharge(play, sVaEffects, this, &sp44, &this->headRot, 100, 0);
@@ -2111,8 +2153,9 @@ void BossVa_ZapperAttack(BossVa* this, PlayState* play) {
         }
 
         this->timer2++;
-        if (this->timer2 >= 40) {
+        if (this->timer2 >= burstTime*2) {
             this->burst = false;
+            this->decisionState = Rand_ZeroOne() < 0.2;
         }
     }
 }
@@ -2248,6 +2291,7 @@ void BossVa_SetupZapperEnraged(BossVa* this, PlayState* play) {
 
 void BossVa_ZapperEnraged(BossVa* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
+    const s16 burstTime = 8;
     s32 pad;
     s16 tmp16;
     s16 sp6C;
@@ -2256,8 +2300,27 @@ void BossVa_ZapperEnraged(BossVa* this, PlayState* play) {
     s16 yaw;
     u32 sp60;
     Vec3f sp54 = player->actor.world.pos;
+    if (this->burst) {
+        sp54 = this->unk_1D8;
+        sp54.y -= 25.0;
+    } else {
+        f32 tSpeed;
+        f32 tTime = 2*burstTime;
+        f32 maxTargetSpeed = 5.5f;
+        if (maxTargetSpeed > 0.0f && player->actor.speedXZ > maxTargetSpeed)
+            tSpeed = maxTargetSpeed;
+        else
+            tSpeed = player->actor.speedXZ;
+        f32 posX = player->actor.world.pos.x;
+        f32 posZ = player->actor.world.pos.z;
+        f32 velX = Math_SinS(player->actor.world.rot.y) * tSpeed;
+        f32 velZ = Math_CosS(player->actor.world.rot.y) * tSpeed;
+        sp54 = player->actor.world.pos;
+        sp54.y += 10.0f;
+        sp54.x += velX*tTime;
+        sp54.z += velZ*tTime;
+    }
 
-    sp54.y += 10.0f;
     SkelAnime_Update(&this->skelAnime);
     BossVa_AttachToBody(this);
     if (sFightPhase >= PHASE_DEATH) {
@@ -2347,8 +2410,8 @@ void BossVa_ZapperEnraged(BossVa* this, PlayState* play) {
     }
 
     if (this->burst && (this->burst != 2)) { // burst can never be 2
-        if (this->timer2 >= 16) {
-            if (this->timer2 == 18) {
+        if (this->timer2 >= burstTime) {
+            if (this->timer2 == burstTime+2) {
                 Audio_PlayActorSound2(&this->actor, NA_SE_EN_BALINADE_THUNDER);
             }
 
@@ -2359,10 +2422,10 @@ void BossVa_ZapperEnraged(BossVa* this, PlayState* play) {
             CollisionCheck_SetAC(play, &play->colChkCtx, &this->colliderLightning.base);
         } else {
             BossVa_Spark(play, this, 2, 50, 15.0f, 0.0f, SPARK_BODY, (this->timer2 >> 1) + 1, true);
-            if (this->timer2 == 14) {
+            if (this->timer2 == burstTime-2) {
                 BossVa_SetSparkEnv(play);
             }
-            if (this->timer2 == 4) {
+            if (this->timer2 == 2) {
                 Vec3f sp48 = this->zapHeadPos;
 
                 BossVa_SpawnZapperCharge(play, sVaEffects, this, &sp48, &this->headRot, 100, 0);
@@ -2370,7 +2433,7 @@ void BossVa_ZapperEnraged(BossVa* this, PlayState* play) {
         }
 
         this->timer2++;
-        if (this->timer2 >= 24) {
+        if (this->timer2 >= burstTime*2) {
             this->burst = false;
         }
     }
@@ -2673,7 +2736,7 @@ void BossVa_BariPhase2Attack(BossVa* this, PlayState* play) {
         }
 
         Math_SmoothStepToF(&this->unk_1A0, (Math_SinS(sPhase2Timer * 0x190) * sp4C) + 320.0f, 1.0f, 10.0f, 0.0f);
-        Math_SmoothStepToS(&this->unk_1AC, sp50 + 0x1F4, 1, 0x3C, 0);
+        Math_SmoothStepToS(&this->unk_1AC, sp50 + 0x1F4*2, 1, 0x3C, 0);
         this->actor.world.pos.y += 2.0f * Math_SinF(this->unk_1A4);
         if (this->colliderSph.base.acFlags & AC_HIT) {
             this->colliderSph.base.acFlags &= ~AC_HIT;
@@ -2691,7 +2754,7 @@ void BossVa_BariPhase2Attack(BossVa* this, PlayState* play) {
         CollisionCheck_SetAT(play, &play->colChkCtx, &this->colliderSph.base);
     } else {
         this->actor.flags |= ACTOR_FLAG_0;
-        Math_SmoothStepToS(&this->unk_1AC, sp50 + 150, 1, 0x3C, 0);
+        Math_SmoothStepToS(&this->unk_1AC, sp50 + 150*2, 1, 0x3C, 0);
         if (GET_BODY(this)->actor.colorFilterTimer == 0) {
             Math_SmoothStepToF(&this->unk_1A0, 180.0f, 1.0f, 1.5f, 0.0f);
         } else {

@@ -47,24 +47,24 @@ static ColliderJntSphElementInit sJntSphItemsInit[4] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0xFFCFFFFF, 0x00, 0x04 },
+            { 0xFFCFFFFF, 0x00, 0x10 },
             { 0x00000000, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_NORMAL,
             BUMP_NONE,
             OCELEM_NONE,
         },
-        { WOLFOS_LIMB_FRONT_RIGHT_CLAW, { { 0, 0, 0 }, 15 }, 100 },
+        { WOLFOS_LIMB_FRONT_RIGHT_CLAW, { { 0, 0, 0 }, 15 }, 200 },
     },
     {
         {
             ELEMTYPE_UNK0,
-            { 0xFFCFFFFF, 0x00, 0x04 },
+            { 0xFFCFFFFF, 0x00, 0x10 },
             { 0x00000000, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_NORMAL,
             BUMP_NONE,
             OCELEM_NONE,
         },
-        { WOLFOS_LIMB_FRONT_LEFT_CLAW, { { 0, 0, 0 }, 15 }, 100 },
+        { WOLFOS_LIMB_FRONT_LEFT_CLAW, { { 0, 0, 0 }, 15 }, 200 },
     },
     {
         {
@@ -304,11 +304,16 @@ s32 EnWf_ChangeAction(PlayState* play, EnWf* this, s16 mustChoose) {
             return true;
         }
     }
+    
+    if (isPlayerInSpinAttack(play) && (this->actor.xzDistToPlayer > 120.0f) && (this->actor.xzDistToPlayer < 150.0f)) {
+        EnWf_SetupSomersaultAndAttack(this);
+    }
 
     if (func_800354B4(play, &this->actor, 100.0f, 0x5DC0, 0x2AA8, this->actor.shape.rot.y)) {
         this->actor.shape.rot.y = this->actor.world.rot.y = this->actor.yawTowardsPlayer;
 
-        if ((this->actor.bgCheckFlags & 8) && (ABS(wallYawDiff) < 0x2EE0) && (this->actor.xzDistToPlayer < 120.0f)) {
+        if ((this->actor.bgCheckFlags & 8) && (ABS(wallYawDiff) < 0x2EE0) &&
+                    (this->actor.xzDistToPlayer < 120.0f)) {
             EnWf_SetupSomersaultAndAttack(this);
             return true;
         } else if (player->swordAnimation == 0x11) {
@@ -746,7 +751,8 @@ void EnWf_Slash(EnWf* this, PlayState* play) {
         this->slashStatus = 0;
     }
 
-    if (((curFrame == 15) && !Actor_IsTargeted(play, &this->actor) &&
+    if (((curFrame == 15) && (LINK_IS_ADULT || (this->actor.params != WOLFOS_NORMAL)) &&
+         /*!Actor_IsTargeted(play, &this->actor) &&*/
          (!Actor_IsFacingPlayer(&this->actor, 0x2000) || (this->actor.xzDistToPlayer >= 100.0f))) ||
         SkelAnime_Update(&this->skelAnime)) {
         if ((curFrame != 15) && (this->actionTimer != 0)) {
@@ -1256,7 +1262,7 @@ void EnWf_UpdateDamage(EnWf* this, PlayState* play) {
             if ((!(this->colliderCylinderBody.base.acFlags & AC_HIT) &&
                  (this->colliderCylinderTail.base.acFlags & AC_HIT)) ||
                 (ABS(yawDiff) > 19000)) {
-                this->actor.colChkInfo.damage *= 4;
+                this->actor.colChkInfo.damage *= 2;
             }
 
             this->colliderCylinderBody.base.acFlags &= ~AC_HIT;
@@ -1333,7 +1339,8 @@ void EnWf_Update(Actor* thisx, PlayState* play) {
         } else {
             EnWf_SetupRecoilFromBlockedSlash(this);
         }
-    }
+    } else if (this->actionFunc == EnWf_SomersaultAndAttack)
+        CollisionCheck_SetAT(play, &play->colChkCtx, &this->colliderSpheres.base);
 
     this->actor.focus.pos = this->actor.world.pos;
     this->actor.focus.pos.y += 25.0f;
