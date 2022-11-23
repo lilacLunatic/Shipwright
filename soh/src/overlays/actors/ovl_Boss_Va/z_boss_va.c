@@ -2736,7 +2736,7 @@ void BossVa_BariPhase2Attack(BossVa* this, GlobalContext* globalCtx) {
         }
 
         Math_SmoothStepToF(&this->unk_1A0, (Math_SinS(sPhase2Timer * 0x190) * sp4C) + 320.0f, 1.0f, 10.0f, 0.0f);
-        Math_SmoothStepToS(&this->unk_1AC, sp50 + 0x1F4, 1, 0x3C, 0);
+        Math_SmoothStepToS(&this->unk_1AC, sp50 + 0x1F4*2, 1, 0x3C, 0);
         this->actor.world.pos.y += 2.0f * Math_SinF(this->unk_1A4);
         if (this->colliderSph.base.acFlags & AC_HIT) {
             this->colliderSph.base.acFlags &= ~AC_HIT;
@@ -2754,7 +2754,7 @@ void BossVa_BariPhase2Attack(BossVa* this, GlobalContext* globalCtx) {
         CollisionCheck_SetAT(globalCtx, &globalCtx->colChkCtx, &this->colliderSph.base);
     } else {
         this->actor.flags |= ACTOR_FLAG_0;
-        Math_SmoothStepToS(&this->unk_1AC, sp50 + 150, 1, 0x3C, 0);
+        Math_SmoothStepToS(&this->unk_1AC, sp50 + 150*2, 1, 0x3C, 0);
         if (GET_BODY(this)->actor.colorFilterTimer == 0) {
             Math_SmoothStepToF(&this->unk_1A0, 180.0f, 1.0f, 1.5f, 0.0f);
         } else {
