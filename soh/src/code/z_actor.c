@@ -296,17 +296,20 @@ s16 aimToActorMovement(Actor* this, Actor* target, f32 projectileSpeed, PlayStat
     f32 posZ = target->world.pos.z - this->world.pos.z;
     f32 velX = Math_SinS(target->world.rot.y) * tSpeed;
     f32 velZ = Math_CosS(target->world.rot.y) * tSpeed;
+    Vec3f projectedWorldPos;
+    f32 addedHeight = 80.0f;
 
     CollisionPoly* outPoly;
-    *projectedY = BgCheck_EntityRaycastFloor2(play,&play->colCtx,&outPoly,&target->world.pos);
-    if (BGCHECK_Y_MIN == *projectedY)
-        *projectedY = target->world.pos.y;
+    Vec3f result;
+    s32 bgID;
 
     if (projectileSpeed < target->speedXZ){
         *time = 0.0f;
+        *projectedY = BgCheck_EntityRaycastFloor2(play,&play->colCtx,&outPoly,&target->world.pos);
+        if (BGCHECK_Y_MIN == *projectedY)
+            *projectedY = target->world.pos.y;
         return this->yawTowardsPlayer;
-    }
-    else {
+    } else {
         f32 a = velX*velX + velZ*velZ - projectileSpeed*projectileSpeed;
         f32 b = 2.0f*(velX*posX+velZ*posZ);
         f32 c = posX*posX + posZ*posZ;
@@ -320,6 +323,39 @@ s16 aimToActorMovement(Actor* this, Actor* target, f32 projectileSpeed, PlayStat
         f32 projectedX = posX+velX**time;
         f32 projectedZ = posZ+velZ**time;
 
+        projectedWorldPos.x = projectedX+this->world.pos.x;
+        projectedWorldPos.z = projectedZ+this->world.pos.z;
+        projectedWorldPos.y = target->world.pos.y+addedHeight;
+
+        *projectedY = BgCheck_EntityRaycastFloor2(play,&play->colCtx,&outPoly,&projectedWorldPos);
+        if (BGCHECK_Y_MIN == *projectedY)
+            *projectedY = target->world.pos.y;
+        projectedWorldPos.y = *projectedY;
+
+        //Prevents futilely aiming into walls
+        if (BgCheck_CheckWallImpl(&play->colCtx,(1<<1),&result,&projectedWorldPos,&target->world.pos,12,&outPoly,&bgID,target,80,0)) {
+            projectedWorldPos.x = result.x;
+            projectedWorldPos.z = result.z;
+            projectedWorldPos.y = result.y;
+
+            projectedX = projectedWorldPos.x - this->world.pos.x;
+            projectedZ = projectedWorldPos.z - this->world.pos.z;
+            *projectedY = BgCheck_EntityRaycastFloor2(play,&play->colCtx,&outPoly,&projectedWorldPos);
+            if (BGCHECK_Y_MIN == *projectedY)
+                *projectedY = target->world.pos.y;
+        }
+
+        projectedWorldPos.y += 15.0f;
+        Vec3f augmentedSelfPos = this->world.pos;
+        if (augmentedSelfPos.y < projectedWorldPos.y)
+            augmentedSelfPos.y = projectedWorldPos.y;
+        //Causes the shooter to aim directly at the target if the projected position ends up behind something
+        if (BgCheck_CheckLineImpl(&play->colCtx,(1<<1),0,&augmentedSelfPos,&projectedWorldPos,&result,
+                    &outPoly,&bgID,&target,1.0,BgCheck_GetBccFlags(1,0,0,1,0))) {
+            *projectedY = target->world.pos.y;
+            return this->yawTowardsPlayer;
+        }
+
         return Math_Atan2S(projectedZ, projectedX);
     }
 }
@@ -327,7 +363,7 @@ s16 aimToActorMovement(Actor* this, Actor* target, f32 projectileSpeed, PlayStat
 s16 aimToPlayerMovement(Actor* this, f32 speed, PlayState* play) {
     Player* player = GET_PLAYER(play);
     f32 time;
-    f32 projectedY;
+    f32 projectedY = 80.0f;
 
     //Assumes that the player's normal running speed is 6.0f
     return aimToActorMovement(this, &player->actor, speed, play, &time, &projectedY, 6.0f);
