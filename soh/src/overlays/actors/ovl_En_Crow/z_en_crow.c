@@ -1,7 +1,7 @@
 #include "z_en_crow.h"
 #include "objects/object_crow/object_crow.h"
 
-#define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_2 | ACTOR_FLAG_12 | ACTOR_FLAG_14)
+#define FLAGS (/*ACTOR_FLAG_0 |*/ ACTOR_FLAG_2 | ACTOR_FLAG_12 | ACTOR_FLAG_14)
 
 void EnCrow_Init(Actor* thisx, PlayState* play);
 void EnCrow_Destroy(Actor* thisx, PlayState* play);
@@ -137,8 +137,8 @@ void EnCrow_SetupFlyIdle(EnCrow* this) {
 
 void EnCrow_SetupDiveAttack(EnCrow* this) {
     this->timer = 300;
-    this->actor.speedXZ = 4.0f;
-    this->skelAnime.playSpeed = 2.0f;
+    this->actor.speedXZ = 8.0f;
+    this->skelAnime.playSpeed = 4.0f;
     this->actionFunc = EnCrow_DiveAttack;
 }
 
@@ -233,7 +233,7 @@ void EnCrow_FlyIdle(EnCrow* this, PlayState* play) {
 
     SkelAnime_Update(&this->skelAnime);
     skelanimeUpdated = Animation_OnFrame(&this->skelAnime, 0.0f);
-    this->actor.speedXZ = (Rand_ZeroOne() * 1.5f) + 3.0f;
+    this->actor.speedXZ = (Rand_ZeroOne() * 1.5f) + 3.5f;
 
     if (this->actor.bgCheckFlags & 8) {
         this->aimRotY = this->actor.wallYaw;
