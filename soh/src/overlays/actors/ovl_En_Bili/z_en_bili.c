@@ -77,7 +77,7 @@ static DamageTable sDamageTable = {
     /* Deku stick    */ DMG_ENTRY(2, BIRI_DMGEFF_NONE),
     /* Slingshot     */ DMG_ENTRY(0, BIRI_DMGEFF_SLINGSHOT),
     /* Explosive     */ DMG_ENTRY(2, BIRI_DMGEFF_NONE),
-    /* Boomerang     */ DMG_ENTRY(1, BIRI_DMGEFF_NONE),
+    /* Boomerang     */ DMG_ENTRY(0, BIRI_DMGEFF_DEKUNUT),
     /* Normal arrow  */ DMG_ENTRY(2, BIRI_DMGEFF_NONE),
     /* Hammer swing  */ DMG_ENTRY(2, BIRI_DMGEFF_NONE),
     /* Hookshot      */ DMG_ENTRY(2, BIRI_DMGEFF_NONE),
@@ -184,8 +184,10 @@ void EnBili_SetupClimb(EnBili* this) {
     this->actor.velocity.y = 0.0f;
 }
 
+const f32 EnBili_AttackSpeed = 2.5f;
+
 void EnBili_SetupApproachPlayer(EnBili* this) {
-    this->actor.speedXZ = 1.2f;
+    this->actor.speedXZ = EnBili_AttackSpeed;
     this->actionFunc = EnBili_ApproachPlayer;
 }
 
@@ -314,7 +316,11 @@ void EnBili_UpdateFloating(EnBili* this) {
     f32 baseHeight = CLAMP_MIN(this->actor.floorHeight, playerHeight);
 
     Math_StepToF(&this->actor.home.pos.y, baseHeight + heightOffset, 1.0f);
-    this->actor.world.pos.y = this->actor.home.pos.y + (sinf(this->timer * (M_PI / 16)) * 3.0f);
+    if (this->actionFunc == EnBili_ApproachPlayer)
+        this->actor.world.pos.y = this->actor.home.pos.y + ((1.0-cosf(this->timer * (M_PI / 16))) * 40.0f);
+    else
+        this->actor.world.pos.y = this->actor.home.pos.y + (sinf(this->timer * (M_PI / 16)) * 3.0f);
+    
 
     // Turn around if touching wall
     if (this->actor.bgCheckFlags & 8) {
@@ -341,7 +347,7 @@ void EnBili_FloatIdle(EnBili* this, PlayState* play) {
         this->timer = 32;
     }
 
-    if ((this->actor.xzDistToPlayer < 160.0f) && (fabsf(this->actor.yDistToPlayer) < 45.0f)) {
+    if ((this->actor.xzDistToPlayer < 250.0f) && (fabsf(this->actor.yDistToPlayer) < 100.0f) && this->timer == 32) {
         EnBili_SetupApproachPlayer(this);
     }
 }
@@ -421,10 +427,10 @@ void EnBili_ApproachPlayer(EnBili* this, PlayState* play) {
     EnBili_UpdateFloating(this);
 
     if (this->timer == 0) {
-        this->timer = 32;
+        this->timer = 128;
     }
 
-    if (this->actor.xzDistToPlayer > 200.0f) {
+    if (this->actor.xzDistToPlayer > 300.0f) {
         EnBili_SetupFloatIdle(this);
     }
 }
