@@ -220,7 +220,7 @@ static ColliderCylinderInit sCylinderInit = {
     {
         ELEMTYPE_UNK0,
         { 0xFFCFFFEF, 0x03, 0x10 },
-        { 0x0FC00072, 0x00, 0x00 }, /*0x00000010*/
+        { 0x0FC00752, 0x00, 0x00 }, /*0x00000010*/
         TOUCH_ON | TOUCH_SFX_NORMAL,
         BUMP_ON,
         OCELEM_ON,
@@ -260,7 +260,7 @@ static ColliderJntSphElementInit sJntSphElementsInitBari[1] = {
         {
             ELEMTYPE_UNK0,
             { 0xFFCFFFFF, 0x03, 0x10 },
-            { 0x00000010, 0x00, 0x00 },//0xFFCFFFFF
+            { 0x0000001A, 0x00, 0x00 },//0xFFCFFFFF
             TOUCH_ON | TOUCH_SFX_NORMAL,
             BUMP_ON,
             OCELEM_NONE,
@@ -2291,7 +2291,7 @@ void BossVa_SetupZapperEnraged(BossVa* this, PlayState* play) {
 
 void BossVa_ZapperEnraged(BossVa* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
-    const s16 burstTime = 8;
+    const s16 burstTime = 10;
     s32 pad;
     s16 tmp16;
     s16 sp6C;
