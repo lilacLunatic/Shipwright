@@ -64,7 +64,7 @@ static ColliderCylinderInit sCylinderInit = {
 
 static DamageTable sDamageTable = {
     /* Deku nut      */ DMG_ENTRY(0, 0x0),
-    /* Deku stick    */ DMG_ENTRY(2, 0xF),
+    /* Deku stick    */ DMG_ENTRY(1, 0xF),
     /* Slingshot     */ DMG_ENTRY(0, 0x0),
     /* Explosive     */ DMG_ENTRY(0, 0x0),
     /* Boomerang     */ DMG_ENTRY(0, 0x0),
@@ -89,8 +89,8 @@ static DamageTable sDamageTable = {
     /* Giant spin    */ DMG_ENTRY(4, 0xF),
     /* Master spin   */ DMG_ENTRY(2, 0xF),
     /* Kokiri jump   */ DMG_ENTRY(2, 0xF),
-    /* Giant jump    */ DMG_ENTRY(8, 0xF),
-    /* Master jump   */ DMG_ENTRY(4, 0xF),
+    /* Giant jump    */ DMG_ENTRY(4, 0xF),
+    /* Master jump   */ DMG_ENTRY(2, 0xF),
     /* Unknown 1     */ DMG_ENTRY(0, 0x0),
     /* Unblockable   */ DMG_ENTRY(0, 0x0),
     /* Hammer jump   */ DMG_ENTRY(4, 0xF),
@@ -116,6 +116,11 @@ static Color_RGBA8 D_80AE493C = { 0, 0, 255, 0 };
 static Vec3f D_80AE4940 = { 300.0f, 0.0f, 0.0f };
 static Vec3f D_80AE494C = { 300.0f, 0.0f, 0.0f };
 static Vec3f D_80AE4958 = { 0.25f, 0.25f, 0.25f };
+
+static const f32 HearingRange = 200.0f;
+static const f32 HomeRange = HearingRange;
+static const f32 SenseRange = 130.0f;
+static const f32 AttackRange = 45.0f;
 
 void EnRd_SetupAction(EnRd* this, EnRdActionFunc actionFunc) {
     this->actionFunc = actionFunc;
@@ -246,7 +251,7 @@ void func_80AE2744(EnRd* this, PlayState* play) {
         }
 
         this->unk_305 = 0;
-        if ((this->actor.xzDistToPlayer <= 150.0f) && func_8002DDE4(play)) {
+        if (((this->actor.xzDistToPlayer <= HearingRange) && func_8002DDE4(play)) || (this->actor.xzDistToPlayer <= SenseRange)) {//Causes the undead to only notice the player if they are making noise
             if ((this->actor.params != 2) && (this->unk_305 == 0)) {
                 func_80AE37BC(this);
             } else {
@@ -298,7 +303,7 @@ void func_80AE2A10(EnRd* this, PlayState* play) {
 void func_80AE2B90(EnRd* this, PlayState* play) {
     Animation_Change(&this->skelAnime, &gGibdoRedeadWalkAnim, 1.0f, 4.0f,
                      Animation_GetLastFrame(&gGibdoRedeadWalkAnim), ANIMMODE_LOOP_INTERP, -4.0f);
-    this->actor.speedXZ = 0.4f;
+    this->actor.speedXZ = 0.4f*4;
     this->unk_31B = 4;
     EnRd_SetupAction(this, func_80AE2C1C);
 }
@@ -312,18 +317,18 @@ void func_80AE2C1C(EnRd* this, PlayState* play) {
     s16 sp32 = this->actor.yawTowardsPlayer - this->actor.shape.rot.y - this->unk_30E - this->unk_310;
 
     this->skelAnime.playSpeed = this->actor.speedXZ;
-    Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 1, 0xFA, 0);
+    Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 1, 0xFA*6, 0);
     Math_SmoothStepToS(&this->unk_30E, 0, 1, 0x64, 0);
     Math_SmoothStepToS(&this->unk_310, 0, 1, 0x64, 0);
     this->actor.world.rot.y = this->actor.shape.rot.y;
     SkelAnime_Update(&this->skelAnime);
 
-    if (Actor_WorldDistXYZToPoint(&player->actor, &this->actor.home.pos) >= 150.0f) {
+    if (Actor_WorldDistXYZToPoint(&player->actor, &this->actor.home.pos) >= HomeRange) {
         func_80AE2F50(this, play);
     }
 
-    if ((ABS(sp32) < 0x1554) && (Actor_WorldDistXYZToActor(&this->actor, &player->actor) <= 150.0f)) {
-        if (!(player->stateFlags1 & 0x2C6080) && !(player->stateFlags2 & 0x80)) {
+    if ((ABS(sp32) < 0x2554) && (Actor_WorldDistXYZToActor(&this->actor, &player->actor) <= HearingRange)) {
+        if (!(player->stateFlags1 & 0x2C6080) && !(player->stateFlags2 & 0x80)) {//Causes the undead to only notice the player if they are making noise
             if (this->unk_306 == 0) {
                 if (!(this->unk_312 & 0x80)) {
                     player->actor.freezeTimer = 40;
@@ -343,7 +348,7 @@ void func_80AE2C1C(EnRd* this, PlayState* play) {
         this->unk_307--;
     }
 
-    if (!this->unk_307 && (Actor_WorldDistXYZToActor(&this->actor, &player->actor) <= 45.0f) &&
+    if (!this->unk_307 && (Actor_WorldDistXYZToActor(&this->actor, &player->actor) <= AttackRange) &&
         Actor_IsFacingPlayer(&this->actor, 0x38E3)) {
         player->actor.freezeTimer = 0;
         if (play->grabPlayer(play, player)) {
@@ -395,8 +400,8 @@ void func_80AE2FD0(EnRd* this, PlayState* play) {
     this->actor.world.rot.y = this->actor.shape.rot.y;
     SkelAnime_Update(&this->skelAnime);
 
-    if (!(player->stateFlags1 & 0x2C6080) && !(player->stateFlags2 & 0x80) &&
-        (Actor_WorldDistXYZToPoint(&player->actor, &this->actor.home.pos) < 150.0f)) {
+    if (!(player->stateFlags1 & 0x2C6080) && !(player->stateFlags2 & 0x80) && //Causes the undead to only notice the player if they are making noise
+        (Actor_WorldDistXYZToPoint(&player->actor, &this->actor.home.pos) < HomeRange)) {
         this->actor.targetMode = 0;
         func_80AE2B90(this, play);
     } else if (this->actor.params > 0) {
@@ -432,7 +437,7 @@ void func_80AE3260(EnRd* this, PlayState* play) {
 
         Math_SmoothStepToS(&this->actor.shape.rot.y, targetY, 1, 0xFA, 0);
 
-        if (Actor_WorldDistXYZToPoint(&this->actor, &thisPos) >= 45.0f) {
+        if (Actor_WorldDistXYZToPoint(&this->actor, &thisPos) >= AttackRange) {
             this->actor.speedXZ = 0.4f;
         } else {
             this->actor.speedXZ = 0.0f;
@@ -621,7 +626,7 @@ void func_80AE3B18(EnRd* this, PlayState* play) {
 
         if (this->actor.parent != NULL) {
             func_80AE31DC(this);
-        } else if (Actor_WorldDistXYZToPoint(&player->actor, &this->actor.home.pos) >= 150.0f) {
+        } else if (Actor_WorldDistXYZToPoint(&player->actor, &this->actor.home.pos) >= HomeRange) {
             func_80AE2F50(this, play);
         } else {
             func_80AE2B90(this, play);
