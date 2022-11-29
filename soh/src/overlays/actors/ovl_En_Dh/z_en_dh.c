@@ -199,6 +199,7 @@ void EnDh_SetupWait(EnDh* this) {
 }
 
 void EnDh_Wait(EnDh* this, PlayState* play) {
+    Player* player = GET_PLAYER(play);
     if ((s32)this->skelAnime.curFrame == 5) {
         func_800F5ACC(NA_BGM_MINI_BOSS);
     }
@@ -228,6 +229,20 @@ void EnDh_Wait(EnDh* this, PlayState* play) {
                 }
                 break;
             case 2:
+                f32 undeadSpawnDist = 100.0f;
+                f32 undeadSpawnSpacing = 50.0f;
+                for (int ii = -2; ii <= 2; ii++) {
+                    Actor_Spawn(&play->actorCtx,play,ACTOR_EN_RD, player->actor.world.pos.x+Math_SinS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_SinS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
+                                                                player->actor.world.pos.y,
+                                                                player->actor.world.pos.z+Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
+                                                                0,this->actor.yawTowardsPlayer-0x4000,0,
+                                                                0x0);
+                    Actor_Spawn(&play->actorCtx,play,ACTOR_EN_RD, player->actor.world.pos.x-Math_SinS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_SinS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
+                                                                player->actor.world.pos.y,
+                                                                player->actor.world.pos.z-Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
+                                                                0,this->actor.yawTowardsPlayer+0x4000,0,
+                                                                0x0);
+                }
                 EnDh_SetupWalk(this);
                 break;
         }
@@ -320,8 +335,8 @@ void EnDh_Attack(EnDh* this, PlayState* play) {
             if (this->skelAnime.curFrame >= 4.0f) {
                 this->collider2.base.atFlags = this->collider2.elements[0].info.toucherFlags =
                     AT_ON | AT_TYPE_ENEMY; // also TOUCH_ON | TOUCH_SFX_WOOD
-                this->collider2.elements[0].info.toucher.dmgFlags = 0xFFCFFFFF;
-                this->collider2.elements[0].info.toucher.damage = 8;
+                this->collider2.elements[0].info.toucher.dmgFlags = 0x20000000;//0xFFCFFFFF
+                this->collider2.elements[0].info.toucher.damage = 0x30;
             }
             if (this->collider2.base.atFlags & AT_BOUNCED) {
                 this->collider2.base.atFlags &= ~(AT_HIT | AT_BOUNCED);
@@ -376,8 +391,8 @@ void EnDh_Burrow(EnDh* this, PlayState* play) {
             this->drawDirtWave++;
             this->collider1.base.atFlags = this->collider1.info.toucherFlags =
                 AT_ON | AT_TYPE_ENEMY; // also TOUCH_ON | TOUCH_SFX_WOOD
-            this->collider1.info.toucher.dmgFlags = 0xFFCFFFFF;
-            this->collider1.info.toucher.damage = 4;
+            this->collider1.info.toucher.dmgFlags = 0x20000000;//0xFFCFFFFF
+            this->collider1.info.toucher.damage = 0x10;
         case 1:
             this->dirtWavePhase += 0x47E;
             Math_SmoothStepToF(&this->dirtWaveSpread, 300.0f, 1.0f, 8.0f, 0.0f);
@@ -394,6 +409,19 @@ void EnDh_Burrow(EnDh* this, PlayState* play) {
             this->collider1.dim.radius = 35;
             this->collider1.base.atFlags = this->collider1.info.toucherFlags = AT_NONE; // Also TOUCH_NONE
             this->collider1.info.toucher.dmgFlags = this->collider1.info.toucher.damage = 0;
+
+            Actor* actor = play->actorCtx.actorLists[ACTORCAT_ENEMY].head;
+            while (actor != NULL) {
+                if (actor->id != ACTOR_EN_DH && actor->id != ACTOR_EN_DHA)
+                    Actor_Kill(actor);
+                actor = actor->next;
+            }
+            actor = play->actorCtx.actorLists[ACTORCAT_PROP].head;
+            while (actor != NULL) {
+                if (actor->id == ACTOR_EN_RD)
+                    Actor_Kill(actor);
+                actor = actor->next;
+            }
             EnDh_SetupWait(this);
             break;
     }
@@ -453,6 +481,12 @@ void EnDh_Death(EnDh* this, PlayState* play) {
                 this->actor.scale.y -= 0.000075f;
                 this->actor.shape.shadowAlpha = this->alpha -= 5;
             } else {
+                Actor* actor = play->actorCtx.actorLists[ACTORCAT_ENEMY].head;
+                while (actor != NULL) {
+                    if (actor->id != ACTOR_EN_DH && actor->id != ACTOR_EN_DHA)
+                        Actor_Kill(actor);
+                    actor = actor->next;
+                }
                 Actor_Kill(&this->actor);
                 return;
             }

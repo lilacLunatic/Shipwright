@@ -317,7 +317,7 @@ void EnDha_TakeDamage(EnDha* this, PlayState* play) {
     this->actionTimer--;
 
     if (this->actionTimer == 0) {
-        EnDha_SetupWait(this);
+        EnDha_SetupDeath(this);
     }
 }
 
