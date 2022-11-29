@@ -64,7 +64,7 @@ static ColliderCylinderInit sCylinderInit = {
 
 static DamageTable sDamageTable = {
     /* Deku nut      */ DMG_ENTRY(0, 0x0),
-    /* Deku stick    */ DMG_ENTRY(1, 0xF),
+    /* Deku stick    */ DMG_ENTRY(2, 0xF),
     /* Slingshot     */ DMG_ENTRY(0, 0x0),
     /* Explosive     */ DMG_ENTRY(0, 0x0),
     /* Boomerang     */ DMG_ENTRY(0, 0x0),
@@ -121,6 +121,8 @@ static const f32 HearingRange = 180.0f;
 static const f32 HomeRange = HearingRange;
 static const f32 SenseRange = 60.0f;
 static const f32 AttackRange = 45.0f;
+
+#define ENRD_DROPPED_ITEM 0x10//0x90
 
 void EnRd_SetupAction(EnRd* this, EnRdActionFunc actionFunc) {
     this->actionFunc = actionFunc;
@@ -710,7 +712,8 @@ void func_80AE3ECC(EnRd* this, PlayState* play) {
         if (this->actor.colChkInfo.health == 0) {
             func_80AE2630(play, &this->actor, 1);
             func_80AE3C20(this);
-            Item_DropCollectibleRandom(play, &this->actor, &this->actor.world.pos, 0x90);
+            if (this->actor.params != 4)
+                Item_DropCollectibleRandom(play, &this->actor, &this->actor.world.pos, ENRD_DROPPED_ITEM);
         } else {
             func_80AE3A8C(this);
         }
@@ -781,7 +784,8 @@ void func_80AE4114(EnRd* this, PlayState* play) {
                 if (this->actor.colChkInfo.health == 0) {
                     func_80AE2630(play, &this->actor, 1);
                     func_80AE3C20(this);
-                    Item_DropCollectibleRandom(play, 0, &this->actor.world.pos, 0x90);
+                    if (this->actor.params != 4)
+                        Item_DropCollectibleRandom(play, 0, &this->actor.world.pos, ENRD_DROPPED_ITEM);
                 } else {
                     func_80AE3A8C(this);
                 }

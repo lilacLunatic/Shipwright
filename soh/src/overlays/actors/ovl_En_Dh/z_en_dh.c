@@ -105,15 +105,15 @@ static DamageTable D_809EC620 = {
     /* Giant's Knife */ DMG_ENTRY(4, 0xF),
     /* Fire arrow    */ DMG_ENTRY(0, 0x0),
     /* Ice arrow     */ DMG_ENTRY(0, 0x0),
-    /* Light arrow   */ DMG_ENTRY(0, 0x0),
+    /* Light arrow   */ DMG_ENTRY(0, 0x6),
     /* Unk arrow 1   */ DMG_ENTRY(0, 0x0),
     /* Unk arrow 2   */ DMG_ENTRY(0, 0x0),
     /* Unk arrow 3   */ DMG_ENTRY(0, 0x0),
     /* Fire magic    */ DMG_ENTRY(0, 0x0),
     /* Ice magic     */ DMG_ENTRY(0, 0x0),
-    /* Light magic   */ DMG_ENTRY(0, 0x0),
+    /* Light magic   */ DMG_ENTRY(0, 0x6),
     /* Shield        */ DMG_ENTRY(0, 0x0),
-    /* Mirror Ray    */ DMG_ENTRY(0, 0x0),
+    /* Mirror Ray    */ DMG_ENTRY(0, 0x6),
     /* Kokiri spin   */ DMG_ENTRY(2, 0xF),
     /* Giant spin    */ DMG_ENTRY(4, 0xF),
     /* Master spin   */ DMG_ENTRY(2, 0xF),
@@ -236,12 +236,12 @@ void EnDh_Wait(EnDh* this, PlayState* play) {
                                                                 player->actor.world.pos.y,
                                                                 player->actor.world.pos.z+Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
                                                                 0,this->actor.yawTowardsPlayer-0x4000,0,
-                                                                0x0);
+                                                                0x4);
                     Actor_Spawn(&play->actorCtx,play,ACTOR_EN_RD, player->actor.world.pos.x-Math_SinS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_SinS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
                                                                 player->actor.world.pos.y,
                                                                 player->actor.world.pos.z-Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
                                                                 0,this->actor.yawTowardsPlayer+0x4000,0,
-                                                                0x0);
+                                                                0x4);
                 }
                 EnDh_SetupWalk(this);
                 break;
@@ -392,7 +392,7 @@ void EnDh_Burrow(EnDh* this, PlayState* play) {
             this->collider1.base.atFlags = this->collider1.info.toucherFlags =
                 AT_ON | AT_TYPE_ENEMY; // also TOUCH_ON | TOUCH_SFX_WOOD
             this->collider1.info.toucher.dmgFlags = 0x20000000;//0xFFCFFFFF
-            this->collider1.info.toucher.damage = 0x10;
+            this->collider1.info.toucher.damage = 0x20;
         case 1:
             this->dirtWavePhase += 0x47E;
             Math_SmoothStepToF(&this->dirtWaveSpread, 300.0f, 1.0f, 8.0f, 0.0f);
@@ -437,6 +437,21 @@ void EnDh_SetupDamage(EnDh* this) {
     EnDh_SetupAction(this, EnDh_Damage);
 }
 
+void EnDh_Summon_Wallmaster(EnDh* this, PlayState* play) {
+    Actor* actor = play->actorCtx.actorLists[ACTORCAT_ENEMY].head;
+    while (actor != NULL) {
+        if (actor->id == ACTOR_EN_WALLMAS)
+            return;
+        actor = actor->next;
+    }
+
+    Player* player = GET_PLAYER(play);
+    Actor_Spawn(&play->actorCtx,play,ACTOR_EN_WALLMAS,
+                player->actor.world.pos.x,player->actor.world.pos.y,player->actor.world.pos.z,
+                0,0,0,
+                0x0);
+}
+
 void EnDh_Damage(EnDh* this, PlayState* play) {
     if (this->actor.speedXZ < 0.0f) {
         this->actor.speedXZ += 0.15f;
@@ -451,8 +466,10 @@ void EnDh_Damage(EnDh* this, PlayState* play) {
 
             EnDh_SetupAttack(this);
             Animation_Change(&this->skelAnime, &object_dh_Anim_004658, 1.0f, 20.0f, frames, ANIMMODE_ONCE, -6.0f);
+            EnDh_Summon_Wallmaster(this,play);
         } else {
             EnDh_SetupWalk(this);
+            EnDh_Summon_Wallmaster(this,play);
         }
         this->unk_258 = 255;
     }
@@ -529,6 +546,23 @@ void EnDh_CollisionCheck(EnDh* this, PlayState* play) {
                 }
                 EnDh_SetupDamage(this);
             }
+        } else if (this->actor.colChkInfo.damageEffect == 6) {
+            this->retreat++;
+            EnDh_SetupRetreat(this,play);
+        }
+    }
+}
+
+void EnDh_Detect_Body(EnDh* this, PlayState* play) {
+    if (this->actionFunc == EnDh_Walk || this->actionFunc == EnDh_Attack) {
+        Actor* actor = play->actorCtx.actorLists[ACTORCAT_PROP].head;
+        while (actor != NULL) {
+            if (actor->id == ACTOR_EN_RD) {
+                this->retreat++;
+                EnDh_SetupRetreat(this,play);
+                return;
+            }
+            actor = actor->next;
         }
     }
 }
@@ -540,6 +574,7 @@ void EnDh_Update(Actor* thisx, PlayState* play) {
     s32 pad40;
 
     EnDh_CollisionCheck(this, play);
+    EnDh_Detect_Body(this, play);
     this->actionFunc(this, play);
     Actor_MoveForward(&this->actor);
     Actor_UpdateBgCheckInfo(play, &this->actor, 20.0f, 45.0f, 45.0f, 0x1D);
