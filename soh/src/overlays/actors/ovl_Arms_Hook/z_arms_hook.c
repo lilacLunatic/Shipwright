@@ -87,6 +87,10 @@ void ArmsHook_Wait(ArmsHook* this, PlayState* play) {
         // get correct timer length for hookshot or longshot
         s32 length = (player->heldItemAction == PLAYER_IA_HOOKSHOT) ? 13 : 26;
 
+        if (SILLY) {
+            length *= (Rand_ZeroOne() * 2 + .1);
+        }
+
         ArmsHook_SetupAction(this, ArmsHook_Shoot);
         func_8002D9A4(&this->actor, 20.0f);
         this->actor.parent = &GET_PLAYER(play)->actor;
