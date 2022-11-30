@@ -231,8 +231,9 @@ void EnDh_Wait(EnDh* this, PlayState* play) {
             case 2:
                 f32 undeadSpawnDist = 100.0f;
                 f32 undeadSpawnSpacing = 50.0f;
+                s16 endstop = LINK_IS_CHILD ? 2 : 1;
                 if ((LINK_IS_ADULT && this->actor.colChkInfo.health < 15) || (LINK_IS_CHILD && this->actor.colChkInfo.health < 21)) {
-                    for (int ii = -2; ii <= 2; ii++) {
+                    for (int ii = -2; ii <= endstop; ii++) {
                         Actor_Spawn(&play->actorCtx,play,ACTOR_EN_RD, player->actor.world.pos.x+Math_SinS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_SinS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
                                                                     player->actor.world.pos.y,
                                                                     player->actor.world.pos.z+Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
