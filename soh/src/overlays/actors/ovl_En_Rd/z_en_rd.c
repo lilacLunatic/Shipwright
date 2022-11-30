@@ -682,7 +682,7 @@ void func_80AE3DE4(EnRd* this) {
     this->unk_31B = 1;
     this->actor.speedXZ = 0.0f;
     this->actor.world.rot.y = this->actor.shape.rot.y;
-    if (gSaveContext.sunsSongState != SUNSSONG_INACTIVE) {
+    if (gSaveContext.sunsSongState != SUNSSONG_INACTIVE && this->actor.params != 4) {//Prevent summoned undead from being affected by the Sun's Song
         this->unk_318 = 1;
         this->unk_316 = 0x258;
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_LIGHT_ARROW_HIT);
@@ -748,7 +748,7 @@ void func_80AE4114(EnRd* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
     if ((gSaveContext.sunsSongState != SUNSSONG_INACTIVE) && (this->actor.shape.rot.x == 0) && (this->unk_318 == 0) &&
-        (this->unk_31B != 9) && (this->unk_31B != 10) && (this->unk_31B != 1)) {
+        (this->unk_31B != 9) && (this->unk_31B != 10) && (this->unk_31B != 1) && (this->actor.params != 4)) {//Prevent summoned undead from being affected by the Sun's Song
         func_80AE3DE4(this);
         return;
     }

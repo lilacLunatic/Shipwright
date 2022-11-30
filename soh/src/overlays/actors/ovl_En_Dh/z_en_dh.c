@@ -147,7 +147,7 @@ void EnDh_Init(Actor* thisx, PlayState* play) {
     ActorShape_Init(&this->actor.shape, 0.0f, ActorShadow_DrawCircle, 64.0f);
     this->actor.params = ENDH_WAIT_UNDERGROUND;
     this->actor.colChkInfo.mass = MASS_HEAVY;
-    this->actor.colChkInfo.health = LINK_IS_ADULT ? 14 : 20;
+    this->actor.colChkInfo.health = LINK_IS_ADULT ? 20 : 26;
     this->alpha = this->unk_258 = 255;
     this->actor.flags &= ~ACTOR_FLAG_0;
     Collider_InitCylinder(play, &this->collider1);
@@ -206,7 +206,7 @@ void EnDh_Wait(EnDh* this, PlayState* play) {
     if (Actor_GetCollidedExplosive(play, &this->collider1.base)) {
         this->actor.params = ENDH_START_ATTACK_BOMB;
     }
-    if ((this->actor.params >= ENDH_START_ATTACK_GRAB) || (this->actor.params <= ENDH_HANDS_KILLED_4)) {
+    if ((this->actor.params >= ENDH_START_ATTACK_GRAB) || (this->actor.params <= ENDH_HANDS_KILLED_3)) {
         switch (this->actionState) {
             case 0:
                 this->actor.flags |= ACTOR_FLAG_0;
@@ -231,17 +231,19 @@ void EnDh_Wait(EnDh* this, PlayState* play) {
             case 2:
                 f32 undeadSpawnDist = 100.0f;
                 f32 undeadSpawnSpacing = 50.0f;
-                for (int ii = -2; ii <= 2; ii++) {
-                    Actor_Spawn(&play->actorCtx,play,ACTOR_EN_RD, player->actor.world.pos.x+Math_SinS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_SinS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
-                                                                player->actor.world.pos.y,
-                                                                player->actor.world.pos.z+Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
-                                                                0,this->actor.yawTowardsPlayer-0x4000,0,
-                                                                0x4);
-                    Actor_Spawn(&play->actorCtx,play,ACTOR_EN_RD, player->actor.world.pos.x-Math_SinS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_SinS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
-                                                                player->actor.world.pos.y,
-                                                                player->actor.world.pos.z-Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
-                                                                0,this->actor.yawTowardsPlayer+0x4000,0,
-                                                                0x4);
+                if ((LINK_IS_ADULT && this->actor.colChkInfo.health < 15) || (LINK_IS_CHILD && this->actor.colChkInfo.health < 21)) {
+                    for (int ii = -2; ii <= 2; ii++) {
+                        Actor_Spawn(&play->actorCtx,play,ACTOR_EN_RD, player->actor.world.pos.x+Math_SinS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_SinS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
+                                                                    player->actor.world.pos.y,
+                                                                    player->actor.world.pos.z+Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
+                                                                    0,this->actor.yawTowardsPlayer-0x4000,0,
+                                                                    0x4);
+                        Actor_Spawn(&play->actorCtx,play,ACTOR_EN_RD, player->actor.world.pos.x-Math_SinS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_SinS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
+                                                                    player->actor.world.pos.y,
+                                                                    player->actor.world.pos.z-Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
+                                                                    0,this->actor.yawTowardsPlayer+0x4000,0,
+                                                                    0x4);
+                    }
                 }
                 EnDh_SetupWalk(this);
                 break;
@@ -466,10 +468,8 @@ void EnDh_Damage(EnDh* this, PlayState* play) {
 
             EnDh_SetupAttack(this);
             Animation_Change(&this->skelAnime, &object_dh_Anim_004658, 1.0f, 20.0f, frames, ANIMMODE_ONCE, -6.0f);
-            EnDh_Summon_Wallmaster(this,play);
         } else {
             EnDh_SetupWalk(this);
-            EnDh_Summon_Wallmaster(this,play);
         }
         this->unk_258 = 255;
     }
@@ -538,7 +538,8 @@ void EnDh_CollisionCheck(EnDh* this, PlayState* play) {
                 EnDh_SetupDeath(this);
                 Item_DropCollectibleRandom(play, &this->actor, &this->actor.world.pos, 0x90);
             } else {
-                if (((lastHealth >= 15) && (this->actor.colChkInfo.health < 15)) ||
+                if (((lastHealth >= 21) && (this->actor.colChkInfo.health < 21)) ||
+                    ((lastHealth >= 15) && (this->actor.colChkInfo.health < 15)) ||
                     ((lastHealth >= 9) && (this->actor.colChkInfo.health < 9)) ||
                     ((lastHealth >= 3) && (this->actor.colChkInfo.health < 3))) {
 
@@ -554,16 +555,20 @@ void EnDh_CollisionCheck(EnDh* this, PlayState* play) {
 }
 
 void EnDh_Detect_Body(EnDh* this, PlayState* play) {
+    s16 bodyCount = 0;
     if (this->actionFunc == EnDh_Walk || this->actionFunc == EnDh_Attack) {
         Actor* actor = play->actorCtx.actorLists[ACTORCAT_PROP].head;
         while (actor != NULL) {
             if (actor->id == ACTOR_EN_RD) {
-                this->retreat++;
-                EnDh_SetupRetreat(this,play);
-                return;
+                bodyCount++;
             }
             actor = actor->next;
         }
+    }
+
+    if (bodyCount >= 4) {
+        this->retreat++;
+        EnDh_SetupRetreat(this,play);
     }
 }
 
