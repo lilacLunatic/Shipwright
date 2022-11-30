@@ -7721,6 +7721,13 @@ void func_80842180(Player* this, PlayState* play) {
 
             if (CVar_GetS32("gMMBunnyHood", 0) && this->currentMask == PLAYER_MASK_BUNNY) {
                 sp2C *= 1.5f;
+                if (SILLY && this->bunnyScreamTimer++ % 18 == 0) {
+                    Audio_PlayActorSound2(&this->actor, NA_SE_EN_REDEAD_AIM);
+                    if (this->bunnyScreamTimer >= 18 * 2) {
+                        this->bunnyScreamTimer = 0;
+                        Player_InflictDamage(play, -4);
+                    }
+                }
             } 
             
             if (CVar_GetS32("gEnableWalkModify", 0)) {
@@ -8640,8 +8647,9 @@ void func_80844708(Player* this, PlayState* play) {
                 func_8083A060(this, play);
             }
         } else {
-            if (this->linearVelocity >= 7.0f) {
-                if (((this->actor.bgCheckFlags & 0x200) && (D_8085360C < 0x2000)) ||
+            f32 rand = Rand_ZeroOne();
+            if (this->linearVelocity >= 7.0f || rand <= .01) {
+                if ((SILLY && rand <= .01) || ((this->actor.bgCheckFlags & 0x200) && (D_8085360C < 0x2000)) ||
                     ((this->cylinder.base.ocFlags1 & OC1_HIT) &&
                      (cylinderOc = this->cylinder.base.oc,
                       ((cylinderOc->id == ACTOR_EN_WOOD02) &&
@@ -9547,6 +9555,7 @@ static EffectBlureInit2 blureSword = {
 static Vec3s D_80854730 = { -57, 3377, 0 };
 
 void Player_InitCommon(Player* this, PlayState* play, FlexSkeletonHeader* skelHeader) {
+    this->bunnyScreamTimer = 0;
     this->getItemEntry = (GetItemEntry)GET_ITEM_NONE;
     this->ageProperties = &sAgeProperties[gSaveContext.linkAge];
     Actor_ProcessInitChain(&this->actor, sInitChain);
@@ -10547,6 +10556,11 @@ static f32 D_80854820[] = { 2.0f, 4.0f, 7.0f };
 static f32 D_8085482C[] = { 0.5f, 1.0f, 3.0f };
 
 void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
+    if (SILLY){
+        if (this->actor.velocity.y > 10 && this->actor.velocity.y < 360){
+            this->actor.velocity.y += 350;
+        }
+    }
     s32 pad;
 
     sControlInput = input;
@@ -13497,6 +13511,9 @@ void func_8084FB10(Player* this, PlayState* play) {
         if (this->unk_84F < 6) {
             this->unk_84F++;
         }
+        else if (SILLY) {
+            this->invincibilityTimer = 0;
+        }
 
         if (func_80832594(this, 1, 100)) {
             this->unk_84F = -1;
@@ -13506,7 +13523,7 @@ void func_8084FB10(Player* this, PlayState* play) {
             this->stateFlags2 |= PLAYER_STATE2_14;
         }
 
-        if ((play->gameplayFrames % 4) == 0) {
+        if (SILLY || (play->gameplayFrames % 4) == 0) {
             Player_InflictDamage(play, -1);
         }
     } else {

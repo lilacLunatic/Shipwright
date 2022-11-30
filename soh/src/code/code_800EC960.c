@@ -1284,6 +1284,15 @@ void Audio_OcaUpdateBtnMap(bool customControls, bool dpad, bool rStick) {
         sOcarinaF4BtnMap |= RSTICK_DOWN;
     }
 
+    //if (SILLY){
+    //    s32 temp = sOcarinaD5BtnMap;
+    //    sOcarinaD5BtnMap = sOcarinaB4BtnMap;
+    //    sOcarinaB4BtnMap = sOcarinaF4BtnMap;
+    //    sOcarinaF4BtnMap = sOcarinaD4BtnMap;
+    //    sOcarinaD4BtnMap = sOcarinaA4BtnMap;
+    //    sOcarinaA4BtnMap = temp;
+    //}
+
     sOcarinaAllowedBtnMask = (
         sOcarinaD5BtnMap |
         sOcarinaB4BtnMap |
@@ -1681,7 +1690,22 @@ void func_800ED458(s32 arg0) {
 
         if ((sCurOcarinaBtnVal != 0xFF) && (sPrevOcarinaNoteVal != sCurOcarinaBtnVal)) {
             Audio_QueueCmdS8(0x6 << 24 | SEQ_PLAYER_SFX << 16 | 0xD07, D_80130F10 - 1);
-            Audio_QueueCmdS8(0x6 << 24 | SEQ_PLAYER_SFX << 16 | 0xD05, sCurOcarinaBtnVal);
+            s32 wrongOcarinaBtnVal = sCurOcarinaBtnVal;
+            if (SILLY){
+                switch(sCurOcarinaBtnIdx){
+                    case 0:
+                        wrongOcarinaBtnVal = sCurOcarinaBtnVal + 9; break;
+                    case 1:
+                        wrongOcarinaBtnVal = sCurOcarinaBtnVal + 9; break;
+                    case 2:
+                        wrongOcarinaBtnVal = sCurOcarinaBtnVal - 4; break;
+                    case 3:
+                        wrongOcarinaBtnVal = sCurOcarinaBtnVal - 2; break;
+                    case 4:
+                        wrongOcarinaBtnVal = sCurOcarinaBtnVal - 12; break;
+                }
+            }
+            Audio_QueueCmdS8(0x6 << 24 | SEQ_PLAYER_SFX << 16 | 0xD05, SILLY ? wrongOcarinaBtnVal : sCurOcarinaBtnVal);
             Audio_PlaySoundGeneral(NA_SE_OC_OCARINA, &D_801333D4, 4, &D_80130F24, &D_80130F28, &D_801333E8);
         } else if ((sPrevOcarinaNoteVal != 0xFF) && (sCurOcarinaBtnVal == 0xFF)) {
             Audio_StopSfxById(NA_SE_OC_OCARINA);

@@ -11,7 +11,7 @@
 
 
 
-
+#define SILLY 1
 
 
 #define _AudioseqSegmentRomStart "Audioseq"

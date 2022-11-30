@@ -2766,7 +2766,11 @@ void DrawRandoEditor(bool& open) {
 
     // Item Pool Settings
     const char* randoItemPool[4] = { "Plentiful", "Balanced", "Scarce", "Minimal" };
+#ifndef SILLY
     const char* randoIceTraps[5] = { "Off", "Normal", "Extra", "Mayhem", "Onslaught" };
+#else
+    const char* randoIceTraps[2] = { "Mayhem", "Onslaught" };
+#endif
 
     ImGui::SetNextWindowSize(ImVec2(920, 600), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("Randomizer Editor", &open, ImGuiWindowFlags_NoFocusOnAppearing)) {
@@ -3640,7 +3644,11 @@ void DrawRandoEditor(bool& open) {
                     "Onslaught - All junk items will be replaced by Ice Traps, even those "
                     "in the base pool."
                 );
+#ifndef SILLY
                 UIWidgets::EnhancementCombobox("gRandomizeIceTraps", randoIceTraps, RO_ICE_TRAPS_MAX, RO_ICE_TRAPS_NORMAL);
+#else
+                UIWidgets::EnhancementCombobox("gRandomizeIceTraps", randoIceTraps, 2, RO_ICE_TRAPS_MAYHEM);
+#endif
 
                 UIWidgets::PaddedSeparator();
 

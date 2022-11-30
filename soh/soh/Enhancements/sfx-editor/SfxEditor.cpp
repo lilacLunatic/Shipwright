@@ -131,7 +131,7 @@ const std::map<u16, std::tuple<std::string, std::string, SeqType>> sequenceMap =
     {NA_SE_EN_AMOS_VOICE,          {"Armos",                               "NA_SE_EN_AMOS_VOICE",            SEQ_SFX}},
     {NA_SE_VO_LI_FALL_L_KID,       {"Child Scream",                        "NA_SE_VO_LI_FALL_L_KID",         SEQ_SFX}},
     {NA_SE_VO_FR_LAUGH_0,          {"Great Fairy",                         "NA_SE_VO_FR_LAUGH_0",            SEQ_SFX}},
-    {NA_SE_EN_REDEAD_AIM,          {"Redead Scream",                       "NA_SE_EN_REDEAD_AIM",            SEQ_SFX}},
+    /*{NA_SE_EN_REDEAD_AIM,          {"Redead Scream",                       "NA_SE_EN_REDEAD_AIM",            SEQ_SFX}},*/
     {NA_SE_VO_RT_LAUGH_0,          {"Ruto Giggle",                         "NA_SE_VO_RT_LAUGH_0",            SEQ_SFX}},
     {NA_SE_EN_STALKID_ATTACK,      {"Stalchild Attack",                    "NA_SE_EN_STALKID_ATTACK",        SEQ_SFX}},
     {NA_SE_EV_CHICKEN_CRY_M,       {"Cockadoodiedoo",                      "NA_SE_EV_CHICKEN_CRY_M",         SEQ_SFX}},
