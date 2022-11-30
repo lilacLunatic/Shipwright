@@ -6527,7 +6527,7 @@ s32 func_8083EB44(Player* this, PlayState* play) {
                     func_80835C58(play, this, func_808464B0, 1);
                     func_80832264(play, this, &gPlayerAnim_link_boom_throw_wait2waitR); // &gPlayerAnim_link_bow_defense_wait
                     //call default boomerang behavior
-                    func_8083399C(play, this, PLAYER_AP_BOOMERANG);
+                    func_8083399C(play, this, PLAYER_IA_BOOMERANG);
 
                     LinkAnimationHeader* anim;
                     f32 frame;
