@@ -677,6 +677,7 @@ typedef struct Player {
     // #region SOH [Enhancements]
     // Upstream TODO: Rename this to make it more obvious it is apart of an enhancement
     /*        */ u8         boomerangQuickRecall; // Has the player pressed the boomerang button while it's in the air still?
+    /*        */ Actor*     boomSpawnGrab;
     // #endregion
 } Player; // size = 0xA94
 
