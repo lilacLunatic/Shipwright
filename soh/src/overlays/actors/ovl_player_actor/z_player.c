@@ -2788,7 +2788,7 @@ s32 func_808358F0(Player* this, PlayState* play) {
 }
 
 #define UPGRADED_BOOM 1
-#define EXTENDED_BOOM (UPGRADED_BOOM && (this->unk_858 >= BOOM_THRESHOLD))
+#define EXTENDED_BOOM (UPGRADED_BOOM && (this->unk_858 >= BOOM_THRESHOLD) && (gSaveContext.magic >= 2))
 s32 func_808359FC(Player* this, PlayState* play) {
     if (LinkAnimation_Update(play, &this->skelAnime2)) {
         func_80833638(this, func_80835B60);
