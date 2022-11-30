@@ -106,6 +106,7 @@ void EnBom_Init(Actor* thisx, PlayState* play) {
     if (CVar_GetS32("gNutsExplodeBombs", 0)) {
         this->bombCollider.info.bumper.dmgFlags |= 1;
     }
+    this->bombCollider.info.bumper.dmgFlags |= 16; //makes boomerang interact with it
 
     thisx->shape.rot.z &= 0xFF;
     if (thisx->shape.rot.z & 0x80) {
@@ -270,8 +271,11 @@ void EnBom_Update(Actor* thisx, PlayState* play2) {
 
         if ((this->bombCollider.base.acFlags & AC_HIT) || ((this->bombCollider.base.ocFlags1 & OC1_HIT) &&
                                                            (this->bombCollider.base.oc->category == ACTORCAT_ENEMY))) {
-            this->timer = 0;
-            thisx->shape.rot.z = 0;
+            if (this->bombCollider.base.ac != NULL &&              //no segfault pls
+                this->bombCollider.base.ac->id != ACTOR_EN_BOOM) { //makes sure boomerang won't explode it
+                this->timer = 0;
+                thisx->shape.rot.z = 0;
+            }
         } else {
             // if a lit stick touches the bomb, set timer to 100
             // these bombs never have a timer over 70, so this isnt used

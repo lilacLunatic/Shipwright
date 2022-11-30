@@ -97,6 +97,11 @@ void EnBoom_Init(Actor* thisx, PlayState* play) {
     Collider_SetQuad(play, &this->collider, &this->actor, &sQuadInit);
 
     EnBoom_SetupAction(this, EnBoom_Fly);
+    
+    Player* player = GET_PLAYER(play);
+    if(player->boomSpawnGrab){
+        this->grabbed = player->boomSpawnGrab;
+    }
 }
 
 void EnBoom_Destroy(Actor* thisx, PlayState* play) {
@@ -150,7 +155,12 @@ void EnBoom_Fly(EnBoom* this, PlayState* play) {
     }
 
     // Set xyz speed, move forward, and play the boomerang sound
+#define UPGRADED_BOOM 1
+#if UPGRADED_BOOM
+    func_8002D9A4(&this->actor, 18.0f);
+#else
     func_8002D9A4(&this->actor, 12.0f);
+#endif
     Actor_MoveForward(&this->actor);
     func_8002F974(&this->actor, NA_SE_IT_BOOMERANG_FLY - SFX_FLAG);
 
@@ -158,7 +168,7 @@ void EnBoom_Fly(EnBoom* this, PlayState* play) {
     collided = this->collider.base.atFlags & AT_HIT;
     collided = !!(collided);
     if (collided) {
-        if (((this->collider.base.at->id == ACTOR_EN_ITEM00) || (this->collider.base.at->id == ACTOR_EN_SI))) {
+        if (((this->collider.base.at->id == ACTOR_EN_ITEM00) || (this->collider.base.at->id == ACTOR_EN_SI) || (this->collider.base.at->id == ACTOR_EN_BOM))) {
             this->grabbed = this->collider.base.at;
             if (this->collider.base.at->id == ACTOR_EN_SI) {
                 this->collider.base.at->flags |= ACTOR_FLAG_13;
@@ -191,11 +201,13 @@ void EnBoom_Fly(EnBoom* this, PlayState* play) {
             player->stateFlags1 &= ~PLAYER_STATE1_25;
             player->boomerangQuickRecall = false;
             Actor_Kill(&this->actor);
+            player->boomSpawnGrab = 0;
+            func_8084DF6C(play, player);
         }
     } else {
         collided = (this->collider.base.atFlags & AT_HIT);
         collided = (!!(collided));
-        if (collided) {
+        if (collided && this->collider.base.at != player->boomSpawnGrab) {
             // Copy the position from the prevous frame to the boomerang to start the bounce back.
             Math_Vec3f_Copy(&this->actor.world.pos, &this->actor.prevPos);
         } else {

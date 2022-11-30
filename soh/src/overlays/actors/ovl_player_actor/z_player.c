@@ -2733,10 +2733,15 @@ s32 func_80835800(Player* this, PlayState* play) {
     return 0;
 }
 
+#define BOOM_THRESHOLD (0.35f)
 s32 func_80835884(Player* this, PlayState* play) {
     if (LinkAnimation_Update(play, &this->skelAnime2)) {
         func_80833638(this, func_808358F0);
         LinkAnimation_PlayLoop(play, &this->skelAnime2, &gPlayerAnim_link_boom_throw_waitR);
+
+        this->itemActionParam = PLAYER_AP_BOOMERANG;
+        this->heldItemActionParam = PLAYER_AP_BOOMERANG;
+        this->heldItemId = ITEM_BOOMERANG;
     }
 
     func_80834EB8(this, play);
@@ -2745,6 +2750,22 @@ s32 func_80835884(Player* this, PlayState* play) {
 }
 
 s32 func_808358F0(Player* this, PlayState* play) {
+    func_80844E3C(this);
+
+    if(!CHECK_BTN_ANY(sControlInput->cur.button, BTN_Z)){
+        this->stateFlags1 |= PLAYER_STATE1_12;
+    }
+    else {
+        this->stateFlags1 &= ~PLAYER_STATE1_12;
+    }
+    if (this->unk_858 >= BOOM_THRESHOLD &&
+        this->unk_858 <= BOOM_THRESHOLD + .1 &&
+            this->actor.category == ACTORCAT_PLAYER) {
+        Actor* chargeVfx = Actor_Spawn(&globalCtx->actorCtx, globalCtx, ACTOR_EN_M_THUNDER, this->bodyPartsPos[PLAYER_BODYPART_WAIST].x,
+                this->bodyPartsPos[PLAYER_BODYPART_WAIST].y, this->bodyPartsPos[PLAYER_BODYPART_WAIST].z, 0, 0, 0,
+                Player_GetSwordHeld(this) | 1 | 0x200 );
+    }
+
     LinkAnimationHeader* animSeg = this->skelAnime.animation;
 
     if ((func_808334E4(this) == animSeg) || (func_80833528(this) == animSeg) || (func_808335B0(this) == animSeg) ||
@@ -2766,6 +2787,8 @@ s32 func_808358F0(Player* this, PlayState* play) {
     return 1;
 }
 
+#define UPGRADED_BOOM 1
+#define EXTENDED_BOOM (UPGRADED_BOOM && (this->unk_858 >= BOOM_THRESHOLD))
 s32 func_808359FC(Player* this, PlayState* play) {
     if (LinkAnimation_Update(play, &this->skelAnime2)) {
         func_80833638(this, func_80835B60);
@@ -2781,7 +2804,16 @@ s32 func_808359FC(Player* this, PlayState* play) {
         this->boomerangActor = &boomerang->actor;
         if (boomerang != NULL) {
             boomerang->moveTo = this->unk_664;
-            boomerang->returnTimer = 20;
+            boomerang->returnTimer = 20 + 20 * EXTENDED_BOOM;
+
+            if(EXTENDED_BOOM){
+                u16 temp = gSaveContext.unk_13F0;
+                gSaveContext.unk_13F0 = 2;
+                Interface_UpdateMagicBar(globalCtx);
+                gSaveContext.unk_13F0 = temp;
+            }
+
+            this->unk_858 = 0;
             this->stateFlags1 |= PLAYER_STATE1_25;
             if (!func_8008E9C4(this)) {
                 func_808355DC(this);
@@ -6457,8 +6489,57 @@ s32 func_8083EB44(Player* this, PlayState* play) {
         CHECK_BTN_ANY(sControlInput->press.button, buttonsToCheck)) {
         if (!func_80835644(play, this, this->heldActor)) {
             if (!func_8083EAF0(this, this->heldActor)) {
-                func_80835C58(play, this, func_808464B0, 1);
-                func_80832264(play, this, D_80853914[PLAYER_ANIMGROUP_30][this->modelAnimType]);
+                u8 bombarang = 0;
+                if(this->heldActor->id == ACTOR_EN_BOM) {
+                    //check for cbutton/dpad equips
+                    //Please do let me (RR) know if there's something better than a big-ass if statement
+                    if (
+                            (gSaveContext.equips.buttonItems[1] == ITEM_BOOMERANG &&
+                            (CHECK_BTN_ANY(sControlInput->press.button, BTN_CLEFT))) ||
+
+                            (gSaveContext.equips.buttonItems[2] == ITEM_BOOMERANG &&
+                            (CHECK_BTN_ANY(sControlInput->press.button, BTN_CDOWN))) ||
+
+                            (gSaveContext.equips.buttonItems[3] == ITEM_BOOMERANG &&
+                            (CHECK_BTN_ANY(sControlInput->press.button, BTN_CRIGHT))) ||
+
+                            (gSaveContext.equips.buttonItems[4] == ITEM_BOOMERANG &&
+                            (CHECK_BTN_ANY(sControlInput->press.button, BTN_DUP))) ||
+
+                            (gSaveContext.equips.buttonItems[5] == ITEM_BOOMERANG &&
+                            (CHECK_BTN_ANY(sControlInput->press.button, BTN_DDOWN))) ||
+
+                            (gSaveContext.equips.buttonItems[6] == ITEM_BOOMERANG &&
+                            (CHECK_BTN_ANY(sControlInput->press.button, BTN_DLEFT))) ||
+
+                            (gSaveContext.equips.buttonItems[7] == ITEM_BOOMERANG &&
+                            (CHECK_BTN_ANY(sControlInput->press.button, BTN_DRIGHT)))){
+
+                            this->boomSpawnGrab = this->heldActor;
+                            bombarang = 1;
+                    }
+                }
+                if (!bombarang){
+                    func_80835C58(globalCtx, this, func_808464B0, 1);
+                    func_80832264(globalCtx, this, D_80853914[PLAYER_ANIMGROUP_30][this->modelAnimType]);
+                }
+                else {
+                    func_80835C58(globalCtx, this, func_808464B0, 1);
+                    func_80832264(globalCtx, this, &gPlayerAnim_link_boom_throw_wait2waitR); // &gPlayerAnim_link_bow_defense_wait
+                    //call default boomerang behavior
+                    func_8083399C(globalCtx, this, PLAYER_AP_BOOMERANG);
+
+                    LinkAnimationHeader* anim;
+                    f32 frame;
+                    anim = func_808346C4(globalCtx, this);
+                    frame = Animation_GetLastFrame(anim);
+                    LinkAnimation_Change(globalCtx, &this->skelAnime2, &gPlayerAnim_link_boom_throw_wait2waitR, 1.0f, frame, frame, ANIMMODE_ONCE, 0.0f);
+
+                    func_80833638(this, func_80835884);
+                    this->unk_834 = 10;
+                    //LinkAnimation_PlayOnce(globalCtx, &this->skelAnime2, &gPlayerAnim_link_boom_throw_wait2waitR);
+                    func_80834EB8(this, globalCtx);
+                }
             } else {
                 func_8083EA94(this, play);
             }
@@ -9581,6 +9662,7 @@ void Player_InitCommon(Player* this, PlayState* play, FlexSkeletonHeader* skelHe
     Collider_SetQuad(play, &this->meleeWeaponQuads[1], &this->actor, &D_80854650);
     Collider_InitQuad(play, &this->shieldQuad);
     Collider_SetQuad(play, &this->shieldQuad, &this->actor, &D_808546A0);
+    this->boomSpawnGrab = 0;
 }
 
 static void (*D_80854738[])(PlayState* play, Player* this) = {
