@@ -2739,8 +2739,8 @@ s32 func_80835884(Player* this, PlayState* play) {
         func_80833638(this, func_808358F0);
         LinkAnimation_PlayLoop(play, &this->skelAnime2, &gPlayerAnim_link_boom_throw_waitR);
 
-        this->itemActionParam = PLAYER_AP_BOOMERANG;
-        this->heldItemActionParam = PLAYER_AP_BOOMERANG;
+        this->itemAction= PLAYER_IA_BOOMERANG;
+        this->heldItemAction= PLAYER_IA_BOOMERANG;
         this->heldItemId = ITEM_BOOMERANG;
     }
 
@@ -2761,7 +2761,7 @@ s32 func_808358F0(Player* this, PlayState* play) {
     if (this->unk_858 >= BOOM_THRESHOLD &&
         this->unk_858 <= BOOM_THRESHOLD + .1 &&
             this->actor.category == ACTORCAT_PLAYER) {
-        Actor* chargeVfx = Actor_Spawn(&globalCtx->actorCtx, globalCtx, ACTOR_EN_M_THUNDER, this->bodyPartsPos[PLAYER_BODYPART_WAIST].x,
+        Actor* chargeVfx = Actor_Spawn(&play->actorCtx, play, ACTOR_EN_M_THUNDER, this->bodyPartsPos[PLAYER_BODYPART_WAIST].x,
                 this->bodyPartsPos[PLAYER_BODYPART_WAIST].y, this->bodyPartsPos[PLAYER_BODYPART_WAIST].z, 0, 0, 0,
                 Player_GetSwordHeld(this) | 1 | 0x200 );
     }
@@ -2807,10 +2807,10 @@ s32 func_808359FC(Player* this, PlayState* play) {
             boomerang->returnTimer = 20 + 20 * EXTENDED_BOOM;
 
             if(EXTENDED_BOOM){
-                u16 temp = gSaveContext.unk_13F0;
-                gSaveContext.unk_13F0 = 2;
-                Interface_UpdateMagicBar(globalCtx);
-                gSaveContext.unk_13F0 = temp;
+                u16 temp = gSaveContext.magicState;
+                gSaveContext.magicState = 2;
+                Interface_UpdateMagicBar(play);
+                gSaveContext.magicState = temp;
             }
 
             this->unk_858 = 0;
@@ -6520,25 +6520,25 @@ s32 func_8083EB44(Player* this, PlayState* play) {
                     }
                 }
                 if (!bombarang){
-                    func_80835C58(globalCtx, this, func_808464B0, 1);
-                    func_80832264(globalCtx, this, D_80853914[PLAYER_ANIMGROUP_30][this->modelAnimType]);
+                    func_80835C58(play, this, func_808464B0, 1);
+                    func_80832264(play, this, D_80853914[PLAYER_ANIMGROUP_30][this->modelAnimType]);
                 }
                 else {
-                    func_80835C58(globalCtx, this, func_808464B0, 1);
-                    func_80832264(globalCtx, this, &gPlayerAnim_link_boom_throw_wait2waitR); // &gPlayerAnim_link_bow_defense_wait
+                    func_80835C58(play, this, func_808464B0, 1);
+                    func_80832264(play, this, &gPlayerAnim_link_boom_throw_wait2waitR); // &gPlayerAnim_link_bow_defense_wait
                     //call default boomerang behavior
-                    func_8083399C(globalCtx, this, PLAYER_AP_BOOMERANG);
+                    func_8083399C(play, this, PLAYER_AP_BOOMERANG);
 
                     LinkAnimationHeader* anim;
                     f32 frame;
-                    anim = func_808346C4(globalCtx, this);
+                    anim = func_808346C4(play, this);
                     frame = Animation_GetLastFrame(anim);
-                    LinkAnimation_Change(globalCtx, &this->skelAnime2, &gPlayerAnim_link_boom_throw_wait2waitR, 1.0f, frame, frame, ANIMMODE_ONCE, 0.0f);
+                    LinkAnimation_Change(play, &this->skelAnime2, &gPlayerAnim_link_boom_throw_wait2waitR, 1.0f, frame, frame, ANIMMODE_ONCE, 0.0f);
 
                     func_80833638(this, func_80835884);
                     this->unk_834 = 10;
-                    //LinkAnimation_PlayOnce(globalCtx, &this->skelAnime2, &gPlayerAnim_link_boom_throw_wait2waitR);
-                    func_80834EB8(this, globalCtx);
+                    //LinkAnimation_PlayOnce(play, &this->skelAnime2, &gPlayerAnim_link_boom_throw_wait2waitR);
+                    func_80834EB8(this, play);
                 }
             } else {
                 func_8083EA94(this, play);
