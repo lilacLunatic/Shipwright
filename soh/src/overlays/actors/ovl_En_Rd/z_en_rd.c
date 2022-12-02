@@ -8,9 +8,9 @@ void EnRd_Destroy(Actor* thisx, PlayState* play);
 void EnRd_Update(Actor* thisx, PlayState* play);
 void EnRd_Draw(Actor* thisx, PlayState* play);
 
-void func_80AE269C(EnRd* this);
+void func_80AE269C(EnRd* this, PlayState* play);
 void func_80AE2744(EnRd* this, PlayState* play);
-void func_80AE2970(EnRd* this);
+void func_80AE2970(EnRd* this, PlayState* play);
 void func_80AE2A10(EnRd* this, PlayState* play);
 void func_80AE2C1C(EnRd* this, PlayState* play);
 void func_80AE2F50(EnRd* this, PlayState* play);
@@ -163,9 +163,9 @@ void EnRd_Init(Actor* thisx, PlayState* play) {
     Collider_SetCylinder(play, &this->collider, thisx, &sCylinderInit);
 
     if (thisx->params >= -2) {
-        func_80AE269C(this);
+        func_80AE269C(this,play);
     } else {
-        func_80AE2970(this);
+        func_80AE2970(this,play);
     }
 
     SkelAnime_Update(&this->skelAnime);
@@ -202,7 +202,12 @@ void func_80AE2630(PlayState* play, Actor* thisx, s32 arg2) {
     }
 }
 
-void func_80AE269C(EnRd* this) {
+void func_80AE269C(EnRd* this, PlayState* play) {
+    if (this->actor.params < -1) {
+        func_80AE2B90(this,play);
+        return;
+    }
+
     if (this->actor.params != 2) {
         Animation_MorphToLoop(&this->skelAnime, &gGibdoRedeadIdleAnim, -6.0f);
     } else {
@@ -267,7 +272,7 @@ void func_80AE2744(EnRd* this, PlayState* play) {
     }
 }
 
-void func_80AE2970(EnRd* this) {
+void func_80AE2970(EnRd* this, PlayState* play) {
     Animation_Change(&this->skelAnime, &gGibdoRedeadIdleAnim, 0, 0, Animation_GetLastFrame(&gGibdoRedeadIdleAnim),
                      ANIMMODE_LOOP, -6.0f);
     this->unk_31B = 11;
@@ -285,7 +290,7 @@ void func_80AE2A10(EnRd* this, PlayState* play) {
         Math_SmoothStepToS(&this->actor.shape.rot.x, 0, 1, 0x7D0, 0);
         if (Math_SmoothStepToF(&this->actor.world.pos.y, this->actor.home.pos.y, 0.3f, 2.0f, 0.3f) == 0.0f) {
             this->actor.gravity = -3.5f;
-            func_80AE269C(this);
+            func_80AE269C(this,play);
         }
     } else {
         if (this->actor.world.pos.y == this->actor.home.pos.y) {
@@ -390,7 +395,7 @@ void func_80AE2FD0(EnRd* this, PlayState* play) {
         this->actor.speedXZ = 0.0f;
         if (Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.home.rot.y, 1, 0x1C2, 0) == 0) {
             if (this->actor.params != 2) {
-                func_80AE269C(this);
+                func_80AE269C(this,play);
             } else {
                 func_80AE39D4(this);
             }
@@ -445,7 +450,7 @@ void func_80AE3260(EnRd* this, PlayState* play) {
             this->actor.speedXZ = 0.0f;
 
             if (this->actor.params != 2) {
-                func_80AE269C(this);
+                func_80AE269C(this,play);
             } else {
                 func_80AE39D4(this);
             }
@@ -596,7 +601,7 @@ void func_80AE39D4(EnRd* this) {
 
 void func_80AE3A54(EnRd* this, PlayState* play) {
     if (SkelAnime_Update(&this->skelAnime)) {
-        func_80AE269C(this);
+        func_80AE269C(this,play);
     }
 }
 
@@ -748,7 +753,7 @@ void func_80AE4114(EnRd* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
     if ((gSaveContext.sunsSongState != SUNSSONG_INACTIVE) && (this->actor.shape.rot.x == 0) && (this->unk_318 == 0) &&
-        (this->unk_31B != 9) && (this->unk_31B != 10) && (this->unk_31B != 1) && (this->actor.params != 4)) {//Prevent summoned undead from being affected by the Sun's Song
+        (this->unk_31B != 9) && (this->unk_31B != 10) && (this->unk_31B != 1) && (this->actor.params != 4) && (this->actor.params >= -1)) {//Prevent summoned undead and Gibdos from being affected by the Sun's Song
         func_80AE3DE4(this);
         return;
     }
@@ -770,6 +775,10 @@ void func_80AE4114(EnRd* this, PlayState* play) {
                     return;
                 }
 
+                if ((this->actor.params < -1) && (this->unk_31C == 14)) {//Gibdos are unaffected by fire
+                    return;
+                }
+
                 this->unk_318 = 0;
                 this->unk_316 = 0;
 
@@ -787,7 +796,8 @@ void func_80AE4114(EnRd* this, PlayState* play) {
                     if (this->actor.params != 4)
                         Item_DropCollectibleRandom(play, 0, &this->actor.world.pos, ENRD_DROPPED_ITEM);
                 } else {
-                    func_80AE3A8C(this);
+                    if (this->actor.params >= -1)
+                        func_80AE3A8C(this);
                 }
             }
         }
