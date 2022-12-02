@@ -11055,8 +11055,8 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
 
         this->cylinder.dim.yShift = phi_f12 - this->actor.world.pos.y;
 
-        if (this->stateFlags1 & PLAYER_STATE1_22 && ((this->unk_6AE & 0xC1) == 0xC1) && (this->skelAnime.animation == &gPlayerAnim_link_normal_defense_wait)) {
-            this->cylinder.dim.height = this->cylinder.dim.height * 1.2f;
+        if (this->stateFlags1 & PLAYER_STATE1_22 /*&& ((this->unk_6AE & 0xC1) == 0xC1) && (this->skelAnime.animation == &gPlayerAnim_link_normal_defense_wait)*/) {
+            this->cylinder.dim.height = this->cylinder.dim.height * 0.8f;//1.2f;
         }
 
         Collider_UpdateCylinder(&this->actor, &this->cylinder);
