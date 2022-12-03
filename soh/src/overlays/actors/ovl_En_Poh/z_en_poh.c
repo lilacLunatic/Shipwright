@@ -20,23 +20,23 @@ void EnPoh_DrawRegular(Actor* thisx, PlayState* play);
 void EnPoh_DrawComposer(Actor* thisx, PlayState* play);
 void EnPoh_DrawSoul(Actor* thisx, PlayState* play);
 
-void func_80ADEAC4(EnPoh* this, PlayState* play);
+void EnPo_StaticIdle(EnPoh* this, PlayState* play);
 void EnPoh_Idle(EnPoh* this, PlayState* play);
-void func_80ADEC9C(EnPoh* this, PlayState* play);
+void EnPo_ActionIdle(EnPoh* this, PlayState* play);
 void EnPoh_Attack(EnPoh* this, PlayState* play);
-void func_80ADEECC(EnPoh* this, PlayState* play);
-void func_80ADF894(EnPoh* this, PlayState* play);
-void EnPoh_ComposerAppear(EnPoh* this, PlayState* play);
-void func_80ADEF38(EnPoh* this, PlayState* play);
-void func_80ADF15C(EnPoh* this, PlayState* play);
-void func_80ADF574(EnPoh* this, PlayState* play);
-void func_80ADF5E0(EnPoh* this, PlayState* play);
+void EnPoh_RecallingFromHit(EnPoh* this, PlayState* play);
+void EnPoh_FlyAway(EnPoh* this, PlayState* play);
+void EnPoh_ComposerApparate(EnPoh* this, PlayState* play);
+void EnPoh_NormalApparate(EnPoh* this, PlayState* play);
+void EnPoh_StartDying(EnPoh* this, PlayState* play);
+void EnPo_AttackHit(EnPoh* this, PlayState* play);
+void EnPo_TurnAround(EnPoh* this, PlayState* play);
 void EnPoh_Disappear(EnPoh* this, PlayState* play);
 void EnPoh_Appear(EnPoh* this, PlayState* play);
 void EnPoh_Death(EnPoh* this, PlayState* play);
-void func_80ADFE28(EnPoh* this, PlayState* play);
-void func_80ADFE80(EnPoh* this, PlayState* play);
-void func_80AE009C(EnPoh* this, PlayState* play);
+void EnPoh_InitiateTalk(EnPoh* this, PlayState* play);
+void EnPoh_Talk(EnPoh* this, PlayState* play);
+void EnPo_EndTalk(EnPoh* this, PlayState* play);
 void EnPoh_TalkRegular(EnPoh* this, PlayState* play);
 void EnPoh_TalkComposer(EnPoh* this, PlayState* play);
 
@@ -170,6 +170,9 @@ static EnPohInfo sPoeInfo[2] = {
     },
 };
 
+#define MAX_OPACITY 32
+#define PHASE_LENGTH 32
+
 static Color_RGBA8 D_80AE1B4C = { 75, 20, 25, 255 };
 static Color_RGBA8 D_80AE1B50 = { 80, 110, 90, 255 };
 static Color_RGBA8 D_80AE1B54 = { 90, 85, 50, 255 };
@@ -181,6 +184,8 @@ static InitChainEntry sInitChain[] = {
 
 static Vec3f D_80AE1B60 = { 0.0f, 3.0f, 0.0f };
 static Vec3f D_80AE1B6C = { 0.0f, 0.0f, 0.0f };
+
+static const f32 ActionRange = 200.0f;
 
 void EnPoh_Init(Actor* thisx, PlayState* play) {
     s32 pad;
@@ -198,8 +203,8 @@ void EnPoh_Init(Actor* thisx, PlayState* play) {
     Collider_InitCylinder(play, &this->colliderCyl);
     Collider_SetCylinder(play, &this->colliderCyl, &this->actor, &sCylinderInit);
     CollisionCheck_SetInfo(&this->actor.colChkInfo, &sDamageTable, &sColChkInfoInit);
-    this->unk_194 = 0;
-    this->unk_195 = 32;
+    this->opacity = 0;
+    this->waveTimer = PHASE_LENGTH;
     this->visibilityTimer = Rand_S16Offset(700, 300);
     this->lightNode = LightContext_InsertLight(play, &play->lightCtx, &this->lightInfo);
     Lights_PointGlowSetInfo(&this->lightInfo, this->actor.home.pos.x, this->actor.home.pos.y, this->actor.home.pos.z,
@@ -256,23 +261,23 @@ void EnPoh_Destroy(Actor* thisx, PlayState* play) {
     }
 }
 
-void func_80ADE114(EnPoh* this) {
+void EnPo_SetupStaticIdle(EnPoh* this) {
     Animation_PlayLoop(&this->skelAnime, this->info->idleAnim);
-    this->unk_198 = Rand_S16Offset(2, 3);
-    this->actionFunc = func_80ADEAC4;
+    this->actionTimer = Rand_S16Offset(2, 3);
+    this->actionFunc = EnPo_StaticIdle;
     this->actor.speedXZ = 0.0f;
 }
 
 void EnPoh_SetupIdle(EnPoh* this) {
     Animation_PlayLoop(&this->skelAnime, this->info->idleAnim2);
-    this->unk_198 = Rand_S16Offset(15, 3);
+    this->actionTimer = Rand_S16Offset(5, 3);//original:12,change:5
     this->actionFunc = EnPoh_Idle;
 }
 
-void func_80ADE1BC(EnPoh* this) {
+void EnPo_SetupActionIdle(EnPoh* this) {
     Animation_PlayLoop(&this->skelAnime, this->info->idleAnim2);
-    this->actionFunc = func_80ADEC9C;
-    this->unk_198 = 0;
+    this->actionFunc = EnPo_ActionIdle;
+    this->actionTimer = 0;
     this->actor.speedXZ = 2.0f;
 }
 
@@ -282,13 +287,14 @@ void EnPoh_SetupAttack(EnPoh* this) {
     } else {
         Animation_PlayLoop(&this->skelAnime, &gPoeComposerAttackAnim);
     }
-    this->unk_198 = 12;
+    this->actionTimer = 12;
     this->actor.speedXZ = 0.0f;
+    this->skelAnime.playSpeed = 3.0f;
     Audio_PlayActorSound2(&this->actor, NA_SE_EN_PO_LAUGH);
     this->actionFunc = EnPoh_Attack;
 }
 
-void func_80ADE28C(EnPoh* this) {
+void EnPoh_SetupRecallingFromHit(EnPoh* this) {
     if (this->infoIdx == EN_POH_INFO_NORMAL) {
         Animation_MorphToPlayOnce(&this->skelAnime, &gPoeDamagedAnim, -6.0f);
     } else {
@@ -302,16 +308,16 @@ void func_80ADE28C(EnPoh* this) {
     this->colliderCyl.base.acFlags &= ~AC_ON;
     this->actor.speedXZ = 5.0f;
     Actor_SetColorFilter(&this->actor, 0x4000, 0xFF, 0, 0x10);
-    this->actionFunc = func_80ADEECC;
+    this->actionFunc = EnPoh_RecallingFromHit;
 }
 
-void func_80ADE368(EnPoh* this) {
+void EnPoh_SetupFlyAway(EnPoh* this) {
     Animation_MorphToLoop(&this->skelAnime, this->info->fleeAnim, -5.0f);
     this->actor.speedXZ = 5.0f;
     this->actor.world.rot.y = this->actor.shape.rot.y + 0x8000;
     this->colliderCyl.base.acFlags |= AC_ON;
-    this->unk_198 = 200;
-    this->actionFunc = func_80ADF894;
+    this->actionTimer = 200;
+    this->actionFunc = EnPoh_FlyAway;
 }
 
 void EnPoh_SetupInitialAction(EnPoh* this) {
@@ -319,40 +325,40 @@ void EnPoh_SetupInitialAction(EnPoh* this) {
     this->actor.flags &= ~ACTOR_FLAG_0;
     if (this->infoIdx == EN_POH_INFO_NORMAL) {
         Animation_PlayOnceSetSpeed(&this->skelAnime, &gPoeAppearAnim, 0.0f);
-        this->actionFunc = func_80ADEF38;
+        this->actionFunc = EnPoh_NormalApparate;
     } else {
         Animation_PlayOnceSetSpeed(&this->skelAnime, &gPoeComposerAppearAnim, 1.0f);
         this->actor.world.pos.y = this->actor.home.pos.y + 20.0f;
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_PO_LAUGH);
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_PO_APPEAR);
-        this->actionFunc = EnPoh_ComposerAppear;
+        this->actionFunc = EnPoh_ComposerApparate;
     }
 }
 
-void func_80ADE48C(EnPoh* this) {
+void EnPoh_SetupStartDying(EnPoh* this) {
     this->actor.speedXZ = 0.0f;
     this->actor.world.rot.y = this->actor.shape.rot.y;
-    this->unk_198 = 0;
+    this->actionTimer = 0;
     this->actor.naviEnemyId = 0xFF;
     this->actor.flags &= ~ACTOR_FLAG_0;
-    this->actionFunc = func_80ADF15C;
+    this->actionFunc = EnPoh_StartDying;
 }
 
-void func_80ADE4C8(EnPoh* this) {
+void EnPo_SetupAttackHit(EnPoh* this) {
     Animation_PlayOnce(&this->skelAnime, this->info->idleAnim2);
-    this->actionFunc = func_80ADF574;
+    this->actionFunc = EnPo_AttackHit;
     this->actor.speedXZ = -5.0f;
 }
 
-void func_80ADE514(EnPoh* this) {
+void EnPo_SetupTurnAround(EnPoh* this) {
     Animation_PlayLoop(&this->skelAnime, this->info->idleAnim);
-    this->unk_19C = this->actor.world.rot.y + 0x8000;
-    this->actionFunc = func_80ADF5E0;
+    this->yRotAim = this->actor.world.rot.y + 0x8000;
+    this->actionFunc = EnPo_TurnAround;
     this->actor.speedXZ = 0.0f;
 }
 
 void EnPoh_SetupDisappear(EnPoh* this) {
-    this->unk_194 = 32;
+    this->opacity = MAX_OPACITY;
     this->actor.speedXZ = 0.0f;
     this->actor.world.rot.y = this->actor.shape.rot.y;
     Audio_PlayActorSound2(&this->actor, NA_SE_EN_PO_DISAPPEAR);
@@ -361,7 +367,7 @@ void EnPoh_SetupDisappear(EnPoh* this) {
 }
 
 void EnPoh_SetupAppear(EnPoh* this) {
-    this->unk_194 = 0;
+    this->opacity = 0;
     this->actor.speedXZ = 0.0f;
     Audio_PlayActorSound2(&this->actor, NA_SE_EN_PO_APPEAR);
     Audio_PlayActorSound2(&this->actor, NA_SE_EN_PO_LAUGH);
@@ -381,7 +387,7 @@ void EnPoh_SetupDeath(EnPoh* this, PlayState* play) {
         this->actor.shape.rot.x = -0x8000;
     }
     Actor_ChangeCategory(play, &play->actorCtx, &this->actor, 8);
-    this->unk_198 = 60;
+    this->actionTimer = 60;
     this->actionFunc = EnPoh_Death;
 }
 
@@ -407,10 +413,10 @@ void func_80ADE6D4(EnPoh* this) {
     this->actor.shape.rot.x = 0;
     this->actor.home.pos.y = this->actor.world.pos.y;
     Audio_PlayActorSound2(&this->actor, NA_SE_EV_METAL_BOX_BOUND);
-    this->actionFunc = func_80ADFE28;
+    this->actionFunc = EnPoh_InitiateTalk;
 }
 
-void EnPoh_Talk(EnPoh* this, PlayState* play) {
+void EnPoh_SetupTalk(EnPoh* this, PlayState* play) {
     this->actor.home.pos.y = this->actor.world.pos.y;
     Actor_SetFocus(&this->actor, -10.0f);
     this->colliderCyl.dim.radius = 13;
@@ -434,26 +440,26 @@ void EnPoh_Talk(EnPoh* this, PlayState* play) {
     } else {
         this->actor.textId = 0x5005;
     }
-    this->unk_198 = 200;
-    this->unk_195 = 32;
+    this->actionTimer = 200;
+    this->waveTimer = PHASE_LENGTH;
     this->actor.flags |= ACTOR_FLAG_0;
-    this->actionFunc = func_80ADFE80;
+    this->actionFunc = EnPoh_Talk;
 }
 
-void func_80ADE950(EnPoh* this, s32 arg1) {
+void EnPo_SetupEndTalk(EnPoh* this, s32 arg1) {
     if (arg1) {
         Audio_StopSfxByPosAndId(&this->actor.projectedPos, NA_SE_EN_PO_BIG_CRY - SFX_FLAG);
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_PO_LAUGH);
     }
-    this->actionFunc = func_80AE009C;
+    this->actionFunc = EnPo_EndTalk;
 }
 
-void func_80ADE998(EnPoh* this) {
+void EnPoh_SetupTalkRegular(EnPoh* this) {
     this->actionFunc = EnPoh_TalkRegular;
     this->actor.home.pos.y = this->actor.world.pos.y - 15.0f;
 }
 
-void func_80ADE9BC(EnPoh* this) {
+void EnPoh_SetupTalkComposer(EnPoh* this) {
     this->actionFunc = EnPoh_TalkComposer;
 }
 
@@ -461,31 +467,31 @@ void EnPoh_MoveTowardsPlayerHeight(EnPoh* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
     Math_StepToF(&this->actor.world.pos.y, player->actor.world.pos.y, 1.0f);
-    this->actor.world.pos.y += 2.5f * Math_SinS(this->unk_195 * 0x800);
-    if (this->unk_195 != 0) {
-        this->unk_195 -= 1;
+    this->actor.world.pos.y += 2.5f * Math_SinS(this->waveTimer * 0x800);
+    if (this->waveTimer != 0) {
+        this->waveTimer -= 1;
     }
-    if (this->unk_195 == 0) {
-        this->unk_195 = 32;
+    if (this->waveTimer == 0) {
+        this->waveTimer = PHASE_LENGTH;
     }
 }
 
-void func_80ADEA5C(EnPoh* this) {
+void EnPo_TurnToHome(EnPoh* this) {
     if (Actor_WorldDistXZToPoint(&this->actor, &this->actor.home.pos) > 400.0f) {
-        this->unk_19C = Actor_WorldYawTowardPoint(&this->actor, &this->actor.home.pos);
+        this->yRotAim = Actor_WorldYawTowardPoint(&this->actor, &this->actor.home.pos);
     }
-    Math_ScaledStepToS(&this->actor.world.rot.y, this->unk_19C, 0x71C);
+    Math_ScaledStepToS(&this->actor.world.rot.y, this->yRotAim, 0x71C);
 }
 
-void func_80ADEAC4(EnPoh* this, PlayState* play) {
+void EnPo_StaticIdle(EnPoh* this, PlayState* play) {
     SkelAnime_Update(&this->skelAnime);
-    if (Animation_OnFrame(&this->skelAnime, 0.0f) && this->unk_198 != 0) {
-        this->unk_198--;
+    if (Animation_OnFrame(&this->skelAnime, 0.0f) && this->actionTimer != 0) {
+        this->actionTimer--;
     }
     EnPoh_MoveTowardsPlayerHeight(this, play);
-    if (this->actor.xzDistToPlayer < 200.0f) {
-        func_80ADE1BC(this);
-    } else if (this->unk_198 == 0) {
+    if (this->actor.xzDistToPlayer < ActionRange) {
+        EnPo_SetupActionIdle(this);
+    } else if (this->actionTimer == 0) {
         EnPoh_SetupIdle(this);
     }
     if (this->lightColor.a == 255) {
@@ -496,18 +502,18 @@ void func_80ADEAC4(EnPoh* this, PlayState* play) {
 void EnPoh_Idle(EnPoh* this, PlayState* play) {
     SkelAnime_Update(&this->skelAnime);
     Math_StepToF(&this->actor.speedXZ, 1.0f, 0.2f);
-    if (Animation_OnFrame(&this->skelAnime, 0.0f) && this->unk_198 != 0) {
-        this->unk_198--;
+    if (Animation_OnFrame(&this->skelAnime, 0.0f) && this->actionTimer != 0) {
+        this->actionTimer--;
     }
-    func_80ADEA5C(this);
+    EnPo_TurnToHome(this);
     EnPoh_MoveTowardsPlayerHeight(this, play);
-    if (this->actor.xzDistToPlayer < 200.0f && this->unk_198 < 19) {
-        func_80ADE1BC(this);
-    } else if (this->unk_198 == 0) {
+    if (this->actor.xzDistToPlayer < ActionRange && this->actionTimer < 19) {
+        EnPo_SetupActionIdle(this);
+    } else if (this->actionTimer == 0) {
         if (Rand_ZeroOne() < 0.1f) {
-            func_80ADE514(this);
+            EnPo_SetupTurnAround(this);
         } else {
-            func_80ADE114(this);
+            EnPo_SetupStaticIdle(this);
         }
     }
     if (this->lightColor.a == 255) {
@@ -515,14 +521,14 @@ void EnPoh_Idle(EnPoh* this, PlayState* play) {
     }
 }
 
-void func_80ADEC9C(EnPoh* this, PlayState* play) {
+void EnPo_ActionIdle(EnPoh* this, PlayState* play) {
     Player* player;
     s16 facingDiff;
 
     player = GET_PLAYER(play);
     SkelAnime_Update(&this->skelAnime);
-    if (this->unk_198 != 0) {
-        this->unk_198--;
+    if (this->actionTimer != 0) {
+        this->actionTimer--;
     }
     facingDiff = this->actor.yawTowardsPlayer - player->actor.shape.rot.y;
     if (facingDiff >= 0x3001) {
@@ -535,7 +541,7 @@ void func_80ADEC9C(EnPoh* this, PlayState* play) {
     EnPoh_MoveTowardsPlayerHeight(this, play);
     if (this->actor.xzDistToPlayer > 280.0f) {
         EnPoh_SetupIdle(this);
-    } else if (this->unk_198 == 0 && this->actor.xzDistToPlayer < 140.0f &&
+    } else if (this->actionTimer == 0 && this->actor.xzDistToPlayer < 140.0f &&
                !Player_IsFacingActor(&this->actor, 0x2AAA, play)) {
         EnPoh_SetupAttack(this);
     }
@@ -548,34 +554,35 @@ void EnPoh_Attack(EnPoh* this, PlayState* play) {
     SkelAnime_Update(&this->skelAnime);
     if (Animation_OnFrame(&this->skelAnime, 0.0f)) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_PO_KANTERA);
-        if (this->unk_198 != 0) {
-            this->unk_198--;
+        if (this->actionTimer != 0) {
+            this->actionTimer--;
         }
     }
     EnPoh_MoveTowardsPlayerHeight(this, play);
-    if (this->unk_198 >= 10) {
+    if (this->actionTimer >= 10) {
         Math_ScaledStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 0xE38);
-    } else if (this->unk_198 == 9) {
-        this->actor.speedXZ = 5.0f;
+    } else if (this->actionTimer == 9) {
+        this->actor.speedXZ = 6.5f;
         this->skelAnime.playSpeed = 2.0f;
-    } else if (this->unk_198 == 0) {
+        Math_ScaledStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 0x400);
+    } else if (this->actionTimer == 0) {
         EnPoh_SetupIdle(this);
-        this->unk_198 = 23;
+        this->actionTimer = 23;
     }
 }
 
-void func_80ADEECC(EnPoh* this, PlayState* play) {
-    Math_StepToF(&this->actor.speedXZ, 0.0f, 0.5f);
+void EnPoh_RecallingFromHit(EnPoh* this, PlayState* play) {
+    Math_StepToF(&this->actor.speedXZ, 5.0f, 0.5f);
     if (SkelAnime_Update(&this->skelAnime)) {
         if (this->actor.colChkInfo.health != 0) {
-            func_80ADE368(this);
+            EnPoh_SetupFlyAway(this);
         } else {
-            func_80ADE48C(this);
+            EnPoh_SetupStartDying(this);
         }
     }
 }
 
-void func_80ADEF38(EnPoh* this, PlayState* play) {
+void EnPoh_NormalApparate(EnPoh* this, PlayState* play) {
     if (SkelAnime_Update(&this->skelAnime)) {
         this->lightColor.a = 255;
         this->visibilityTimer = Rand_S16Offset(700, 300);
@@ -590,7 +597,7 @@ void func_80ADEF38(EnPoh* this, PlayState* play) {
     }
 }
 
-void EnPoh_ComposerAppear(EnPoh* this, PlayState* play) {
+void EnPoh_ComposerApparate(EnPoh* this, PlayState* play) {
     if (SkelAnime_Update(&this->skelAnime)) {
         this->lightColor.a = 255;
         this->visibilityTimer = Rand_S16Offset(700, 300);
@@ -601,113 +608,113 @@ void EnPoh_ComposerAppear(EnPoh* this, PlayState* play) {
     }
 }
 
-void func_80ADF15C(EnPoh* this, PlayState* play) {
+void EnPoh_StartDying(EnPoh* this, PlayState* play) {
     Vec3f vec;
     f32 multiplier;
     f32 newScale;
     s32 pad;
     s32 pad1;
 
-    this->unk_198++;
-    if (this->unk_198 < 8) {
-        if (this->unk_198 < 5) {
-            vec.y = Math_SinS((this->unk_198 * 0x1000) - 0x4000) * 23.0f + (this->actor.world.pos.y + 40.0f);
-            multiplier = Math_CosS((this->unk_198 * 0x1000) - 0x4000) * 23.0f;
+    this->actionTimer++;
+    if (this->actionTimer < 8) {
+        if (this->actionTimer < 5) {
+            vec.y = Math_SinS((this->actionTimer * 0x1000) - 0x4000) * 23.0f + (this->actor.world.pos.y + 40.0f);
+            multiplier = Math_CosS((this->actionTimer * 0x1000) - 0x4000) * 23.0f;
             vec.x = Math_SinS(Camera_GetCamDirYaw(GET_ACTIVE_CAM(play)) + 0x4800) * multiplier +
                     this->actor.world.pos.x;
             vec.z = Math_CosS(Camera_GetCamDirYaw(GET_ACTIVE_CAM(play)) + 0x4800) * multiplier +
                     this->actor.world.pos.z;
         } else {
-            vec.y = (this->actor.world.pos.y + 40.0f) + (15.0f * (this->unk_198 - 5));
+            vec.y = (this->actor.world.pos.y + 40.0f) + (15.0f * (this->actionTimer - 5));
             vec.x =
                 Math_SinS(Camera_GetCamDirYaw(GET_ACTIVE_CAM(play)) + 0x4800) * 23.0f + this->actor.world.pos.x;
             vec.z =
                 Math_CosS(Camera_GetCamDirYaw(GET_ACTIVE_CAM(play)) + 0x4800) * 23.0f + this->actor.world.pos.z;
         }
-        EffectSsDeadDb_Spawn(play, &vec, &D_80AE1B60, &D_80AE1B6C, this->unk_198 * 10 + 80, 0, 255, 255, 255, 255,
+        EffectSsDeadDb_Spawn(play, &vec, &D_80AE1B60, &D_80AE1B6C, this->actionTimer * 10 + 80, 0, 255, 255, 255, 255,
                              0, 0, 255, 1, 9, 1);
         vec.x = (this->actor.world.pos.x + this->actor.world.pos.x) - vec.x;
         vec.z = (this->actor.world.pos.z + this->actor.world.pos.z) - vec.z;
-        EffectSsDeadDb_Spawn(play, &vec, &D_80AE1B60, &D_80AE1B6C, this->unk_198 * 10 + 80, 0, 255, 255, 255, 255,
+        EffectSsDeadDb_Spawn(play, &vec, &D_80AE1B60, &D_80AE1B6C, this->actionTimer * 10 + 80, 0, 255, 255, 255, 255,
                              0, 0, 255, 1, 9, 1);
         vec.x = this->actor.world.pos.x;
         vec.z = this->actor.world.pos.z;
-        EffectSsDeadDb_Spawn(play, &vec, &D_80AE1B60, &D_80AE1B6C, this->unk_198 * 10 + 80, 0, 255, 255, 255, 255,
+        EffectSsDeadDb_Spawn(play, &vec, &D_80AE1B60, &D_80AE1B6C, this->actionTimer * 10 + 80, 0, 255, 255, 255, 255,
                              0, 0, 255, 1, 9, 1);
-        if (this->unk_198 == 1) {
+        if (this->actionTimer == 1) {
             Audio_PlayActorSound2(&this->actor, NA_SE_EN_EXTINCT);
         }
-    } else if (this->unk_198 == 28) {
+    } else if (this->actionTimer == 28) {
         EnPoh_SetupDeath(this, play);
-    } else if (this->unk_198 >= 19) {
-        newScale = (28 - this->unk_198) * 0.001f;
+    } else if (this->actionTimer >= 19) {
+        newScale = (28 - this->actionTimer) * 0.001f;
         this->actor.world.pos.y += 5.0f;
         this->actor.scale.z = newScale;
         this->actor.scale.y = newScale;
         this->actor.scale.x = newScale;
     }
-    if (this->unk_198 == 18) {
+    if (this->actionTimer == 18) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_PO_DEAD2);
     }
 }
 
-void func_80ADF574(EnPoh* this, PlayState* play) {
+void EnPo_AttackHit(EnPoh* this, PlayState* play) {
     if (SkelAnime_Update(&this->skelAnime)) {
         this->actor.world.rot.y = this->actor.shape.rot.y;
         EnPoh_SetupIdle(this);
-        this->unk_198 = 23;
+        this->actionTimer = 23;
     } else {
         Math_StepToF(&this->actor.speedXZ, 0.0f, 0.5f);
         this->actor.shape.rot.y += 0x1000;
     }
 }
 
-void func_80ADF5E0(EnPoh* this, PlayState* play) {
+void EnPo_TurnAround(EnPoh* this, PlayState* play) {
     SkelAnime_Update(&this->skelAnime);
-    if (Math_ScaledStepToS(&this->actor.world.rot.y, this->unk_19C, 1820) != 0) {
+    if (Math_ScaledStepToS(&this->actor.world.rot.y, this->yRotAim, 1820) != 0) {
         EnPoh_SetupIdle(this);
     }
-    if (this->actor.xzDistToPlayer < 200.0f) {
-        func_80ADE1BC(this);
+    if (this->actor.xzDistToPlayer < ActionRange) {
+        EnPo_SetupActionIdle(this);
     }
     EnPoh_MoveTowardsPlayerHeight(this, play);
 }
 
 void EnPoh_Disappear(EnPoh* this, PlayState* play) {
-    if (this->unk_194 != 0) {
-        this->unk_194--;
+    if (this->opacity != 0) {
+        this->opacity--;
     }
     this->actor.world.rot.y += 0x1000;
     EnPoh_MoveTowardsPlayerHeight(this, play);
-    this->lightColor.a = this->unk_194 * 7.96875f;
-    if (this->unk_194 == 0) {
+    this->lightColor.a = this->opacity * 7.96875f;
+    if (this->opacity == 0) {
         this->visibilityTimer = Rand_S16Offset(100, 50);
         EnPoh_SetupIdle(this);
     }
 }
 
 void EnPoh_Appear(EnPoh* this, PlayState* play) {
-    this->unk_194++;
+    this->opacity++;
     this->actor.world.rot.y -= 0x1000;
     EnPoh_MoveTowardsPlayerHeight(this, play);
-    this->lightColor.a = this->unk_194 * 7.96875f;
-    if (this->unk_194 == 32) {
+    this->lightColor.a = this->opacity * 7.96875f;
+    if (this->opacity == MAX_OPACITY) {
         this->visibilityTimer = Rand_S16Offset(700, 300);
-        this->unk_194 = 0;
+        this->opacity = 0;
         EnPoh_SetupIdle(this);
     }
 }
 
-void func_80ADF894(EnPoh* this, PlayState* play) {
+void EnPoh_FlyAway(EnPoh* this, PlayState* play) {
     f32 multiplier;
 
     SkelAnime_Update(&this->skelAnime);
-    multiplier = Math_SinS(this->unk_195 * 0x800) * 3.0f;
+    multiplier = Math_SinS(this->waveTimer * 0x800) * 3.0f;
     this->actor.world.pos.x -= multiplier * Math_CosS(this->actor.shape.rot.y);
     this->actor.world.pos.z += multiplier * Math_SinS(this->actor.shape.rot.y);
     Math_ScaledStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer + 0x8000, 0x71C);
     EnPoh_MoveTowardsPlayerHeight(this, play);
-    if (this->unk_198 == 0 || this->actor.xzDistToPlayer > 250.0f) {
+    if (this->actionTimer == 0 || this->actor.xzDistToPlayer > 250.0f) {
         this->actor.world.rot.y = this->actor.shape.rot.y;
         EnPoh_SetupIdle(this);
     }
@@ -717,15 +724,15 @@ void func_80ADF894(EnPoh* this, PlayState* play) {
 void EnPoh_Death(EnPoh* this, PlayState* play) {
     s32 objId;
 
-    if (this->unk_198 != 0) {
-        this->unk_198--;
+    if (this->actionTimer != 0) {
+        this->actionTimer--;
     }
     if (this->actor.bgCheckFlags & 1) {
         objId = (this->infoIdx == EN_POH_INFO_COMPOSER) ? OBJECT_PO_COMPOSER : OBJECT_POH;
         EffectSsHahen_SpawnBurst(play, &this->actor.world.pos, 6.0f, 0, 1, 1, 15, objId, 10,
                                  this->info->lanternDisplayList);
         func_80ADE6D4(this);
-    } else if (this->unk_198 == 0) {
+    } else if (this->actionTimer == 0) {
         Actor_Kill(&this->actor);
         return;
     }
@@ -754,28 +761,28 @@ void func_80ADFA90(EnPoh* this, s32 arg1) {
                               this->info->lightColor.b, this->lightColor.a * (200.0f / 255));
 }
 
-void func_80ADFE28(EnPoh* this, PlayState* play) {
+void EnPoh_InitiateTalk(EnPoh* this, PlayState* play) {
     this->actor.home.pos.y += 2.0f;
     func_80ADFA90(this, 20);
     if (this->lightColor.a == 255) {
-        EnPoh_Talk(this, play);
+        EnPoh_SetupTalk(this, play);
     }
 }
 
-void func_80ADFE80(EnPoh* this, PlayState* play) {
-    if (this->unk_198 != 0) {
-        this->unk_198--;
+void EnPoh_Talk(EnPoh* this, PlayState* play) {
+    if (this->actionTimer != 0) {
+        this->actionTimer--;
     }
     if (Actor_ProcessTalkRequest(&this->actor, play)) {
         if (this->actor.params >= EN_POH_SHARP) {
-            func_80ADE9BC(this);
+            EnPoh_SetupTalkComposer(this);
         } else {
-            func_80ADE998(this);
+            EnPoh_SetupTalkRegular(this);
         }
         return;
     }
-    if (this->unk_198 == 0) {
-        func_80ADE950(this, 1);
+    if (this->actionTimer == 0) {
+        EnPo_SetupEndTalk(this, 1);
         this->actor.flags &= ~ACTOR_FLAG_16;
         return;
     }
@@ -786,12 +793,12 @@ void func_80ADFE80(EnPoh* this, PlayState* play) {
         this->actor.flags &= ~ACTOR_FLAG_16;
         CollisionCheck_SetOC(play, &play->colChkCtx, &this->colliderCyl.base);
     }
-    this->actor.world.pos.y = Math_SinS(this->unk_195 * 0x800) * 5.0f + this->actor.home.pos.y;
-    if (this->unk_195 != 0) {
-        this->unk_195 -= 1;
+    this->actor.world.pos.y = Math_SinS(this->waveTimer * 0x800) * 5.0f + this->actor.home.pos.y;
+    if (this->waveTimer != 0) {
+        this->waveTimer -= 1;
     }
-    if (this->unk_195 == 0) {
-        this->unk_195 = 32;
+    if (this->waveTimer == 0) {
+        this->waveTimer = PHASE_LENGTH;
     }
     this->colliderCyl.dim.pos.y = this->actor.world.pos.y - 20.0f;
     Actor_SetFocus(&this->actor, -10.0f);
@@ -800,7 +807,7 @@ void func_80ADFE80(EnPoh* this, PlayState* play) {
                               this->info->lightColor.b, this->lightColor.a * (200.0f / 255));
 }
 
-void func_80AE009C(EnPoh* this, PlayState* play) {
+void EnPo_EndTalk(EnPoh* this, PlayState* play) {
     func_80ADFA90(this, -13);
     if (this->lightColor.a == 0) {
         Actor_Kill(&this->actor);
@@ -832,7 +839,7 @@ void EnPoh_TalkRegular(EnPoh* this, PlayState* play) {
             Message_ContinueTextbox(play, this->actor.textId);
         }
     } else if (Actor_TextboxIsClosing(&this->actor, play)) {
-        func_80ADE950(this, 0);
+        EnPo_SetupEndTalk(this, 0);
     }
 }
 
@@ -853,18 +860,18 @@ void EnPoh_TalkComposer(EnPoh* this, PlayState* play) {
                 } else {
                     Flags_SetSwitch(play, 0xA);
                 }
-                func_80ADE950(this, 1);
+                EnPo_SetupEndTalk(this, 1);
             }
         }
     } else if (Actor_TextboxIsClosing(&this->actor, play)) {
         if (this->actor.textId == 0x5000) {
             Flags_SetSwitch(play, 9);
         }
-        func_80ADE950(this, 1);
+        EnPo_SetupEndTalk(this, 1);
     }
 }
 
-void func_80AE032C(EnPoh* this, PlayState* play) {
+void EnPo_CollisionCheck(EnPoh* this, PlayState* play) {
     if (this->colliderCyl.base.acFlags & AC_HIT) {
         this->colliderCyl.base.acFlags &= ~AC_HIT;
         if (this->actor.colChkInfo.damageEffect != 0 || this->actor.colChkInfo.damage != 0) {
@@ -874,33 +881,33 @@ void func_80AE032C(EnPoh* this, PlayState* play) {
             } else {
                 Audio_PlayActorSound2(&this->actor, NA_SE_EN_PO_DAMAGE);
             }
-            func_80ADE28C(this);
+            EnPoh_SetupRecallingFromHit(this);
         }
     }
 }
 
 void EnPoh_UpdateVisibility(EnPoh* this) {
-    if (this->actionFunc != EnPoh_Appear && this->actionFunc != EnPoh_Disappear && this->actionFunc != func_80ADEF38 &&
-        this->actionFunc != EnPoh_ComposerAppear) {
+    if (this->actionFunc != EnPoh_Appear && this->actionFunc != EnPoh_Disappear && this->actionFunc != EnPoh_NormalApparate &&
+        this->actionFunc != EnPoh_ComposerApparate) {
         if (this->visibilityTimer != 0) {
             this->visibilityTimer--;
         }
         if (this->lightColor.a == 255) {
             if (this->actor.isTargeted) {
-                this->unk_194++;
-                this->unk_194 = CLAMP_MAX(this->unk_194, 20);
+                this->opacity++;
+                this->opacity = CLAMP_MAX(this->opacity, 20);
             } else {
-                this->unk_194 = 0;
+                this->opacity = 0;
             }
-            if ((this->unk_194 == 20 || this->visibilityTimer == 0) &&
-                (this->actionFunc == func_80ADEAC4 || this->actionFunc == EnPoh_Idle ||
-                 this->actionFunc == func_80ADEC9C || this->actionFunc == func_80ADF894 ||
-                 this->actionFunc == func_80ADF5E0)) {
+            if ((this->opacity == 20 || this->visibilityTimer == 0) &&
+                (this->actionFunc == EnPo_StaticIdle || this->actionFunc == EnPoh_Idle ||
+                 this->actionFunc == EnPo_ActionIdle || this->actionFunc == EnPoh_FlyAway ||
+                 this->actionFunc == EnPo_TurnAround)) {
                 EnPoh_SetupDisappear(this);
             }
         } else if (this->lightColor.a == 0 && this->visibilityTimer == 0 &&
-                   (this->actionFunc == func_80ADEAC4 || this->actionFunc == EnPoh_Idle ||
-                    this->actionFunc == func_80ADEC9C || this->actionFunc == func_80ADF5E0)) {
+                   (this->actionFunc == EnPo_StaticIdle || this->actionFunc == EnPoh_Idle ||
+                    this->actionFunc == EnPo_ActionIdle || this->actionFunc == EnPo_TurnAround)) {
             EnPoh_SetupAppear(this);
         }
     }
@@ -933,7 +940,7 @@ void EnPoh_Update(Actor* thisx, PlayState* play) {
     }
 }
 
-void func_80AE067C(EnPoh* this) {
+void EnPo_HandleLightColors(EnPoh* this) {
     s16 temp_var;
 
     if (this->actionFunc == EnPoh_Attack) {
@@ -941,12 +948,12 @@ void func_80AE067C(EnPoh* this) {
         this->lightColor.g = CLAMP_MIN((s16)(this->lightColor.g - 5), 50);
         temp_var = this->lightColor.b - 5;
         this->lightColor.b = CLAMP_MIN(temp_var, 0);
-    } else if (this->actionFunc == func_80ADF894) {
+    } else if (this->actionFunc == EnPoh_FlyAway) {
         this->lightColor.r = CLAMP_MAX((s16)(this->lightColor.r + 5), 80);
         this->lightColor.g = CLAMP_MAX((s16)(this->lightColor.g + 5), 255);
         temp_var = this->lightColor.b + 5;
         this->lightColor.b = CLAMP_MAX(temp_var, 225);
-    } else if (this->actionFunc == func_80ADEECC) {
+    } else if (this->actionFunc == EnPoh_RecallingFromHit) {
         if (this->actor.colorFilterTimer & 2) {
             this->lightColor.r = 0;
             this->lightColor.g = 0;
@@ -969,10 +976,10 @@ void func_80AE067C(EnPoh* this) {
     }
 }
 
-void func_80AE089C(EnPoh* this) {
+void EnPo_HandleEnvColors(EnPoh* this) {
     f32 rand;
 
-    if ((this->actionFunc == func_80ADEF38 || this->actionFunc == EnPoh_ComposerAppear) &&
+    if ((this->actionFunc == EnPoh_NormalApparate || this->actionFunc == EnPoh_ComposerApparate) &&
         this->skelAnime.curFrame < 12.0f) {
         this->envColor.r = this->envColor.g = this->envColor.b = (s16)(this->skelAnime.curFrame * 16.66f) + 55;
         this->envColor.a = this->skelAnime.curFrame * (100.0f / 6.0f);
@@ -993,13 +1000,13 @@ void EnPoh_UpdateLiving(Actor* thisx, PlayState* play) {
 
     if (this->colliderSph.base.atFlags & AT_HIT) {
         this->colliderSph.base.atFlags &= ~AT_HIT;
-        func_80ADE4C8(this);
+        EnPo_SetupAttackHit(this);
     }
-    func_80AE032C(this, play);
+    EnPo_CollisionCheck(this, play);
     EnPoh_UpdateVisibility(this);
     this->actionFunc(this, play);
     Actor_MoveForward(&this->actor);
-    if (this->actionFunc == EnPoh_Attack && this->unk_198 < 10) {
+    if (this->actionFunc == EnPoh_Attack && this->actionTimer < 10) {
         this->actor.flags |= ACTOR_FLAG_24;
         CollisionCheck_SetAT(play, &play->colChkCtx, &this->colliderSph.base);
     }
@@ -1010,8 +1017,8 @@ void EnPoh_UpdateLiving(Actor* thisx, PlayState* play) {
     CollisionCheck_SetOC(play, &play->colChkCtx, &this->colliderCyl.base);
     CollisionCheck_SetOC(play, &play->colChkCtx, &this->colliderSph.base);
     Actor_SetFocus(&this->actor, 42.0f);
-    if (this->actionFunc != func_80ADEECC && this->actionFunc != func_80ADF574) {
-        if (this->actionFunc == func_80ADF894) {
+    if (this->actionFunc != EnPoh_RecallingFromHit && this->actionFunc != EnPo_AttackHit) {
+        if (this->actionFunc == EnPoh_FlyAway) {
             this->actor.shape.rot.y = this->actor.world.rot.y + 0x8000;
         } else {
             this->actor.shape.rot.y = this->actor.world.rot.y;
@@ -1022,7 +1029,7 @@ void EnPoh_UpdateLiving(Actor* thisx, PlayState* play) {
     vec.z = this->actor.world.pos.z;
     this->actor.floorHeight =
         BgCheck_EntityRaycastFloor4(&play->colCtx, &this->actor.floorPoly, &sp38, &this->actor, &vec);
-    func_80AE089C(this);
+    EnPo_HandleEnvColors(this);
     this->actor.shape.shadowAlpha = this->lightColor.a;
 }
 
@@ -1031,7 +1038,7 @@ s32 EnPoh_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* p
     EnPoh* this = (EnPoh*)thisx;
 
     if ((this->lightColor.a == 0 || limbIndex == this->info->unk_6) ||
-        (this->actionFunc == func_80ADF15C && this->unk_198 >= 2)) {
+        (this->actionFunc == EnPoh_StartDying && this->actionTimer >= 2)) {
         *dList = NULL;
     } else if (this->actor.params == EN_POH_FLAT && limbIndex == 0xA) {
         // Replace Sharp's head with Flat's
@@ -1048,18 +1055,18 @@ void EnPoh_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot,
     EnPoh* this = (EnPoh*)thisx;
 
     Collider_UpdateSpheres(limbIndex, &this->colliderSph);
-    if (this->actionFunc == func_80ADF15C && this->unk_198 >= 2 && limbIndex == this->info->unk_7) {
+    if (this->actionFunc == EnPoh_StartDying && this->actionTimer >= 2 && limbIndex == this->info->unk_7) {
         gSPMatrix((*gfxP)++, MATRIX_NEWMTX(play->state.gfxCtx),
                   G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         gSPDisplayList((*gfxP)++, this->info->burnDisplayList);
     }
     if (limbIndex == this->info->unk_6) {
-        if (this->actionFunc == func_80ADF15C && this->unk_198 >= 19 && 0.0f != this->actor.scale.x) {
+        if (this->actionFunc == EnPoh_StartDying && this->actionTimer >= 19 && 0.0f != this->actor.scale.x) {
             f32 mtxScale = 0.01f / this->actor.scale.x;
             Matrix_Scale(mtxScale, mtxScale, mtxScale, MTXMODE_APPLY);
         }
         Matrix_Get(&this->unk_368);
-        if (this->actionFunc == func_80ADF15C && this->unk_198 == 27) {
+        if (this->actionFunc == EnPoh_StartDying && this->actionTimer == 27) {
             this->actor.world.pos.x = this->unk_368.xw;
             this->actor.world.pos.y = this->unk_368.yw;
             this->actor.world.pos.z = this->unk_368.zw;
@@ -1075,7 +1082,7 @@ void EnPoh_DrawRegular(Actor* thisx, PlayState* play) {
     EnPoh* this = (EnPoh*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
-    func_80AE067C(this);
+    EnPo_HandleLightColors(this);
     func_80093D18(play->state.gfxCtx);
     func_80093D84(play->state.gfxCtx);
     if (this->lightColor.a == 255 || this->lightColor.a == 0) {
@@ -1104,7 +1111,7 @@ void EnPoh_DrawComposer(Actor* thisx, PlayState* play) {
     Color_RGBA8* phi_t0;
 
     OPEN_DISPS(play->state.gfxCtx);
-    func_80AE067C(this);
+    EnPo_HandleLightColors(this);
     if (this->actor.params == EN_POH_SHARP) {
         sp90 = &D_80AE1B4C;
         phi_t0 = &D_80AE1B54;
@@ -1160,7 +1167,7 @@ void EnPoh_UpdateDead(Actor* thisx, PlayState* play) {
     if (this->actionFunc != EnPoh_Death) {
         this->visibilityTimer++;
     }
-    func_80AE089C(this);
+    EnPo_HandleEnvColors(this);
 }
 
 void EnPoh_DrawSoul(Actor* thisx, PlayState* play) {
