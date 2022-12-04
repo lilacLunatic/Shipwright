@@ -57,6 +57,9 @@ typedef struct EnPoh {
     /* 0x0308 */ ColliderJntSph colliderSph;
     /* 0x0328 */ ColliderJntSphElement colliderSphItem;
     /* 0x0368 */ MtxF unk_368;
+                 s16 trackingDir;
+                 s8 hasBeenAttacked;
+                 s16 decisionTimer;
 } EnPoh; // size = 0x03A8
 
 #endif
