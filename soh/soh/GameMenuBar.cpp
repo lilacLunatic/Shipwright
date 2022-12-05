@@ -393,10 +393,19 @@ namespace GameMenuBar {
                     UIWidgets::PaddedEnhancementCheckbox("Equip Multiple Arrows at Once", "gSeparateArrows", true, false);
                     UIWidgets::Tooltip("Allow the bow and magic arrows to be equipped at the same time on different slots");
                     UIWidgets::PaddedEnhancementCheckbox("Turn Nayru's Love into Roc's Feather", "gRocsFeather", true, false);
-                    UIWidgets::Tooltip(
+                    if (ImGui::IsItemHovered()) {
+                        char* text = "Nayru's Love acts like Roc's Feather from the Indigo romhack instead. Grants a jump that can even be used in the air.";
+                        ImGui::BeginTooltip();
+                        ImGui::Text("%s", UIWidgets::WrappedText(text, 60));
+                        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 50, 50, 255));
+                        ImGui::Text("%s", UIWidgets::WrappedText("But at what cost?", 60));
+                        ImGui::PopStyleColor();
+                        ImGui::EndTooltip();
+                    }
+                    /*UIWidgets::Tooltip(
                         "Nayru's Love acts like Roc's Feather from the Indigo romhack instead. Grants a jump that can even be used in the air, "
                         "but needs to recharge by touching the ground afterwards. Does not require magic to use."
-                    );
+                    );*/
                     ImGui::EndMenu();
                 }
 

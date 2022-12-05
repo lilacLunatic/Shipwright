@@ -2130,7 +2130,9 @@ void func_80833DF8(Player* this, PlayState* play) {
         } else if (item != ITEM_NAYRUS_LOVE || !CVar_GetS32("gRocsFeather", 0)) {
             this->heldItemButton = i;
             func_80835F44(play, this, item);
-        } else if (this->rocUseCount == 0) {
+        } else if (this->rocUseCount == 0 && gSaveContext.rupees >= 3) {
+            gSaveContext.rupees -= 3;
+            Player_InflictDamage(play, -8);
             this->rocUseCount++;
             this->linearVelocity = 5.0f;
             this->actor.velocity.y = 8.0f;
@@ -2800,7 +2802,7 @@ s32 func_808358F0(Player* this, PlayState* play) {
             this->actor.category == ACTORCAT_PLAYER) {
         Actor* chargeVfx = Actor_Spawn(&play->actorCtx, play, ACTOR_EN_M_THUNDER, this->bodyPartsPos[PLAYER_BODYPART_WAIST].x,
                 this->bodyPartsPos[PLAYER_BODYPART_WAIST].y, this->bodyPartsPos[PLAYER_BODYPART_WAIST].z, 0, 0, 0,
-                Player_GetSwordHeld(this) | 1 | 0x200 );
+                Player_GetSwordHeld(this) | 1 | 0x200, false );
     }
 
     LinkAnimationHeader* animSeg = this->skelAnime.animation;
