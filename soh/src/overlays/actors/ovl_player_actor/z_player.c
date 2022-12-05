@@ -3725,6 +3725,20 @@ void func_80837B9C(Player* this, PlayState* play) {
     }
 }
 
+void Player_ForcedUnmountHorse(PlayState* play, Player* player) {
+    if (player->rideActor != NULL && (player->stateFlags1 && (u32)0x800000)) {
+        Actor* horse = player->rideActor;
+        if (player->actor.parent == horse)
+            player->actor.parent = NULL;
+        player->rideActor = NULL;
+        player->stateFlags1 &= ~(u32)0x800000;
+        horse->child = NULL;
+        EnHorse_ResetIdleAnimation((EnHorse*)horse);
+        if (Play_GetCamera(play, 0)->setting == CAM_SET_HORSE)
+            Camera_ChangeSetting(Play_GetCamera(play, 0), CAM_SET_NORMAL0);
+    }
+}
+
 static LinkAnimationHeader* D_808544B0[] = {
     &gPlayerAnim_link_normal_front_shit, &gPlayerAnim_link_normal_front_shitR, &gPlayerAnim_link_normal_back_shit,
     &gPlayerAnim_link_normal_back_shitR, &gPlayerAnim_link_normal_front_hit,   &gPlayerAnim_link_anchor_front_hitR,
@@ -3736,8 +3750,70 @@ void func_80837C0C(PlayState* play, Player* this, s32 arg2, f32 arg3, f32 arg4, 
     LinkAnimationHeader** sp28;
 
     if (this->stateFlags1 & PLAYER_STATE1_23) {
-        func_80837B18(play, this, 0 - this->actor.colChkInfo.damage);
+        s32 tookDamage = func_80837B18(play, this, 0 - this->actor.colChkInfo.damage);
         func_80832698(this, NA_SE_VO_LI_DAMAGE_S);
+        func_8002F7DC(&this->actor, NA_SE_PL_DAMAGE);
+        this->unk_890 = 0;
+        if (tookDamage) {
+            func_80837AE0(this, arg6);
+
+            if (((arg2 == 1) || (arg2 == 2)) && !(this->stateFlags1 & PLAYER_STATE1_27)) {
+                Player_ForcedUnmountHorse(play,this);
+                arg5 -= this->actor.shape.rot.y;
+
+                func_80835C58(play, this, func_8084377C, 0);
+
+                this->stateFlags3 |= PLAYER_STATE3_1;
+
+                func_8083264C(this, 255, 20, 150, 0);
+                func_80832224(this);
+
+                if (arg2 == 2) {
+                    this->unk_850 = 4;
+
+                    this->actor.speedXZ = 3.0f;
+                    this->linearVelocity = 3.0f;
+                    this->actor.velocity.y = 6.0f;
+
+                    func_80832C2C(play, this, D_80853914[PLAYER_ANIMGROUP_3][this->modelAnimType]);
+                    func_80832698(this, NA_SE_VO_LI_DAMAGE_S);
+                } else {
+                    this->actor.speedXZ = arg3;
+                    this->linearVelocity = arg3;
+                    this->actor.velocity.y = arg4;
+
+                    if (ABS(arg5) > 0x4000) {
+                        sp2C = &gPlayerAnim_link_normal_front_downA;
+                    } else {
+                        sp2C = &gPlayerAnim_link_normal_back_downA;
+                    }
+
+                    if ((this->actor.category != ACTORCAT_PLAYER) && (this->actor.colChkInfo.health == 0)) {
+                        func_80832698(this, NA_SE_VO_BL_DOWN);
+                    } else {
+                        func_80832698(this, NA_SE_VO_LI_FALL_L);
+                    }
+                }
+
+                this->hoverBootsTimer = 0;
+                this->actor.bgCheckFlags &= ~1;
+
+                this->actor.shape.rot.y += arg5;
+                this->currentYaw = this->actor.shape.rot.y;
+                this->actor.world.rot.y = this->actor.shape.rot.y;
+                if (ABS(arg5) > 0x4000) {
+                    this->actor.shape.rot.y += 0x8000;
+                }
+
+                func_80832564(play, this);
+
+                this->stateFlags1 |= PLAYER_STATE1_26;
+
+                if (sp2C != NULL) {
+                    func_808322D0(play, this, sp2C);
+                }
+            }
+        }
         return;
     }
 
@@ -8395,21 +8471,9 @@ void func_80843A38(Player* this, PlayState* play) {
 
 static Vec3f D_808545E4 = { 0.0f, 0.0f, 5.0f };
 
-void Actor_UnmountHorseForced(PlayState* play, Player* player) {
-    if (player->rideActor != NULL && (player->stateFlags1 && (u32)0x800000)) {
-        Actor* horse = player->rideActor;
-        if (player->actor.parent == horse)
-            player->actor.parent = NULL;
-        player->rideActor = NULL;
-        player->stateFlags1 &= ~(u32)0x800000;
-        horse->child = NULL;
-        EnHorse_ResetIdleAnimation((EnHorse*)horse);
-    }
-}
-
 //This may deal with fairy auto revival (its one of the 3 places in this file that uses the hex value 0x140 to indicate full heart recovery)
 void func_80843AE8(PlayState* play, Player* this) {
-    Actor_UnmountHorseForced(play,this);
+    Player_ForcedUnmountHorse(play,this);
 
     if (this->unk_850 != 0) {
         if (this->unk_850 > 0) {
