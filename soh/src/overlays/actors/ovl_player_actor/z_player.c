@@ -3735,6 +3735,12 @@ void func_80837C0C(PlayState* play, Player* this, s32 arg2, f32 arg3, f32 arg4, 
     LinkAnimationHeader* sp2C = NULL;
     LinkAnimationHeader** sp28;
 
+    if (this->stateFlags1 & PLAYER_STATE1_23) {
+        func_80837B18(play, this, 0 - this->actor.colChkInfo.damage);
+        func_80832698(this, NA_SE_VO_LI_DAMAGE_S);
+        return;
+    }
+
     if (this->stateFlags1 & PLAYER_STATE1_13) {
         func_80837B60(this);
     }
@@ -8389,8 +8395,22 @@ void func_80843A38(Player* this, PlayState* play) {
 
 static Vec3f D_808545E4 = { 0.0f, 0.0f, 5.0f };
 
+void Actor_UnmountHorseForced(PlayState* play, Player* player) {
+    if (player->rideActor != NULL && (player->stateFlags1 && (u32)0x800000)) {
+        Actor* horse = player->rideActor;
+        if (player->actor.parent == horse)
+            player->actor.parent = NULL;
+        player->rideActor = NULL;
+        player->stateFlags1 &= ~(u32)0x800000;
+        horse->child = NULL;
+        EnHorse_ResetIdleAnimation((EnHorse*)horse);
+    }
+}
+
 //This may deal with fairy auto revival (its one of the 3 places in this file that uses the hex value 0x140 to indicate full heart recovery)
 void func_80843AE8(PlayState* play, Player* this) {
+    Actor_UnmountHorseForced(play,this);
+
     if (this->unk_850 != 0) {
         if (this->unk_850 > 0) {
             this->unk_850--;
@@ -10935,10 +10955,19 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
                                                             : &gPlayerAnim_link_derth_rebirth);
                 }
             } else {
-                if ((this->actor.parent == NULL) &&
-                    ((play->sceneLoadFlag == 0x14) || (this->unk_A87 != 0) || !func_808382DC(this, play))) {
-                    func_8083AA10(this, play);
-                } else {
+                s8 alternateFall = 1;
+                if (this->actor.parent == NULL) {
+                    if ((play->sceneLoadFlag == 0x14) || (this->unk_A87 != 0)) {
+                        func_8083AA10(this, play);
+                        alternateFall = 0;
+                    } else if (!func_808382DC(this, play)) {
+                        func_8083AA10(this, play);
+                        alternateFall = 0;
+                    }
+                }
+                if (alternateFall) {
+                    if (this->stateFlags1 & PLAYER_STATE1_23)
+                        func_808382DC(this, play);
                     this->fallStartHeight = this->actor.world.pos.y;
                 }
                 func_80848EF8(this, play);
