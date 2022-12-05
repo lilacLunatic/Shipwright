@@ -382,13 +382,21 @@ namespace GameMenuBar {
                     UIWidgets::PaddedText("Bunny Hood Effect", true, false);
                     const char* bunnyHoodOptions[3] = { "Disabled", "Faster Run & Longer Jump", "Faster Run"};
                     UIWidgets::EnhancementCombobox("gMMBunnyHood", bunnyHoodOptions, 3, 0);
-                    UIWidgets::Tooltip("Wearing the Bunny Hood grants a speed increase like in Majora's Mask. The longer jump option is not accounted for in randomizer logic.");
+                    UIWidgets::Tooltip(
+                        "Wearing the Bunny Hood grants a speed increase like in Majora's Mask. The longer jump option is not accounted for in randomizer logic.\n\n"
+                        "Also disables NPC's reactions to wearing the Bunny Hood."
+                    );
                     UIWidgets::PaddedEnhancementCheckbox("Mask Select in Inventory", "gMaskSelect", true, false);
                     UIWidgets::Tooltip("After completing the mask trading sub-quest, press A and any direction on the mask slot to change masks");
                     UIWidgets::PaddedEnhancementCheckbox("Nuts explode bombs", "gNutsExplodeBombs", true, false);
                     UIWidgets::Tooltip("Makes nuts explode bombs, similar to how they interact with bombchus. This does not affect bombflowers.");
                     UIWidgets::PaddedEnhancementCheckbox("Equip Multiple Arrows at Once", "gSeparateArrows", true, false);
                     UIWidgets::Tooltip("Allow the bow and magic arrows to be equipped at the same time on different slots");
+                    UIWidgets::PaddedEnhancementCheckbox("Turn Nayru's Love into Roc's Feather", "gRocsFeather", true, false);
+                    UIWidgets::Tooltip(
+                        "Nayru's Love acts like Roc's Feather from the Indigo romhack instead. Grants a jump that can even be used in the air, "
+                        "but needs to recharge by touching the ground afterwards. Does not require magic to use."
+                    );
                     ImGui::EndMenu();
                 }
 
@@ -905,7 +913,61 @@ namespace GameMenuBar {
             UIWidgets::Tooltip("Holding down B skips text");
             UIWidgets::PaddedEnhancementCheckbox("Free Camera", "gFreeCamera", true, false);
             UIWidgets::Tooltip("Enables camera control\nNote: You must remap C buttons off of the right stick in the controller config menu, and map the camera stick to the right stick.");
-            
+
+            const char* cam_cvar = "gCustomCameraDistMax";
+            {
+                int minDist = 100;
+                int maxDist = 900;
+
+                int val = CVar_GetS32(cam_cvar, 200);
+                val = fmax(fmin(val, maxDist), minDist);
+
+                int dist = val;
+
+                ImGui::Text("Custom camera distance: %d", val);
+
+                std::string MinusBTNDistI = " - ##CamDist";
+                std::string PlusBTNDistI = " + ##CamDist";
+                if (ImGui::Button(MinusBTNDistI.c_str())) {
+                    val--;
+                    CVar_SetS32(cam_cvar, val);
+                    SohImGui::RequestCvarSaveOnNextTick();
+                }
+                ImGui::SameLine();
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 7.0f);
+            #ifdef __SWITCH__
+                ImGui::PushItemWidth(ImGui::GetWindowSize().x - 110.0f);
+            #elif __WIIU__
+                ImGui::PushItemWidth(ImGui::GetWindowSize().x - 79.0f * 2);
+            #else
+                ImGui::PushItemWidth(ImGui::GetWindowSize().x - 79.0f);
+            #endif
+                if (ImGui::SliderInt("##CamDist", &val, minDist, maxDist, "", ImGuiSliderFlags_AlwaysClamp))
+                {
+                    if (val > maxDist)
+                    {
+                        val = maxDist;
+                    }
+                    else if (val < minDist)
+                    {
+                        val = minDist;
+                    }
+
+                    CVar_SetS32(cam_cvar, val);
+                    SohImGui::RequestCvarSaveOnNextTick();
+                }
+                ImGui::PopItemWidth();
+                //UIWidgets::Tooltip("Useful Description");
+
+                ImGui::SameLine();
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 7.0f);
+                if (ImGui::Button(PlusBTNDistI.c_str())) {
+                    val++;
+                    CVar_SetS32(cam_cvar, val);
+                    SohImGui::RequestCvarSaveOnNextTick();
+                }
+            }
+
          #ifdef __SWITCH__
             UIWidgets::Spacer(0);
             int slot = CVar_GetS32("gSwitchPerfMode", (int)Ship::SwitchProfiles::STOCK);
@@ -1116,6 +1178,14 @@ namespace GameMenuBar {
                 SohImGui::RequestCvarSaveOnNextTick();
                 SohImGui::EnableWindow("Actor Viewer", CVar_GetS32("gActorViewerEnabled", 0));
             }
+            UIWidgets::Spacer(0);
+            if (ImGui::Button(GetWindowButtonText("Display List Viewer", CVar_GetS32("gDLViewerEnabled", 0)).c_str(), ImVec2(-1.0f, 0.0f)))
+            {
+                bool currentValue = CVar_GetS32("gDLViewerEnabled", 0);
+                CVar_SetS32("gDLViewerEnabled", !currentValue);
+                SohImGui::RequestCvarSaveOnNextTick();
+                SohImGui::EnableWindow("Display List Viewer", CVar_GetS32("gDLViewerEnabled", 0));
+            }
             ImGui::PopStyleVar(3);
             ImGui::PopStyleColor(1);
 
@@ -1151,6 +1221,14 @@ namespace GameMenuBar {
                 SohImGui::EnableWindow("Item Tracker", CVar_GetS32("gItemTrackerEnabled", 0));
             }
             ImGui::Dummy(ImVec2(0.0f, 0.0f));
+            if (ImGui::Button(GetWindowButtonText("Entrance Tracker", CVar_GetS32("gEntranceTrackerEnabled", 0)).c_str(), buttonSize))
+            {
+                bool currentValue = CVar_GetS32("gEntranceTrackerEnabled", 0);
+                CVar_SetS32("gEntranceTrackerEnabled", !currentValue);
+                SohImGui::RequestCvarSaveOnNextTick();
+                SohImGui::EnableWindow("Entrance Tracker", CVar_GetS32("gEntranceTrackerEnabled", 0));
+            }
+            ImGui::Dummy(ImVec2(0.0f, 0.0f));
             if (ImGui::Button(GetWindowButtonText("Item Tracker Settings", CVar_GetS32("gItemTrackerSettingsEnabled", 0)).c_str(), buttonSize))
             {
                 bool currentValue = CVar_GetS32("gItemTrackerSettingsEnabled", 0);
@@ -1158,18 +1236,24 @@ namespace GameMenuBar {
                 SohImGui::RequestCvarSaveOnNextTick();
                 SohImGui::EnableWindow("Item Tracker Settings", CVar_GetS32("gItemTrackerSettingsEnabled", 0));
             }
+            ImGui::Dummy(ImVec2(0.0f, 0.0f));
+            if (ImGui::Button(GetWindowButtonText("Check Tracker", CVar_GetS32("gCheckTrackerEnabled", 0)).c_str(), buttonSize))
+            {
+                bool currentValue = CVar_GetS32("gCheckTrackerEnabled", 0);
+                CVar_SetS32("gCheckTrackerEnabled", !currentValue);
+                SohImGui::RequestCvarSaveOnNextTick();
+                SohImGui::EnableWindow("Check Tracker", CVar_GetS32("gCheckTrackerEnabled", 0));
+            }
+            ImGui::Dummy(ImVec2(0.0f, 0.0f));
+            if (ImGui::Button(GetWindowButtonText("Check Tracker Settings", CVar_GetS32("gCheckTrackerSettingsEnabled", 0)).c_str(), buttonSize))
+            {
+                bool currentValue = CVar_GetS32("gCheckTrackerSettingsEnabled", 0);
+                CVar_SetS32("gCheckTrackerSettingsEnabled", !currentValue);
+                SohImGui::RequestCvarSaveOnNextTick();
+                SohImGui::EnableWindow("Check Tracker Settings", CVar_GetS32("gCheckTrackerSettingsEnabled", 0));
+            }
             ImGui::PopStyleVar(3);
             ImGui::PopStyleColor(1);
-#ifdef ENABLE_CROWD_CONTROL
-            UIWidgets::PaddedEnhancementCheckbox("Crowd Control", "gCrowdControl", true, false);
-            UIWidgets::Tooltip("Requires a full SoH restart to take effect!\n\nEnables CrowdControl. Will attempt to connect to the local Crowd Control server.");
-
-            if (CVar_GetS32("gCrowdControl", 0)) {
-                CrowdControl::Instance->Enable();
-            } else {
-                CrowdControl::Instance->Disable();
-            }
-#endif
 
             UIWidgets::PaddedSeparator();
 
@@ -1215,6 +1299,38 @@ namespace GameMenuBar {
                     "(medallions/stones/songs). Note that these fanfares are longer than usual."
                 );
                 ImGui::EndMenu();
+            }
+
+            UIWidgets::PaddedSeparator();
+
+        #ifdef ENABLE_CROWD_CONTROL
+            UIWidgets::EnhancementCheckbox("Crowd Control", "gCrowdControl");
+            UIWidgets::Tooltip("Requires a full SoH restart to take effect!\n\nEnables CrowdControl. Will attempt to connect to the local Crowd Control server.");
+
+            if (CVar_GetS32("gCrowdControl", 0)) {
+                CrowdControl::Instance->Enable();
+            } else {
+                CrowdControl::Instance->Disable();
+            }
+
+            ImGui::Dummy(ImVec2(0.0f, 0.0f));
+        #endif
+
+            UIWidgets::EnhancementCheckbox("Enemy Randomizer", "gRandomizedEnemies");
+            UIWidgets::Tooltip(
+                "Randomizes regular enemies every time you load a room. Bosses, mini-bosses and a few specific regular enemies are excluded.\n\n"
+                "Enemies that need more than Deku Nuts + either Deku Sticks or a sword to kill are excluded from spawning in \"clear enemy\" rooms."
+            );
+
+            if (CVar_GetS32("gRandomizedEnemies", 0)) {
+
+                bool disableSeededEnemies = !gSaveContext.n64ddFlag && gSaveContext.fileNum >= 0 && gSaveContext.fileNum <= 2;
+                const char* disableSeededEnemiesText = "This setting is disabled because it relies on a randomizer savefile.";
+
+                UIWidgets::PaddedEnhancementCheckbox("Seeded Enemy Spawns", "gSeededRandomizedEnemies", true, false, disableSeededEnemies, disableSeededEnemiesText);
+                UIWidgets::Tooltip(
+                    "Enemy spawns will stay consistent throughout room reloads. Enemy spawns are based on randomizer seeds, so this only works with randomizer savefiles."
+                );
             }
 
             ImGui::EndMenu();

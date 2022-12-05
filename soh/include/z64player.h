@@ -673,12 +673,17 @@ typedef struct Player {
     // Upstream TODO: Rename these to be more obviously SoH specific
     /*        */ PendingFlag pendingFlag;
     /*        */ GetItemEntry getItemEntry;
+    /*        */ s8 rocUseCount;
     // #endregion
     // #region SOH [Enhancements]
     // Upstream TODO: Rename this to make it more obvious it is apart of an enhancement
     /*        */ u8         boomerangQuickRecall; // Has the player pressed the boomerang button while it's in the air still?
     /*        */ u8         bunnyScreamTimer;
     /*        */ Actor*     boomSpawnGrab;
+
+    /* 0x???? */ f32        mouseQuickspinX[5];
+    /* 0x???? */ f32        mouseQuickspinY[5];
+    /* 0x???? */ u8         quickspinCount;
     // #endregion
 } Player; // size = 0xA94
 

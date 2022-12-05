@@ -57,11 +57,16 @@ typedef struct {
     /*      */ u8 heartPieces;
     /*      */ u8 heartContainers;
     /*      */ u8 dungeonKeys[19];
+    /*      */ u8 hasObtainedWeirdEgg;
+    /*      */ u8 weirdEggHasHatched;
     /*      */ u32 playTimer;
     /*      */ u32 pauseTimer;
     /*      */ bool gameComplete;
     /*      */ u32 timestamp[TIMESTAMP_MAX];
     /*      */ u32 count[COUNT_MAX];
+    /*      */ u32 entrancesDiscovered[SAVEFILE_ENTRANCES_DISCOVERED_IDX_COUNT];
+    /*      */ u32 scenesDiscovered[SAVEFILE_SCENES_DISCOVERED_IDX_COUNT];
+    /*      */ u8 activeMaskItemId;
 } SohStats;
 
 typedef struct {
@@ -261,6 +266,12 @@ typedef struct {
     /*        */ char adultAltarText[750];
     /*        */ char ganonHintText[150];
     /*        */ char ganonText[250];
+    /*        */ char warpMinuetText[100];
+    /*        */ char warpBoleroText[100];
+    /*        */ char warpSerenadeText[100];
+    /*        */ char warpRequiemText[100];
+    /*        */ char warpNocturneText[100];
+    /*        */ char warpPreludeText[100];
     /*        */ u8 seedIcons[5];
     /*        */ u16 randomizerInf[9];
     /*        */ u16 adultTradeItems;

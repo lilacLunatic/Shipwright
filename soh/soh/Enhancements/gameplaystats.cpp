@@ -1,10 +1,13 @@
 #include "gameplaystats.h"
 
 #include "ImGuiImpl.h"
-#include "../UIWidgets.hpp"
 
 #include <map>
 #include <string>
+#include <vector>
+
+#include "../UIWidgets.hpp"
+
 #include <Cvar.h>
 #include <Hooks.h>
 

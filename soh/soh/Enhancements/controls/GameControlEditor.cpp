@@ -287,6 +287,7 @@ namespace GameControlEditor {
         DrawHelpIcon("Allows the cursor on the pause menu to be over any slot\nSimilar to Rando and Spaceworld 97");
         UIWidgets::PaddedEnhancementCheckbox("Answer Navi Prompt with L Button", "gNaviOnL");
         DrawHelpIcon("Speak to Navi with L but enter first-person camera with C-Up");
+        UIWidgets::PaddedEnhancementCheckbox("Mouse/Touch Enabled", "gMouseTouchEnabled");
         SohImGui::EndGroupPanel();
 
     }

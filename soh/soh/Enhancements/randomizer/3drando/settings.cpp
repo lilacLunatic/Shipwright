@@ -88,10 +88,19 @@ namespace Settings {
   Option StartingAge               = Option::U8  ("Starting Age",           {"Child", "Adult", "Random"},                                      {ageDesc},                                                                                                       OptionCategory::Setting,    AGE_CHILD);
   uint8_t ResolvedStartingAge;
   Option ShuffleEntrances          = Option::Bool("Shuffle Entrances",      {"Off", "On"},                                                     {shuffleEntrancesDesc});
-  Option ShuffleDungeonEntrances   = Option::U8  ("Dungeon Entrances",    {"Off", "On", "On + Ganon"},                                       {dungeonEntrancesDesc});
-  Option ShuffleOverworldEntrances = Option::Bool("Overworld Entrances",  {"Off", "On"},                                                     {overworldEntrancesDesc});
-  Option ShuffleInteriorEntrances  = Option::U8  ("Interior Entrances",   {"Off", "Simple", "All"},                                          {interiorEntrancesOff, interiorEntrancesSimple, interiorEntrancesAll});
-  Option ShuffleGrottoEntrances    = Option::Bool("Grottos Entrances",    {"Off", "On"},                                                     {grottoEntrancesDesc});
+  Option ShuffleDungeonEntrances   = Option::U8  ("Dungeon Entrances",      {"Off", "On", "On + Ganon"},                                       {dungeonEntrancesDesc});
+  Option ShuffleOverworldEntrances = Option::Bool("Overworld Entrances",    {"Off", "On"},                                                     {overworldEntrancesDesc});
+  Option ShuffleInteriorEntrances  = Option::U8  ("Interior Entrances",     {"Off", "Simple", "All"},                                          {interiorEntrancesOff, interiorEntrancesSimple, interiorEntrancesAll});
+  Option ShuffleGrottoEntrances    = Option::Bool("Grottos Entrances",      {"Off", "On"},                                                     {grottoEntrancesDesc});
+  Option ShuffleOwlDrops           = Option::Bool("Owl Drops",              {"Off", "On"},                                                     {owlDropsDesc});
+  Option ShuffleWarpSongs          = Option::Bool("Warp Songs",             {"Off", "On"},                                                     {warpSongsDesc});
+  Option ShuffleOverworldSpawns    = Option::Bool("Overworld Spawns",       {"Off", "On"},                                                     {overworldSpawnsDesc});
+  Option MixedEntrancePools        = Option::Bool("Mixed Entrance Pools",   {"Off", "On"},                                                     {mixedPoolsDesc});
+  Option MixDungeons               = Option::Bool("Mix Dungeons",           {"Off", "On"},                                                     {mixDungeonsDesc});
+  Option MixOverworld              = Option::Bool("Mix Overworld",          {"Off", "On"},                                                     {mixOverworldDesc});
+  Option MixInteriors              = Option::Bool("Mix Interiors",          {"Off", "On"},                                                     {mixInteriorsDesc});
+  Option MixGrottos                = Option::Bool("Mix Grottos",            {"Off", "On"},                                                     {mixGrottosDesc});
+  Option DecoupleEntrances         = Option::Bool("Decouple Entrances",     {"Off", "On"},                                                     {decoupledEntrancesDesc});
   Option BombchusInLogic           = Option::Bool("Bombchus in Logic",      {"Off", "On"},                                                     {bombchuLogicDesc});
   Option AmmoDrops                 = Option::U8  ("Ammo Drops",             {"On", "On + Bombchu", "Off"},                                     {defaultAmmoDropsDesc, bombchuDropsDesc, noAmmoDropsDesc},                                                       OptionCategory::Setting,    AMMODROPS_BOMBCHU);
   Option HeartDropRefill           = Option::U8  ("Heart Drops and Refills",{"On", "No Drop", "No Refill", "Off"},                             {defaultHeartDropsDesc, noHeartDropsDesc, noHeartRefillDesc, scarceHeartsDesc},                                  OptionCategory::Setting,    HEARTDROPREFILL_VANILLA);
@@ -119,6 +128,15 @@ namespace Settings {
     &ShuffleOverworldEntrances,
     &ShuffleInteriorEntrances,
     &ShuffleGrottoEntrances,
+    &ShuffleOwlDrops,
+    &ShuffleWarpSongs,
+    &ShuffleOverworldSpawns,
+    &MixedEntrancePools,
+    &MixDungeons,
+    &MixOverworld,
+    &MixInteriors,
+    &MixGrottos,
+    &DecoupleEntrances,
     &BombchusInLogic,
     &AmmoDrops,
     &HeartDropRefill,
@@ -170,6 +188,7 @@ namespace Settings {
   Option ShuffleFrogSongRupees  = Option::Bool("Shuffle Frog Song Rupees",{"Off", "On"},                                                    {frogSongRupeesDesc});
   Option ShuffleAdultTradeQuest = Option::Bool("Shuffle Adult Trade",    {"Off", "On"},                                                     {adultTradeDesc});
   Option ShuffleChestMinigame   = Option::U8  ("Shuffle Chest Minigame", {"Off", "On (Separate)", "On (Pack)"},                             {chestMinigameDesc});
+  Option Shuffle100GSReward     = Option::Bool("Shuffle 100 GS Reward",  {"No", "Yes"},                                                     {shuffle100GsDesc},                                                                                                    OptionCategory::Toggle);
   std::vector<Option *> shuffleOptions = {
     &RandomizeShuffle,
     &ShuffleRewards,
@@ -188,6 +207,7 @@ namespace Settings {
     &ShuffleFrogSongRupees,
     &ShuffleAdultTradeQuest,
     &ShuffleChestMinigame,
+    &Shuffle100GSReward,
   };
 
   //Shuffle Dungeon Items
@@ -200,8 +220,8 @@ namespace Settings {
                                                                          {gerudoKeysVanilla, gerudoKeysAnyDungeon, gerudoKeysOverworld, gerudoKeysAnywhere});
   Option BossKeysanity       = Option::U8  ("Boss Keys",                 {"Start With", "Vanilla", "Own Dungeon", "Any Dungeon", "Overworld", "Anywhere"},
                                                                          {bossKeyStartWith, bossKeyVanilla, bossKeyOwnDungeon, bossKeyAnyDungeon, bossKeyOverworld, bossKeyAnywhere},                                                                              OptionCategory::Setting,    BOSSKEYSANITY_OWN_DUNGEON);
-  Option GanonsBossKey       = Option::U8  ("Ganon's Boss Key",          {"Vanilla", "Own dungeon", "Start with", "Any Dungeon", "Overworld", "Anywhere", "LACS-Vanilla", "LACS-Medallions", "LACS-Stones", "LACS-Rewards", "LACS-Dungeons", "LACS-Tokens"},
-                                                                         {ganonKeyVanilla, ganonKeyOwnDungeon, ganonKeyStartWith, ganonKeyAnyDungeon, ganonKeyOverworld, ganonKeyAnywhere, ganonKeyLACS},                                                          OptionCategory::Setting,    GANONSBOSSKEY_VANILLA);
+  Option GanonsBossKey       = Option::U8  ("Ganon's Boss Key",          {"Vanilla", "Own dungeon", "Start with", "Any Dungeon", "Overworld", "Anywhere", "LACS-Vanilla", "LACS-Medallions", "LACS-Stones", "LACS-Rewards", "LACS-Dungeons", "LACS-Tokens", "100 GS Reward"},
+                                                                         {ganonKeyVanilla, ganonKeyOwnDungeon, ganonKeyStartWith, ganonKeyAnyDungeon, ganonKeyOverworld, ganonKeyAnywhere, ganonKeyLACS, ganonKey100GS},                                           OptionCategory::Setting,    GANONSBOSSKEY_VANILLA);
   uint8_t LACSCondition           = 0;
   Option LACSMedallionCount  = Option::U8  ("Medallion Count",         {NumOpts(0, 6)},                                                        {lacsMedallionCountDesc},                                                                                         OptionCategory::Setting,    1,                          true);
   Option LACSStoneCount      = Option::U8  ("Stone Count",             {NumOpts(0, 3)},                                                        {lacsStoneCountDesc},                                                                                             OptionCategory::Setting,    1,                          true);
@@ -532,6 +552,7 @@ namespace Settings {
   Option StartingHearts           = Option::U8  ("Hearts",               {NumOpts(1, 20)},                                                                {""}, OptionCategory::Setting, 2); // Default 3 hearts
   Option StartingMagicMeter       = Option::U8  ("Magic Meter",          {"Off",             "Single Magic",     "Double Magic"},                         {""});
   Option StartingDoubleDefense    = Option::U8  ("Double Defense",       {"Off",             "On"},                                                       {""});
+  Option StartingBunnyHood        = Option::U8  ("Start with Bunny Hood",{"Off",             "On"},                                                       {""});
   std::vector<Option *> startingEquipmentOptions = {
     &StartingKokiriSword,
     &StartingBiggoronSword,
@@ -547,6 +568,7 @@ namespace Settings {
     &StartingHearts,
     &StartingMagicMeter,
     &StartingDoubleDefense,
+    &StartingBunnyHood,
   };
 
   Option StartingKokiriEmerald    = Option::U8  ("Kokiri's Emerald",     {"Off",             "On"},                                                       {""});
@@ -1256,6 +1278,15 @@ namespace Settings {
     ctx.shuffleOverworldEntrances = (ShuffleOverworldEntrances) ? 1 : 0;
     ctx.shuffleInteriorEntrances = ShuffleInteriorEntrances.Value<uint8_t>();
     ctx.shuffleGrottoEntrances  = (ShuffleGrottoEntrances) ? 1 : 0;
+    ctx.shuffleOwlDrops         = (ShuffleOwlDrops) ? 1 : 0;
+    ctx.shuffleWarpSongs        = (ShuffleWarpSongs) ? 1 : 0;
+    ctx.shuffleOverworldSpawns  = (ShuffleOverworldSpawns) ? 1 : 0;
+    ctx.mixedEntrancePools      = (MixedEntrancePools) ? 1 : 0;
+    ctx.mixDungeons             = (MixDungeons) ? 1 : 0;
+    ctx.mixOverworld            = (MixOverworld) ? 1 : 0;
+    ctx.mixInteriors            = (MixInteriors) ? 1 : 0;
+    ctx.mixGrottos              = (MixGrottos) ? 1 : 0;
+    ctx.decoupleEntrances       = (DecoupleEntrances) ? 1 : 0;
     ctx.bombchusInLogic         = (BombchusInLogic) ? 1 : 0;
     ctx.ammoDrops            = AmmoDrops.Value<uint8_t>();
     ctx.heartDropRefill      = HeartDropRefill.Value<uint8_t>();
@@ -1277,6 +1308,7 @@ namespace Settings {
     ctx.shuffleFrogSongRupees= (ShuffleFrogSongRupees) ? 1 : 0;
     ctx.shuffleAdultTradeQuest = (ShuffleAdultTradeQuest) ? 1 : 0;
     ctx.shuffleChestMinigame = ShuffleChestMinigame.Value<uint8_t>();
+    ctx.shuffle100GsReward   = (Shuffle100GSReward) ? 1 : 0;
 
     ctx.mapsAndCompasses     = MapsAndCompasses.Value<uint8_t>();
     ctx.keysanity            = Keysanity.Value<uint8_t>();
@@ -1773,6 +1805,13 @@ namespace Settings {
       IncludeAndHide(ChestMinigameLocations);
     }
 
+    //Force include 100 GS reward if it isn't shuffled
+    if (Shuffle100GSReward) {
+      Unhide({KAK_100_GOLD_SKULLTULA_REWARD});
+    } else {
+      IncludeAndHide({KAK_100_GOLD_SKULLTULA_REWARD});
+    }
+
     //Force include Map and Compass Chests when Vanilla
     std::vector<uint32_t> mapChests = GetLocations(everyPossibleLocation, Category::cVanillaMap);
     std::vector<uint32_t> compassChests = GetLocations(everyPossibleLocation, Category::cVanillaCompass);
@@ -1929,6 +1968,11 @@ namespace Settings {
         ShuffleOverworldEntrances.Unhide();
         ShuffleInteriorEntrances.Unhide();
         ShuffleGrottoEntrances.Unhide();
+        ShuffleOwlDrops.Unhide();
+        ShuffleWarpSongs.Unhide();
+        ShuffleOverworldSpawns.Unhide();
+        MixedEntrancePools.Unhide();
+        DecoupleEntrances.Unhide();
       } else {
         ShuffleDungeonEntrances.SetSelectedIndex(SHUFFLEDUNGEONS_OFF);
         ShuffleDungeonEntrances.Hide();
@@ -1938,6 +1982,56 @@ namespace Settings {
         ShuffleInteriorEntrances.Hide();
         ShuffleGrottoEntrances.SetSelectedIndex(OFF);
         ShuffleGrottoEntrances.Hide();
+        ShuffleOwlDrops.SetSelectedIndex(OFF);
+        ShuffleOwlDrops.Hide();
+        ShuffleWarpSongs.SetSelectedIndex(OFF);
+        ShuffleWarpSongs.Hide();
+        ShuffleOverworldSpawns.SetSelectedIndex(OFF);
+        ShuffleOverworldSpawns.Hide();
+        MixedEntrancePools.SetSelectedIndex(OFF);
+        MixedEntrancePools.Hide();
+        DecoupleEntrances.SetSelectedIndex(OFF);
+        DecoupleEntrances.Hide();
+      }
+
+      // Only show the options for mixing each pool if they're already being shuffled
+      if (MixedEntrancePools) {
+        if (ShuffleDungeonEntrances) {
+          MixDungeons.Unhide();
+        } else {
+          MixDungeons.Hide();
+          MixDungeons.SetSelectedIndex(OFF);
+        }
+
+        if (ShuffleOverworldEntrances) {
+          MixOverworld.Unhide();
+        } else {
+          MixOverworld.Hide();
+          MixOverworld.SetSelectedIndex(OFF);
+        }
+
+        if (ShuffleInteriorEntrances.IsNot(OFF)) {
+          MixInteriors.Unhide();
+        } else {
+          MixInteriors.Hide();
+          MixInteriors.SetSelectedIndex(OFF);
+        }
+
+        if (ShuffleGrottoEntrances) {
+          MixGrottos.Unhide();
+        } else {
+          MixGrottos.Hide();
+          MixGrottos.SetSelectedIndex(OFF);
+        }
+      } else {
+        MixDungeons.Hide();
+        MixDungeons.SetSelectedIndex(OFF);
+        MixOverworld.Hide();
+        MixOverworld.SetSelectedIndex(OFF);
+        MixInteriors.Hide();
+        MixInteriors.SetSelectedIndex(OFF);
+        MixGrottos.Hide();
+        MixGrottos.SetSelectedIndex(OFF);
       }
     }
 
@@ -1958,6 +2052,17 @@ namespace Settings {
       for (Option *option : dungeonOptions) {
         option->SetSelectedIndex(2);
         option->Hide();
+      }
+    }
+
+    //Only go through options if all settings are not randomized
+    if (!RandomizeShuffle) {
+      // Ganon's Boss Key on 100 GS reward must also have the reward shuffled
+      if (GanonsBossKey.Is(GANONSBOSSKEY_FINAL_GS_REWARD)) {
+        Shuffle100GSReward.SetSelectedIndex(ON);
+        Shuffle100GSReward.Lock();
+      } else {
+        Shuffle100GSReward.Unlock();
       }
     }
 
@@ -2303,6 +2408,7 @@ namespace Settings {
     &ShuffleMerchants,
     &ShuffleFrogSongRupees,
     &ShuffleAdultTradeQuest,
+    &Shuffle100GSReward,
     &GossipStoneHints,
   };
 
@@ -2365,6 +2471,18 @@ namespace Settings {
       ShuffleOverworldEntrances.SetSelectedIndex(OFF);
       ShuffleInteriorEntrances.SetSelectedIndex(OFF);
       ShuffleGrottoEntrances.SetSelectedIndex(OFF);
+      ShuffleOwlDrops.SetSelectedIndex(OFF);
+      ShuffleWarpSongs.SetSelectedIndex(OFF);
+      ShuffleOverworldSpawns.SetSelectedIndex(OFF);
+      MixedEntrancePools.SetSelectedIndex(OFF);
+      DecoupleEntrances.SetSelectedIndex(OFF);
+    }
+
+    if (!MixedEntrancePools) {
+      MixDungeons.SetSelectedIndex(OFF);
+      MixOverworld.SetSelectedIndex(OFF);
+      MixInteriors.SetSelectedIndex(OFF);
+      MixGrottos.SetSelectedIndex(OFF);
     }
 
     // Shuffle Settings
@@ -2569,6 +2687,15 @@ namespace Settings {
     ShuffleOverworldEntrances.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_OVERWORLD_ENTRANCES]);
     ShuffleInteriorEntrances.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_INTERIOR_ENTRANCES]);
     ShuffleGrottoEntrances.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_GROTTO_ENTRANCES]);
+    ShuffleOwlDrops.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_OWL_DROPS]);
+    ShuffleWarpSongs.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_WARP_SONGS]);
+    ShuffleOverworldSpawns.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_OVERWORLD_SPAWNS]);
+    MixedEntrancePools.SetSelectedIndex(cvarSettings[RSK_MIXED_ENTRANCE_POOLS]);
+    MixDungeons.SetSelectedIndex(cvarSettings[RSK_MIX_DUNGEON_ENTRANCES]);
+    MixOverworld.SetSelectedIndex(cvarSettings[RSK_MIX_OVERWORLD_ENTRANCES]);
+    MixInteriors.SetSelectedIndex(cvarSettings[RSK_MIX_INTERIOR_ENTRANCES]);
+    MixGrottos.SetSelectedIndex(cvarSettings[RSK_MIX_GROTTO_ENTRANCES]);
+    DecoupleEntrances.SetSelectedIndex(cvarSettings[RSK_DECOUPLED_ENTRANCES]);
 
     // if we skip child zelda, we start with zelda's letter, and malon starts
     // at the ranch, so we should *not* shuffle the weird egg
@@ -2588,12 +2715,20 @@ namespace Settings {
     ShuffleMagicBeans.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_MAGIC_BEANS]);
     ShuffleMerchants.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_MERCHANTS]);
 
+    // Force 100 GS Shuffle if that's where Ganon's Boss Key is
+    if (cvarSettings[RSK_GANONS_BOSS_KEY] == 12) {
+      Shuffle100GSReward.SetSelectedIndex(0);
+    } else {
+      Shuffle100GSReward.SetSelectedIndex(cvarSettings[RSK_SHUFFLE_100_GS_REWARD]);
+    }
+
     // the  checkbox works because 0 is "Off" and 1 is "Fairy Ocarina"
     StartingOcarina.SetSelectedIndex(cvarSettings[RSK_STARTING_OCARINA]);
     
     // the checkboxes work because 0 is "Off" and 1 is "On"
     StartingDekuShield.SetSelectedIndex(cvarSettings[RSK_STARTING_DEKU_SHIELD]);
     StartingKokiriSword.SetSelectedIndex(cvarSettings[RSK_STARTING_KOKIRI_SWORD]);
+    StartingBunnyHood.SetSelectedIndex(cvarSettings[RSK_STARTING_BUNNY_HOOD]);
 
     StartingSkulltulaToken.SetSelectedIndex(cvarSettings[RSK_STARTING_SKULLTULA_TOKEN]);
 

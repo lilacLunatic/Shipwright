@@ -134,7 +134,7 @@ u8 sAudioExtraFilter2 = 0;
 Vec3f* sSariaBgmPtr = NULL;
 f32 D_80130650 = 2000.0f;
 u8 sSeqModeInput = 0;
-u8 sSeqFlags[0x6E] = {
+u8 sSeqFlags[0x6F] = {
     0x2,  // NA_BGM_GENERAL_SFX
     0x1,  // NA_BGM_NATURE_BACKGROUND
     0,    // NA_BGM_FIELD_LOGIC
@@ -245,6 +245,7 @@ u8 sSeqFlags[0x6E] = {
     0,    // NA_BGM_FIRE_BOSS
     0x8,  // NA_BGM_TIMED_MINI_GAME
     0,    // NA_BGM_VARIOUS_SFX
+    1,    // NA_BGM_CUSTOM_SEQ
 };
 
 s8 sSpecReverbs[20] = { 0, 0, 0, 0, 0, 0, 0, 40, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -1725,6 +1726,7 @@ void Audio_OcaSetInstrument(u8 arg0) {
     u16 sfxEditorId = arg0 + 0x81;
     u16 newArg0 = SfxEditor_GetReplacementSeq(sfxEditorId);
     if (newArg0 != sfxEditorId) {
+        gAudioContext.seqReplaced[SEQ_PLAYER_SFX] = 1;
         arg0 = newArg0 - 0x81;
     }
 
@@ -4610,9 +4612,8 @@ s32 func_800F5A58(u8 arg0) {
  */
 void func_800F5ACC(u16 seqId) {
     u16 curSeqId = func_800FA0B4(SEQ_PLAYER_BGM_MAIN);
-    curSeqId = SfxEditor_GetReverseReplacementSeq(curSeqId);
 
-    if ((curSeqId & 0xFF) != NA_BGM_GANON_TOWER && (curSeqId & 0xFF) != NA_BGM_ESCAPE && curSeqId != seqId) {
+    if ((curSeqId & 0xFF) != NA_BGM_GANON_TOWER && (curSeqId & 0xFF) != NA_BGM_ESCAPE && curSeqId != SfxEditor_GetReplacementSeq(seqId)) {
         Audio_SetSequenceMode(SEQ_MODE_IGNORE);
         if (curSeqId != NA_BGM_DISABLED) {
             sPrevMainBgmSeqId = curSeqId;
@@ -4629,7 +4630,7 @@ void func_800F5ACC(u16 seqId) {
  */
 void func_800F5B58(void) {
     if ((func_800FA0B4(SEQ_PLAYER_BGM_MAIN) != NA_BGM_DISABLED) && (sPrevMainBgmSeqId != NA_BGM_DISABLED) &&
-        (sSeqFlags[func_800FA0B4(SEQ_PLAYER_BGM_MAIN) & 0xFF] & 8)) {
+        ((sSeqFlags[func_800FA0B4(SEQ_PLAYER_BGM_MAIN) & 0xFF] & 8))) {
         if (sPrevMainBgmSeqId == NA_BGM_DISABLED) {
             Audio_SeqCmd1(SEQ_PLAYER_BGM_MAIN, 0);
         } else {

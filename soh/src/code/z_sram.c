@@ -200,14 +200,7 @@ void Sram_OpenSave() {
     // Setup the modified entrance table and entrance shuffle table for rando
     if (gSaveContext.n64ddFlag) {
         Entrance_Init();
-        if (!CVar_GetS32("gRememberSaveLocation", 0) || gSaveContext.savedSceneNum == SCENE_YOUSEI_IZUMI_TATE ||
-            gSaveContext.savedSceneNum == SCENE_KAKUSIANA) {
-            Entrance_SetSavewarpEntrance();
-        }
-    } else {
-        // When going from a rando save to a vanilla save within the same game instance
-        // we need to reset the entrance table back to its vanilla state
-        Entrance_ResetEntranceTable();
+        Entrance_InitEntranceTrackingData();
     }
 
     osSyncPrintf("scene_no = %d\n", gSaveContext.entranceIndex);
@@ -390,9 +383,16 @@ void Sram_InitSave(FileChooseContext* fileChooseCtx) {
                 break;
             case 0: //Child
                 gSaveContext.linkAge = 1;
+                gSaveContext.savedSceneNum = -1;
                 break;
             default:
                 break;
+        }
+
+        if (Randomizer_GetSettingValue(RSK_SHUFFLE_OVERWORLD_SPAWNS)) {
+            // Override the spawn entrance so entrance rando can take control,
+            // and to prevent remember save location from breaking inital spawn
+            gSaveContext.entranceIndex = -1;
         }
 
         int doorOfTime = Randomizer_GetSettingValue(RSK_DOOR_OF_TIME);
@@ -563,15 +563,29 @@ void Sram_InitSave(FileChooseContext* fileChooseCtx) {
             }
         }
 
+        if (Randomizer_GetSettingValue(RSK_STARTING_BUNNY_HOOD)) {
+            gSaveContext.itemGetInf[2] |= 0x40;
+            INV_CONTENT(ITEM_MASK_BUNNY) = ITEM_MASK_BUNNY;
+            gSaveContext.sohStats.activeMaskItemId = ITEM_MASK_BUNNY;
+        }
+
         // complete mask quest
         if (Randomizer_GetSettingValue(RSK_COMPLETE_MASK_QUEST)) {
             gSaveContext.infTable[7] |= 0x80;      // Soldier Wears Keaton Mask
+            gSaveContext.itemGetInf[2] |= 0x8;     // Obtained Keaton Mask
+            gSaveContext.itemGetInf[2] |= 0x10;    // Obtained Skull Mask
+            gSaveContext.itemGetInf[2] |= 0x20;    // Obtained Spooky Mask
+            gSaveContext.itemGetInf[2] |= 0x40;    // Obtained Bunny Hood
+            gSaveContext.itemGetInf[2] |= 0x400;   // Obtained Mask of Truth
             gSaveContext.itemGetInf[3] |= 0x100;   // Sold Keaton Mask
             gSaveContext.itemGetInf[3] |= 0x200;   // Sold Skull Mask
             gSaveContext.itemGetInf[3] |= 0x400;   // Sold Spooky Mask
-            gSaveContext.itemGetInf[3] |= 0x800;   // bunny hood related
+            gSaveContext.itemGetInf[3] |= 0x800;   // Sold Bunny Hood
             gSaveContext.itemGetInf[3] |= 0x8000;  // Obtained Mask of Truth
-            gSaveContext.eventChkInf[8] |= 0x8000; // sold all masks
+            gSaveContext.eventChkInf[8] |= 0x1000; // Paid back Keaton Mask fee
+            gSaveContext.eventChkInf[8] |= 0x2000; // Paid back Skull Mask fee
+            gSaveContext.eventChkInf[8] |= 0x4000; // Paid back Spooky Mask fee
+            gSaveContext.eventChkInf[8] |= 0x8000; // Paid back Bunny Hood fee
         }
     }
 
@@ -582,4 +596,8 @@ void Sram_InitSram(GameState* gameState) {
     Save_Init();
 
     func_800F6700(gSaveContext.audioSetting);
+
+    // When going from a rando save to a vanilla save within the same game instance
+    // we need to reset the entrance table back to its vanilla state
+    Entrance_ResetEntranceTable();
 }

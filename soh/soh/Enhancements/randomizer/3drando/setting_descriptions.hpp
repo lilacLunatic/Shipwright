@@ -61,6 +61,20 @@ extern string_view overworldEntrancesDesc;
 
 extern string_view grottoEntrancesDesc;
 
+extern string_view owlDropsDesc;
+
+extern string_view warpSongsDesc;
+
+extern string_view overworldSpawnsDesc;
+
+extern string_view mixedPoolsDesc;
+extern string_view mixDungeonsDesc;
+extern string_view mixOverworldDesc;
+extern string_view mixInteriorsDesc;
+extern string_view mixGrottosDesc;
+
+extern string_view decoupledEntrancesDesc;
+
 extern string_view interiorEntrancesOff;
 extern string_view interiorEntrancesSimple;
 extern string_view interiorEntrancesAll;
@@ -132,6 +146,8 @@ extern string_view adultTradeDesc;
 
 extern string_view chestMinigameDesc;
 
+extern string_view shuffle100GsDesc;
+
 extern string_view mapCompassStartWith;
 extern string_view mapCompassVanilla;
 extern string_view mapCompassOwnDungeon;
@@ -167,6 +183,7 @@ extern string_view ganonKeyAnyDungeon;
 extern string_view ganonKeyOverworld;
 extern string_view ganonKeyAnywhere;
 extern string_view ganonKeyLACS;
+extern string_view ganonKey100GS;
 
 extern string_view lacsMedallionCountDesc;
 extern string_view lacsStoneCountDesc;

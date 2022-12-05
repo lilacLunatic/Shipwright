@@ -35,7 +35,6 @@ using namespace std::literals::string_literals;
 
 std::unordered_map<std::string, RandomizerCheck> SpoilerfileCheckNameToEnum;
 std::unordered_map<std::string, RandomizerGet> SpoilerfileGetNameToEnum;
-std::unordered_map<RandomizerGet, std::vector<std::string>> EnumToSpoilerfileGetName;
 std::multimap<std::tuple<s16, s16, s32>, RandomizerCheckObject> checkFromActorMultimap;
 std::set<RandomizerCheck> excludedLocations;
 
@@ -202,9 +201,14 @@ std::unordered_map<std::string, RandomizerSettingKey> SpoilerfileSettingNameToEn
     { "Shuffle Settings:Tokensanity", RSK_SHUFFLE_TOKENS },
     { "Shuffle Settings:Shuffle Adult Trade", RSK_SHUFFLE_ADULT_TRADE },
     { "Shuffle Settings:Shuffle Magic Beans", RSK_SHUFFLE_MAGIC_BEANS },
+    { "Shuffle Settings:Shuffle Kokiri Sword", RSK_SHUFFLE_KOKIRI_SWORD },
+    { "Shuffle Settings:Shuffle Weird Egg", RSK_SHUFFLE_WEIRD_EGG },
+    { "Shuffle Settings:Shuffle Frog Song Rupees", RSK_SHUFFLE_FROG_SONG_RUPEES },
     { "Shuffle Settings:Shuffle Merchants", RSK_SHUFFLE_MERCHANTS },
+    { "Shuffle Settings:Shuffle 100 GS Reward", RSK_SHUFFLE_100_GS_REWARD },
     { "Start with Deku Shield", RSK_STARTING_DEKU_SHIELD },
     { "Start with Kokiri Sword", RSK_STARTING_KOKIRI_SWORD },
+    { "Start with Bunny Hood", RSK_STARTING_BUNNY_HOOD },
     { "Start with Fairy Ocarina", RSK_STARTING_OCARINA },
     { "Shuffle Dungeon Items:Maps/Compasses", RSK_STARTING_MAPS_COMPASSES },
     { "Shuffle Dungeon Items:Small Keys", RSK_KEYSANITY },
@@ -224,6 +228,15 @@ std::unordered_map<std::string, RandomizerSettingKey> SpoilerfileSettingNameToEn
     { "World Settings:Overworld Entrances", RSK_SHUFFLE_OVERWORLD_ENTRANCES },
     { "World Settings:Interior Entrances", RSK_SHUFFLE_INTERIOR_ENTRANCES },
     { "World Settings:Grottos Entrances", RSK_SHUFFLE_GROTTO_ENTRANCES },
+    { "World Settings:Owl Drops", RSK_SHUFFLE_OWL_DROPS },
+    { "World Settings:Warp Songs", RSK_SHUFFLE_WARP_SONGS },
+    { "World Settings:Overworld Spawns", RSK_SHUFFLE_OVERWORLD_SPAWNS },
+    { "World Settings:Mixed Entrance Pools", RSK_MIXED_ENTRANCE_POOLS },
+    { "World Settings:Mix Dungeons", RSK_MIX_DUNGEON_ENTRANCES },
+    { "World Settings:Mix Overworld", RSK_MIX_OVERWORLD_ENTRANCES },
+    { "World Settings:Mix Interiors", RSK_MIX_INTERIOR_ENTRANCES },
+    { "World Settings:Mix Grottos", RSK_MIX_GROTTO_ENTRANCES },
+    { "World Settings:Decouple Entrances", RSK_DECOUPLED_ENTRANCES },
     { "Misc Settings:Gossip Stone Hints", RSK_GOSSIP_STONE_HINTS },
     { "Misc Settings:Hint Clarity", RSK_HINT_CLARITY },
     { "Misc Settings:Hint Distribution", RSK_HINT_DISTRIBUTION },
@@ -327,6 +340,12 @@ void Randomizer::LoadHintLocations(const char* spoilerFileName) {
         CustomMessageManager::Instance->CreateMessage(
             Randomizer::hintMessageTableID, hintLocation.check, { TEXTBOX_TYPE_BLUE, TEXTBOX_POS_BOTTOM, hintLocation.hintText, hintLocation.hintText, hintLocation.hintText });
     }
+
+    CustomMessageManager::Instance->CreateMessage(Randomizer::hintMessageTableID, TEXT_WARP_RANDOM_REPLACED_TEXT,
+        { TEXTBOX_TYPE_BLACK, TEXTBOX_POS_BOTTOM,
+        "Warp to&{{location}}?\x1B&%gOK&No%w\x02",
+        "Warp to&{{location}}?\x1B&%gOK&No%w\x02", // TODO: German translation
+        "Warp to&{{location}}?\x1B&%gOK&No%w\x02" }); // TODO: French translation
 }
 
 std::vector<RandomizerCheck> shopItemRandomizerChecks = {
@@ -705,9 +724,15 @@ void Randomizer::ParseRandomizerSettingsFile(const char* spoilerFileName) {
                     case RSK_SHUFFLE_COWS:
                     case RSK_SHUFFLE_ADULT_TRADE:
                     case RSK_SHUFFLE_MAGIC_BEANS:
+                    case RSK_SHUFFLE_100_GS_REWARD:
+                    case RSK_SHUFFLE_KOKIRI_SWORD:
+                    case RSK_SHUFFLE_WEIRD_EGG:
+                    case RSK_SHUFFLE_FROG_SONG_RUPEES:
+                    case RSK_GANONS_TRIALS:
                     case RSK_RANDOM_MQ_DUNGEONS:
                     case RSK_STARTING_DEKU_SHIELD:
                     case RSK_STARTING_KOKIRI_SWORD:
+                    case RSK_STARTING_BUNNY_HOOD:
                     case RSK_COMPLETE_MASK_QUEST:
                     case RSK_SKIP_SCARECROWS_SONG:
                     case RSK_ENABLE_GLITCH_CUTSCENES:
@@ -717,6 +742,15 @@ void Randomizer::ParseRandomizerSettingsFile(const char* spoilerFileName) {
                     case RSK_SHUFFLE_ENTRANCES:
                     case RSK_SHUFFLE_OVERWORLD_ENTRANCES:
                     case RSK_SHUFFLE_GROTTO_ENTRANCES:
+                    case RSK_SHUFFLE_OWL_DROPS:
+                    case RSK_SHUFFLE_WARP_SONGS:
+                    case RSK_SHUFFLE_OVERWORLD_SPAWNS:
+                    case RSK_MIXED_ENTRANCE_POOLS:
+                    case RSK_MIX_DUNGEON_ENTRANCES:
+                    case RSK_MIX_OVERWORLD_ENTRANCES:
+                    case RSK_MIX_INTERIOR_ENTRANCES:
+                    case RSK_MIX_GROTTO_ENTRANCES:
+                    case RSK_DECOUPLED_ENTRANCES:
                         if(it.value() == "Off") {
                             gSaveContext.randoSettings[index].value = RO_GENERIC_OFF;            
                         } else if(it.value() == "On") {
@@ -883,6 +917,8 @@ void Randomizer::ParseRandomizerSettingsFile(const char* spoilerFileName) {
                             gSaveContext.randoSettings[index].value = RO_GANON_BOSS_KEY_LACS_DUNGEONS;
                         } else if(it.value() == "LACS-Tokens") {
                             gSaveContext.randoSettings[index].value = RO_GANON_BOSS_KEY_LACS_TOKENS;
+                        } else if(it.value() == "100 GS Reward") {
+                            gSaveContext.randoSettings[index].value = 12;
                         }
                         break;
                     case RSK_SKIP_CHILD_ZELDA:
@@ -1101,6 +1137,30 @@ void Randomizer::ParseHintLocationsFile(const char* spoilerFileName) {
         std::string formattedGanonJsonText = FormatJsonHintText(ganonJsonText);
         strncpy(gSaveContext.ganonText, formattedGanonJsonText.c_str(), sizeof(gSaveContext.ganonText) - 1);
         gSaveContext.ganonText[sizeof(gSaveContext.ganonText) - 1] = 0;
+
+        std::string warpMinuetJsonText = spoilerFileJson["warpMinuetText"].get<std::string>();
+        strncpy(gSaveContext.warpMinuetText, warpMinuetJsonText.c_str(), sizeof(gSaveContext.warpMinuetText) - 1);
+        gSaveContext.warpMinuetText[sizeof(gSaveContext.warpMinuetText) - 1] = 0;
+
+        std::string warpBoleroJsonText = spoilerFileJson["warpBoleroText"].get<std::string>();
+        strncpy(gSaveContext.warpBoleroText, warpBoleroJsonText.c_str(), sizeof(gSaveContext.warpBoleroText) - 1);
+        gSaveContext.warpBoleroText[sizeof(gSaveContext.warpBoleroText) - 1] = 0;
+
+        std::string warpSerenadeJsonText = spoilerFileJson["warpSerenadeText"].get<std::string>();
+        strncpy(gSaveContext.warpSerenadeText, warpSerenadeJsonText.c_str(), sizeof(gSaveContext.warpSerenadeText) - 1);
+        gSaveContext.warpSerenadeText[sizeof(gSaveContext.warpSerenadeText) - 1] = 0;
+
+        std::string warpRequiemJsonText = spoilerFileJson["warpRequiemText"].get<std::string>();
+        strncpy(gSaveContext.warpRequiemText, warpRequiemJsonText.c_str(), sizeof(gSaveContext.warpRequiemText) - 1);
+        gSaveContext.warpRequiemText[sizeof(gSaveContext.warpRequiemText) - 1] = 0;
+
+        std::string warpNocturneJsonText = spoilerFileJson["warpNocturneText"].get<std::string>();
+        strncpy(gSaveContext.warpNocturneText, warpNocturneJsonText.c_str(), sizeof(gSaveContext.warpNocturneText) - 1);
+        gSaveContext.warpNocturneText[sizeof(gSaveContext.warpNocturneText) - 1] = 0;
+
+        std::string warpPreludeJsonText = spoilerFileJson["warpPreludeText"].get<std::string>();
+        strncpy(gSaveContext.warpPreludeText, warpPreludeJsonText.c_str(), sizeof(gSaveContext.warpPreludeText) - 1);
+        gSaveContext.warpPreludeText[sizeof(gSaveContext.warpPreludeText) - 1] = 0;
 
         json hintsJson = spoilerFileJson["hints"];
         int index = 0;
@@ -2314,6 +2374,11 @@ std::map<RandomizerCheck, RandomizerInf> rcToRandomizerInf = {
     { RC_MARKET_BOMBCHU_SHOP_ITEM_8,                                  RAND_INF_SHOP_ITEMS_MARKET_BOMBCHU_SHOP_ITEM_8 },
     { RC_GC_MEDIGORON,                                                RAND_INF_MERCHANTS_MEDIGORON                   },
     { RC_WASTELAND_BOMBCHU_SALESMAN,                                  RAND_INF_MERCHANTS_CARPET_SALESMAN              },
+    { RC_LW_TRADE_COJIRO,                                             RAND_INF_ADULT_TRADES_LW_TRADE_COJIRO },
+    { RC_GV_TRADE_SAW,                                                RAND_INF_ADULT_TRADES_GV_TRADE_SAW },
+    { RC_DMT_TRADE_BROKEN_SWORD,                                      RAND_INF_ADULT_TRADES_DMT_TRADE_BROKEN_SWORD },
+    { RC_LH_TRADE_FROG,                                               RAND_INF_ADULT_TRADES_LH_TRADE_FROG },
+    { RC_DMT_TRADE_EYEDROPS,                                          RAND_INF_ADULT_TRADES_DMT_TRADE_EYEDROPS },
 
 };
 
@@ -2546,6 +2611,14 @@ RandomizerCheck Randomizer::GetCheckFromActor(s16 actorId, s16 sceneNum, s16 act
     return GetCheckObjectFromActor(actorId, sceneNum, actorParams).rc;
 }
 
+RandomizerInf Randomizer::GetRandomizerInfFromCheck(RandomizerCheck rc) {
+    auto rcIt = rcToRandomizerInf.find(rc);
+    if (rcIt == rcToRandomizerInf.end())
+        return RAND_INF_MAX;
+    
+    return rcIt->second;
+}
+
 RandomizerCheck Randomizer::GetCheckFromRandomizerInf(RandomizerInf randomizerInf) {
     for (auto const& [key, value] : rcToRandomizerInf) {
         if (value == randomizerInf) return key;
@@ -2579,6 +2652,7 @@ void GenerateRandomizerImgui() {
     cvarSettings[RSK_STARTING_OCARINA] = CVar_GetS32("gRandomizeStartingOcarina", 0);
     cvarSettings[RSK_SHUFFLE_OCARINA] = CVar_GetS32("gRandomizeShuffleOcarinas", 0) ||
                                         CVar_GetS32("gRandomizeStartingOcarina", 0);
+    cvarSettings[RSK_STARTING_BUNNY_HOOD] = CVar_GetS32("gRandomizeStartingBunnyHood", 0);
     cvarSettings[RSK_STARTING_KOKIRI_SWORD] = CVar_GetS32("gRandomizeStartingKokiriSword", 0);
     cvarSettings[RSK_SHUFFLE_KOKIRI_SWORD] = CVar_GetS32("gRandomizeShuffleKokiriSword", 0) ||
                                              CVar_GetS32("gRandomizeStartingKokiriSword", 0);
@@ -2594,6 +2668,7 @@ void GenerateRandomizerImgui() {
     cvarSettings[RSK_SHUFFLE_ADULT_TRADE] = CVar_GetS32("gRandomizeShuffleAdultTrade", 0);
     cvarSettings[RSK_SHUFFLE_MAGIC_BEANS] = CVar_GetS32("gRandomizeShuffleBeans", 0);
     cvarSettings[RSK_SHUFFLE_MERCHANTS] = CVar_GetS32("gRandomizeShuffleMerchants", 0);
+    cvarSettings[RSK_SHUFFLE_100_GS_REWARD] = CVar_GetS32("gRandomizeShuffle100GSReward", 0);
     cvarSettings[RSK_ENABLE_BOMBCHU_DROPS] = CVar_GetS32("gRandomizeEnableBombchuDrops", 0);
     cvarSettings[RSK_BOMBCHUS_IN_LOGIC] = CVar_GetS32("gRandomizeBombchusInLogic", 0);
     cvarSettings[RSK_SKIP_CHILD_ZELDA] = CVar_GetS32("gRandomizeSkipChildZelda", 0);
@@ -2673,15 +2748,27 @@ void GenerateRandomizerImgui() {
     }
 
     // Enable if any of the entrance rando options are enabled.
-    cvarSettings[RSK_SHUFFLE_ENTRANCES] = CVar_GetS32("gRandomizeShuffleDungeonsEntrances", 0) ||
-                                          CVar_GetS32("gRandomizeShuffleOverworldEntrances", 0) ||
-                                          CVar_GetS32("gRandomizeShuffleInteriorsEntrances", 0) ||
-                                          CVar_GetS32("gRandomizeShuffleGrottosEntrances", 0);
+    cvarSettings[RSK_SHUFFLE_ENTRANCES] = CVar_GetS32("gRandomizeShuffleDungeonsEntrances", RO_DUNGEON_ENTRANCE_SHUFFLE_OFF) ||
+                                          CVar_GetS32("gRandomizeShuffleOverworldEntrances", RO_GENERIC_OFF) ||
+                                          CVar_GetS32("gRandomizeShuffleInteriorsEntrances", RO_INTERIOR_ENTRANCE_SHUFFLE_OFF) ||
+                                          CVar_GetS32("gRandomizeShuffleGrottosEntrances", RO_GENERIC_OFF) ||
+                                          CVar_GetS32("gRandomizeShuffleOwlDrops", RO_GENERIC_OFF) ||
+                                          CVar_GetS32("gRandomizeShuffleWarpSongs", RO_GENERIC_OFF) ||
+                                          CVar_GetS32("gRandomizeShuffleOverworldSpawns", RO_GENERIC_OFF);
 
-    cvarSettings[RSK_SHUFFLE_DUNGEON_ENTRANCES] = CVar_GetS32("gRandomizeShuffleDungeonsEntrances", 0);
-    cvarSettings[RSK_SHUFFLE_OVERWORLD_ENTRANCES] = CVar_GetS32("gRandomizeShuffleOverworldEntrances", 0);
-    cvarSettings[RSK_SHUFFLE_INTERIOR_ENTRANCES] = CVar_GetS32("gRandomizeShuffleInteriorsEntrances", 0);
-    cvarSettings[RSK_SHUFFLE_GROTTO_ENTRANCES] = CVar_GetS32("gRandomizeShuffleGrottosEntrances", 0);
+    cvarSettings[RSK_SHUFFLE_DUNGEON_ENTRANCES] = CVar_GetS32("gRandomizeShuffleDungeonsEntrances", RO_DUNGEON_ENTRANCE_SHUFFLE_OFF);
+    cvarSettings[RSK_SHUFFLE_OVERWORLD_ENTRANCES] = CVar_GetS32("gRandomizeShuffleOverworldEntrances", RO_GENERIC_OFF);
+    cvarSettings[RSK_SHUFFLE_INTERIOR_ENTRANCES] = CVar_GetS32("gRandomizeShuffleInteriorsEntrances", RO_INTERIOR_ENTRANCE_SHUFFLE_OFF);
+    cvarSettings[RSK_SHUFFLE_GROTTO_ENTRANCES] = CVar_GetS32("gRandomizeShuffleGrottosEntrances", RO_GENERIC_OFF);
+    cvarSettings[RSK_SHUFFLE_OWL_DROPS] = CVar_GetS32("gRandomizeShuffleOwlDrops", RO_GENERIC_OFF);
+    cvarSettings[RSK_SHUFFLE_WARP_SONGS] = CVar_GetS32("gRandomizeShuffleWarpSongs", RO_GENERIC_OFF);
+    cvarSettings[RSK_SHUFFLE_OVERWORLD_SPAWNS] = CVar_GetS32("gRandomizeShuffleOverworldSpawns", RO_GENERIC_OFF);
+    cvarSettings[RSK_MIXED_ENTRANCE_POOLS] = CVar_GetS32("gRandomizeMixedEntrances", RO_GENERIC_OFF);
+    cvarSettings[RSK_MIX_DUNGEON_ENTRANCES] = CVar_GetS32("gRandomizeMixDungeons", RO_GENERIC_OFF);
+    cvarSettings[RSK_MIX_OVERWORLD_ENTRANCES] = CVar_GetS32("gRandomizeMixOverworld", RO_GENERIC_OFF);
+    cvarSettings[RSK_MIX_INTERIOR_ENTRANCES] = CVar_GetS32("gRandomizeMixInteriors", RO_GENERIC_OFF);
+    cvarSettings[RSK_MIX_GROTTO_ENTRANCES] = CVar_GetS32("gRandomizeMixGrottos", RO_GENERIC_OFF);
+    cvarSettings[RSK_DECOUPLED_ENTRANCES] = CVar_GetS32("gRandomizeShuffleDecoupledEntrances", RO_GENERIC_OFF);
 
     // todo: this efficently when we build out cvar array support
     std::set<RandomizerCheck> excludedLocations;
@@ -2751,10 +2838,11 @@ void DrawRandoEditor(bool& open) {
     const char* randoShuffleGerudoFortressKeys[4] = { "Vanilla", "Any Dungeon", "Overworld", "Anywhere" };
     const char* randoShuffleBossKeys[6] = { "Start With",  "Vanilla",   "Own Dungeon",
                                             "Any Dungeon", "Overworld", "Anywhere" };
-    const char* randoShuffleGanonsBossKey[12] = {"Vanilla", "Own dungeon", "Start with", 
+    const char* randoShuffleGanonsBossKey[13] = {"Vanilla", "Own dungeon", "Start with", 
                                                 "Any Dungeon", "Overworld", "Anywhere", 
                                                 "LACS-Vanilla", "LACS-Medallions", "LACS-Stones", 
-                                                "LACS-Rewards", "LACS-Dungeons", "LACS-Tokens"};
+                                                "LACS-Rewards", "LACS-Dungeons", "LACS-Tokens",
+                                                "100 GS Reward"};
     const char* randoShuffleKeyRings[4] = { "Off", "Random", "Count", "Selection" };
 
     // Misc Settings
@@ -3103,6 +3191,88 @@ void DrawRandoEditor(bool& open) {
                     "Shuffle the pool of grotto entrances, including all graves, small Fairy fountains and the Deku Theatre."
                 );
 
+                UIWidgets::PaddedSeparator();
+
+                // Shuffle Owl Drops
+                UIWidgets::EnhancementCheckbox("Shuffle Owl Drops", "gRandomizeShuffleOwlDrops");
+                UIWidgets::InsertHelpHoverText(
+                    "Randomize where Kaepora Gaebora (the Owl) drops you at when you talk "
+                    "to him at Lake Hylia or at the top of Death Mountain Trail."
+                );
+
+                UIWidgets::PaddedSeparator();
+
+                // Shuffle Warp Songs
+                UIWidgets::EnhancementCheckbox("Shuffle Warp Songs", "gRandomizeShuffleWarpSongs");
+                UIWidgets::InsertHelpHoverText(
+                    "Randomize where each of the 6 warp songs leads to."
+                );
+
+                UIWidgets::PaddedSeparator();
+
+                // Shuffle Overworld Spawns
+                UIWidgets::EnhancementCheckbox("Shuffle Overworld Spawns", "gRandomizeShuffleOverworldSpawns");
+                UIWidgets::InsertHelpHoverText(
+                    "Randomize where you start as Child or Adult when loading a save in the Overworld. This "
+                    "means you may not necessarily spawn inside Link's House or Temple of Time.\n"
+                    "\n"
+                    "This stays consistent after saving and loading the game again.\n"
+                    "\n"
+                    "Keep in mind you may need to temporarily disable the \"Remember Save Location\" time saver to "
+                    "be able use the spawn positions, especially if they are the only logical way to get to certain areas."
+                );
+
+                UIWidgets::PaddedSeparator();
+
+                // Shuffle Decoupled Entrances
+                UIWidgets::EnhancementCheckbox("Shuffle Decoupled Entrances", "gRandomizeShuffleDecoupledEntrances");
+                UIWidgets::InsertHelpHoverText(
+                    "Decouple entrances when shuffling them. This means you are no longer guaranteed "
+                    "to end up back where you came from when you go back through an entrance.\n"
+                    "\n"
+                    "This also adds the one-way entrance from Gerudo Valley to Lake Hylia in the pool of "
+                    "overworld entrances when they are shuffled."
+                );
+
+                UIWidgets::PaddedSeparator();
+
+                // Mixed Entrance Pools
+                UIWidgets::EnhancementCheckbox("Mixed Entrance Pools", "gRandomizeMixedEntrances");
+                UIWidgets::InsertHelpHoverText(
+                    "Shuffle entrances into a mixed pool instead of separate ones.\n"
+                    "\n"
+                    "For example, enabling the settings to shuffle grotto, dungeon, and overworld entrances and "
+                    "selecting grotto and dungeon entrances here will allow a dungeon to be inside a grotto or "
+                    "vice versa, while overworld entrances are shuffled in their own separate pool and indoors stay vanilla."
+                );
+
+                if (CVar_GetS32("gRandomizeMixedEntrances", RO_GENERIC_OFF)) {
+                    if (CVar_GetS32("gRandomizeShuffleDungeonsEntrances", RO_GENERIC_OFF)) {
+                        UIWidgets::Spacer(0);
+                        ImGui::SetCursorPosX(20);
+                        UIWidgets::EnhancementCheckbox("Mix Dungeons", "gRandomizeMixDungeons");
+                        UIWidgets::InsertHelpHoverText("Dungeon entrances will be part of the mixed pool");
+                    }
+                    if (CVar_GetS32("gRandomizeShuffleOverworldEntrances", RO_GENERIC_OFF)) {
+                        UIWidgets::Spacer(0);
+                        ImGui::SetCursorPosX(20);
+                        UIWidgets::EnhancementCheckbox("Mix Overworld", "gRandomizeMixOverworld");
+                        UIWidgets::InsertHelpHoverText("Overworld entrances will be part of the mixed pool");
+                    }
+                    if (CVar_GetS32("gRandomizeShuffleInteriorsEntrances", RO_GENERIC_OFF)) {
+                        UIWidgets::Spacer(0);
+                        ImGui::SetCursorPosX(20);
+                        UIWidgets::EnhancementCheckbox("Mix Interiors", "gRandomizeMixInteriors");
+                        UIWidgets::InsertHelpHoverText("Interior entrances will be part of the mixed pool");
+                    }
+                    if (CVar_GetS32("gRandomizeShuffleGrottosEntrances", RO_GENERIC_OFF)) {
+                        UIWidgets::Spacer(0);
+                        ImGui::SetCursorPosX(20);
+                        UIWidgets::EnhancementCheckbox("Mix Grotts", "gRandomizeMixGrottos");
+                        UIWidgets::InsertHelpHoverText("Grotto entrances will be part of the mixed pool");
+                    }
+                }
+
                 ImGui::PopItemWidth();
                 ImGui::EndChild();
                 ImGui::EndTable();
@@ -3327,6 +3497,21 @@ void DrawRandoEditor(bool& open) {
 
                 UIWidgets::PaddedSeparator();
 
+                // Shuffle 100 GS Reward
+                // Forcefully enabled if Ganon's Boss Key is on the cursed man
+                bool forceEnable100GSShuffle = (CVar_GetS32("gRandomizeShuffleGanonBossKey", 1) == 12);
+                const char* disable100GSRewardText = "This option is forcefully enabled because \"Ganon's Boss Key\" is set to \"100 GS Reward.\"";
+                UIWidgets::EnhancementCheckbox(Settings::Shuffle100GSReward.GetName().c_str(), "gRandomizeShuffle100GSReward",
+                    forceEnable100GSShuffle, disable100GSRewardText, UIWidgets::CheckboxGraphics::Checkmark);
+                UIWidgets::InsertHelpHoverText(
+                    "Shuffle the item the cursed rich man in the House of Skulltula gives when you "
+                    "have collected all 100 Gold Skulltula Tokens.\n"
+                    "\n"
+                    "You can still talk to him multiple times to get Huge Rupees."
+                );
+
+                UIWidgets::PaddedSeparator();
+
                 ImGui::PopItemWidth();
                 ImGui::EndChild();
 
@@ -3485,7 +3670,9 @@ void DrawRandoEditor(bool& open) {
                     "- Stones: Obtain the specified amount of spiritual stones.\n"
                     "- Dungeon rewards: Obtain the specified total sum of spiritual stones or medallions.\n"
                     "- Dungeons: Complete the specified amount of dungeons. Dungeons are considered complete after stepping in to the blue warp after the boss.\n"
-                    "- Tokens: Obtain the specified amount of Skulltula tokens."
+                    "- Tokens: Obtain the specified amount of Skulltula tokens.\n"
+                    "\n"
+                    "100 GS Reward - Ganon's Boss Key will be awarded by the cursed rich man after you collect 100 Gold Skulltula Tokens."
                 );
                 UIWidgets::EnhancementCombobox("gRandomizeShuffleGanonBossKey", randoShuffleGanonsBossKey, RO_GANON_BOSS_KEY_MAX, RO_GANON_BOSS_KEY_VANILLA);
                 ImGui::PopItemWidth();
@@ -3988,6 +4175,7 @@ void DrawRandoEditor(bool& open) {
                                               "gRandomizeStartingConsumables");
                 UIWidgets::PaddedSeparator();
                 UIWidgets::EnhancementSliderInt("Gold Skulltula Tokens: %d", "##RandoStartingSkulltulaToken", "gRandomizeStartingSkulltulaToken", 0, 100, "", 0, true);
+                UIWidgets::EnhancementCheckbox(Settings::StartingBunnyHood.GetName().c_str(), "gRandomizeStartingBunnyHood");
                 UIWidgets::PaddedSeparator();
 
                 ImGui::EndChild();
@@ -4013,6 +4201,47 @@ void DrawRandoEditor(bool& open) {
     ImGui::PopItemFlag();
     ImGui::PopStyleVar();
     ImGui::End();
+}
+
+CustomMessageEntry Randomizer::GetWarpSongMessage(u16 textId, bool mysterious) {
+    CustomMessageEntry messageEntry = CustomMessageManager::Instance->RetrieveMessage(
+        Randomizer::hintMessageTableID, TEXT_WARP_RANDOM_REPLACED_TEXT);
+    if (mysterious) {
+        std::vector<std::string> locationName ={
+            "a mysterious place",
+            "a mysterious place", // TODO: German translation
+            "a mysterious place", // TODO: French translation
+        };
+
+        CustomMessageManager::ReplaceStringInMessage(messageEntry, "{{location}}", locationName[0],
+            locationName[1], locationName[2]);
+        return messageEntry;
+    }
+
+    std::string locationName;
+    switch (textId) {
+        case TEXT_WARP_MINUET_OF_FOREST:
+            locationName = std::string(gSaveContext.warpMinuetText);
+            break;
+        case TEXT_WARP_BOLERO_OF_FIRE:
+            locationName = std::string(gSaveContext.warpBoleroText);
+            break;
+        case TEXT_WARP_SERENADE_OF_WATER:
+            locationName = std::string(gSaveContext.warpSerenadeText);
+            break;
+        case TEXT_WARP_REQUIEM_OF_SPIRIT:
+            locationName = std::string(gSaveContext.warpRequiemText);
+            break;
+        case TEXT_WARP_NOCTURNE_OF_SHADOW:
+            locationName = std::string(gSaveContext.warpNocturneText);
+            break;
+        case TEXT_WARP_PRELUDE_OF_LIGHT:
+            locationName = std::string(gSaveContext.warpPreludeText);
+            break;
+    }
+
+    CustomMessageManager::ReplaceStringInMessage(messageEntry, "{{location}}", locationName);
+    return messageEntry;
 }
 
 CustomMessageEntry Randomizer::GetMerchantMessage(RandomizerInf randomizerInf, u16 textId, bool mysterious) {

@@ -21,6 +21,7 @@
 #include "objects/object_link_child/object_link_child.h"
 #include "textures/icon_item_24_static/icon_item_24_static.h"
 #include <soh/Enhancements/custom-message/CustomMessageTypes.h>
+
 #include "soh/Enhancements/item-tables/ItemTableTypes.h"
 #include "soh/Enhancements/debugconsole.h"
 #include "soh/Enhancements/randomizer/randomizer_entrance.h"
@@ -341,6 +342,8 @@ void func_80853080(Player* this, PlayState* play);
 s32 Player_InflictDamage(PlayState* play, s32 damage);
 s32 Player_InflictDamageModified(PlayState* play, s32 damage, u8 modified);
 void func_80853148(PlayState* play, Actor* actor);
+
+void func_80838940(Player* this, LinkAnimationHeader* anim, f32 arg2, PlayState* play, u16 sfxId);
 
 // .bss part 1
 static s32 D_80858AA0;
@@ -1675,6 +1678,9 @@ void func_8083315C(PlayState* play, Player* this) {
     s8 phi_v1;
     s8 phi_v0;
 
+    //MOUSE (RR)
+
+
     this->unk_A7C = D_808535D4;
     this->unk_A80 = D_808535D8;
 
@@ -1682,6 +1688,7 @@ void func_8083315C(PlayState* play, Player* this) {
 
     D_808535DC = Camera_GetInputDirYaw(GET_ACTIVE_CAM(play)) + D_808535D8;
 
+    this->quickspinCount = (this->quickspinCount + 1) % 5;
     this->unk_846 = (this->unk_846 + 1) % 4;
 
     if (D_808535D4 < 55.0f) {
@@ -1692,6 +1699,12 @@ void func_8083315C(PlayState* play, Player* this) {
         phi_v0 = (u16)((s16)(D_808535DC - this->actor.shape.rot.y) + 0x2000) >> 14;
     }
 
+    if(CVar_GetS32("gMouseTouchEnabled", 0)){
+        f32 x = sControlInput->cur.touch_x;
+        f32 y = sControlInput->cur.touch_y;
+        this->mouseQuickspinX[this->quickspinCount] = x;
+        this->mouseQuickspinY[this->quickspinCount] = y;
+    }
     this->unk_847[this->unk_846] = phi_v1;
     this->unk_84B[this->unk_846] = phi_v0;
 }
@@ -2046,6 +2059,10 @@ void func_80833DF8(Player* this, PlayState* play) {
     s32 item;
     s32 i;
 
+    if (this->actor.bgCheckFlags & 1) {
+        this->rocUseCount = 0;
+    }
+
     if (this->currentMask != PLAYER_MASK_NONE) {
         if (CVar_GetS32("gMMBunnyHood", 0) != 0) {
             s32 maskItem = this->currentMask - PLAYER_MASK_KEATON + ITEM_MASK_KEATON;
@@ -2110,9 +2127,29 @@ void func_80833DF8(Player* this, PlayState* play) {
             if ((item < ITEM_NONE_FE) && (Player_ItemToActionParam(item) == this->heldItemAction)) {
                 D_80853618 = true;
             }
-        } else {
+        } else if (item != ITEM_NAYRUS_LOVE || !CVar_GetS32("gRocsFeather", 0)) {
             this->heldItemButton = i;
             func_80835F44(play, this, item);
+        } else if (this->rocUseCount == 0) {
+            this->rocUseCount++;
+            this->linearVelocity = 5.0f;
+            this->actor.velocity.y = 8.0f;
+            this->actor.world.rot.y = this->currentYaw = this->actor.shape.rot.y;
+
+            func_80838940(this, D_80853D4C[2][0], !(2 & 1) ? 5.8f : 3.5f, play, /* NA_SE_VO_LI_SWORD_N*/ 0);
+
+            Vec3f effectsPos = this->actor.home.pos;
+            effectsPos.y += 3;
+            f32 effectsScale = 1;
+            if (!gSaveContext.linkAge) {
+                effectsScale = 1.5f;
+            }
+            EffectSsGRipple_Spawn(play, &effectsPos, 200 * effectsScale, 300 * effectsScale, 1);
+            EffectSsGSplash_Spawn(play, &effectsPos, NULL, NULL, 0, 150 * effectsScale);
+
+            this->stateFlags2 &= ~(PLAYER_STATE2_19);
+
+            func_8002F7DC(&this->actor, NA_SE_PL_SKIP);
         }
     }
 }
@@ -2799,7 +2836,7 @@ s32 func_808359FC(Player* this, PlayState* play) {
         s32 yaw = (this->unk_664 != NULL) ? this->actor.shape.rot.y + 14000 : this->actor.shape.rot.y;
         EnBoom* boomerang =
             (EnBoom*)Actor_Spawn(&play->actorCtx, play, ACTOR_EN_BOOM, posX, this->actor.world.pos.y + 30.0f,
-                                 posZ, this->actor.focus.rot.x, yaw, 0, 0);
+                                 posZ, this->actor.focus.rot.x, yaw, 0, 0, true);
 
         this->boomerangActor = &boomerang->actor;
         if (boomerang != NULL) {
@@ -3496,13 +3533,14 @@ void func_80837530(PlayState* play, Player* this, s32 arg2) {
     if (this->actor.category == ACTORCAT_PLAYER) {
         Actor_Spawn(&play->actorCtx, play, ACTOR_EN_M_THUNDER, this->bodyPartsPos[PLAYER_BODYPART_WAIST].x,
                     this->bodyPartsPos[PLAYER_BODYPART_WAIST].y, this->bodyPartsPos[PLAYER_BODYPART_WAIST].z, 0, 0, 0,
-                    Player_GetSwordHeld(this) | arg2);
+                    Player_GetSwordHeld(this) | arg2, true);
     }
 }
 
 s32 func_808375D8(Player* this) {
     s8 sp3C[4];
     s8* iter;
+    s8 iterMouse;
     s8* iter2;
     s8 temp1;
     s8 temp2;
@@ -3512,6 +3550,41 @@ s32 func_808375D8(Player* this) {
         return 0;
     }
 
+
+    if(CVar_GetS32("gMouseTouchEnabled", 0)){ //mouse quickspin
+        iter2 = &sp3C[0];
+        u32 willSpin = 1;
+        for (i = 0; i < 4; i++, iter2++){
+            f32 relY = this->mouseQuickspinY[i + 1] - this->mouseQuickspinY[i];
+            f32 relX = this->mouseQuickspinX[i + 1] - this->mouseQuickspinX[i];
+            s16 aTan = Math_Atan2S(relY, -relX);
+            iterMouse = (u16)(aTan + 0x2000) >> 9;
+            if ((*iter2 = iterMouse) < 0) {
+                willSpin = 0;
+                break;
+            }
+            *iter2 *= 2;
+        }
+        temp1 = sp3C[0] - sp3C[1];
+        if (ABS(temp1) < 10) {
+            willSpin = 0;
+        }
+        iter2 = &sp3C[1];
+        for (i = 1; i < 3; i++, iter2++) {
+            temp2 = *iter2 - *(iter2 + 1);
+            if ((ABS(temp2) < 10) || (temp2 * temp1 < 0)) {
+                willSpin = 0;
+                break;
+            }
+        }
+        if (willSpin){
+            return 1;
+        }
+    }
+    sp3C[0] = 0;
+    sp3C[1] = 0;
+    sp3C[2] = 0;
+    sp3C[3] = 0;
     iter = &this->unk_847[0];
     iter2 = &sp3C[0];
     for (i = 0; i < 4; i++, iter++, iter2++) {
@@ -3876,7 +3949,7 @@ s32 func_8083816C(s32 arg0) {
 void func_8083819C(Player* this, PlayState* play) {
     if (this->currentShield == PLAYER_SHIELD_DEKU && (CVar_GetS32("gFireproofDekuShield", 0) == 0)) {
         Actor_Spawn(&play->actorCtx, play, ACTOR_ITEM_SHIELD, this->actor.world.pos.x,
-                    this->actor.world.pos.y, this->actor.world.pos.z, 0, 0, 0, 1);
+                    this->actor.world.pos.y, this->actor.world.pos.z, 0, 0, 0, 1, true);
         Inventory_DeleteEquipment(play, EQUIP_SHIELD);
         Message_StartTextbox(play, 0x305F, NULL);
     }
@@ -4395,7 +4468,7 @@ Actor* Player_SpawnFairy(PlayState* play, Player* this, Vec3f* arg2, Vec3f* arg3
 
     func_808395DC(this, arg2, arg3, &pos);
 
-    return Actor_Spawn(&play->actorCtx, play, ACTOR_EN_ELF, pos.x, pos.y, pos.z, 0, 0, 0, type);
+    return Actor_Spawn(&play->actorCtx, play, ACTOR_EN_ELF, pos.x, pos.y, pos.z, 0, 0, 0, type, true);
 }
 
 f32 func_808396F4(PlayState* play, Player* this, Vec3f* arg2, Vec3f* arg3, CollisionPoly** arg4, s32* arg5) {
@@ -5474,6 +5547,15 @@ s32 func_8083C2B0(Player* this, PlayState* play) {
         func_808323B4(play, this);
 
         if (func_80835C58(play, this, func_80843188, 0)) {
+            /* MOD: move cursor to the middle on shield pull (RR) */
+            osSyncPrintf("SHIELDS UP!!!!\n");
+            if (CVar_GetS32("gMouseTouchEnabled", 0)) {
+                u32 width = OTRGetCurrentWidth();
+                u32 height = OTRGetCurrentHeight();
+                OTRMoveCursor(width/2, height/2);
+            }
+            /* */
+
             this->stateFlags1 |= PLAYER_STATE1_22;
 
             if (!Player_IsChildWithHylianShield(this)) {
@@ -8218,6 +8300,19 @@ void func_80843188(Player* this, PlayState* play) {
         sp50 = sControlInput->rel.stick_x * -120;
         sp4E = this->actor.shape.rot.y - Camera_GetInputDirYaw(GET_ACTIVE_CAM(play));
 
+        if (CVar_GetS32("gMouseTouchEnabled", 0)) {
+            u32 width = OTRGetCurrentWidth();
+            u32 height = OTRGetCurrentHeight();
+            /*
+             * Y: -12800 ~ +12700
+             * X: -15360 ~ +15240
+             */
+            f32 xBound = 15360 / ((f32)width / 2);
+            f32 yBound = 12800 / ((f32)height / 2);
+            sp54 += +(sControlInput->cur.touch_y - (height) / 2) * yBound;
+            sp50 += -(sControlInput->cur.touch_x - (width) / 2) * xBound;
+        }
+
         sp40 = Math_CosS(sp4E);
         sp4C = (Math_SinS(sp4E) * sp50) + (sp54 * sp40);
         sp40 = Math_CosS(sp4E);
@@ -9615,7 +9710,7 @@ static s16 D_80854700[] = { ACTOR_MAGIC_WIND, ACTOR_MAGIC_DARK, ACTOR_MAGIC_FIRE
 
 Actor* func_80846A00(PlayState* play, Player* this, s32 arg2) {
     return Actor_Spawn(&play->actorCtx, play, D_80854700[arg2], this->actor.world.pos.x,
-                       this->actor.world.pos.y, this->actor.world.pos.z, 0, 0, 0, 0);
+                       this->actor.world.pos.y, this->actor.world.pos.z, 0, 0, 0, 0, true);
 }
 
 void func_80846A68(PlayState* play, Player* this) {
@@ -9663,6 +9758,7 @@ void Player_InitCommon(Player* this, PlayState* play, FlexSkeletonHeader* skelHe
     Collider_InitQuad(play, &this->shieldQuad);
     Collider_SetQuad(play, &this->shieldQuad, &this->actor, &D_808546A0);
     this->boomSpawnGrab = 0;
+
 }
 
 static void (*D_80854738[])(PlayState* play, Player* this) = {
@@ -9681,6 +9777,11 @@ void Player_Init(Actor* thisx, PlayState* play2) {
     s32 initMode;
     s32 sp50;
     s32 sp4C;
+
+    // In ER, once Link has spawned we know the scene has loaded, so we can sanitize the last known entrance type
+    if (gSaveContext.n64ddFlag && Randomizer_GetSettingValue(RSK_SHUFFLE_ENTRANCES)) {
+        Grotto_SanitizeEntranceType();
+    }
 
     play->shootingGalleryStatus = play->bombchuBowlingStatus = 0;
 
@@ -10357,7 +10458,7 @@ void Player_UpdateCamAndSeqModes(PlayState* play, Player* this) {
             seqMode = SEQ_MODE_STILL;
         }
 
-        if (play->actorCtx.targetCtx.bgmEnemy != NULL) {
+        if (play->actorCtx.targetCtx.bgmEnemy != NULL && !CVar_GetS32("gEnemyBGMDisable", 0)) {
             seqMode = SEQ_MODE_ENEMY;
             Audio_SetBgmEnemyVolume(sqrtf(play->actorCtx.targetCtx.bgmEnemy->xyzDistToPlayerSq));
         }
@@ -10504,7 +10605,10 @@ void func_80848EF8(Player* this, PlayState* play) {
 
         /*Prevent it on horse, while jumping and on title screen.
         If you fly around no stone of agony for you! */
-        Color_RGB8 StoneOfAgony_ori = { 255, 255, 255 };
+        Color_RGB8 stoneOfAgonyColor = { 255, 255, 255 };
+        if (CVar_GetS32("gCosmetics.Hud_StoneOfAgony.Changed", 0)) {
+            stoneOfAgonyColor = CVar_GetRGB("gCosmetics.Hud_StoneOfAgony.Value", stoneOfAgonyColor);
+        }
         if (CVar_GetS32("gVisualAgony", 0) != 0 && !this->stateFlags1) {
             s16 Top_Margins = (CVar_GetS32("gHUDMargin_T", 0) * -1);
             s16 Left_Margins = CVar_GetS32("gHUDMargin_L", 0);
@@ -10555,48 +10659,20 @@ void func_80848EF8(Player* this, PlayState* play) {
             OPEN_DISPS(play->state.gfxCtx);
             gDPPipeSync(OVERLAY_DISP++);
 
-            if (CVar_GetS32("gHudColors", 1) == 2) {
-                gDPSetPrimColor(OVERLAY_DISP++, 0, 0, CVar_GetRGB("gCCVSOAPrim", StoneOfAgony_ori).r,
-                                CVar_GetRGB("gCCVSOAPrim", StoneOfAgony_ori).g,
-                                CVar_GetRGB("gCCVSOAPrim", StoneOfAgony_ori).b, DefaultIconA);
-            } else {
-                gDPSetPrimColor(OVERLAY_DISP++, 0, 0, StoneOfAgony_ori.r, StoneOfAgony_ori.g, StoneOfAgony_ori.b,
-                                DefaultIconA);
-            }
+            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, stoneOfAgonyColor.r, stoneOfAgonyColor.g, stoneOfAgonyColor.b, DefaultIconA);
 
             gDPSetCombineLERP(OVERLAY_DISP++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0,
                               PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
             if (this->unk_6A0 > 4000000.0f) {
-                if (CVar_GetS32("gHudColors", 1) == 2) {
-                    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, CVar_GetRGB("gCCVSOAPrim", StoneOfAgony_ori).r,
-                                    CVar_GetRGB("gCCVSOAPrim", StoneOfAgony_ori).g,
-                                    CVar_GetRGB("gCCVSOAPrim", StoneOfAgony_ori).b, 255);
-                } else {
-                    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, StoneOfAgony_ori.r, StoneOfAgony_ori.g, StoneOfAgony_ori.b,
-                                    255);
-                }
+                gDPSetPrimColor(OVERLAY_DISP++, 0, 0, stoneOfAgonyColor.r, stoneOfAgonyColor.g, stoneOfAgonyColor.b, 255);
             } else {
-                if (CVar_GetS32("gHudColors", 1) == 2) {
-                    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, CVar_GetRGB("gCCVSOAPrim", StoneOfAgony_ori).r,
-                                    CVar_GetRGB("gCCVSOAPrim", StoneOfAgony_ori).g,
-                                    CVar_GetRGB("gCCVSOAPrim", StoneOfAgony_ori).b, DefaultIconA);
-                } else {
-                    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, StoneOfAgony_ori.r, StoneOfAgony_ori.g, StoneOfAgony_ori.b,
-                                    DefaultIconA);
-                }
+                gDPSetPrimColor(OVERLAY_DISP++, 0, 0, stoneOfAgonyColor.r, stoneOfAgonyColor.g, stoneOfAgonyColor.b, DefaultIconA);
             }
             if (temp == 0 || temp <= 0.1f) {
                 /*Fail check, it is used to draw off the icon when
                 link is standing out range but do not refresh unk_6A0.
                 Also used to make a default value in my case.*/
-                if (CVar_GetS32("gHudColors", 1) == 2) {
-                    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, CVar_GetRGB("gCCVSOAPrim", StoneOfAgony_ori).r,
-                                    CVar_GetRGB("gCCVSOAPrim", StoneOfAgony_ori).g,
-                                    CVar_GetRGB("gCCVSOAPrim", StoneOfAgony_ori).b, DefaultIconA);
-                } else {
-                    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, StoneOfAgony_ori.r, StoneOfAgony_ori.g, StoneOfAgony_ori.b,
-                                    DefaultIconA);
-                }
+                gDPSetPrimColor(OVERLAY_DISP++, 0, 0, stoneOfAgonyColor.r, stoneOfAgonyColor.g, stoneOfAgonyColor.b, DefaultIconA);
             }
             gDPSetEnvColor(OVERLAY_DISP++, 0, 0, 0, 255);
             gDPSetOtherMode(OVERLAY_DISP++,
@@ -11059,7 +11135,7 @@ void Player_Update(Actor* thisx, PlayState* play) {
                 dogParams = gSaveContext.dogParams;
 
                 dog = Actor_Spawn(&play->actorCtx, play, ACTOR_EN_DOG, sDogSpawnPos.x, sDogSpawnPos.y,
-                                  sDogSpawnPos.z, 0, this->actor.shape.rot.y, 0, dogParams | 0x8000);
+                                  sDogSpawnPos.z, 0, this->actor.shape.rot.y, 0, dogParams | 0x8000, true);
                 if (dog != NULL) {
                     dog->room = 0;
                 }
@@ -11172,13 +11248,13 @@ void Player_DrawGameplay(PlayState* play, Player* this, s32 lod, Gfx* cullDList,
             sp68.x = D_80858AC8.unk_02 + 0x3E2;
             sp68.y = D_80858AC8.unk_04 + 0xDBE;
             sp68.z = D_80858AC8.unk_00 - 0x348A;
-            Matrix_SetTranslateRotateYXZ(97.0f, -1203.0f, -240.0f, &sp68);
+            Matrix_SetTranslateRotateYXZ(97.0f, -1203.0f - CVar_GetFloat("gCosmetics.BunnyHood_EarLength", 0.0f), -240.0f - CVar_GetFloat("gCosmetics.BunnyHood_EarSpread", 0.0f), &sp68);
             MATRIX_TOMTX(sp70++);
 
             sp68.x = D_80858AC8.unk_02 - 0x3E2;
             sp68.y = -0xDBE - D_80858AC8.unk_04;
             sp68.z = D_80858AC8.unk_00 - 0x348A;
-            Matrix_SetTranslateRotateYXZ(97.0f, -1203.0f, 240.0f, &sp68);
+            Matrix_SetTranslateRotateYXZ(97.0f, -1203.0f - CVar_GetFloat("gCosmetics.BunnyHood_EarLength", 0.0f), 240.0f + CVar_GetFloat("gCosmetics.BunnyHood_EarSpread", 0.0f), &sp68);
             MATRIX_TOMTX(sp70);
         }
 
@@ -11369,6 +11445,24 @@ s16 func_8084ABD8(PlayState* play, Player* this, s32 arg2, s16 arg3) {
     s32 temp1;
     s16 temp2;
     s16 temp3;
+
+    /* TODO: Move all this mouse stuff somewhere more appropriate */
+    if(CVar_GetS32("gMouseTouchEnabled", 0)) {
+        int mouseX, mouseY;
+        SDL_GetRelativeMouseState(&mouseX, &mouseY);
+
+        sControlInput->cur.mouse_move_x = mouseX;
+        sControlInput->cur.mouse_move_y = mouseY;
+        if (fabsf(sControlInput->cur.mouse_move_x) > 0) {
+            //printf("x:%d\n", sControlInput->cur.mouse_move_x);
+            this->actor.focus.rot.y -= (sControlInput->cur.mouse_move_x) * 12.0f;
+        }
+        if (fabsf(sControlInput->cur.mouse_move_y) > 0) {
+            //printf("y:%d\n", sControlInput->cur.mouse_move_y);
+            this->actor.focus.rot.x += (sControlInput->cur.mouse_move_y) * 12.0f;
+        }
+    }
+    /* ********************************************************** */
 
     if (!func_8002DD78(this) && !func_808334B4(this) && (arg2 == 0)) {
         if (!CVar_GetS32("gDisableAutoCenterView", 0)) {
@@ -12926,7 +13020,7 @@ void func_8084E3C4(Player* this, PlayState* play) {
         this->stateFlags1 |= PLAYER_STATE1_28 | PLAYER_STATE1_29;
         this->stateFlags2 |= PLAYER_STATE2_27;
 
-        if (Actor_Spawn(&play->actorCtx, play, ACTOR_DEMO_KANKYO, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0xF) == NULL) {
+        if (Actor_Spawn(&play->actorCtx, play, ACTOR_DEMO_KANKYO, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0xF, true) == NULL) {
             Environment_WarpSongLeave(play);
         }
 
@@ -12942,7 +13036,7 @@ void func_8084E604(Player* this, PlayState* play) {
         Inventory_ChangeAmmo(ITEM_NUT, -1);
         Actor_Spawn(&play->actorCtx, play, ACTOR_EN_ARROW, this->bodyPartsPos[PLAYER_BODYPART_R_HAND].x,
                     this->bodyPartsPos[PLAYER_BODYPART_R_HAND].y, this->bodyPartsPos[PLAYER_BODYPART_R_HAND].z, 4000,
-                    this->actor.shape.rot.y, 0, ARROW_NUT);
+                    this->actor.shape.rot.y, 0, ARROW_NUT, true);
         func_80832698(this, NA_SE_VO_LI_SWORD_N);
     }
 
@@ -12992,7 +13086,7 @@ void func_8084E6D4(Player* this, PlayState* play) {
                 if ((this->getItemId != GI_ICE_TRAP && !gSaveContext.n64ddFlag) ||
                     (gSaveContext.n64ddFlag && (this->getItemId != RG_ICE_TRAP || this->getItemEntry.getItemId != RG_ICE_TRAP))) {
                     Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->actor.world.pos.x,
-                                this->actor.world.pos.y + 100.0f, this->actor.world.pos.z, 0, 0, 0, 0);
+                                this->actor.world.pos.y + 100.0f, this->actor.world.pos.z, 0, 0, 0, 0, true);
                     func_8083C0E8(this, play);
                 } else {
                     this->actor.colChkInfo.damage = 0;
@@ -13328,7 +13422,7 @@ void func_8084EFC0(Player* this, PlayState* play) {
         Actor_Spawn(&play->actorCtx, play, dropInfo->actorId,
                     (Math_SinS(this->actor.shape.rot.y) * 5.0f) + this->leftHandPos.x, this->leftHandPos.y,
                     (Math_CosS(this->actor.shape.rot.y) * 5.0f) + this->leftHandPos.z, 0x4000, this->actor.shape.rot.y,
-                    0, dropInfo->actorParams);
+                    0, dropInfo->actorParams, true);
 
         Player_UpdateBottleHeld(play, this, ITEM_BOTTLE, PLAYER_IA_BOTTLE);
         return;
@@ -13484,7 +13578,7 @@ void func_8084F608(Player* this, PlayState* play) {
 void func_8084F698(Player* this, PlayState* play) {
     func_80835C58(play, this, func_8084F608, 0);
     this->unk_850 = 40;
-    Actor_Spawn(&play->actorCtx, play, ACTOR_DEMO_KANKYO, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0x10);
+    Actor_Spawn(&play->actorCtx, play, ACTOR_DEMO_KANKYO, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0x10, true);
 }
 
 void func_8084F710(Player* this, PlayState* play) {

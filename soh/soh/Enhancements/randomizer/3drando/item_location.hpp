@@ -83,73 +83,85 @@ enum class ItemLocationType {
 };
 
 class SpoilerCollectionCheck {
-public:
-  SpoilerCollectionCheckType type = SpoilerCollectionCheckType::SPOILER_CHK_NONE;
-  uint8_t scene = 0;
-  uint8_t flag = 0;
+  public:
+    SpoilerCollectionCheckType type = SpoilerCollectionCheckType::SPOILER_CHK_NONE;
+    uint8_t scene = 0;
+    uint8_t flag = 0;
 
-  SpoilerCollectionCheck() {}
-  SpoilerCollectionCheck(SpoilerCollectionCheckType type_, uint8_t scene_, uint8_t flag_) : type(type_), scene(scene_), flag(flag_) {}
+    SpoilerCollectionCheck() {}
+    SpoilerCollectionCheck(SpoilerCollectionCheckType type_, uint8_t scene_, uint8_t flag_) : type(type_), scene(scene_), flag(flag_) {}
 
-  static auto None() {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_NONE, 0x00, 0x00);
-  }
+    static auto None() {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_NONE, 0x00, 0x00);
+    }
 
-  static auto AlwaysCollected() {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_ALWAYS_COLLECTED, 0x00, 0x00);
-  }
+    static auto AlwaysCollected() {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_ALWAYS_COLLECTED, 0x00, 0x00);
+    }
 
-  static auto ItemGetInf(uint8_t slot) {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_ITEM_GET_INF, 0x00, slot);
-  }
+    static auto ItemGetInf(uint8_t slot) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_ITEM_GET_INF, 0x00, slot);
+    }
 
-  static auto EventChkInf(uint8_t flag) {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_EVENT_CHK_INF, 0xFF, flag);
-  }
+    static auto EventChkInf(uint8_t flag) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_EVENT_CHK_INF, 0xFF, flag);
+    }
 
-  static auto InfTable(uint8_t offset, uint8_t bit) {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_INF_TABLE, offset, bit);
-  }
+    static auto InfTable(uint8_t offset, uint8_t bit) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_INF_TABLE, offset, bit);
+    }
 
-  static auto Collectable(uint8_t scene, uint8_t flag) {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_COLLECTABLE, scene, flag);
-  }
+    static auto Collectable(uint8_t scene, uint8_t flag) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_COLLECTABLE, scene, flag);
+    }
 
-  static auto Chest(uint8_t scene, uint8_t flag) {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_CHEST, scene, flag);
-  }
+    static auto Chest(uint8_t scene, uint8_t flag) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_CHEST, scene, flag);
+    }
 
-  static auto Cow(uint8_t scene, uint8_t flag) {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_COW, scene, flag);
-  }
+    static auto Cow(uint8_t scene, uint8_t flag) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_COW, scene, flag);
+    }
 
-  static auto Fishing(uint8_t bit) {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_MINIGAME, 0x00, bit);
-  }
+    static auto Fishing(uint8_t bit) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_MINIGAME, 0x00, bit);
+    }
 
-  static auto Scrub(uint8_t scene, uint8_t bit) {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_SCRUB, scene, bit);
-  }
+    static auto Scrub(uint8_t scene, uint8_t bit) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_SCRUB, scene, bit);
+    }
 
-  static auto Biggoron(uint8_t mask) {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_BIGGORON, 0x00, mask);
-  }
+    static auto Biggoron(uint8_t mask) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_BIGGORON, 0x00, mask);
+    }
 
-  static auto GerudoToken() {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_GERUDO_MEMBERSHIP_CARD, 0x00, 0x00);
-  }
+    static auto GerudoToken() {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_GERUDO_MEMBERSHIP_CARD, 0x00, 0x00);
+    }
 
-  static auto BigPoePoints() {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_POE_POINTS, 0x00, 0x00);
-  }
+    static auto BigPoePoints() {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_POE_POINTS, 0x00, 0x00);
+    }
+    
+    static auto Gravedigger(uint8_t scene, uint8_t flag) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_GRAVEDIGGER, scene, flag);
+    }
 
-  static auto ShopItem(uint8_t scene, uint8_t itemSlot) {
-    return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_SHOP_ITEM, scene, itemSlot);
-  }
+    static auto ShopItem(uint8_t scene, uint8_t itemSlot) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_SHOP_ITEM, scene, itemSlot);
+    }
 
-  static auto MagicBeans(uint8_t scene, uint8_t flag) {
-      return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_MAGIC_BEANS, scene, flag);
-  }
+    static auto MagicBeans(uint8_t scene, uint8_t flag) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_MAGIC_BEANS, scene, flag);
+    }
+
+    static auto Merchant(int8_t scene, uint8_t flag) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_MERCHANT, scene, flag);
+    }
+
+    static auto RandomizerInf(int8_t scene, uint8_t flag) {
+        return SpoilerCollectionCheck(SpoilerCollectionCheckType::SPOILER_CHK_RANDOMIZER_INF, scene, flag);
+    }
 };
 
 class ItemLocation {
@@ -475,6 +487,133 @@ public:
 void LocationTable_Init();
 
 ItemLocation* Location(uint32_t locKey);
+ItemLocation* Location(RandomizerCheck rc);
+
+
+static std::unordered_map<RandomizerCheck, RandomizerInf> randomizerFlagLookup = {
+    { RC_KF_LINKS_HOUSE_COW, RAND_INF_COWS_MILKED_KF_LINKS_HOUSE_COW },
+    { RC_HF_COW_GROTTO_COW, RAND_INF_COWS_MILKED_HF_COW_GROTTO_COW },
+    { RC_LLR_STABLES_LEFT_COW, RAND_INF_COWS_MILKED_LLR_STABLES_LEFT_COW },
+    { RC_LLR_STABLES_RIGHT_COW, RAND_INF_COWS_MILKED_LLR_STABLES_RIGHT_COW },
+    { RC_LLR_TOWER_LEFT_COW, RAND_INF_COWS_MILKED_LLR_TOWER_LEFT_COW },
+    { RC_LLR_TOWER_RIGHT_COW, RAND_INF_COWS_MILKED_LLR_TOWER_RIGHT_COW },
+    { RC_KAK_IMPAS_HOUSE_COW, RAND_INF_COWS_MILKED_KAK_IMPAS_HOUSE_COW },
+    { RC_DMT_COW_GROTTO_COW, RAND_INF_COWS_MILKED_DMT_COW_GROTTO_COW },
+    { RC_GV_COW, RAND_INF_COWS_MILKED_GV_COW },
+    { RC_JABU_JABUS_BELLY_MQ_COW, RAND_INF_COWS_MILKED_JABU_JABUS_BELLY_MQ_COW },
+
+    { RC_DODONGOS_CAVERN_DEKU_SCRUB_NEAR_BOMB_BAG_LEFT, RAND_INF_SCRUBS_PURCHASED_DODONGOS_CAVERN_DEKU_SCRUB_NEAR_BOMB_BAG_LEFT },
+    { RC_DODONGOS_CAVERN_DEKU_SCRUB_SIDE_ROOM_NEAR_DODONGOS, RAND_INF_SCRUBS_PURCHASED_DODONGOS_CAVERN_DEKU_SCRUB_SIDE_ROOM_NEAR_DODONGOS },
+    { RC_DODONGOS_CAVERN_DEKU_SCRUB_NEAR_BOMB_BAG_RIGHT, RAND_INF_SCRUBS_PURCHASED_DODONGOS_CAVERN_DEKU_SCRUB_NEAR_BOMB_BAG_RIGHT },
+    { RC_DODONGOS_CAVERN_DEKU_SCRUB_LOBBY, RAND_INF_SCRUBS_PURCHASED_DODONGOS_CAVERN_DEKU_SCRUB_LOBBY },
+    { RC_JABU_JABUS_BELLY_DEKU_SCRUB, RAND_INF_SCRUBS_PURCHASED_JABU_JABUS_BELLY_DEKU_SCRUB },
+    { RC_GANONS_CASTLE_DEKU_SCRUB_CENTER_LEFT, RAND_INF_SCRUBS_PURCHASED_GANONS_CASTLE_DEKU_SCRUB_CENTER_LEFT },
+    { RC_GANONS_CASTLE_DEKU_SCRUB_CENTER_RIGHT, RAND_INF_SCRUBS_PURCHASED_GANONS_CASTLE_DEKU_SCRUB_CENTER_RIGHT },
+    { RC_GANONS_CASTLE_DEKU_SCRUB_RIGHT, RAND_INF_SCRUBS_PURCHASED_GANONS_CASTLE_DEKU_SCRUB_RIGHT },
+    { RC_GANONS_CASTLE_DEKU_SCRUB_LEFT, RAND_INF_SCRUBS_PURCHASED_GANONS_CASTLE_DEKU_SCRUB_LEFT },
+    { RC_HF_DEKU_SCRUB_GROTTO, RAND_INF_SCRUBS_PURCHASED_HF_DEKU_SCRUB_GROTTO },
+    { RC_ZR_DEKU_SCRUB_GROTTO_REAR, RAND_INF_SCRUBS_PURCHASED_ZR_DEKU_SCRUB_GROTTO_REAR },
+    { RC_ZR_DEKU_SCRUB_GROTTO_FRONT, RAND_INF_SCRUBS_PURCHASED_ZR_DEKU_SCRUB_GROTTO_FRONT },
+    { RC_SFM_DEKU_SCRUB_GROTTO_REAR, RAND_INF_SCRUBS_PURCHASED_SFM_DEKU_SCRUB_GROTTO_REAR },
+    { RC_SFM_DEKU_SCRUB_GROTTO_FRONT, RAND_INF_SCRUBS_PURCHASED_SFM_DEKU_SCRUB_GROTTO_FRONT },
+    { RC_LH_DEKU_SCRUB_GROTTO_LEFT, RAND_INF_SCRUBS_PURCHASED_LH_DEKU_SCRUB_GROTTO_LEFT },
+    { RC_LH_DEKU_SCRUB_GROTTO_RIGHT, RAND_INF_SCRUBS_PURCHASED_LH_DEKU_SCRUB_GROTTO_RIGHT },
+    { RC_LH_DEKU_SCRUB_GROTTO_CENTER, RAND_INF_SCRUBS_PURCHASED_LH_DEKU_SCRUB_GROTTO_CENTER },
+    { RC_GV_DEKU_SCRUB_GROTTO_REAR, RAND_INF_SCRUBS_PURCHASED_GV_DEKU_SCRUB_GROTTO_REAR },
+    { RC_GV_DEKU_SCRUB_GROTTO_FRONT, RAND_INF_SCRUBS_PURCHASED_GV_DEKU_SCRUB_GROTTO_FRONT },
+    { RC_LW_DEKU_SCRUB_GROTTO_REAR, RAND_INF_SCRUBS_PURCHASED_LW_DEKU_SCRUB_GROTTO_REAR },
+    { RC_LW_DEKU_SCRUB_GROTTO_FRONT, RAND_INF_SCRUBS_PURCHASED_LW_DEKU_SCRUB_GROTTO_FRONT },
+    { RC_DMC_DEKU_SCRUB_GROTTO_LEFT, RAND_INF_SCRUBS_PURCHASED_DMC_DEKU_SCRUB_GROTTO_LEFT },
+    { RC_DMC_DEKU_SCRUB_GROTTO_RIGHT, RAND_INF_SCRUBS_PURCHASED_DMC_DEKU_SCRUB_GROTTO_RIGHT },
+    { RC_DMC_DEKU_SCRUB_GROTTO_CENTER, RAND_INF_SCRUBS_PURCHASED_DMC_DEKU_SCRUB_GROTTO_CENTER },
+    { RC_GC_DEKU_SCRUB_GROTTO_LEFT, RAND_INF_SCRUBS_PURCHASED_GC_DEKU_SCRUB_GROTTO_LEFT },
+    { RC_GC_DEKU_SCRUB_GROTTO_RIGHT, RAND_INF_SCRUBS_PURCHASED_GC_DEKU_SCRUB_GROTTO_RIGHT },
+    { RC_GC_DEKU_SCRUB_GROTTO_CENTER, RAND_INF_SCRUBS_PURCHASED_GC_DEKU_SCRUB_GROTTO_CENTER },
+    { RC_LLR_DEKU_SCRUB_GROTTO_LEFT, RAND_INF_SCRUBS_PURCHASED_LLR_DEKU_SCRUB_GROTTO_LEFT },
+    { RC_LLR_DEKU_SCRUB_GROTTO_RIGHT, RAND_INF_SCRUBS_PURCHASED_LLR_DEKU_SCRUB_GROTTO_RIGHT },
+    { RC_LLR_DEKU_SCRUB_GROTTO_CENTER, RAND_INF_SCRUBS_PURCHASED_LLR_DEKU_SCRUB_GROTTO_CENTER },
+    { RC_COLOSSUS_DEKU_SCRUB_GROTTO_REAR, RAND_INF_SCRUBS_PURCHASED_COLOSSUS_DEKU_SCRUB_GROTTO_REAR },
+    { RC_COLOSSUS_DEKU_SCRUB_GROTTO_FRONT, RAND_INF_SCRUBS_PURCHASED_COLOSSUS_DEKU_SCRUB_GROTTO_FRONT },
+    { RC_LW_DEKU_SCRUB_NEAR_DEKU_THEATER_RIGHT, RAND_INF_SCRUBS_PURCHASED_LW_DEKU_SCRUB_NEAR_DEKU_THEATER_RIGHT },
+    { RC_LW_DEKU_SCRUB_NEAR_DEKU_THEATER_LEFT, RAND_INF_SCRUBS_PURCHASED_LW_DEKU_SCRUB_NEAR_DEKU_THEATER_LEFT },
+    { RC_LW_DEKU_SCRUB_NEAR_BRIDGE, RAND_INF_SCRUBS_PURCHASED_LW_DEKU_SCRUB_NEAR_BRIDGE },
+    { RC_DMC_DEKU_SCRUB, RAND_INF_SCRUBS_PURCHASED_DMC_DEKU_SCRUB },
+
+    { RC_KF_SHOP_ITEM_1, RAND_INF_SHOP_ITEMS_KF_SHOP_ITEM_1 },
+    { RC_KF_SHOP_ITEM_2, RAND_INF_SHOP_ITEMS_KF_SHOP_ITEM_2 },
+    { RC_KF_SHOP_ITEM_3, RAND_INF_SHOP_ITEMS_KF_SHOP_ITEM_3 },
+    { RC_KF_SHOP_ITEM_4, RAND_INF_SHOP_ITEMS_KF_SHOP_ITEM_4 },
+    { RC_KF_SHOP_ITEM_5, RAND_INF_SHOP_ITEMS_KF_SHOP_ITEM_5 },
+    { RC_KF_SHOP_ITEM_6, RAND_INF_SHOP_ITEMS_KF_SHOP_ITEM_6 },
+    { RC_KF_SHOP_ITEM_7, RAND_INF_SHOP_ITEMS_KF_SHOP_ITEM_7 },
+    { RC_KF_SHOP_ITEM_8, RAND_INF_SHOP_ITEMS_KF_SHOP_ITEM_8 },
+    { RC_GC_SHOP_ITEM_1, RAND_INF_SHOP_ITEMS_GC_SHOP_ITEM_1 },
+    { RC_GC_SHOP_ITEM_2, RAND_INF_SHOP_ITEMS_GC_SHOP_ITEM_2 },
+    { RC_GC_SHOP_ITEM_3, RAND_INF_SHOP_ITEMS_GC_SHOP_ITEM_3 },
+    { RC_GC_SHOP_ITEM_4, RAND_INF_SHOP_ITEMS_GC_SHOP_ITEM_4 },
+    { RC_GC_SHOP_ITEM_5, RAND_INF_SHOP_ITEMS_GC_SHOP_ITEM_5 },
+    { RC_GC_SHOP_ITEM_6, RAND_INF_SHOP_ITEMS_GC_SHOP_ITEM_6 },
+    { RC_GC_SHOP_ITEM_7, RAND_INF_SHOP_ITEMS_GC_SHOP_ITEM_7 },
+    { RC_GC_SHOP_ITEM_8, RAND_INF_SHOP_ITEMS_GC_SHOP_ITEM_8 },
+    { RC_ZD_SHOP_ITEM_1, RAND_INF_SHOP_ITEMS_ZD_SHOP_ITEM_1 },
+    { RC_ZD_SHOP_ITEM_2, RAND_INF_SHOP_ITEMS_ZD_SHOP_ITEM_2 },
+    { RC_ZD_SHOP_ITEM_3, RAND_INF_SHOP_ITEMS_ZD_SHOP_ITEM_3 },
+    { RC_ZD_SHOP_ITEM_4, RAND_INF_SHOP_ITEMS_ZD_SHOP_ITEM_4 },
+    { RC_ZD_SHOP_ITEM_5, RAND_INF_SHOP_ITEMS_ZD_SHOP_ITEM_5 },
+    { RC_ZD_SHOP_ITEM_6, RAND_INF_SHOP_ITEMS_ZD_SHOP_ITEM_6 },
+    { RC_ZD_SHOP_ITEM_7, RAND_INF_SHOP_ITEMS_ZD_SHOP_ITEM_7 },
+    { RC_ZD_SHOP_ITEM_8, RAND_INF_SHOP_ITEMS_ZD_SHOP_ITEM_8 },
+    { RC_KAK_BAZAAR_ITEM_1, RAND_INF_SHOP_ITEMS_KAK_BAZAAR_ITEM_1 },
+    { RC_KAK_BAZAAR_ITEM_2, RAND_INF_SHOP_ITEMS_KAK_BAZAAR_ITEM_2 },
+    { RC_KAK_BAZAAR_ITEM_3, RAND_INF_SHOP_ITEMS_KAK_BAZAAR_ITEM_3 },
+    { RC_KAK_BAZAAR_ITEM_4, RAND_INF_SHOP_ITEMS_KAK_BAZAAR_ITEM_4 },
+    { RC_KAK_BAZAAR_ITEM_5, RAND_INF_SHOP_ITEMS_KAK_BAZAAR_ITEM_5 },
+    { RC_KAK_BAZAAR_ITEM_6, RAND_INF_SHOP_ITEMS_KAK_BAZAAR_ITEM_6 },
+    { RC_KAK_BAZAAR_ITEM_7, RAND_INF_SHOP_ITEMS_KAK_BAZAAR_ITEM_7 },
+    { RC_KAK_BAZAAR_ITEM_8, RAND_INF_SHOP_ITEMS_KAK_BAZAAR_ITEM_8 },
+    { RC_KAK_POTION_SHOP_ITEM_1, RAND_INF_SHOP_ITEMS_KAK_POTION_SHOP_ITEM_1 },
+    { RC_KAK_POTION_SHOP_ITEM_2, RAND_INF_SHOP_ITEMS_KAK_POTION_SHOP_ITEM_2 },
+    { RC_KAK_POTION_SHOP_ITEM_3, RAND_INF_SHOP_ITEMS_KAK_POTION_SHOP_ITEM_3 },
+    { RC_KAK_POTION_SHOP_ITEM_4, RAND_INF_SHOP_ITEMS_KAK_POTION_SHOP_ITEM_4 },
+    { RC_KAK_POTION_SHOP_ITEM_5, RAND_INF_SHOP_ITEMS_KAK_POTION_SHOP_ITEM_5 },
+    { RC_KAK_POTION_SHOP_ITEM_6, RAND_INF_SHOP_ITEMS_KAK_POTION_SHOP_ITEM_6 },
+    { RC_KAK_POTION_SHOP_ITEM_7, RAND_INF_SHOP_ITEMS_KAK_POTION_SHOP_ITEM_7 },
+    { RC_KAK_POTION_SHOP_ITEM_8, RAND_INF_SHOP_ITEMS_KAK_POTION_SHOP_ITEM_8 },
+    { RC_MARKET_BAZAAR_ITEM_1, RAND_INF_SHOP_ITEMS_MARKET_BAZAAR_ITEM_1 },
+    { RC_MARKET_BAZAAR_ITEM_2, RAND_INF_SHOP_ITEMS_MARKET_BAZAAR_ITEM_2 },
+    { RC_MARKET_BAZAAR_ITEM_3, RAND_INF_SHOP_ITEMS_MARKET_BAZAAR_ITEM_3 },
+    { RC_MARKET_BAZAAR_ITEM_4, RAND_INF_SHOP_ITEMS_MARKET_BAZAAR_ITEM_4 },
+    { RC_MARKET_BAZAAR_ITEM_5, RAND_INF_SHOP_ITEMS_MARKET_BAZAAR_ITEM_5 },
+    { RC_MARKET_BAZAAR_ITEM_6, RAND_INF_SHOP_ITEMS_MARKET_BAZAAR_ITEM_6 },
+    { RC_MARKET_BAZAAR_ITEM_7, RAND_INF_SHOP_ITEMS_MARKET_BAZAAR_ITEM_7 },
+    { RC_MARKET_BAZAAR_ITEM_8, RAND_INF_SHOP_ITEMS_MARKET_BAZAAR_ITEM_8 },
+    { RC_MARKET_POTION_SHOP_ITEM_1, RAND_INF_SHOP_ITEMS_MARKET_POTION_SHOP_ITEM_1 },
+    { RC_MARKET_POTION_SHOP_ITEM_2, RAND_INF_SHOP_ITEMS_MARKET_POTION_SHOP_ITEM_2 },
+    { RC_MARKET_POTION_SHOP_ITEM_3, RAND_INF_SHOP_ITEMS_MARKET_POTION_SHOP_ITEM_3 },
+    { RC_MARKET_POTION_SHOP_ITEM_4, RAND_INF_SHOP_ITEMS_MARKET_POTION_SHOP_ITEM_4 },
+    { RC_MARKET_POTION_SHOP_ITEM_5, RAND_INF_SHOP_ITEMS_MARKET_POTION_SHOP_ITEM_5 },
+    { RC_MARKET_POTION_SHOP_ITEM_6, RAND_INF_SHOP_ITEMS_MARKET_POTION_SHOP_ITEM_6 },
+    { RC_MARKET_POTION_SHOP_ITEM_7, RAND_INF_SHOP_ITEMS_MARKET_POTION_SHOP_ITEM_7 },
+    { RC_MARKET_POTION_SHOP_ITEM_8, RAND_INF_SHOP_ITEMS_MARKET_POTION_SHOP_ITEM_8 },
+    { RC_MARKET_BOMBCHU_SHOP_ITEM_1, RAND_INF_SHOP_ITEMS_MARKET_BOMBCHU_SHOP_ITEM_1 },
+    { RC_MARKET_BOMBCHU_SHOP_ITEM_2, RAND_INF_SHOP_ITEMS_MARKET_BOMBCHU_SHOP_ITEM_2 },
+    { RC_MARKET_BOMBCHU_SHOP_ITEM_3, RAND_INF_SHOP_ITEMS_MARKET_BOMBCHU_SHOP_ITEM_3 },
+    { RC_MARKET_BOMBCHU_SHOP_ITEM_4, RAND_INF_SHOP_ITEMS_MARKET_BOMBCHU_SHOP_ITEM_4 },
+    { RC_MARKET_BOMBCHU_SHOP_ITEM_5, RAND_INF_SHOP_ITEMS_MARKET_BOMBCHU_SHOP_ITEM_5 },
+    { RC_MARKET_BOMBCHU_SHOP_ITEM_6, RAND_INF_SHOP_ITEMS_MARKET_BOMBCHU_SHOP_ITEM_6 },
+    { RC_MARKET_BOMBCHU_SHOP_ITEM_7, RAND_INF_SHOP_ITEMS_MARKET_BOMBCHU_SHOP_ITEM_7 },
+    { RC_MARKET_BOMBCHU_SHOP_ITEM_8, RAND_INF_SHOP_ITEMS_MARKET_BOMBCHU_SHOP_ITEM_8 },
+
+    { RC_WASTELAND_BOMBCHU_SALESMAN, RAND_INF_MERCHANTS_CARPET_SALESMAN },
+    { RC_GC_MEDIGORON, RAND_INF_MERCHANTS_MEDIGORON },
+
+    { RC_LW_TRADE_COJIRO, RAND_INF_ADULT_TRADES_LW_TRADE_COJIRO },
+    { RC_GV_TRADE_SAW, RAND_INF_ADULT_TRADES_GV_TRADE_SAW },
+    { RC_DMT_TRADE_BROKEN_SWORD, RAND_INF_ADULT_TRADES_DMT_TRADE_BROKEN_SWORD },
+    { RC_LH_TRADE_FROG, RAND_INF_ADULT_TRADES_LH_TRADE_FROG },
+    { RC_DMT_TRADE_EYEDROPS, RAND_INF_ADULT_TRADES_DMT_TRADE_EYEDROPS },
+};
+
 
 extern std::vector<std::vector<uint32_t>> ShopLocationLists;
 

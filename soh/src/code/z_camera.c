@@ -36,7 +36,6 @@ s32 Camera_UpdateWater(Camera* camera);
 
 #include "z_camera_data.inc"
 
-/*===============================================================*/
 
 /**
  * Interpolates along a curve between 0 and 1 with a period of
@@ -1421,6 +1420,20 @@ s32 SetCameraManual(Camera* camera) {
     f32 newCamX = -D_8015BD7C->state.input[0].cur.right_stick_x * 10.0f;
     f32 newCamY = D_8015BD7C->state.input[0].cur.right_stick_y * 10.0f;
 
+
+    int mouseX, mouseY;
+    SDL_GetRelativeMouseState(&mouseX, &mouseY);
+    D_8015BD7C->state.input[0].cur.mouse_move_x = mouseX;
+    D_8015BD7C->state.input[0].cur.mouse_move_y = mouseY;
+
+    if (CVar_GetS32("gMouseTouchEnabled", 0) != 1) {
+        mouseX = 0.0f;
+        mouseY = 0.0f;
+    }
+
+    newCamX -= mouseX * 40.0f;
+    newCamY += mouseY * 40.0f;
+
     if ((fabsf(newCamX) >= 15.0f || fabsf(newCamY) >= 15.0f) && camera->play->manualCamera == false) {
         camera->play->manualCamera = true;
 
@@ -1484,8 +1497,19 @@ s32 Camera_Free(Camera* camera) {
 
     camera->animState = 0;
 
-    f32 newCamX = -D_8015BD7C->state.input[0].cur.right_stick_x * 10.0f * (CVar_GetFloat("gCameraSensitivity", 1.0f));
-    f32 newCamY = D_8015BD7C->state.input[0].cur.right_stick_y * 10.0f * (CVar_GetFloat("gCameraSensitivity", 1.0f));
+    int mouseX, mouseY;
+    mouseX = D_8015BD7C->state.input[0].cur.mouse_move_x;
+    mouseY = D_8015BD7C->state.input[0].cur.mouse_move_y;
+
+    if (CVar_GetS32("gMouseTouchEnabled", 0) != 1 || 
+            /* Disable mouse movement when holding down the shield */
+            camera->player->stateFlags1 & 0x400000 ) {
+        mouseX = 0.0f;
+        mouseY = 0.0f;
+    }
+
+    f32 newCamX = (-D_8015BD7C->state.input[0].cur.right_stick_x * 10.0f - (mouseX * 40.0f)) * (CVar_GetFloat("gCameraSensitivity", 1.0f));
+    f32 newCamY = (+D_8015BD7C->state.input[0].cur.right_stick_y * 10.0f + (mouseY * 40.0f)) * (CVar_GetFloat("gCameraSensitivity", 1.0f));
 
     camera->play->camX += newCamX * (CVar_GetS32("gInvertXAxis", 0) ? -1 : 1);
     camera->play->camY += newCamY * (CVar_GetS32("gInvertYAxis", 1) ? 1 : -1);
@@ -1497,7 +1521,7 @@ s32 Camera_Free(Camera* camera) {
         camera->play->camY = -0x228C;
     }
 
-    camera->dist = Camera_LERPCeilF(para1->distTarget, camera->dist, 1.0f / camera->rUpdateRateInv, 0.0f);
+    camera->dist = Camera_LERPCeilF(CVar_GetS32("gCustomCameraDistMax", para1->distTarget), camera->dist, 1.0f / camera->rUpdateRateInv, 0.0f);
     OLib_Vec3fDiffToVecSphGeo(&spA8, at, eyeNext);
 
     spA8.r = camera->dist;
@@ -1669,7 +1693,7 @@ s32 Camera_Normal1(Camera* camera) {
     OLib_Vec3fDiffToVecSphGeo(&eyeAdjustment, at, eyeNext);
 
     camera->dist = eyeAdjustment.r =
-        Camera_ClampDist(camera, eyeAdjustment.r, norm1->distMin, norm1->distMax, anim->unk_28);
+        Camera_ClampDist(camera, eyeAdjustment.r, norm1->distMin, CVar_GetS32("gCustomCameraDistMax", norm1->distMax), anim->unk_28);
 
     if (anim->startSwingTimer <= 0) {
         eyeAdjustment.pitch = atEyeNextGeo.pitch;

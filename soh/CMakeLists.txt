@@ -156,6 +156,7 @@ set(Header_Files__soh__Enhancements
     "soh/Enhancements/bootcommands.h"
     #"soh/Enhancements/cvar.h"
     "soh/Enhancements/debugconsole.h"
+    "soh/Enhancements/enemyrandomizer.h"
     "soh/Enhancements/gameconsole.h"
     "soh/Enhancements/presets.h"
     "soh/Enhancements/savestates.h"
@@ -181,6 +182,7 @@ set(Header_Files__soh__Enhancements__sfx_editor
 source_group("Header Files\\soh\\Enhancements\\sfx-editor" FILES ${Header_Files__soh__Enhancements__sfx_editor})
 
 set(Header_Files__soh__Enhancements__debugger
+    "soh/Enhancements/debugger/dlViewer.h"
     "soh/Enhancements/debugger/actorViewer.h"
     "soh/Enhancements/debugger/colViewer.h"
     "soh/Enhancements/debugger/debugger.h"
@@ -191,9 +193,11 @@ source_group("Header Files\\soh\\Enhancements\\debugger" FILES ${Header_Files__s
 set(Header_Files__soh__Enhancements__randomizer
     "soh/Enhancements/randomizer/randomizer.h"
     "soh/Enhancements/randomizer/randomizer_entrance.h"
+    "soh/Enhancements/randomizer/randomizer_entrance_tracker.h"
     "soh/Enhancements/randomizer/randomizer_grotto.h"
     "soh/Enhancements/randomizer/randomizer_inf.h"
     "soh/Enhancements/randomizer/randomizer_item_tracker.h"
+    "soh/Enhancements/randomizer/randomizer_check_tracker.h"
     "soh/Enhancements/randomizer/adult_trade_shuffle.h"
     "soh/Enhancements/randomizer/randomizer_check_objects.h"
     "soh/Enhancements/randomizer/draw.h"
@@ -288,6 +292,7 @@ source_group("Source Files\\soh" FILES ${Source_Files__soh})
 set(Source_Files__soh__Enhancements
     "soh/Enhancements/bootcommands.c"
     "soh/Enhancements/debugconsole.cpp"
+    "soh/Enhancements/enemyrandomizer.cpp"
     "soh/Enhancements/gameconsole.c"
     "soh/Enhancements/presets.cpp"
     "soh/Enhancements/savestates.cpp"
@@ -311,6 +316,7 @@ set(Source_Files__soh__Enhancements__sfx_editor
 source_group("Source Files\\soh\\Enhancements\\sfx-editor" FILES ${Source_Files__soh__Enhancements__sfx_editor})
 
 set(Source_Files__soh__Enhancements__debugger
+    "soh/Enhancements/debugger/dlViewer.cpp"
     "soh/Enhancements/debugger/actorViewer.cpp"
     "soh/Enhancements/debugger/colViewer.cpp"
     "soh/Enhancements/debugger/debugger.cpp"
@@ -321,8 +327,10 @@ source_group("Source Files\\soh\\Enhancements\\debugger" FILES ${Source_Files__s
 set(Source_Files__soh__Enhancements__randomizer
     "soh/Enhancements/randomizer/randomizer.cpp"
     "soh/Enhancements/randomizer/randomizer_entrance.c"
+    "soh/Enhancements/randomizer/randomizer_entrance_tracker.cpp"
     "soh/Enhancements/randomizer/randomizer_grotto.c"
     "soh/Enhancements/randomizer/randomizer_item_tracker.cpp"
+    "soh/Enhancements/randomizer/randomizer_check_tracker.cpp"
     "soh/Enhancements/randomizer/adult_trade_shuffle.c"
     "soh/Enhancements/randomizer/randomizer_check_objects.cpp"
     "soh/Enhancements/randomizer/draw.cpp"
@@ -1840,6 +1848,7 @@ if(MSVC)
             ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
             ${DEFAULT_CXX_EXCEPTION_HANDLING}
         )
+        target_compile_options(${PROJECT_NAME} PRIVATE  $<$<CONFIG:Debug>:/ZI;>)
     elseif("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
         target_compile_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Debug>:
@@ -1866,11 +1875,11 @@ if(MSVC)
             $<$<CONFIG:Release>:
                 /OPT:REF;
                 /OPT:ICF;
-                /INCREMENTAL:NO
+                /INCREMENTAL:NO;
+                /FORCE:MULTIPLE
             >
             /DEBUG;
-            /SUBSYSTEM:WINDOWS;
-            /FORCE:MULTIPLE
+            /SUBSYSTEM:WINDOWS           
         )
     elseif("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
         target_link_options(${PROJECT_NAME} PRIVATE

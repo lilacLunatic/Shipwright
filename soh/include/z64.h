@@ -1392,6 +1392,7 @@ typedef struct PlayState {
     /* 0x1242B */ u8 unk_1242B;
     /* 0x1242C */ SceneTableEntry* loadedScene;
     /* 0x12430 */ char unk_12430[0xE8];
+                  u8 stairsCount;
 } PlayState; // size = 0x12518
 
 typedef struct {
@@ -1888,7 +1889,6 @@ typedef struct {
     /* 0x0250 */ IrqMgrClient irqClient;
 } SchedContext; // size = 0x258
 
-// ========================
 
 #define OS_SC_RETRACE_MSG       1
 #define OS_SC_DONE_MSG          2

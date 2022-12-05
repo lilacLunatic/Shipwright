@@ -231,6 +231,7 @@ typedef enum {
     GANONSBOSSKEY_LACS_REWARDS,
     GANONSBOSSKEY_LACS_DUNGEONS,
     GANONSBOSSKEY_LACS_TOKENS,
+    GANONSBOSSKEY_FINAL_GS_REWARD,
 } GanonsBossKeySetting;
 
 typedef enum {
@@ -390,6 +391,15 @@ typedef struct {
     uint8_t shuffleOverworldEntrances;
     uint8_t shuffleInteriorEntrances;
     uint8_t shuffleGrottoEntrances;
+    uint8_t shuffleOwlDrops;
+    uint8_t shuffleWarpSongs;
+    uint8_t shuffleOverworldSpawns;
+    uint8_t mixedEntrancePools;
+    uint8_t mixDungeons;
+    uint8_t mixOverworld;
+    uint8_t mixInteriors;
+    uint8_t mixGrottos;
+    uint8_t decoupleEntrances;
     uint8_t bombchusInLogic;
     uint8_t ammoDrops;
     uint8_t heartDropRefill;
@@ -413,6 +423,7 @@ typedef struct {
     uint8_t shuffleFrogSongRupees;
     uint8_t shuffleAdultTradeQuest;
     uint8_t shuffleChestMinigame;
+    uint8_t shuffle100GsReward;
 
     uint8_t mapsAndCompasses;
     uint8_t keysanity;
@@ -897,6 +908,15 @@ void UpdateSettings(std::unordered_map<RandomizerSettingKey, uint8_t> cvarSettin
   extern Option ShuffleOverworldEntrances;
   extern Option ShuffleInteriorEntrances;
   extern Option ShuffleGrottoEntrances;
+  extern Option ShuffleOwlDrops;
+  extern Option ShuffleWarpSongs;
+  extern Option ShuffleOverworldSpawns;
+  extern Option MixedEntrancePools;
+  extern Option MixDungeons;
+  extern Option MixOverworld;
+  extern Option MixInteriors;
+  extern Option MixGrottos;
+  extern Option DecoupleEntrances;
   extern Option BombchusInLogic;
   extern Option AmmoDrops;
   extern Option HeartDropRefill;
@@ -919,6 +939,7 @@ void UpdateSettings(std::unordered_map<RandomizerSettingKey, uint8_t> cvarSettin
   extern Option ShuffleFrogSongRupees;
   extern Option ShuffleAdultTradeQuest;
   extern Option ShuffleChestMinigame;
+  extern Option Shuffle100GSReward;
 
   extern Option MapsAndCompasses;
   extern Option Keysanity;
@@ -1052,6 +1073,7 @@ void UpdateSettings(std::unordered_map<RandomizerSettingKey, uint8_t> cvarSettin
   extern Option StartingWallet;
   extern Option StartingShardOfAgony;
   extern Option StartingDoubleDefense;
+  extern Option StartingBunnyHood;
   extern Option StartingHearts;
   extern Option StartingKokiriEmerald;
   extern Option StartingGoronRuby;

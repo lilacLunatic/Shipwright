@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <regex>
+
 
 #include <ResourceMgr.h>
 #include <DisplayList.h>
@@ -37,7 +39,9 @@
 #include "Enhancements/debugconsole.h"
 #include "Enhancements/debugger/debugger.h"
 #include "Enhancements/randomizer/randomizer.h"
+#include "Enhancements/randomizer/randomizer_entrance_tracker.h"
 #include "Enhancements/randomizer/randomizer_item_tracker.h"
+#include "Enhancements/randomizer/randomizer_check_tracker.h"
 #include "Enhancements/randomizer/3drando/random.hpp"
 #include "Enhancements/gameplaystats.h"
 #include "Enhancements/n64_weird_frame_data.inc"
@@ -176,6 +180,10 @@ bool OTRGlobals::HasOriginal() {
     return hasOriginal;
 }
 
+std::shared_ptr<std::vector<std::string>> OTRGlobals::ListFiles(std::string path) {
+    return context->GetResourceManager()->ListFiles(path);
+}
+
 struct ExtensionEntry {
     std::string path;
     std::string ext;
@@ -191,6 +199,7 @@ extern "C" int AudioPlayer_Buffered(void);
 extern "C" int AudioPlayer_GetDesiredBuffered(void);
 extern "C" void ResourceMgr_CacheDirectory(const char* resName);
 extern "C" SequenceData ResourceMgr_LoadSeqByName(const char* path);
+extern "C" u8 Randomizer_GetSettingValue(RandomizerSettingKey randoSettingKey);
 std::unordered_map<std::string, ExtensionEntry> ExtensionCache;
 
 void OTRAudio_Thread() {
@@ -402,6 +411,21 @@ extern "C" void VanillaItemTable_Init() {
     }
 }
 
+extern "C" char* ResourceMgr_LoadFileFromDisk(const char* filePath, size_t* size) {
+    FILE* file = fopen(filePath, "r");
+    fseek(file, 0, SEEK_END);
+    int fSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char* data = (char*)malloc(fSize);
+    fread(data, 1, fSize, file);
+
+    fclose(file);
+    *size = fSize;
+
+    return data;
+}
+
 extern "C" void OTRExtScanner() {
     auto lst = *OTRGlobals::Instance->context->GetResourceManager()->ListFiles("*.*").get();
 
@@ -412,6 +436,22 @@ extern "C" void OTRExtScanner() {
         replace(nPath.begin(), nPath.end(), '\\', '/');
 
         ExtensionCache[nPath] = { rPath, ext };
+    }
+
+    std::filesystem::path overridesFilePath = Ship::Window::GetPathRelativeToAppDirectory("mods/overrides.txt");
+    if (std::filesystem::exists(overridesFilePath)){
+        size_t s;
+        bool regexResult;
+        std::regex regex("\"(.+)\"\\s+\"(.+\\.(.+))\"");
+        std::smatch match;
+        //char* line = ResourceMgr_LoadFileFromDisk(overridesFilePath.string().c_str(), &s);
+        std::ifstream input(overridesFilePath.string().c_str());
+        for (std::string line; getline( input, line );) {
+            regexResult = std::regex_search(line, match, regex);
+            if (regexResult) {
+                ExtensionCache[match[1].str()] = { match[2].str(), match[3].str()};
+            }
+        }
     }
 }
 
@@ -433,13 +473,16 @@ extern "C" void InitOTR() {
     OTRMessage_Init();
     OTRAudio_Init();
     InitCosmeticsEditor();
+    InitSfxEditor();
     GameControlEditor::Init();
     InitSfxEditor();
     DebugConsole_Init();
     Debug_Init();
     Rando_Init();
     InitItemTracker();
+    InitEntranceTracker();
     InitStatTracker();
+    InitCheckTracker();
     OTRExtScanner();
     VanillaItemTable_Init();
 
@@ -726,20 +769,6 @@ std::shared_ptr<Ship::Resource> ResourceMgr_LoadResource(const char* path) {
 
 extern "C" char* ResourceMgr_LoadFileRaw(const char* resName) {
     return OTRGlobals::Instance->context->GetResourceManager()->LoadFile(resName)->Buffer.get();
-}
-
-extern "C" char* ResourceMgr_LoadFileFromDisk(const char* filePath) {
-    FILE* file = fopen(filePath, "r");
-    fseek(file, 0, SEEK_END);
-    int fSize = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    char* data = (char*)malloc(fSize);
-    fread(data, 1, fSize, file);
-
-    fclose(file);
-
-    return data;
 }
 
 extern "C" char* ResourceMgr_LoadJPEG(char* data, int dataSize)
@@ -1030,8 +1059,9 @@ extern "C" SoundFontSample* ReadCustomSample(const char* path) {
 
     ExtensionEntry entry = ExtensionCache[path];
 
-    auto sampleRaw = OTRGlobals::Instance->context->GetResourceManager()->LoadFile(entry.path);
-    uint32_t* strem = (uint32_t*)sampleRaw->Buffer.get();
+    size_t sampleSize;
+    auto sampleRaw = ResourceMgr_LoadFileFromDisk(entry.path.c_str(), &sampleSize); //OTRGlobals::Instance->context->GetResourceManager()->LoadFile(entry.path);
+    uint32_t* strem = (uint32_t*)sampleRaw;//->Buffer.get();
     uint8_t* strem2 = (uint8_t*)strem;
 
     SoundFontSample* sampleC = new SoundFontSample;
@@ -1041,7 +1071,7 @@ extern "C" SoundFontSample* ReadCustomSample(const char* path) {
         drwav_uint32 sampleRate;
         drwav_uint64 totalPcm;
         drmp3_int16* pcmData =
-            drwav_open_memory_and_read_pcm_frames_s16(strem2, sampleRaw->BufferSize, &channels, &sampleRate, &totalPcm, NULL);
+            drwav_open_memory_and_read_pcm_frames_s16(strem2, sampleSize, &channels, &sampleRate, &totalPcm, NULL);
         sampleC->size = totalPcm;
         sampleC->sampleAddr = (uint8_t*)pcmData;
         sampleC->codec = CODEC_S16;
@@ -1059,7 +1089,7 @@ extern "C" SoundFontSample* ReadCustomSample(const char* path) {
         drmp3_config mp3Info;
         drmp3_uint64 totalPcm;
         drmp3_int16* pcmData =
-            drmp3_open_memory_and_read_pcm_frames_s16(strem2, sampleRaw->BufferSize, &mp3Info, &totalPcm, NULL);
+            drmp3_open_memory_and_read_pcm_frames_s16(strem2, sampleSize, &mp3Info, &totalPcm, NULL);
 
         sampleC->size = totalPcm * mp3Info.channels * sizeof(short);
         sampleC->sampleAddr = (uint8_t*)pcmData;
@@ -1679,6 +1709,10 @@ extern "C" uint32_t OTRGetCurrentHeight() {
     return OTRGlobals::Instance->context->GetCurrentHeight();
 }
 
+extern "C" void OTRMoveCursor(uint32_t x, uint32_t y) {
+    Ship::Window::GetInstance()->MoveCursor(x, y);
+}
+
 extern "C" void OTRControllerCallback(ControllerCallback* controller) {
     auto controlDeck = Ship::Window::GetInstance()->GetControlDeck();
 
@@ -1804,6 +1838,70 @@ extern "C" int GetEquipNowMessage(char* buffer, char* src, const int maxBufferSi
         return copiedCharLen;
     }
     return 0;
+}
+
+extern "C" u8 GetNextChildTradeItem(u8 forward) {
+    std::vector<u8> possibleItems;
+
+    // If talon has not be woken up
+    if (!(gSaveContext.eventChkInf[1] & 0x8)) {
+        if (gSaveContext.sohStats.weirdEggHasHatched) {
+            possibleItems.push_back(ITEM_CHICKEN);
+        // If weird egg hasn't hatched yet but been obtained
+        } else if (gSaveContext.sohStats.hasObtainedWeirdEgg) {
+            possibleItems.push_back(ITEM_WEIRD_EGG);
+        }
+    }
+
+    // Obtained Zelda's Letter
+    if (gSaveContext.eventChkInf[4] & 1) possibleItems.push_back(ITEM_LETTER_ZELDA);
+
+    if (CVar_GetS32("gMaskSelect", 0)) {
+        // If Zelda's letter has been shown to Kak guard or Complete Mask Quest is enabled
+        if (gSaveContext.infTable[7] & 0x80 || Randomizer_GetSettingValue(RSK_COMPLETE_MASK_QUEST)) {
+            // Obtained Keaton Mask
+            if (gSaveContext.itemGetInf[2] & 0x8) possibleItems.push_back(ITEM_MASK_KEATON);
+            // Obtained Skull Mask
+            if (gSaveContext.itemGetInf[2] & 0x10) possibleItems.push_back(ITEM_MASK_SKULL);
+            // Obtained Spooky Mask
+            if (gSaveContext.itemGetInf[2] & 0x20) possibleItems.push_back(ITEM_MASK_SPOOKY);
+            // Obtained Bunny Hood
+            if (gSaveContext.itemGetInf[2] & 0x40) possibleItems.push_back(ITEM_MASK_BUNNY);
+            // Sold All Masks
+            if (gSaveContext.itemGetInf[3] & 0x8000) {
+                possibleItems.push_back(ITEM_MASK_GORON);
+                possibleItems.push_back(ITEM_MASK_ZORA);
+                possibleItems.push_back(ITEM_MASK_GERUDO);
+                possibleItems.push_back(ITEM_MASK_TRUTH);
+            }
+        // Special case for bunny hood, if we want to start with it we don't care about happy mask shop status
+        } else if (Randomizer_GetSettingValue(RSK_STARTING_BUNNY_HOOD)) {
+            if (gSaveContext.itemGetInf[2] & 0x40) possibleItems.push_back(ITEM_MASK_BUNNY);
+        }
+    } else {
+        // If gMaskSelect is disabled and there is an activeMaskItemId, we only want to add that one mask
+        if (gSaveContext.sohStats.activeMaskItemId != 0) possibleItems.push_back(gSaveContext.sohStats.activeMaskItemId);
+    }
+
+    if (possibleItems.size() == 0) {
+        return ITEM_NONE;
+    }
+
+    auto it = find(possibleItems.begin(), possibleItems.end(), INV_CONTENT(ITEM_TRADE_CHILD));
+    // Fall back to 0 if they happen to have an item they aren't supposed to
+    s8 itemIndex = it == possibleItems.end() ? 0 : (it - possibleItems.begin());
+    s8 maxIndex = possibleItems.size() - 1;
+    
+    if (forward) itemIndex++;
+    else itemIndex--;
+
+    if (itemIndex > maxIndex) {
+        itemIndex = 0;
+    } else if (itemIndex < 0) {
+        itemIndex = maxIndex;
+    }
+
+    return possibleItems[itemIndex];
 }
 
 extern "C" void Randomizer_LoadSettings(const char* spoilerFileName) {
@@ -1992,6 +2090,9 @@ extern "C" int CustomMessage_RetrieveIfExists(PlayState* play) {
         } else if (Randomizer_GetSettingValue(RSK_BOMBCHUS_IN_LOGIC) &&
                    (textId == TEXT_BUY_BOMBCHU_10_DESC || textId == TEXT_BUY_BOMBCHU_10_PROMPT)) {
             messageEntry = CustomMessageManager::Instance->RetrieveMessage(customMessageTableID, textId);
+        } else if (Randomizer_GetSettingValue(RSK_SHUFFLE_WARP_SONGS) &&
+                   (textId >= TEXT_WARP_MINUET_OF_FOREST && textId <= TEXT_WARP_PRELUDE_OF_LIGHT)) {
+            messageEntry = OTRGlobals::Instance->gRandomizer->GetWarpSongMessage(textId, false);
         }
     }
     if (textId == TEXT_GS_NO_FREEZE || textId == TEXT_GS_FREEZE) {
@@ -2041,4 +2142,20 @@ extern "C" int CustomMessage_RetrieveIfExists(PlayState* play) {
 
 extern "C" void Overlay_DisplayText(float duration, const char* text) {
     SohImGui::GetGameOverlay()->TextDrawNotification(duration, true, text);
+}
+
+extern "C" void Entrance_ClearEntranceTrackingData(void) {
+    ClearEntranceTrackingData();
+}
+
+extern "C" void Entrance_InitEntranceTrackingData(void) {
+    InitEntranceTrackingData();
+}
+
+extern "C" void EntranceTracker_SetCurrentGrottoID(s16 entranceIndex) {
+    SetCurrentGrottoIDForTracker(entranceIndex);
+}
+
+extern "C" void EntranceTracker_SetLastEntranceOverride(s16 entranceIndex) {
+    SetLastEntranceOverrideForTracker(entranceIndex);
 }

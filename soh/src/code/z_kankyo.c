@@ -1379,6 +1379,7 @@ void Environment_DrawSunAndMoon(PlayState* play) {
         color = CLAMP_MIN(color, 0.0f);
 
         scale = -15.0f * color + 25.0f;
+        scale *= CVar_GetFloat("gCosmetics.Moon_Size", 1.0f);
         Matrix_Scale(scale, scale, scale, MTXMODE_APPLY);
 
         temp = -y / 80.0f;
@@ -1390,8 +1391,14 @@ void Environment_DrawSunAndMoon(PlayState* play) {
             gSPMatrix(POLY_OPA_DISP++, MATRIX_NEWMTX(play->state.gfxCtx), G_MTX_LOAD);
             Gfx_SetupDL_51Opa(play->state.gfxCtx);
             gDPPipeSync(POLY_OPA_DISP++);
-            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 240, 255, 180, alpha);
-            gDPSetEnvColor(POLY_OPA_DISP++, 80, 70, 20, alpha);
+            if (CVar_GetS32("gCosmetics.World_Moon.Changed", 0)) {
+                Color_RGB8 moonColor = CVar_GetRGB("gCosmetics.World_Moon.Value", (Color_RGB8){ 0, 0, 240 });
+                gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, moonColor.r, moonColor.g, moonColor.b, alpha);
+                gDPSetEnvColor(POLY_OPA_DISP++, moonColor.r / 2, moonColor.g / 2, moonColor.b / 2, alpha);
+            } else {
+                gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 240, 255, 180, alpha);
+                gDPSetEnvColor(POLY_OPA_DISP++, 80, 70, 20, alpha);
+            }
             gSPDisplayList(POLY_OPA_DISP++, gMoonDL);
         }
     }
@@ -2094,9 +2101,10 @@ void func_80075B44(PlayState* play) {
                 gSaveContext.bgsDayCount++;
                 gSaveContext.dogIsLost = true;
                 func_80078884(NA_SE_EV_CHICKEN_CRY_M);
-                if ((Inventory_ReplaceItem(play, ITEM_WEIRD_EGG, ITEM_CHICKEN) ||
-                     Inventory_HatchPocketCucco(play)) &&
-                    play->csCtx.state == 0 && !Player_InCsMode(play)) {
+                if (Inventory_ReplaceItem(play, ITEM_WEIRD_EGG, ITEM_CHICKEN) && play->csCtx.state == 0 && !Player_InCsMode(play)) {
+                    gSaveContext.sohStats.weirdEggHasHatched = 1;
+                    Message_StartTextbox(play, 0x3066, NULL);
+                } else if (Inventory_HatchPocketCucco(play) && play->csCtx.state == 0 && !Player_InCsMode(play)) {
                     Message_StartTextbox(play, 0x3066, NULL);
                 }
                 play->envCtx.unk_E0++;

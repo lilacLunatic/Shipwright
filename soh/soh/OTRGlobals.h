@@ -10,6 +10,7 @@
 #include <Window.h>
 #include "Enhancements/savestates.h"
 #include "Enhancements/randomizer/randomizer.h"
+#include <vector>
 
 const std::string customMessageTableID = "BaseGameOverrides";
 
@@ -27,6 +28,7 @@ public:
 
     bool HasMasterQuest();
     bool HasOriginal();
+    std::shared_ptr<std::vector<std::string>> ListFiles(std::string path);
 
 private:
 	void CheckSaveFile(size_t sramSize) const;
@@ -91,6 +93,7 @@ uint64_t osGetTime(void);
 uint32_t osGetCount(void);
 uint32_t OTRGetCurrentWidth(void);
 uint32_t OTRGetCurrentHeight(void);
+void OTRMoveCursor(uint32_t x, uint32_t y); //(RR) for shield
 float OTRGetAspectRatio(void);
 float OTRGetDimensionFromLeftEdge(float v);
 float OTRGetDimensionFromRightEdge(float v);
@@ -108,6 +111,7 @@ void Controller_UnblockGameInput();
 void Hooks_ExecuteAudioInit();
 void* getN64WeirdFrame(s32 i);
 int GetEquipNowMessage(char* buffer, char* src, const int maxBufferSize);
+u8 GetNextChildTradeItem(u8 forward);
 u32 SpoilerFileExists(const char* spoilerFileName);
 Sprite* GetSeedTexture(uint8_t index);
 void Randomizer_LoadSettings(const char* spoilerFileName);
@@ -132,6 +136,10 @@ int CustomMessage_RetrieveIfExists(PlayState* play);
 void Overlay_DisplayText(float duration, const char* text);
 GetItemEntry ItemTable_Retrieve(int16_t getItemID);
 GetItemEntry ItemTable_RetrieveEntry(s16 modIndex, s16 getItemID);
+void Entrance_ClearEntranceTrackingData(void);
+void Entrance_InitEntranceTrackingData(void);
+void EntranceTracker_SetCurrentGrottoID(s16 entranceIndex);
+void EntranceTracker_SetLastEntranceOverride(s16 entranceIndex);
 #endif
 
 #endif
