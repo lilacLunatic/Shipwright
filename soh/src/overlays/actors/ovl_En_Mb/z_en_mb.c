@@ -148,25 +148,85 @@ static ColliderTrisInit sFrontShieldingInit = {
     sFrontShieldingTrisInit,
 };
 
-static ColliderQuadInit sAttackColliderInit = {
+static ColliderTrisElementInit sAttackColliderTrisInit[4] = {
+    {
+        {
+            ELEMTYPE_UNK0,
+            { 0x20000000, 0x00, 0x20 },
+            { 0x00000000, 0x00, 0x00 },
+            TOUCH_ON | TOUCH_SFX_NORMAL,
+            BUMP_NONE,
+            OCELEM_NONE,
+        },
+        { { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, } },
+    },
+    {
+        {
+            ELEMTYPE_UNK0,
+            { 0x20000000, 0x00, 0x20 },
+            { 0x00000000, 0x00, 0x00 },
+            TOUCH_ON | TOUCH_SFX_NORMAL,
+            BUMP_NONE,
+            OCELEM_NONE,
+        },
+        { { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, } },
+    },
+    {
+        {
+            ELEMTYPE_UNK0,
+            { 0x20000000, 0x00, 0x20 },
+            { 0x00000000, 0x00, 0x00 },
+            TOUCH_ON | TOUCH_SFX_NORMAL,
+            BUMP_NONE,
+            OCELEM_NONE,
+        },
+        { { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, } },
+    },
+    {
+        {
+            ELEMTYPE_UNK0,
+            { 0x20000000, 0x00, 0x20 },
+            { 0x00000000, 0x00, 0x00 },
+            TOUCH_ON | TOUCH_SFX_NORMAL,
+            BUMP_NONE,
+            OCELEM_NONE,
+        },
+        { { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, } },
+    },
+};
+
+static ColliderTrisInit sAttackColliderInit = {
     {
         COLTYPE_NONE,
         AT_ON | AT_TYPE_ENEMY,
         AC_NONE,
         OC1_NONE,
         OC2_NONE,
-        COLSHAPE_QUAD,
+        COLSHAPE_TRIS,
     },
-    {
-        ELEMTYPE_UNK0,
-        { 0xFFCFFFFF, 0x00, 0x20 },
-        { 0x00000000, 0x00, 0x00 },
-        TOUCH_ON | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
-        OCELEM_NONE,
-    },
-    { { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } } },
+    4,
+    sAttackColliderTrisInit,
 };
+
+// static ColliderQuadInit sAttackColliderInit = {
+//     {
+//         COLTYPE_NONE,
+//         AT_ON | AT_TYPE_ENEMY,
+//         AC_NONE,
+//         OC1_NONE,
+//         OC2_NONE,
+//         COLSHAPE_QUAD,
+//     },
+//     {
+//         ELEMTYPE_UNK0,
+//         { 0xFFCFFFFF, 0x00, 0x20 },
+//         { 0x00000000, 0x00, 0x00 },
+//         TOUCH_ON | TOUCH_SFX_NORMAL,
+//         BUMP_NONE,
+//         OCELEM_NONE,
+//     },
+//     { { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } } },
+// };
 
 typedef enum {
     /* 0x0 */ ENMB_DMGEFF_IGNORE,
@@ -272,17 +332,19 @@ void EnMb_Init(Actor* thisx, PlayState* play) {
     Collider_SetCylinder(play, &this->hitbox, &this->actor, &sHitboxInit);
     Collider_InitTris(play, &this->frontShielding);
     Collider_SetTris(play, &this->frontShielding, &this->actor, &sFrontShieldingInit, this->frontShieldingTris);
-    Collider_InitQuad(play, &this->attackCollider);
-    Collider_SetQuad(play, &this->attackCollider, &this->actor, &sAttackColliderInit);
+    Collider_InitTris(play, &this->attackCollider);
+    Collider_SetTris(play, &this->attackCollider, &this->actor, &sAttackColliderInit,this->attackColliderTris);
 
     switch (this->actor.params) {
         case ENMB_TYPE_SPEAR_GUARD:
             SkelAnime_InitFlex(play, &this->skelAnime, &gEnMbSpearSkel, &gEnMbSpearStandStillAnim,
                                this->jointTable, this->morphTable, 28);
-            this->actor.colChkInfo.health = 2;
+            Actor_SetScale(&this->actor, 0.02f);
+            this->actor.colChkInfo.health = 4;
             this->actor.colChkInfo.mass = MASS_HEAVY;
             this->maxHomeDist = 1000.0f;
             this->playerDetectionRange = 1750.0f;
+            this->actor.flags &= ~ACTOR_FLAG_0;
             EnMb_SetupSpearGuardLookAround(this);
             break;
         case ENMB_TYPE_CLUB:
@@ -299,7 +361,7 @@ void EnMb_Init(Actor* thisx, PlayState* play) {
             this->actor.uncullZoneScale = 800.0f;
             this->actor.uncullZoneDownward = 1800.0f;
             this->playerDetectionRange = 710.0f;
-            this->attackCollider.info.toucher.dmgFlags = 0x20000000;
+            this->attackCollider.elements[0].info.toucher.dmgFlags = 0x20000000;
 
             relYawFromPlayer =
                 this->actor.world.rot.y - Math_Vec3f_Yaw(&this->actor.world.pos, &player->actor.world.pos);
@@ -337,7 +399,7 @@ void EnMb_Destroy(Actor* thisx, PlayState* play) {
 
     Collider_DestroyTris(play, &this->frontShielding);
     Collider_DestroyCylinder(play, &this->hitbox);
-    Collider_DestroyQuad(play, &this->attackCollider);
+    Collider_DestroyTris(play, &this->attackCollider);
 }
 
 void EnMb_FaceWaypoint(EnMb* this, PlayState* play) {
@@ -802,16 +864,23 @@ void EnMb_SpearGuardPrepareAndCharge(EnMb* this, PlayState* play) {
         this->timer3--;
         Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0xBB8, 0);
     } else {
-        this->actor.speedXZ = 10.0f;
+        this->actor.speedXZ = 12.0f;
         this->attack = ENMB_ATTACK_SPEAR;
+        Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0x600, 0);
         Actor_SpawnFloorDustRing(play, &this->actor, &this->actor.world.pos, 5.0f, 3, 4.0f, 100, 15, false);
         if (prevFrame != (s32)this->skelAnime.curFrame &&
             ((s32)this->skelAnime.curFrame == 2 || (s32)this->skelAnime.curFrame == 6)) {
             Audio_PlayActorSound2(&this->actor, NA_SE_EN_MORIBLIN_DASH);
         }
     }
+    this->actor.shape.rot.y = this->actor.world.rot.y;
 
-    if (relYawTowardsPlayerAbs > 0x1388) {
+    if (this->attackCollider.base.atFlags & AT_HIT)  {
+        this->attackCollider.base.atFlags &= ~AT_HIT;
+        func_8002F71C(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
+        this->attack = ENMB_ATTACK_NONE;
+        EnMb_SetupSpearEndChargeQuick(this);
+    } else if (relYawTowardsPlayerAbs > 0x1500) {
         this->attack = ENMB_ATTACK_NONE;
         EnMb_SetupSpearEndChargeQuick(this);
     }
@@ -1137,12 +1206,12 @@ void EnMb_SpearGuardWalk(EnMb* this, PlayState* play) {
     if (this->timer3 == 0 &&
         Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos) < this->playerDetectionRange) {
         Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0x2EE, 0);
-        this->actor.flags |= ACTOR_FLAG_0;
+        //this->actor.flags |= ACTOR_FLAG_0;
         if (this->actor.xzDistToPlayer < 500.0f && relYawTowardsPlayer < 0x1388) {
             EnMb_SetupSpearPrepareAndCharge(this);
         }
     } else {
-        this->actor.flags &= ~ACTOR_FLAG_0;
+        //this->actor.flags &= ~ACTOR_FLAG_0;
         if (Math_Vec3f_DistXZ(&this->actor.world.pos, &this->actor.home.pos) > this->maxHomeDist || this->timer2 != 0) {
             yawTowardsHome = Math_Vec3f_Yaw(&this->actor.world.pos, &this->actor.home.pos);
             Math_SmoothStepToS(&this->actor.world.rot.y, yawTowardsHome, 1, 0x2EE, 0);
@@ -1329,6 +1398,12 @@ void EnMb_SpearDead(EnMb* this, PlayState* play) {
     }
 }
 
+
+void Matrix_MultVec3fClone(Vec3f* src, Vec3f* dest) {
+    Vec3f vecCopy = *src;
+    Matrix_MultVec3f(&vecCopy,dest);
+}
+
 void EnMb_SpearUpdateAttackCollider(Actor* thisx, PlayState* play) {
     Vec3f quadModel0 = { 1000.0f, 1500.0f, 0.0f };
     Vec3f quadModel1 = { -1000.0f, 1500.0f, 0.0f };
@@ -1345,14 +1420,47 @@ void EnMb_SpearUpdateAttackCollider(Actor* thisx, PlayState* play) {
         quadModel3.x -= 2000.0f;
         quadModel2.z += 4000.0f;
         quadModel3.z += 4000.0f;
+    } else {
+        quadModel0.x += 1000.0f;
+        quadModel0.z = -2000.0f;
+        quadModel1.z = -2000.0f;
+        quadModel2.x += 1000.0f;
+        quadModel1.x -= 1000.0f;
+        quadModel3.x -= 1000.0f;
+        quadModel2.z += 2000.0f;
+        quadModel3.z += 2000.0f;
     }
-    Matrix_MultVec3f(&quadModel0, &this->attackCollider.dim.quad[1]);
-    Matrix_MultVec3f(&quadModel1, &this->attackCollider.dim.quad[0]);
-    Matrix_MultVec3f(&quadModel2, &this->attackCollider.dim.quad[3]);
-    Matrix_MultVec3f(&quadModel3, &this->attackCollider.dim.quad[2]);
-    Collider_SetQuadVertices(&this->attackCollider, &this->attackCollider.dim.quad[0],
-                             &this->attackCollider.dim.quad[1], &this->attackCollider.dim.quad[2],
-                             &this->attackCollider.dim.quad[3]);
+
+    Vec3f quadModel0b = quadModel0;
+    quadModel0b.y += 2000.0f;
+    Vec3f quadModel1b = quadModel1;
+    quadModel1b.y += 2000.0f;
+    Vec3f quadModel2b = quadModel2;
+    quadModel2b.y += 2000.0f;
+    Vec3f quadModel3b = quadModel3;
+    quadModel3b.y += 2000.0f;
+
+    Matrix_MultVec3fClone(&quadModel0,&quadModel0);
+    Matrix_MultVec3fClone(&quadModel1,&quadModel1);
+    Matrix_MultVec3fClone(&quadModel2,&quadModel2);
+    Matrix_MultVec3fClone(&quadModel3,&quadModel3);
+    Matrix_MultVec3fClone(&quadModel0b,&quadModel0b);
+    Matrix_MultVec3fClone(&quadModel1b,&quadModel1b);
+    Matrix_MultVec3fClone(&quadModel2b,&quadModel2b);
+    Matrix_MultVec3fClone(&quadModel3b,&quadModel3b);
+
+    Collider_SetTrisVertices(&this->attackCollider, 0, &quadModel1, &quadModel0, &quadModel3);
+    Collider_SetTrisVertices(&this->attackCollider, 1, &quadModel3, &quadModel0, &quadModel2);
+    Collider_SetTrisVertices(&this->attackCollider, 2, &quadModel1b, &quadModel0b, &quadModel3b);
+    Collider_SetTrisVertices(&this->attackCollider, 3, &quadModel3b, &quadModel0b, &quadModel2b);
+
+    // Matrix_MultVec3f(&quadModel0, &this->attackCollider.dim.quad[1]);
+    // Matrix_MultVec3f(&quadModel1, &this->attackCollider.dim.quad[0]);
+    // Matrix_MultVec3f(&quadModel2, &this->attackCollider.dim.quad[3]);
+    // Matrix_MultVec3f(&quadModel3, &this->attackCollider.dim.quad[2]);
+    // Collider_SetQuadVertices(&this->attackCollider, &this->attackCollider.dim.quad[0],
+    //                          &this->attackCollider.dim.quad[1], &this->attackCollider.dim.quad[2],
+    //                          &this->attackCollider.dim.quad[3]);
 }
 
 void EnMb_ClubUpdateAttackCollider(Actor* thisx, PlayState* play) {
@@ -1362,13 +1470,22 @@ void EnMb_ClubUpdateAttackCollider(Actor* thisx, PlayState* play) {
                                  { 1000.0f, -9000.0f, 2000.0f } };
     EnMb* this = (EnMb*)thisx;
 
-    Matrix_MultVec3f(&quadModel[0], &this->attackCollider.dim.quad[1]);
-    Matrix_MultVec3f(&quadModel[1], &this->attackCollider.dim.quad[0]);
-    Matrix_MultVec3f(&quadModel[2], &this->attackCollider.dim.quad[3]);
-    Matrix_MultVec3f(&quadModel[3], &this->attackCollider.dim.quad[2]);
-    Collider_SetQuadVertices(&this->attackCollider, &this->attackCollider.dim.quad[0],
-                             &this->attackCollider.dim.quad[1], &this->attackCollider.dim.quad[2],
-                             &this->attackCollider.dim.quad[3]);
+    Vec3f quadModel0 = { 0.0f, 0.0f, 0.0f };
+    Vec3f quadModel1 = { 0.0f, 0.0f, 0.0f };
+    Vec3f quadModel2 = { 0.0f, 0.0f, 0.0f };
+    Vec3f quadModel3 = { 0.0f, 0.0f, 0.0f };
+
+    Matrix_MultVec3f(&quadModel[0], &quadModel1);
+    Matrix_MultVec3f(&quadModel[1], &quadModel0);
+    Matrix_MultVec3f(&quadModel[2], &quadModel3);
+    Matrix_MultVec3f(&quadModel[3], &quadModel2);
+    Collider_SetTrisVertices(&this->attackCollider, 0, &quadModel1, &quadModel0, &quadModel3);
+    Collider_SetTrisVertices(&this->attackCollider, 1, &quadModel3, &quadModel0, &quadModel2);
+    Collider_SetTrisVertices(&this->attackCollider, 2, &quadModel1, &quadModel0, &quadModel3);
+    Collider_SetTrisVertices(&this->attackCollider, 3, &quadModel3, &quadModel0, &quadModel2);
+    // Collider_SetQuadVertices(&this->attackCollider, &this->attackCollider.dim.quad[0],
+    //                          &this->attackCollider.dim.quad[1], &this->attackCollider.dim.quad[2],
+    //                          &this->attackCollider.dim.quad[3]);
 }
 
 void EnMb_CheckColliding(EnMb* this, PlayState* play) {

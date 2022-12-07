@@ -45,7 +45,8 @@ typedef struct EnMb {
     /* 0x0360 */ f32 maxHomeDist;
     /* 0x0364 */ f32 playerDetectionRange;
     /* 0x0368 */ ColliderCylinder hitbox;
-    /* 0x03B4 */ ColliderQuad attackCollider; // for attacking the player
+    /* 0x03B4 */ ColliderTris attackCollider; // for attacking the player
+                 ColliderTrisElement attackColliderTris[4];
     /* 0x0434 */ ColliderTris frontShielding; // Moblins don't have shields, but this acts as one
     /* 0x0454 */ ColliderTrisElement frontShieldingTris[2];
 } EnMb; // size = 0x050C
