@@ -784,6 +784,11 @@ void EnSt_Init(Actor* thisx, PlayState* play) {
     Animation_ChangeByInfo(&this->skelAnime, sAnimationInfo, ENST_ANIM_0);
     this->blureIdx = EnSt_CreateBlureEffect(play);
     EnSt_InitColliders(this, play);
+    if (this->actor.params & 4)
+        this->isActivated = false;
+    else
+        this->isActivated = true;
+    this->actor.params &= ~4;
     if (thisx->params == 2) {
         this->actor.flags |= ACTOR_FLAG_7;
     }
@@ -792,6 +797,7 @@ void EnSt_Init(Actor* thisx, PlayState* play) {
     } else {
         this->actor.naviEnemyId = 0x04;
     }
+
     EnSt_CheckCeilingPos(this, play);
     this->actor.flags |= ACTOR_FLAG_14;
     this->actor.flags |= ACTOR_FLAG_24;
@@ -813,7 +819,7 @@ void EnSt_Destroy(Actor* thisx, PlayState* play) {
 }
 
 void EnSt_WaitOnCeiling(EnSt* this, PlayState* play) {
-    if (EnSt_IsCloseToPlayer(this, play)) {
+    if (EnSt_IsCloseToPlayer(this, play) && this->isActivated) {
         EnSt_SetDropAnimAndVel(this);
         EnSt_SetupAction(this, EnSt_MoveToGround);
     } else {
@@ -1007,6 +1013,9 @@ void EnSt_Update(Actor* thisx, PlayState* play) {
     EnSt* this = (EnSt*)thisx;
     s32 pad;
     Color_RGBA8 color = { 0, 0, 0, 0 };
+
+    if (!EnSt_IsCloseToPlayer(this,play))
+        this->isActivated = true;
 
     if (this->actor.flags & ACTOR_FLAG_15) {
         SkelAnime_Update(&this->skelAnime);

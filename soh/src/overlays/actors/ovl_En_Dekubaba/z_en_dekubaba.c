@@ -138,7 +138,7 @@ static ColliderJntSphInit sJntSphInit = {
 
 //Note: EnDekubaba_Init changes the dekubaba's initial health value when it is a Big type baba
 const static u8 BABA_HP_SMALL = 6;
-const static u8 BABA_HP_BIG = BABA_HP_SMALL*2;
+const static u8 BABA_HP_BIG = 10;
 static CollisionCheckInfoInit sColChkInfoInit = { BABA_HP_SMALL, 25, 25, MASS_IMMOVABLE };
 
 typedef enum {

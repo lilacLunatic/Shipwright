@@ -136,14 +136,14 @@ void EnWallmas_Init(Actor* thisx, PlayState* play) {
     this->switchFlag = (u8)(thisx->params >> 0x8);
     thisx->params = thisx->params & 0xFF;
 
-    if (thisx->params == WMT_FLAG) {
+    if (thisx->params == WMT_FLAG  || this->actor.params == WMT_FLAG_TIMED) {
         if (Flags_GetSwitch(play, this->switchFlag) != 0) {
             Actor_Kill(thisx);
             return;
         }
 
         EnWallmas_ProximityOrSwitchInit(this);
-    } else if (thisx->params == WMT_PROXIMITY) {
+    } else if (thisx->params == WMT_PROXIMITY_TIMED || thisx->params == WMT_PROXIMITY) {
         EnWallmas_ProximityOrSwitchInit(this);
     } else {
         EnWallmas_TimerInit(this, play);
@@ -276,7 +276,7 @@ void EnWallmas_ProximityOrSwitchInit(EnWallmas* this) {
     this->timer = 0;
     this->actor.draw = NULL;
     this->actor.flags &= ~ACTOR_FLAG_0;
-    if (this->actor.params == WMT_PROXIMITY) {
+    if (this->actor.params == WMT_PROXIMITY_TIMED || this->actor.params == WMT_PROXIMITY) {
         this->actionFunc = EnWallmas_WaitForProximity;
     } else {
         this->actionFunc = EnWallmas_WaitForSwitchFlag;
@@ -381,7 +381,7 @@ void EnWallmas_ReturnToCeiling(EnWallmas* this, PlayState* play) {
     }
 
     if (this->actor.yDistToPlayer < -900.0f) {
-        if (this->actor.params == WMT_FLAG) {
+        if (this->actor.params == WMT_FLAG || this->actor.params == WMT_FLAG_TIMED) {
             Actor_Kill(&this->actor);
             return;
         }
@@ -483,13 +483,16 @@ void EnWallmas_WaitForProximity(EnWallmas* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
     if (Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos) < 200.0f) {
         EnWallmas_TimerInit(this, play);
+        if (this->actor.params == WMT_PROXIMITY)
+            this->timer = DropTimePlus;
     }
 }
 
 void EnWallmas_WaitForSwitchFlag(EnWallmas* this, PlayState* play) {
     if (Flags_GetSwitch(play, this->switchFlag) != 0) {
         EnWallmas_TimerInit(this, play);
-        this->timer = DropTimePlus;
+        if (this->actor.params == WMT_FLAG)
+            this->timer = DropTimePlus;
     }
 }
 

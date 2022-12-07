@@ -76,6 +76,7 @@ void BgMoriRakkatenjo_Init(Actor* thisx, PlayState* play) {
     this->dyna.bgId = DynaPoly_SetBgActor(play, &play->colCtx.dyna, &this->dyna.actor, colHeader);
     BgMoriRakkatenjo_SetupWaitForMoriTex(this);
     sCamSetting = 0;
+    Flags_UnsetSwitch(play, 0x20+11);//Depresses the floor trigger in the middle of the room on entry
 }
 
 void BgMoriRakkatenjo_Destroy(Actor* thisx, PlayState* play) {
