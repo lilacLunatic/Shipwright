@@ -7,6 +7,7 @@
 #include "objects/gameplay_dangeon_keep/gameplay_dangeon_keep.h"
 #include "objects/object_bdoor/object_bdoor.h"
 #include "soh/frame_interpolation.h"
+#include <limits.h>
 
 #if defined(_MSC_VER) || defined(__GNUC__)
 #include <string.h>
@@ -1568,6 +1569,9 @@ s32 Actor_ActorBIsFacingActorA(Actor* actorA, Actor* actorB, s16 maxAngle) {
  */
 s32 Actor_IsFacingPlayer(Actor* actor, s16 maxAngle) {
     s16 yawDiff = actor->yawTowardsPlayer - actor->shape.rot.y;
+
+    if (yawDiff == SHRT_MIN)//This is important, as otherwise overflow will cause an actor facing directly away from the player to count as facing towards
+        return false;
 
     if (ABS(yawDiff) < maxAngle) {
         return true;
