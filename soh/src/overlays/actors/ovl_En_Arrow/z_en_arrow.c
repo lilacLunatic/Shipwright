@@ -79,7 +79,7 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
         0, 1, 0, { 255, 255, 170, 255 }, { 255, 255, 0, 0 }, 0,
     };
     static u32 dmgFlags[] = {
-        0x00000800, 0x00000020, 0x00000020, 0x00000800, 0x00001000,
+        0x00000800, 0x00004000, 0x00000020, 0x00000800, 0x00001000,
         0x00002000, 0x00010000, 0x00004000, 0x00008000, 0x00000004,
     };
     EnArrow* this = (EnArrow*)thisx;
@@ -198,11 +198,14 @@ void EnArrow_Shoot(EnArrow* this, PlayState* play) {
                 break;
 
             case ARROW_NORMAL_LIT:
-            case ARROW_NORMAL_HORSE:
             case ARROW_NORMAL:
                 func_8002F7DC(&player->actor, NA_SE_IT_ARROW_SHOT);
                 break;
 
+            case ARROW_NORMAL_HORSE:
+                func_8002F7DC(&player->actor, NA_SE_IT_DEKU);
+                break;
+            
             case ARROW_FIRE:
             case ARROW_ICE:
             case ARROW_LIGHT:

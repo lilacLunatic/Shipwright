@@ -73,6 +73,7 @@ void EnMb_SetupSpearGuardLookAround(EnMb* this);
 void EnMb_SetupSpearDamaged(EnMb* this);
 void EnMb_SpearGuardWalk(EnMb* this, PlayState* play);
 void EnMb_SpearGuardPrepareAndCharge(EnMb* this, PlayState* play);
+void EnMb_SpearGuardRunHome(EnMb* this, PlayState* play);
 void EnMb_SpearPatrolPrepareAndCharge(EnMb* this, PlayState* play);
 void EnMb_SpearEndChargeQuick(EnMb* this, PlayState* play);
 void EnMb_Stunned(EnMb* this, PlayState* play);
@@ -115,7 +116,7 @@ static ColliderTrisElementInit sFrontShieldingTrisInit[2] = {
         {
             ELEMTYPE_UNK2,
             { 0x00000000, 0x00, 0x00 },
-            { 0xFFCFFFFF, 0x00, 0x00 },
+            { 0xFFCFBFFF, 0x00, 0x00 },//Vulnerable to 'wind' arrows (here used to indicate arrows fired from speed while mounted)
             TOUCH_NONE,
             BUMP_ON | BUMP_HOOKABLE | BUMP_NO_AT_INFO,
             OCELEM_NONE,
@@ -126,7 +127,7 @@ static ColliderTrisElementInit sFrontShieldingTrisInit[2] = {
         {
             ELEMTYPE_UNK2,
             { 0x00000000, 0x00, 0x00 },
-            { 0xFFCFFFFF, 0x00, 0x00 },
+            { 0xFFCFBFFF, 0x00, 0x00 },
             TOUCH_NONE,
             BUMP_ON | BUMP_HOOKABLE | BUMP_NO_AT_INFO,
             OCELEM_NONE,
@@ -251,7 +252,7 @@ static DamageTable sSpearMoblinDamageTable = {
     /* Fire arrow    */ DMG_ENTRY(2, ENMB_DMGEFF_DEFAULT),
     /* Ice arrow     */ DMG_ENTRY(4, ENMB_DMGEFF_STUN_ICE),
     /* Light arrow   */ DMG_ENTRY(2, ENMB_DMGEFF_DEFAULT),
-    /* Unk arrow 1   */ DMG_ENTRY(4, ENMB_DMGEFF_DEFAULT),
+    /* Unk arrow 1   */ DMG_ENTRY(3, ENMB_DMGEFF_DEFAULT),
     /* Unk arrow 2   */ DMG_ENTRY(2, ENMB_DMGEFF_DEFAULT),
     /* Unk arrow 3   */ DMG_ENTRY(2, ENMB_DMGEFF_DEFAULT),
     /* Fire magic    */ DMG_ENTRY(0, ENMB_DMGEFF_FREEZE),
@@ -286,7 +287,7 @@ static DamageTable sClubMoblinDamageTable = {
     /* Fire arrow    */ DMG_ENTRY(2, ENMB_DMGEFF_DEFAULT),
     /* Ice arrow     */ DMG_ENTRY(4, ENMB_DMGEFF_STUN_ICE),
     /* Light arrow   */ DMG_ENTRY(2, ENMB_DMGEFF_DEFAULT),
-    /* Unk arrow 1   */ DMG_ENTRY(4, ENMB_DMGEFF_DEFAULT),
+    /* Unk arrow 1   */ DMG_ENTRY(3, ENMB_DMGEFF_DEFAULT),
     /* Unk arrow 2   */ DMG_ENTRY(2, ENMB_DMGEFF_DEFAULT),
     /* Unk arrow 3   */ DMG_ENTRY(2, ENMB_DMGEFF_DEFAULT),
     /* Fire magic    */ DMG_ENTRY(0, ENMB_DMGEFF_FREEZE),
@@ -340,7 +341,9 @@ void EnMb_Init(Actor* thisx, PlayState* play) {
             SkelAnime_InitFlex(play, &this->skelAnime, &gEnMbSpearSkel, &gEnMbSpearStandStillAnim,
                                this->jointTable, this->morphTable, 28);
             Actor_SetScale(&this->actor, 0.02f);
-            this->actor.colChkInfo.health = 4;
+            this->hitbox.dim.height = 120;
+            this->hitbox.dim.radius = 40;
+            this->actor.colChkInfo.health = 6;
             this->actor.colChkInfo.mass = MASS_HEAVY;
             this->maxHomeDist = 1000.0f;
             this->playerDetectionRange = 1750.0f;
@@ -499,7 +502,7 @@ void EnMb_FindWaypointTowardsPlayer(EnMb* this, PlayState* play) {
 void EnMb_SetupSpearGuardLookAround(EnMb* this) {
     Animation_MorphToLoop(&this->skelAnime, &gEnMbSpearLookLeftAndRightAnim, -4.0f);
     this->actor.speedXZ = 0.0f;
-    this->timer1 = Rand_S16Offset(30, 50);
+    this->timer1 = Rand_S16Offset(20, 30);
     this->state = ENMB_STATE_IDLE;
     EnMb_SetupAction(this, EnMb_SpearGuardLookAround);
 }
@@ -527,7 +530,9 @@ void EnMb_SetupSpearGuardWalk(EnMb* this) {
     this->actor.speedXZ = WALK_SPEED;
     this->timer1 = Rand_S16Offset(50, 70);
     this->unk_332 = 1;
+    this->direction = 1;
     this->state = ENMB_STATE_WALK;
+    this->yawToWaypoint = this->actor.shape.rot.y;
     EnMb_SetupAction(this, EnMb_SpearGuardWalk);
 }
 
@@ -551,6 +556,8 @@ void EnMb_SetupSpearPrepareAndCharge(EnMb* this) {
     this->timer3 = (s16)frameCount + 6;
     Audio_PlayActorSound2(&this->actor, NA_SE_EN_MORIBLIN_SPEAR_AT);
     if (this->actor.params == ENMB_TYPE_SPEAR_GUARD) {
+        this->timer1 = 20;
+        this->waypointPos = this->actor.world.pos;
         EnMb_SetupAction(this, EnMb_SpearGuardPrepareAndCharge);
     } else {
         EnMb_SetupAction(this, EnMb_SpearPatrolPrepareAndCharge);
@@ -585,6 +592,16 @@ void EnMb_SetupClubAttack(EnMb* this) {
     }
 
     EnMb_SetupAction(this, EnMb_ClubAttack);
+}
+
+void EnMb_SetupSpearReturn(EnMb* this) {
+    Animation_PlayOnce(&this->skelAnime, &gEnMbSpearPrepareChargeAnim);
+    this->state = ENMB_STATE_ATTACK;
+    this->timer1 = 40;
+    this->timer3 = 5;
+    this->waypointPos = this->actor.world.pos;
+    Audio_PlayActorSound2(&this->actor, NA_SE_EN_MORIBLIN_SLIDE);
+    EnMb_SetupAction(this, EnMb_SpearGuardRunHome);
 }
 
 void EnMb_SetupSpearEndChargeQuick(EnMb* this) {
@@ -706,6 +723,18 @@ void EnMb_SpearGuardLookAround(EnMb* this, PlayState* play) {
     }
     if (timer1 == 0 && Animation_OnFrame(&this->skelAnime, 0.0f)) {
         EnMb_SetupSpearGuardWalk(this);
+    }
+
+    s16 relYawTowardsPlayerAbs = this->actor.yawTowardsPlayer - this->actor.shape.rot.y;
+
+    if (relYawTowardsPlayerAbs < 0) {
+        relYawTowardsPlayerAbs = -relYawTowardsPlayerAbs;
+        if (relYawTowardsPlayerAbs < 0)
+            relYawTowardsPlayerAbs= 0x7FFF;
+    }
+
+    if (this->actor.xzDistToPlayer < this->playerDetectionRange && relYawTowardsPlayerAbs < 0x2000) {
+        EnMb_SetupSpearPrepareAndCharge(this);
     }
 }
 
@@ -872,6 +901,60 @@ void EnMb_SpearGuardPrepareAndCharge(EnMb* this, PlayState* play) {
             ((s32)this->skelAnime.curFrame == 2 || (s32)this->skelAnime.curFrame == 6)) {
             Audio_PlayActorSound2(&this->actor, NA_SE_EN_MORIBLIN_DASH);
         }
+
+        if (this->attackCollider.base.atFlags & AT_HIT)  {
+            this->attackCollider.base.atFlags &= ~AT_HIT;
+            func_8002F71C(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
+            this->attack = ENMB_ATTACK_NONE;
+            //EnMb_SetupSpearEndChargeQuick(this);
+            //EnMb_SetupAction(this, EnMb_SpearGuardRunHome);
+            EnMb_SetupSpearReturn(this);
+        } else if (relYawTowardsPlayerAbs > 0x1500) {
+            this->attack = ENMB_ATTACK_NONE;
+            //EnMb_SetupSpearEndChargeQuick(this);
+            //EnMb_SetupAction(this, EnMb_SpearGuardRunHome);
+            EnMb_SetupSpearReturn(this);
+        }
+
+        this->timer1--;
+        if (this->timer1 <= 0) {
+            this->timer1 = 20;
+            if (Math_Vec3f_DistXZ(&this->waypointPos,&this->actor.world.pos) < 100.0f) {
+                this->attack = ENMB_ATTACK_NONE;
+                //EnMb_SetupAction(this, EnMb_SpearGuardRunHome);
+                EnMb_SetupSpearReturn(this);
+            }
+            this->waypointPos = this->actor.world.pos;
+        }
+    }
+
+    this->actor.shape.rot.y = this->actor.world.rot.y;
+}
+
+void EnMb_SpearGuardRunHome(EnMb* this, PlayState* play) {
+    s32 prevFrame;
+    s16 yawTowardsHome = Math_Vec3f_Yaw(&this->actor.world.pos, &this->actor.home.pos);
+    s16 relYawTowardsHome = yawTowardsHome - this->actor.shape.rot.y;
+
+    prevFrame = this->skelAnime.curFrame;
+
+    if (SkelAnime_Update(&this->skelAnime)) {
+        Animation_PlayLoop(&this->skelAnime, &gEnMbSpearChargeAnim);
+        Audio_PlayActorSound2(&this->actor, NA_SE_EN_MORIBLIN_ATTACK);
+    }
+
+    if (this->timer3 != 0) {
+        this->timer3--;
+        Math_SmoothStepToS(&this->actor.world.rot.y, yawTowardsHome, 1, 0xBB8, 0);
+    } else {
+        this->actor.speedXZ = 12.0f;
+        this->attack = ENMB_ATTACK_SPEAR;
+        Math_SmoothStepToS(&this->actor.world.rot.y, yawTowardsHome, 1, 0x600, 0);
+        Actor_SpawnFloorDustRing(play, &this->actor, &this->actor.world.pos, 5.0f, 3, 4.0f, 100, 15, false);
+        if (prevFrame != (s32)this->skelAnime.curFrame &&
+            ((s32)this->skelAnime.curFrame == 2 || (s32)this->skelAnime.curFrame == 6)) {
+            Audio_PlayActorSound2(&this->actor, NA_SE_EN_MORIBLIN_DASH);
+        }
     }
     this->actor.shape.rot.y = this->actor.world.rot.y;
 
@@ -880,9 +963,19 @@ void EnMb_SpearGuardPrepareAndCharge(EnMb* this, PlayState* play) {
         func_8002F71C(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
         this->attack = ENMB_ATTACK_NONE;
         EnMb_SetupSpearEndChargeQuick(this);
-    } else if (relYawTowardsPlayerAbs > 0x1500) {
+    } else if (Math3D_Dist2DSq(this->actor.world.pos.x,this->actor.world.pos.z,this->actor.home.pos.x,this->actor.home.pos.z) < 900.0f) {
         this->attack = ENMB_ATTACK_NONE;
         EnMb_SetupSpearEndChargeQuick(this);
+    }
+
+    this->timer1--;
+    if (this->timer1 <= 0) {
+        this->timer1 = 20;
+        if (Math_Vec3f_DistXZ(&this->waypointPos,&this->actor.world.pos) < 100.0f) {
+            this->attack = ENMB_ATTACK_NONE;
+            EnMb_SetupSpearEndChargeQuick(this);
+        }
+        this->waypointPos = this->actor.world.pos;
     }
 }
 
@@ -1204,17 +1297,24 @@ void EnMb_SpearGuardWalk(EnMb* this, PlayState* play) {
     beforeCurFrame = this->skelAnime.curFrame - playSpeedAbs;
     playSpeedAbs = ABS(this->skelAnime.playSpeed);
     if (this->timer3 == 0 &&
-        Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos) < this->playerDetectionRange) {
+        Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos) < this->playerDetectionRange/2) {
+        //if ()//TODO: MAKE THIS CONDITIONAL ON THE PLAYER MAKING A SOUND
         Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 0x2EE, 0);
+        // else
+        //     Math_SmoothStepToS(&this->actor.world.rot.y, this->yawToWaypoint, 1, 0x2EE, 0);
         //this->actor.flags |= ACTOR_FLAG_0;
-        if (this->actor.xzDistToPlayer < 500.0f && relYawTowardsPlayer < 0x1388) {
+        if (this->actor.xzDistToPlayer < this->playerDetectionRange && relYawTowardsPlayer < 0x1888) {
             EnMb_SetupSpearPrepareAndCharge(this);
         }
     } else {
         //this->actor.flags &= ~ACTOR_FLAG_0;
-        if (Math_Vec3f_DistXZ(&this->actor.world.pos, &this->actor.home.pos) > this->maxHomeDist || this->timer2 != 0) {
+        if (Math_Vec3f_DistXZ(&this->actor.world.pos, &this->actor.home.pos) > this->maxHomeDist /*|| this->timer2 != 0*/) {
+            this->direction = -1;
             yawTowardsHome = Math_Vec3f_Yaw(&this->actor.world.pos, &this->actor.home.pos);
             Math_SmoothStepToS(&this->actor.world.rot.y, yawTowardsHome, 1, 0x2EE, 0);
+        } else {
+            if (this->direction == 1)
+                Math_SmoothStepToS(&this->actor.world.rot.y, this->yawToWaypoint, 1, 0x2EE, 0);
         }
         if (this->timer2 != 0) {
             this->timer2--;
@@ -1223,23 +1323,37 @@ void EnMb_SpearGuardWalk(EnMb* this, PlayState* play) {
             this->timer3--;
         }
         if (this->timer2 == 0) {
-            Audio_PlayActorSound2(&this->actor, NA_SE_EN_MORIBLIN_VOICE);
+            if (this->actor.xzDistToPlayer < this->playerDetectionRange + 500.0f) {
+                Audio_PlayActorSound2(&this->actor, NA_SE_EN_MORIBLIN_VOICE);
+                this->timer2 = 50;
+            }
+
         }
         this->timer1--;
         if (this->timer1 == 0) {
             if (Rand_ZeroOne() > 0.7f) {
                 this->timer1 = Rand_S16Offset(50, 70);
                 this->timer2 = Rand_S16Offset(15, 40);
+                //if (this->direction == -1) {
+                    this->direction = 1;
+                    u16 uRandAngle = (Rand_Next()&0xFFFF);//Chops off higher bits of random int
+                    this->yawToWaypoint = *((s16*)&uRandAngle);//Interprets bits as a signed integer
+                //}
             } else {
                 EnMb_SetupSpearGuardLookAround(this);
             }
+        }
+
+        if (this->actor.xzDistToPlayer < this->playerDetectionRange && relYawTowardsPlayer < 0x1888) {
+            EnMb_SetupSpearPrepareAndCharge(this);
         }
     }
 
     if (prevFrame != (s32)this->skelAnime.curFrame) {
         if ((beforeCurFrame <= 1 && prevFrame + (s32)playSpeedAbs >= 1) ||
             (beforeCurFrame <= 20 && prevFrame + (s32)playSpeedAbs >= 20)) {
-            Audio_PlayActorSound2(&this->actor, NA_SE_EN_MORIBLIN_WALK);
+            if (this->actor.xzDistToPlayer < 2000.0f)
+                Audio_PlayActorSound2(&this->actor, NA_SE_EN_MORIBLIN_WALK);
         }
     }
 
@@ -1335,7 +1449,10 @@ void EnMb_SpearDamaged(EnMb* this, PlayState* play) {
     Math_SmoothStepToF(&this->actor.speedXZ, 0.0f, 1.0f, 0.5f, 0.0f);
     if (SkelAnime_Update(&this->skelAnime)) {
         if (this->actor.params <= ENMB_TYPE_SPEAR_GUARD) {
-            EnMb_SetupSpearGuardLookAround(this);
+            if (this->actor.yDistToPlayer < 2000.0f)
+                EnMb_SetupSpearPrepareAndCharge(this);
+            else
+                EnMb_SetupSpearGuardLookAround(this);
         } else {
             EnMb_SetupSpearPatrolImmediateCharge(this);
         }
@@ -1494,6 +1611,9 @@ void EnMb_CheckColliding(EnMb* this, PlayState* play) {
     if (this->frontShielding.base.acFlags & AC_HIT) {
         this->frontShielding.base.acFlags &= ~(AC_HIT | AC_BOUNCED);
         this->hitbox.base.acFlags &= ~AC_HIT;
+        if (this->actor.params == ENMB_TYPE_SPEAR_GUARD && (this->state == ENMB_STATE_IDLE || this->state == ENMB_STATE_WALK)) {
+            EnMb_SetupSpearPrepareAndCharge(this);
+        }
     } else if ((this->hitbox.base.acFlags & AC_HIT) && this->state >= ENMB_STATE_STUNNED) {
         this->hitbox.base.acFlags &= ~AC_HIT;
         if (this->actor.colChkInfo.damageEffect != ENMB_DMGEFF_IGNORE &&
@@ -1551,7 +1671,7 @@ void EnMb_Update(Actor* thisx, PlayState* play) {
         }
         CollisionCheck_SetOC(play, &play->colChkCtx, &this->hitbox.base);
         if (this->state >= ENMB_STATE_STUNNED &&
-            (thisx->params == ENMB_TYPE_CLUB || this->state != ENMB_STATE_ATTACK)) {
+            (thisx->params == ENMB_TYPE_CLUB || thisx->params == ENMB_TYPE_SPEAR_GUARD || this->state != ENMB_STATE_ATTACK)) {
             CollisionCheck_SetAC(play, &play->colChkCtx, &this->hitbox.base);
         }
         if (this->state >= ENMB_STATE_IDLE) {

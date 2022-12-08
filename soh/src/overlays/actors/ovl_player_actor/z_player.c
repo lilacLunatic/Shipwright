@@ -2177,7 +2177,10 @@ s32 func_80834380(PlayState* play, Player* this, s32* itemPtr, s32* typePtr) {
     if (LINK_IS_ADULT) {
         *itemPtr = ITEM_BOW;
         if (this->stateFlags1 & PLAYER_STATE1_23) {
-            *typePtr = ARROW_NORMAL_HORSE;
+            if (this->rideActor && this->rideActor->speedXZ > 6.0f)
+                *typePtr = ARROW_NORMAL_HORSE;
+            else
+                *typePtr = ARROW_NORMAL;
         } else {
             *typePtr = this->heldItemActionParam - 6;
         }
