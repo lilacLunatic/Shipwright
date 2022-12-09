@@ -327,6 +327,12 @@ s32 EnKz_SetMovedPos(EnKz* this, PlayState* play) {
     this->actor.world.pos.y = lastPointPos->y;
     this->actor.world.pos.z = lastPointPos->z;
 
+    if (SILLY) {
+        this->actor.world.pos.x = this->actor.home.pos.x;
+        this->actor.world.pos.y = this->actor.home.pos.y + 150;
+        this->actor.world.pos.z = this->actor.home.pos.z;
+    }
+
     return 1;
 }
 
@@ -413,7 +419,13 @@ void EnKz_SetupMweep(EnKz* this, PlayState* play) {
     initPos.z += 260.0f;
     Play_CameraSetAtEye(play, this->cutsceneCamera, &pos, &initPos);
     func_8002DF54(play, &this->actor, 8);
-    this->actor.speedXZ = 0.1f * CVar_GetS32("gMweepSpeed", 1);
+    if (SILLY) {
+        this->actor.velocity.y = 0.1f * CVar_GetS32("gMweepSpeed", 1);
+        this->actor.gravity = 0;
+    }
+    else {
+        this->actor.speedXZ = 0.1f * CVar_GetS32("gMweepSpeed", 1);
+    }
     this->actionFunc = EnKz_Mweep;
 }
 
@@ -428,12 +440,16 @@ void EnKz_Mweep(EnKz* this, PlayState* play) {
     initPos.y += -100.0f;
     initPos.z += 260.0f;
     Play_CameraSetAtEye(play, this->cutsceneCamera, &pos, &initPos);
-    if ((EnKz_FollowPath(this, play) == 1) && (this->waypoint == 0)) {
+    if ((EnKz_FollowPath(this, play) == 1) && (this->waypoint == 0) ||
+            (SILLY && (this->actor.world.pos.y - this->actor.home.pos.y >= 150))) {
         Animation_ChangeByInfo(&this->skelanime, sAnimationInfo, ENKZ_ANIM_1);
         Inventory_ReplaceItem(play, ITEM_LETTER_RUTO, ITEM_BOTTLE);
         EnKz_SetMovedPos(this, play);
         gSaveContext.eventChkInf[3] |= 8;
         this->actor.speedXZ = 0.0;
+        if (SILLY){
+            this->actor.velocity.y = 0;
+        }
         this->actionFunc = EnKz_StopMweep;
     }
     if (this->skelanime.curFrame == 13.0f) {
