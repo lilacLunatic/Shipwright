@@ -6,6 +6,7 @@
 
 #include "z_en_elf.h"
 #include "objects/gameplay_keep/gameplay_keep.h"
+#include "overlays/actors/ovl_En_Niw/z_en_niw.h"
 
 #define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5 | ACTOR_FLAG_25)
 
@@ -1426,6 +1427,14 @@ void func_80A053F0(Actor* thisx, PlayState* play) {
         }
 
         if (!Play_InCsMode(play)) {
+            if (SILLY){
+                if (gSaveContext.naviTimer == 3500) {
+                    EnNiw* cucco =
+                        (EnNiw*)Actor_Spawn(&play->actorCtx, play, ACTOR_EN_NIW, player->actor.world.pos.x,
+                                            player->actor.world.pos.y + 2200, player->actor.world.pos.z, 0, 0, 0, 0, 0);
+                    cucco->actionFunc = func_80AB70A0_nocutscene;
+                }
+            }
             if (gSaveContext.naviTimer < 25800) {
                 gSaveContext.naviTimer++;
             } else if (!(this->fairyFlags & 0x80)) {
