@@ -2602,6 +2602,11 @@ static u16 D_808543DC[] = { NA_SE_IT_BOW_FLICK, NA_SE_IT_SLING_FLICK };
 s32 func_808351D4(Player* this, PlayState* play) {
     s32 sp2C;
 
+    if (SILLY && Rand_ZeroOne() <= 0.06){
+        this->actor.focus.rot.y -= (Rand_ZeroOne() - .5) * 10 * 160.0f;
+        this->actor.focus.rot.x -= (Rand_ZeroOne() - .5) * 10 * 160.0f;
+    }
+
     if (!Player_HoldsHookshot(this)) {
         sp2C = 0;
     } else {
