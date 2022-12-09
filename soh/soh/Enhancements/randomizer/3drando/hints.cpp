@@ -794,7 +794,8 @@ void CreateAllHints() {
   if (hintSetting.distTable[static_cast<int>(HintType::Always)].copies > 0) {
     // Only filter locations that had a random item placed at them (e.g. don't get cow locations if shuffle cows is off)
     auto alwaysHintLocations = FilterFromPool(allLocations, [](const uint32_t loc){
-        return Location(loc)->GetHint().GetType() == HintCategory::Always &&
+        return (Location(loc)->GetHint().GetType() == HintCategory::Always ||
+                Location(loc)->GetPlacedItem().GetName().GetEnglish() == "Nayru's Love") &&
                Location(loc)->IsHintable()        && !(Location(loc)->IsHintedAt());
     });
 
