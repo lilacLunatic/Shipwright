@@ -433,15 +433,19 @@ void EnDodongo_BreatheFire(EnDodongo* this, PlayState* play) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_DODO_J_CRY);
     }
     if ((29.0f <= this->skelAnime.curFrame) && (this->skelAnime.curFrame <= 43.0f)) {
+        this->skelAnime.playSpeed = 1.0f;
+        Math_StepToAngleS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 0x400);
+        this->actor.shape.rot.y = this->actor.world.rot.y;
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_DODO_J_FIRE - SFX_FLAG);
         fireFrame = this->skelAnime.curFrame - 29.0f;
         pos = this->actor.world.pos;
         pos.y += 35.0f;
         EnDodongo_ShiftVecRadial(this->actor.world.rot.y, 30.0f, &pos);
-        EnDodongo_ShiftVecRadial(this->actor.world.rot.y, 2.5f, &accel);
+        EnDodongo_ShiftVecRadial(this->actor.world.rot.y, 5.0f, &accel);
         EffectSsDFire_SpawnFixedScale(play, &pos, &velocity, &accel, 255 - (fireFrame * 10), fireFrame + 3);
     } else if ((2.0f <= this->skelAnime.curFrame) && (this->skelAnime.curFrame <= 20.0f)) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_DODO_J_BREATH - SFX_FLAG);
+        this->skelAnime.playSpeed = 2.0f;
     }
     if (SkelAnime_Update(&this->skelAnime)) {
         EnDodongo_SetupEndBreatheFire(this);
