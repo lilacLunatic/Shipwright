@@ -2591,6 +2591,7 @@ void GenerateRandomizerImgui() {
 
     std::unordered_map<RandomizerSettingKey, u8> cvarSettings;
     cvarSettings[RSK_LOGIC_RULES] = CVar_GetS32("gRandomizeLogicRules", RO_LOGIC_GLITCHLESS);
+    cvarSettings[RSK_ALL_LOCATIONS_REACHABLE] = CVar_GetS32("gRandomizeAllLocationsReachable", RO_ALL_LOCATIONS_REACHABLE_ON);
     cvarSettings[RSK_FOREST] = CVar_GetS32("gRandomizeForest", RO_FOREST_CLOSED);
     cvarSettings[RSK_KAK_GATE] = CVar_GetS32("gRandomizeKakarikoGate", RO_KAK_GATE_CLOSED);
     cvarSettings[RSK_DOOR_OF_TIME] = CVar_GetS32("gRandomizeDoorOfTime", RO_DOOROFTIME_CLOSED);
@@ -4042,6 +4043,17 @@ void DrawRandoEditor(bool& open) {
                     "No logic - Item placement is completely random. MAY BE IMPOSSIBLE TO BEAT."
                 );
                 UIWidgets::EnhancementCombobox("gRandomizeLogicRules", randoLogicRules, RO_LOGIC_MAX, RO_LOGIC_GLITCHLESS);
+                if (CVar_GetS32("gRandomizeLogicRules", RO_LOGIC_GLITCHLESS) == RO_LOGIC_GLITCHLESS) {
+                    ImGui::SameLine();
+                    UIWidgets::EnhancementCheckbox(Settings::LocationsReachable.GetName().c_str(), "gRandomizeAllLocationsReachable", false, "", UIWidgets::CheckboxGraphics::Cross, RO_ALL_LOCATIONS_REACHABLE_ON);
+                    UIWidgets::InsertHelpHoverText(
+                        "When this options is enabled, the randomizer will "
+                        "guarantee that every item is obtainable and every "
+                        "location is reachable. When disabled, only "
+                        "required items and locations to beat the game "
+                        "will be guaranteed reachable."
+                    );
+                }
 
                 UIWidgets::PaddedSeparator();
 
@@ -4527,6 +4539,7 @@ void CreateIceTrapRandoMessages() {
                                               IceTrapMessages[i].german, IceTrapMessages[i].french });
     }
 
+    // We only use this ice trap message for christmas, so we don't want it in the normal ice trap messages rotation
     customMessageManager->CreateMessage(Randomizer::IceTrapRandoMessageTableID, NUM_ICE_TRAP_MESSAGES + 1,
                                             { TEXTBOX_TYPE_BLACK, TEXTBOX_POS_BOTTOM,
                                               "This year for Christmas, all&you get is %BCOAL",
