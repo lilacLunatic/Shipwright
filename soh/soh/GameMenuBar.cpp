@@ -382,10 +382,23 @@ namespace GameMenuBar {
                     UIWidgets::PaddedText("Bunny Hood Effect", true, false);
                     const char* bunnyHoodOptions[3] = { "Disabled", "Faster Run & Longer Jump", "Faster Run"};
                     UIWidgets::EnhancementCombobox("gMMBunnyHood", bunnyHoodOptions, 3, 0);
+                    if (ImGui::IsItemHovered()) {
+                        char* textBunny = \
+                        "Wearing the Bunny Hood grants a speed increase like in Majora's Mask. The longer jump option is not accounted for in randomizer logic.\n\n"
+                        "Also disables NPC's reactions to wearing the Bunny Hood.\n";
+                        ImGui::BeginTooltip();
+                        ImGui::Text("%s", UIWidgets::WrappedText(textBunny, 60));
+                        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 50, 50, 255));
+                        ImGui::Text("%s", UIWidgets::WrappedText("this has been cursed", 60));
+                        ImGui::PopStyleColor();
+                        ImGui::EndTooltip();
+                    }
+                    /*
                     UIWidgets::Tooltip(
                         "Wearing the Bunny Hood grants a speed increase like in Majora's Mask. The longer jump option is not accounted for in randomizer logic.\n\n"
                         "Also disables NPC's reactions to wearing the Bunny Hood."
                     );
+                    */
                     UIWidgets::PaddedEnhancementCheckbox("Mask Select in Inventory", "gMaskSelect", true, false);
                     UIWidgets::Tooltip("After completing the mask trading sub-quest, press A and any direction on the mask slot to change masks");
                     UIWidgets::PaddedEnhancementCheckbox("Nuts explode bombs", "gNutsExplodeBombs", true, false);
