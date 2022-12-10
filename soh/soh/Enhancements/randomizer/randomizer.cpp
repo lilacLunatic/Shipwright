@@ -2638,7 +2638,18 @@ void GenerateRandomizerImgui() {
     cvarSettings[RSK_SHUFFLE_GERUDO_MEMBERSHIP_CARD] = CVar_GetS32("gRandomizeShuffleGerudoToken", 0);
     cvarSettings[RSK_SHUFFLE_FROG_SONG_RUPEES] = CVar_GetS32("gRandomizeShuffleFrogSongRupees", 0);
     cvarSettings[RSK_ITEM_POOL] = CVar_GetS32("gRandomizeItemPool", RO_ITEM_POOL_BALANCED);
-    cvarSettings[RSK_ICE_TRAPS] = CVar_GetS32("gRandomizeIceTraps", RO_ICE_TRAPS_NORMAL);
+    if (SILLY) {
+        cvarSettings[RSK_ICE_TRAPS] = CVar_GetS32("gRandomizeIceTraps", RO_ICE_TRAPS_MAYHEM);
+        if (cvarSettings[RSK_ICE_TRAPS] < RO_ICE_TRAPS_MAYHEM) {
+            cvarSettings[RSK_ICE_TRAPS] += 3;
+        }
+        if (cvarSettings[RSK_ICE_TRAPS] > RO_ICE_TRAPS_ONSLAUGHT) {
+            cvarSettings[RSK_ICE_TRAPS] = RO_ICE_TRAPS_ONSLAUGHT;
+        }
+    }
+    else {
+        cvarSettings[RSK_ICE_TRAPS] = CVar_GetS32("gRandomizeIceTraps", RO_ICE_TRAPS_NORMAL);
+    }
     cvarSettings[RSK_GOSSIP_STONE_HINTS] = CVar_GetS32("gRandomizeGossipStoneHints", RO_GOSSIP_STONES_NEED_NOTHING);
     cvarSettings[RSK_HINT_CLARITY] = CVar_GetS32("gRandomizeHintClarity", RO_HINT_CLARITY_CLEAR);
     cvarSettings[RSK_HINT_DISTRIBUTION] = CVar_GetS32("gRandomizeHintDistribution", RO_HINT_DIST_BALANCED);
@@ -3774,24 +3785,37 @@ void DrawRandoEditor(bool& open) {
 
                 // Ice Traps
                 ImGui::Text(Settings::IceTrapValue.GetName().c_str());
-                UIWidgets::InsertHelpHoverText(
-                    "Sets how many items are replaced by ice traps.\n"
-                    "\n"
-                    "Off - No ice traps.\n"
-                    "\n"
-                    "Normal - Only Ice Traps from the base item pool are shuffled in.\n"
-                    "\n"
-                    "Extra - Chance to replace added junk items with additional ice traps.\n"
-                    "\n"
-                    "Mayhem - All added junk items will be Ice Traps.\n"
-                    "\n"
-                    "Onslaught - All junk items will be replaced by Ice Traps, even those "
-                    "in the base pool."
-                );
+                if (SILLY) {
+                    UIWidgets::InsertHelpHoverText(
+                        "Sets how many items are replaced by ice traps.\n"
+                        "\n"
+                        "Mayhem - All added junk items will be Ice Traps.\n"
+                        "\n"
+                        "Onslaught - All junk items will be replaced by Ice Traps, even those "
+                        "in the base pool.\n"
+                        "Have fun, FOOL"
+                    );
+                }
+                else {
+                    UIWidgets::InsertHelpHoverText(
+                        "Sets how many items are replaced by ice traps.\n"
+                        "\n"
+                        "Off - No ice traps.\n"
+                        "\n"
+                        "Normal - Only Ice Traps from the base item pool are shuffled in.\n"
+                        "\n"
+                        "Extra - Chance to replace added junk items with additional ice traps.\n"
+                        "\n"
+                        "Mayhem - All added junk items will be Ice Traps.\n"
+                        "\n"
+                        "Onslaught - All junk items will be replaced by Ice Traps, even those "
+                        "in the base pool."
+                    );
+                }
 #ifndef SILLY
                 UIWidgets::EnhancementCombobox("gRandomizeIceTraps", randoIceTraps, RO_ICE_TRAPS_MAX, RO_ICE_TRAPS_NORMAL);
 #else
-                UIWidgets::EnhancementCombobox("gRandomizeIceTraps", randoIceTraps, 2, RO_ICE_TRAPS_MAYHEM);
+                UIWidgets::EnhancementCombobox("gRandomizeIceTraps", randoIceTraps, 2, RO_ICE_TRAPS_NORMAL);
 #endif
 
                 UIWidgets::PaddedSeparator();
