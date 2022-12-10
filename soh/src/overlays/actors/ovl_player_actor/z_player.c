@@ -184,6 +184,7 @@ void func_8084411C(Player* this, PlayState* play);
 void func_80844708(Player* this, PlayState* play);
 void func_80844A44(Player* this, PlayState* play);
 void func_80844AF4(Player* this, PlayState* play);
+void func_80844E3C(Player* this);
 void func_80844E68(Player* this, PlayState* play);
 void func_80845000(Player* this, PlayState* play);
 void func_80845308(Player* this, PlayState* play);
