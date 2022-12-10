@@ -384,7 +384,7 @@ namespace GameMenuBar {
                     UIWidgets::EnhancementCombobox("gMMBunnyHood", bunnyHoodOptions, 3, 0);
                     if (SILLY) {
                         if (ImGui::IsItemHovered()) {
-                            char* textBunny = \
+                            const char* textBunny = \
                             "Wearing the Bunny Hood grants a speed increase like in Majora's Mask. The longer jump option is not accounted for in randomizer logic.\n\n"
                             "Also disables NPC's reactions to wearing the Bunny Hood.\n";
                             ImGui::BeginTooltip();
@@ -410,7 +410,7 @@ namespace GameMenuBar {
                     UIWidgets::PaddedEnhancementCheckbox("Turn Nayru's Love into Roc's Feather", "gRocsFeather", true, false);
                     if (SILLY) {
                         if (ImGui::IsItemHovered()) {
-                            char* text = "Nayru's Love acts like Roc's Feather from the Indigo romhack instead. Grants a jump that can even be used in the air.";
+                            const char* text = "Nayru's Love acts like Roc's Feather from the Indigo romhack instead. Grants a jump that can even be used in the air.";
                             ImGui::BeginTooltip();
                             ImGui::Text("%s", UIWidgets::WrappedText(text, 60));
                             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 50, 50, 255));
