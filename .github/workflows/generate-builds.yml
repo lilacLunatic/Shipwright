@@ -9,15 +9,12 @@ jobs:
   extract-assets:
     runs-on: [ self-hosted, asset-builder ]
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: true
-    - name: Extract assets
-      run: |
-        cp ../../../ZELOOTD.z64 OTRExporter/baserom_non_mq.z64
-        cmake --no-warn-unused-cli -H. -Bbuild-cmake -GNinja -DCMAKE_BUILD_TYPE:STRING=Release
-        cmake --build build-cmake --target ExtractAssets --config Release
-        zip -r assets.zip soh/assets
+      #- name: Extract assets
+      #  run: |
+      #    #cp ../../../ZELOOTD.z64 OTRExporter/baserom_non_mq.z64
+      #    #cmake --no-warn-unused-cli -H. -Bbuild-cmake -GNinja -DCMAKE_BUILD_TYPE:STRING=Release
+      #    #cmake --build build-cmake --target ExtractAssets --config Release
+      #    zip -r assets.zip soh/assets
     - uses: actions/upload-artifact@v3
       with:
         name: assets
@@ -243,9 +240,6 @@ jobs:
       with:
         name: assets
     - uses: ilammy/msvc-dev-cmd@v1
-    - name: Setup 7-Zip
-      run: |
-        "C:\Program Files\7-Zip" >> $env:GITHUB_PATH
     - name: Build SoH
       run: |
         7z x assets.zip -aoa
