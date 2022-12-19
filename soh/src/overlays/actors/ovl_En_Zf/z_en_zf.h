@@ -129,6 +129,11 @@ typedef struct EnZf {
     /* 0x0504 */ u8 stance;
                  s32 stanceTimer;
                  f32 stanceTransition;
+                 //DEBUG
+                //  Vec3f recordedPosition;
+                //  Vec3s recordedRotation;
+                //  s32 isBelow;
+                 //DEBUG
 } EnZf; // size = 0x0572
 
 #endif

@@ -134,6 +134,8 @@ static ColliderCylinderInit sBodyCylinderInit = {
     { 20, 70, 0, { 0, 0, 0 } },
 };
 
+#define ENZF_STANDARD_DAMAGE 0x08
+
 static ColliderQuadInit sSwordQuadInit = {
     {
         COLTYPE_NONE,
@@ -145,7 +147,7 @@ static ColliderQuadInit sSwordQuadInit = {
     },
     {
         ELEMTYPE_UNK0,
-        { 0xFFCFFFFF, 0x00, 0x08 },
+        { 0xFFCFFFFF, 0x00, ENZF_STANDARD_DAMAGE },
         { 0x00000000, 0x00, 0x00 },
         TOUCH_ON | TOUCH_SFX_NORMAL | TOUCH_UNK7,
         BUMP_ON,
@@ -241,8 +243,16 @@ s32 EnZf_PrimaryFloorCheck(EnZf* this, PlayState* play, f32 dist) {
     this->actor.world.pos.z += cos;
 
     Actor_UpdateBgCheckInfo(play, &this->actor, 0.0f, 0.0f, 0.0f, 0x1C);
-    this->actor.world.pos = curPos;
     ret = !(this->actor.bgCheckFlags & 1);
+    //DEBUG
+    // if (ret) {
+    //     Vec3f zero = {0.0f,0.0f,0.0f};
+    //     Vec3f up = {0.0f,2.0f,0.0f};
+    //     Vec3f highWorld = this->actor.world.pos;
+    //     EffectSsIceSmoke_Spawn(play,&highWorld,&up,&zero,50);//TEST
+    // }
+    //DEBUG
+    this->actor.world.pos = curPos;
     this->actor.bgCheckFlags = curBgCheckFlags;
     return ret;
 }
@@ -274,6 +284,51 @@ s16 EnZf_SecondaryFloorCheck(EnZf* this, PlayState* play, f32 dist) {
     Actor_UpdateBgCheckInfo(play, &this->actor, 0.0f, 0.0f, 0.0f, 0x1C);
     this->actor.world.pos = curPos;
     ret = !(this->actor.bgCheckFlags & 1);
+    this->actor.bgCheckFlags = curBgCheckFlags;
+    return ret;
+}
+
+s32 EnZf_HighJumpCheck(EnZf* this, PlayState* play, f32 dist, f32 height) {
+    s16 ret;
+    s16 curBgCheckFlags;
+    f32 sin;
+    f32 cos;
+    Vec3f curPos;
+
+    if (this->actor.yDistToPlayer < 10.0f)
+        return false;
+
+    if (dist == 0.0f) {
+        dist = ((this->actor.speedXZ >= 0.0f) ? 1.0f : -1.0f);
+        dist = ((this->actor.params >= ENZF_TYPE_LIZALFOS_MINIBOSS_A) ? dist * 45.0f : dist * 30.0f);
+    }
+
+    if (height == 0.0f) {
+        height = 100.0f;
+    }
+
+    // Save currents to restore later
+    curPos = this->actor.world.pos;
+    curBgCheckFlags = this->actor.bgCheckFlags;
+
+    sin = Math_SinS(this->actor.world.rot.y) * dist;
+    cos = Math_CosS(this->actor.world.rot.y) * dist;
+
+    this->actor.world.pos.x += sin;
+    this->actor.world.pos.z += cos;
+    Actor_UpdateBgCheckInfo(play, &this->actor, 0.0f, 0.0f, 0.0f, 0x1C);
+    if ((this->actor.bgCheckFlags & 1) && !(this->actor.bgCheckFlags & 8)) {
+        ret = false;
+    } else {
+        this->actor.world.pos.y += height;
+
+        CollisionPoly* cPol;
+        s32 fBGID;
+        //Actor_UpdateBgCheckInfo(play, &this->actor, height, 0.0f, height+70.0f, 0x1C);
+        f32 floorHeight = BgCheck_EntityRaycastFloor5(play, &play->colCtx, &cPol, &fBGID, &this->actor, &this->actor.world.pos);
+        ret = (!(floorHeight <= BGCHECK_Y_MIN));
+    }
+    this->actor.world.pos = curPos;
     this->actor.bgCheckFlags = curBgCheckFlags;
     return ret;
 }
@@ -359,6 +414,8 @@ void EnZf_Init(Actor* thisx, PlayState* play) {
     this->stance = ENZF_HIGH;
     this->stanceTimer = STICKY_FRAMES;
     this->stanceTransition = 0;
+    //DEBUG
+    // this->isBelow = 0;
 }
 
 void EnZf_Destroy(Actor* thisx, PlayState* play) {
@@ -533,8 +590,16 @@ s16 EnZf_FindNextPlatformTowardsPlayer(Vec3f* pos, s16 curPlatform, s16 arg2, Pl
 
 // Player not targeting this or another EnZf?
 s32 EnZf_CanAttack(PlayState* play, EnZf* this) {
+    return EnZf_CanAttack1(play,this,7);
+}
+
+// Player not targeting this or another EnZf?
+s32 EnZf_CanAttack1(PlayState* play, EnZf* this, s32 timeToHit) {
     Actor* targetedActor;
     Player* player = GET_PLAYER(play);
+
+    if (ABS(player->invincibilityTimer) >= timeToHit)
+        return false;
 
     if (this->stanceTransition > 0)
         return false;
@@ -568,6 +633,12 @@ s32 EnZf_CanAttack(PlayState* play, EnZf* this) {
     return false;
 }
 
+void EnZf_SwitchStance(EnZf* this) {
+    this->stance = !this->stance;
+    this->stanceTransition = 0;
+    this->stanceTimer = STICKY_FRAMES;
+}
+
 void func_80B44DC4(EnZf* this, PlayState* play) {
     s16 angleDiff = this->actor.yawTowardsPlayer - this->actor.shape.rot.y;
 
@@ -596,13 +667,13 @@ s32 EnZf_ChooseAction(PlayState* play, EnZf* this) {
         this->actor.shape.rot.y = this->actor.world.rot.y = this->actor.yawTowardsPlayer;
 
         if ((this->actor.bgCheckFlags & 8) && (ABS(angleToWall) < 0x2EE0) && (this->actor.xzDistToPlayer < 80.0f) &&
-                    EnZf_CanAttack(play, this)) {
+                    EnZf_CanAttack1(play, this, 40)) {
             EnZf_SetupJumpUp(this);
             return true;
         } else if ((this->actor.xzDistToPlayer < 90.0f) && ((play->gameplayFrames % 2) != 0)) {
             EnZf_SetupJumpUp(this);
             return true;
-        } else {
+        } else if (!EnZf_PrimaryFloorCheck(this, play, -180.0f)) {
             EnZf_SetupJumpBack(this);
             return true;
         }
@@ -621,7 +692,7 @@ s32 EnZf_ChooseAction(PlayState* play, EnZf* this) {
                 EnZf_SetupCircleAroundPlayer(this, 4.0f);
                 return true;
             }
-        } else {
+        } else if (!EnZf_PrimaryFloorCheck(this, play, -180.0f)) {
             EnZf_SetupJumpBack(this);
             return true;
         }
@@ -809,6 +880,11 @@ void EnZf_ApproachPlayer(EnZf* this, PlayState* play) {
 
                 temp_v1 = this->actor.wallYaw - this->actor.shape.rot.y;
                 temp_v1 = ABS(temp_v1);
+
+                if ((this->actor.speedXZ > 0.0f) && EnZf_HighJumpCheck(this,play, 40.0f,0.0f)) {
+                    EnZf_SetupJumpUp(this);
+                    return;
+                }
 
                 if ((this->unk_3F8 && (this->actor.speedXZ > 0.0f)) ||
                     ((this->actor.bgCheckFlags & 8) && (temp_v1 >= 0x5C19))) {
@@ -1079,6 +1155,12 @@ void func_80B463E4(EnZf* this, PlayState* play) {
             }
         }
 
+        f32 speedABS = ABS(this->actor.speedXZ);
+        if ((speedABS > 0.0f) && EnZf_HighJumpCheck(this,play, 40.0f,0.0f)) {
+            EnZf_SetupJumpUp(this);
+            return;
+        }
+
         if (this->actor.params >= ENZF_TYPE_LIZALFOS_MINIBOSS_A) { // miniboss
             if (this->unk_3F8) {
                 this->actor.speedXZ = -this->actor.speedXZ;
@@ -1246,6 +1328,9 @@ void EnZf_SetupRecoilFromBlockedSlash(EnZf* this) {
 
     Animation_Change(&this->skelAnime, &gZfSlashAnim, -1.0f, frame, 0.0f, ANIMMODE_ONCE, 0.0f);
     this->action = ENZF_ACTION_RECOIL_FROM_BLOCKED_SLASH;
+    if (this->stance == ENFZ_SIDE && Rand_ZeroOne() > 0.5f) {
+        EnZf_SwitchStance(this);
+    }
     EnZf_SetupAction(this, EnZf_RecoilFromBlockedSlash);
 }
 
@@ -1254,7 +1339,14 @@ void EnZf_RecoilFromBlockedSlash(EnZf* this, PlayState* play) {
         if (Rand_ZeroOne() > 0.7f) {
             func_80B45384(this);
         } else if ((Rand_ZeroOne() > 0.2f) && EnZf_CanAttack(play, this)) {
-            EnZf_SetupSlash(this);
+            if (Rand_ZeroOne() > 0.6f && this->actor.xzDistToPlayer < 100.0f) {
+                EnZf_SetupSlash(this);
+                return;
+             } else {
+                this->actor.world.rot.y = this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
+                EnZf_SetupJumpUp(this);
+                return;
+             }
         } else {
             func_80B483E4(this, play);
         }
@@ -1344,8 +1436,11 @@ void EnZf_SpinDodge(EnZf* this, PlayState* play) {
     if (this->unk_3F0 == 0) {
         this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
         if (!EnZf_DodgeRangedEngaging(play, this)) {
-            if (0 || this->actor.xzDistToPlayer <= 70.0f && EnZf_CanAttack(play,this)) {
-                EnZf_SetupSlash(this);
+            if (this->actor.xzDistToPlayer <= 70.0f && EnZf_CanAttack(play,this)) {
+                if ((EnZf_PrimaryFloorCheck(this, play, 135.0f) || Rand_ZeroOne() < 0.5f))
+                    EnZf_SetupSlash(this);
+                else
+                    EnZf_SetupJumpUp(this);
             } else {
                 func_80B462E4(this, play);
             }
@@ -1368,6 +1463,10 @@ void EnZf_SetupJumpBack(EnZf* this) {
     this->action = ENZF_ACTION_JUMP_BACK;
     this->actor.velocity.y = 15.0f;
     this->actor.speedXZ = -15.0f;
+    //DEBUG
+    //this->recordedPosition = this->actor.world.pos;
+    //this->recordedRotation = this->actor.world.rot;
+    //DEBUG
     Audio_PlayActorSound2(&this->actor, NA_SE_EN_RIZA_JUMP);
     EnZf_SetupAction(this, EnZf_JumpBack);
 }
@@ -1446,7 +1545,8 @@ void EnZf_Stunned(EnZf* this, PlayState* play) {
                     EnZf_SetupJumpUp(this);
                 } else if (!EnZf_DodgeRangedEngaging(play, this)) {
                     if (this->actor.params != ENZF_TYPE_DINOLFOS) {
-                        func_80B44DC4(this, play);
+                        //func_80B44DC4(this, play);
+                        EnZf_SetupCircleAroundPlayer(this,8.0f);
                     } else if ((this->actor.xzDistToPlayer <= 100.0f) && ((play->gameplayFrames % 4) != 0) &&
                                EnZf_CanAttack(play, this)) {
                         EnZf_SetupSlash(this);
@@ -1816,6 +1916,10 @@ void EnZf_SetupJumpUp(EnZf* this) {
     this->action = ENZF_ACTION_JUMP_UP;
     this->actor.velocity.y = 22.0f;
     this->actor.speedXZ = 7.5f;
+    //DEBUG
+    // this->recordedPosition = this->actor.world.pos;
+    // this->recordedRotation = this->actor.world.rot;
+    //DEBUG
     this->stance = 0;
     this->stanceTransition = 0;
     this->stanceTimer = STICKY_FRAMES;
@@ -1840,10 +1944,13 @@ void EnZf_JumpUp(EnZf* this, PlayState* play) {
             this->actor.world.rot.y = this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
             this->actor.speedXZ = 0.0f;
             this->actor.world.pos.y = this->actor.floorHeight;
-            if (EnZf_CanAttack(play, this)) {
+            if (EnZf_CanAttack(play, this) && this->actor.xzDistToPlayer < 100.0f) {
                 EnZf_SetupSlash(this);
                 Audio_PlayActorSound2(&this->actor, NA_SE_EN_RIZA_ATTACK);
-                this->skelAnime.curFrame = 13.0f;
+                this->skelAnime.curFrame = 12.0f;
+            } else if ((isPlayerInSpinAttack(play) && (this->actor.xzDistToPlayer < 100.0f)) ||
+                isPlayerInHorizontalAttack(play) || isPlayerInVerticalAttack(play)) {
+                    EnZf_SetupJumpUp(this);
             } else
                 func_80B483E4(this,play);
         }
@@ -2117,7 +2224,7 @@ void EnZf_UpdateDamage(EnZf* this, PlayState* play) {
             if ((this->actor.colChkInfo.damageEffect == ENZF_DMGEFF_STUN) ||
                 (this->actor.colChkInfo.damageEffect == ENZF_DMGEFF_ICE)) {
                 if (this->action != ENZF_ACTION_STUNNED) {
-                    Actor_SetColorFilter(&this->actor, 0, 120, 0, 80);
+                    Actor_SetColorFilter(&this->actor, 0, 120, 0, 10);
                     Actor_ApplyDamage(&this->actor);
                     EnZf_SetupStunned(this);
                 }
@@ -2171,6 +2278,16 @@ void EnZf_Update(Actor* thisx, PlayState* play) {
         }
 
         Actor_UpdateBgCheckInfo(play, &this->actor, 25.0f, 30.0f, 60.0f, 0x1D);
+
+        //DEBUG
+        // f32 difference;
+        // if (this->actor.world.pos.y < 100.0f && !this->isBelow) {
+        //     difference = sqrt(Math3D_Dist2DSq(this->actor.world.pos.x,this->actor.world.pos.z,this->recordedPosition.x,this->recordedPosition.z));
+        //     this->isBelow = 1;
+        // } else if (this->actor.world.pos.y >= 100.0f && this->isBelow) {
+        //     this->isBelow = 0;
+        // }
+        //DEBUG
 
         if (!(this->actor.bgCheckFlags & 1)) {
             this->hopAnimIndex = 1;
@@ -2232,9 +2349,10 @@ void EnZf_Update(Actor* thisx, PlayState* play) {
         }
     }
 
+    this->swordCollider.info.toucher.dmgFlags = this->stance ? 0x00100000 : 0xFFCFFFFF;
     if ((this->action == ENZF_ACTION_SLASH) && (this->skelAnime.curFrame >= 14.0f) &&
         (this->skelAnime.curFrame <= 20.0f)) {
-        this->swordCollider.info.toucher.dmgFlags = this->stance ? 0x00100000 : 0xFFCFFFFF;
+        
         if ((this->stance == ENFZ_SIDE && this->swordCollider.base.atFlags & AT_BOUNCED) ||
                     this->swordCollider.base.atFlags & AT_HIT)
             Player_SetShieldRecoveryDefault(play);
@@ -2247,16 +2365,37 @@ void EnZf_Update(Actor* thisx, PlayState* play) {
         }
     }
 
+    s16 angleToPlayer = this->actor.yawTowardsPlayer - this->actor.shape.rot.y;
+    if (angleToPlayer == (s16)0x8000)
+        angleToPlayer = (s16)0x7FFF;
+    angleToPlayer = ABS(angleToPlayer);
+    s16 playerAngleDifference = player->actor.shape.rot.y - this->actor.shape.rot.y;
+    if (playerAngleDifference == (s16)0x8000)
+        playerAngleDifference = (s16)0x7FFF;
+    playerAngleDifference = ABS(playerAngleDifference);
+
+    //Make sword attack unblockable if behind player.
+    if (angleToPlayer < 0x4000 && playerAngleDifference < 0x4000 && !Player_IsChildWithHylianShield(player)) {
+        this->swordCollider.info.toucher.dmgFlags = 0x20000000;
+        this->swordCollider.info.toucher.damage = ENZF_STANDARD_DAMAGE*2;
+    } else {
+        this->swordCollider.info.toucher.damage = ENZF_STANDARD_DAMAGE;
+    }
+
     if ((this->action >= ENZF_ACTION_3 && this->action <= ENZF_ACTION_7) || (this->action == ENZF_ACTION_CIRCLE_AROUND_PLAYER)) {
         if (!EnZf_DodgeRangedEngaging(play,this)) {
-            if (isPlayerInHorizontalAttack(play) && (!EnZf_PrimaryFloorCheck(this, play, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)))
+            /*if ((isPlayerInSpinAttack(play) && (this->actor.xzDistToPlayer < 100.0f))) 
+                EnZf_SetupSlash(this);
+            else*/ if ((isPlayerInHorizontalAttack(play) && (!EnZf_PrimaryFloorCheck(this, play, 135.0f) && (this->actor.xzDistToPlayer < 90.0f))) ||
+                        (isPlayerInSpinAttack(play) && (this->actor.xzDistToPlayer < 150.0f) && (this->actor.bgCheckFlags & 0x8)))
                 EnZf_SetupJumpUp(this);
             else if (((isPlayerInHorizontalAttack(play) && (this->actor.xzDistToPlayer < 100.0f)) ||
                         (isPlayerInSpinAttack(play) && (this->actor.xzDistToPlayer < 400.0f)) ||
                         isProjectileNotched(play)) &&
-                    !EnZf_PrimaryFloorCheck(this, play, -160.0f))
-               EnZf_SetupJumpBack(this);
-            else if (isPlayerInStab(play) && Rand_ZeroOne() < 0.5 && (!EnZf_PrimaryFloorCheck(this, play, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)))
+
+                    !EnZf_PrimaryFloorCheck(this, play, -180.0f)) {
+                EnZf_SetupJumpBack(this);
+            } else if (isPlayerInStab(play) && Rand_ZeroOne() < 0.5 && (!EnZf_PrimaryFloorCheck(this, play, 135.0f) && (this->actor.xzDistToPlayer < 90.0f)))
                 EnZf_SetupJumpUp(this);
             else if ((isPlayerInVerticalAttack(play) || isPlayerInStab(play)) && (this->actor.xzDistToPlayer < 120.0f)) {
                 EnZf_SetupSpinDodge(this,play);
@@ -2266,7 +2405,7 @@ void EnZf_Update(Actor* thisx, PlayState* play) {
 
     DECR(this->stanceTimer);
     if ((this->action < ENZF_ACTION_STUNNED && this->action != ENZF_ACTION_SLASH) &&
-        (this->stanceTransition > 0 || (this->stanceTimer <= 0 && Rand_ZeroOne() < 0.05))) {
+        (this->stanceTransition > 0 || (this->stanceTimer <= 0 && (!!(player->stateFlags1 & PLAYER_STATE1_22) ^ this->stance)  && Rand_ZeroOne() < 0.2))) {
         this->stanceTransition++;
 
         if (this->stanceTransition >= TRANSITION_FRAMES) {
@@ -2282,6 +2421,11 @@ s32 EnZf_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* po
     EnZf* this = (EnZf*)thisx;
 
     switch (limbIndex) {
+        case ENZF_LIMB_UPPER_BODY_ROOT:
+            Player* player = GET_PLAYER(play);
+            if (Player_IsChildWithHylianShield(player) || Player_IsInCrouchBlock(player))
+                rot->z += 0x0A00;
+            break;
         case ENZF_LIMB_HEAD_ROOT:
             rot->y -= this->headRot;
             break;
