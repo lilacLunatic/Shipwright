@@ -353,6 +353,10 @@ s32 Player_IsChildWithHylianShield(Player* this) {
     return gSaveContext.linkAge != 0 && (this->currentShield == PLAYER_SHIELD_HYLIAN);
 }
 
+s32 Player_IsInCrouchBlock(Player* this) {
+    return ((this->stateFlags1 & PLAYER_STATE1_22) && ((this->unk_6AE & 0xC1) == 0xC1) && (this->skelAnime.animation == &gPlayerAnim_link_normal_defense_wait));
+}
+
 s32 Player_ActionToModelGroup(Player* this, s32 actionParam) {
     s32 modelGroup = sActionModelGroups[actionParam];
 
@@ -1209,7 +1213,7 @@ void func_80090604(PlayState* play, Player* this, ColliderQuad* collider, Vec3f*
         collider->info.bumper.dmgFlags  = 0x00100000;
     }
 
-    if (this->stateFlags1 & 0x400000 || this->unk_664 != NULL) {
+    if (this->stateFlags1 & 0x400000 || (this->unk_664 != NULL && (this->swordState == 0))) {
         Vec3f quadDest[4];
 
         this->shieldQuad.base.colType = shieldColTypes[this->currentShield];
