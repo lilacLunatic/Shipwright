@@ -465,6 +465,8 @@ void EnFd_Init(Actor* thisx, PlayState* play) {
     this->actor.gravity = -1.0f;
     this->runDir = Rand_ZeroOne() < 0.5f ? -1 : 1;
     this->actor.naviEnemyId = 0x22;
+    this->storedParams = this->actor.params;
+    this->actor.params = 0xFFFF;
     this->actionFunc = EnFd_Reappear;
 }
 
@@ -688,6 +690,9 @@ void EnFd_Update(Actor* thisx, PlayState* play) {
     this->actionFunc(this, play);
     EnFd_UpdateDots(this);
     EnFd_UpdateFlames(this);
+    if ((this->storedParams & 0xF) < 0xF) {
+        this->storedParams = CLAMP(thisx->colChkInfo.health - 1, 0, 23)/8;
+    }
     if (this->actionFunc != EnFd_Reappear && this->actionFunc != EnFd_SpinAndGrow &&
         this->actionFunc != EnFd_WaitForCore) {
         if (this->attackTimer == 0 && this->invincibilityTimer == 0) {

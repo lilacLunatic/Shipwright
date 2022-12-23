@@ -110,6 +110,11 @@ const std::map<u16, std::map<u16, std::vector<std::tuple<int, int, Ship::ActorSp
             {-1, -1, {ACTOR_EN_ST, 2069,720,-3002, 0,-32768,0, 0x4}}
         } },
     } },
+    {SCENE_HIDAN, {
+        {0x18, {
+            {-1, 0, {ACTOR_EN_FD, -2928,2920,139, 0,0,0, 0x0}}
+        } },
+    } },
 };
 
 bool Scene_CommandActorList(PlayState* play, Ship::SceneCommand* cmd) {
