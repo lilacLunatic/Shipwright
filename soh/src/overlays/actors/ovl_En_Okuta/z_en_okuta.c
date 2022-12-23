@@ -201,6 +201,49 @@ void EnOkuta_SpawnRipple(EnOkuta* this, PlayState* play) {
     }
 }
 
+s16 randomizeAim(EnOkuta* this, PlayState* play, f32 *projectedY) {
+    Player* player = GET_PLAYER(play);
+    f32 time;
+    f32 projectedY1;
+    f32 projectedY2;
+    s16 projectedAng = aimToActorMovement(&this->actor,&player->actor,ROCK_SPEED,play,&time,&projectedY1,0.0f);
+    s32 targetMaxSpeed = 6.0f;
+    Vec3f dir = {player->actor.world.pos.x - this->actor.world.pos.x, 0.0f, player->actor.world.pos.z - this->actor.world.pos.z};
+    f32 norm = dir.x*dir.x + dir.z*dir.z;
+    Vec3f normalizedDir = {0.0f,0.0f,0.0f};
+    if (norm > 0.0f) {
+        norm = 1.0f/sqrt(norm);
+        normalizedDir.x = dir.x*norm;
+        normalizedDir.z = dir.z*norm;
+    }
+    else
+        return 0;
+    Vec3f leftDir = {-normalizedDir.z,0.0f,normalizedDir.x};
+
+    f32 velX = Math_SinS(player->actor.world.rot.y) * player->actor.speedXZ;
+    f32 velZ = Math_CosS(player->actor.world.rot.y) * player->actor.speedXZ;
+    f32 projectedX = dir.x+(0.5f*velX+this->randomOffset*leftDir.x)*time;
+    f32 projectedZ = dir.z+(0.5f*velZ+this->randomOffset*leftDir.z)*time;
+
+    Vec3f savedPos = player->actor.world.pos;
+    f32 savedSpeed = player->actor.speedXZ;
+    player->actor.world.pos.x = this->actor.world.pos.x+projectedX;
+    player->actor.world.pos.z = this->actor.world.pos.z+projectedZ;
+    player->actor.speedXZ = 0.0f;
+    s16 projectedAng2 = aimToActorMovement(&this->actor,&player->actor,ROCK_SPEED,play,&time,&projectedY2,0.0f);
+    player->actor.world.pos = savedPos;
+    player->actor.speedXZ = savedSpeed;
+
+    //return this->randomFlag&1 ? projectedAng : (this->randomFlag&2 ? this->actor.yawTowardsPlayer : projectedAng2);
+    if (this->randomFlag&1) {
+        *projectedY = projectedY1;
+        return projectedAng;
+    } else {
+        *projectedY = player->actor.world.pos.y;
+        return  this->actor.yawTowardsPlayer;
+    }
+}
+
 void EnOkuta_SetupWaitToAppear(EnOkuta* this) {
     this->actor.draw = NULL;
     this->actor.flags &= ~ACTOR_FLAG_0;
@@ -211,7 +254,7 @@ void EnOkuta_SetupWaitToAppear(EnOkuta* this) {
 void EnOkuta_SetupAppear(EnOkuta* this, PlayState* play) {
     this->actor.draw = EnOkuta_Draw;
     this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
-    this->actor.flags |= ACTOR_FLAG_0;
+    //this->actor.flags |= ACTOR_FLAG_0;
     Animation_PlayOnce(&this->skelAnime, &gOctorokAppearAnim);
     EnOkuta_SpawnBubbles(this, play);
     this->actionFunc = EnOkuta_Appear;
@@ -234,7 +277,8 @@ void EnOkuta_SetupShoot(EnOkuta* this, PlayState* play) {
     if (this->actionFunc != EnOkuta_Shoot) {
         this->timer = this->numShots;
     }
-    this->jumpHeight = this->actor.yDistToPlayer + 20.0f;
+    randomizeAim(this,play,&this->jumpHeight);
+    this->jumpHeight -= (this->actor.world.pos.y - 20.0f);
     this->jumpHeight = CLAMP_MIN(this->jumpHeight, 10.0f);
     if (this->jumpHeight > 50.0f) {
         EnOkuta_SpawnSplash(this, play);
@@ -344,46 +388,10 @@ void EnOkuta_Hide(EnOkuta* this, PlayState* play) {
     }
 }
 
-
-
-s16 randomizeAim(EnOkuta* this, PlayState* play) {
-    Player* player = GET_PLAYER(play);
-    f32 time;
-    f32 projectedY;
-    s16 projectedAng = aimToActorMovement(&this->actor,&player->actor,ROCK_SPEED,play,&time,&projectedY,0.0f);
-    s32 targetMaxSpeed = 6.0f;
-    Vec3f dir = {player->actor.world.pos.x - this->actor.world.pos.x, 0.0f, player->actor.world.pos.z - this->actor.world.pos.z};
-    f32 norm = dir.x*dir.x + dir.z*dir.z; 
-    Vec3f normalizedDir = {0.0f,0.0f,0.0f};
-    if (norm > 0.0f) {
-        norm = 1.0f/sqrt(norm);
-        normalizedDir.x = dir.x*norm;
-        normalizedDir.z = dir.z*norm;
-    }
-    else
-        return 0;
-    Vec3f leftDir = {-normalizedDir.z,0.0f,normalizedDir.x};
-    
-    f32 velX = Math_SinS(player->actor.world.rot.y) * player->actor.speedXZ;
-    f32 velZ = Math_CosS(player->actor.world.rot.y) * player->actor.speedXZ;
-    f32 projectedX = dir.x+(0.5f*velX+this->randomOffset*leftDir.x)*time;
-    f32 projectedZ = dir.z+(0.5f*velZ+this->randomOffset*leftDir.z)*time;
-    
-    Vec3f savedPos = player->actor.world.pos;
-    f32 savedSpeed = player->actor.speedXZ;
-    player->actor.world.pos.x = this->actor.world.pos.x+projectedX;
-    player->actor.world.pos.z = this->actor.world.pos.z+projectedZ;
-    player->actor.speedXZ = 0.0f;
-    s16 projectedAng2 = aimToActorMovement(&this->actor,&player->actor,ROCK_SPEED,play,&time,&projectedY,0.0f);
-    player->actor.world.pos = savedPos;
-    player->actor.speedXZ = savedSpeed;
-    
-    return this->randomFlag&1 ? projectedAng : (this->randomFlag&2 ? this->actor.yawTowardsPlayer : projectedAng2);
-}
-
 void EnOkuta_WaitToShoot(EnOkuta* this, PlayState* play) {
     s16 temp_v0_2;
     s32 phi_v1;
+    f32 projectedY;
 
     this->actor.world.pos.y = this->actor.home.pos.y;
     SkelAnime_Update(&this->skelAnime);
@@ -398,7 +406,7 @@ void EnOkuta_WaitToShoot(EnOkuta* this, PlayState* play) {
     if (this->actor.xzDistToPlayer < 160.0f || this->actor.xzDistToPlayer > 560.0f) {
         EnOkuta_SetupHide(this);
     } else {
-        temp_v0_2 = Math_SmoothStepToS(&this->actor.shape.rot.y, randomizeAim(this,play), 3, 0x71C, 0x38E);
+        temp_v0_2 = Math_SmoothStepToS(&this->actor.shape.rot.y, randomizeAim(this,play,&projectedY), 3, 0x71C, 0x38E);
         phi_v1 = ABS(temp_v0_2);
         if ((phi_v1 < 0x38E) && (this->timer == 0) && (this->actor.yDistToPlayer < 200.0f)) {
             EnOkuta_SetupShoot(this, play);
@@ -407,7 +415,8 @@ void EnOkuta_WaitToShoot(EnOkuta* this, PlayState* play) {
 }
 
 void EnOkuta_Shoot(EnOkuta* this, PlayState* play) {
-    Math_ApproachS(&this->actor.shape.rot.y, randomizeAim(this,play), 3, 0x71C);
+    f32 projectedY;
+    Math_ApproachS(&this->actor.shape.rot.y, randomizeAim(this,play,&projectedY), 3, 0x71C);
     if (SkelAnime_Update(&this->skelAnime)) {
         if (this->timer != 0) {
             this->timer--;
