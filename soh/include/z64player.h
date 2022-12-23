@@ -672,4 +672,6 @@ typedef struct Player {
                  Vec3f      entryDiff;
 } Player;
 
+
+s32 Player_isRangedWeaponReady(PlayState* play);
 #endif

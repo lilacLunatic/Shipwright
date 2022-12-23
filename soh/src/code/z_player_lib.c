@@ -622,6 +622,10 @@ s32 isProjectileNotched(PlayState* play) {
             this->heldActor != NULL;
 }
 
+s32 isRangedWeaponReady(PlayState* play) {
+    return Player_isRangedWeaponReady(play);
+}
+
 s32 Player_ActionToSword(s32 actionParam) {
     s32 sword = actionParam - PLAYER_AP_FISHING_POLE;
 

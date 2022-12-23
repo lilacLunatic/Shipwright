@@ -1275,6 +1275,13 @@ static LinkAnimationHeader* D_808543D4[] = {
     &gPlayerAnim_link_hook_wait,
 };
 
+s32 Player_isRangedWeaponReady(PlayState* play) {
+    Player* this = GET_PLAYER(play);
+    return (isProjectileNotched(play) || this->skelAnime2.animation == &gPlayerAnim_link_bow_bow_wait || this->skelAnime2.animation == &gPlayerAnim_link_hook_wait ||
+                this->skelAnime2.animation == &gPlayerAnim_link_bow_walk2ready || this->skelAnime2.animation == &gPlayerAnim_link_hook_walk2ready ||
+                this->skelAnime2.animation == &gPlayerAnim_link_bow_bow_ready || this->skelAnime2.animation == &gPlayerAnim_link_bow_bow_shoot_next);
+}
+
 // return type can't be void due to regalloc in func_8084FCAC
 s32 func_80832210(Player* this) {
     this->actor.speedXZ = 0.0f;
@@ -3294,48 +3301,60 @@ void func_80836BEC(Player* this, PlayState* play) {
             }
         }
 
+#define CORSSOVER_DIST 60.0f
+
         if (this->unk_664 != NULL) {
-            switch (this->crossoverState) {
-                case 0://No crossover is occurring yet
-                if (this->unk_664->xzDistToPlayer < 60.0f && this->unk_664->yDistToPlayer < -20.0f) {
-                    this->crossoverState |= 1;
-                    this->entryDiff.x = this->unk_664->prevPos.x - this->actor.world.pos.x;
-                    this->entryDiff.y = this->unk_664->prevPos.y - this->actor.world.pos.y;
-                    this->entryDiff.z = this->unk_664->prevPos.z - this->actor.world.pos.z;
-                }//FALLTHROUGH
-                else
+            if (this->unk_664->id == ACTOR_EN_ZF && this->unk_664->xzDistToPlayer < 30.0f && this->unk_664->yDistToPlayer < -30.0f && (CHECK_BTN_ALL(sControlInput->cur.button, BTN_R)) && (this->unk_664->velocity.y > -15.0f)) {
+                func_8008EDF0(this);//breaks lockon
+            }
+            else{
+                switch (this->crossoverState) {
+                    case 0://No crossover is occurring yet
+                    if (this->unk_664->xzDistToPlayer < CORSSOVER_DIST && this->unk_664->yDistToPlayer < -20.0f) {
+                        this->crossoverState |= 1;
+                        Vec3f backProjection;
+                        Math_Vec3f_Diff(&this->unk_664->prevPos,&this->unk_664->world.pos,&backProjection);
+                        Math_Vec3f_Scale(&backProjection,6.0f);
+                        Math_Vec3f_Sum(&backProjection,&this->unk_664->world.pos,&backProjection);
+                        this->entryDiff.x = this->unk_664->prevPos.x - this->actor.world.pos.x;
+                        this->entryDiff.y = this->unk_664->prevPos.y - this->actor.world.pos.y;
+                        this->entryDiff.z = this->unk_664->prevPos.z - this->actor.world.pos.z;
+                    }//FALLTHROUGH
+                    else
+                        break;
+
+                    case 1:
+                    case 2:
+                    case 3:
+                    if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_R) || !(this->swordState == 0))
+                        this->crossoverState |= 2;
+
+                    if (this->entryDiff.x*(this->unk_664->world.pos.x-this->actor.world.pos.x) +
+                                this->entryDiff.z*(this->unk_664->world.pos.z-this->actor.world.pos.z) < 0.0f) {//Dot product is negative
+                        if (!(this->crossoverState & 2))
+                            this->crossoverState |= 4;
+                        else {
+                            //this->crossoverState = 0;
+                            func_8008EDF0(this);//breaks lockon
+                            break;
+                        }
+                    }
+
+                    if (!this->unk_664->xzDistToPlayer < CORSSOVER_DIST || !this->unk_664->yDistToPlayer < -20.0f) {
+                        this->crossoverState = 0;
+                    }
                     break;
 
-                case 1:
-                case 2:
-                case 3:
-                if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_R) && (this->swordState == 0))
-                    this->crossoverState |= 2;
-
-                if (this->entryDiff.x*(this->unk_664->world.pos.x-this->actor.world.pos.x) +
-                            this->entryDiff.z*(this->unk_664->world.pos.z-this->actor.world.pos.z) < 0.0f) {//Dot product is negative
-                    if (this->crossoverState & 2)
-                        this->crossoverState |= 4;
-                    else {
-                        //this->crossoverState = 0;
-                        func_8008EDF0(this);//breaks lockon
-                        break;
+                    case 5:
+                    case 6:
+                    case 7:
+                    if (!this->unk_664->xzDistToPlayer < CORSSOVER_DIST || !this->unk_664->yDistToPlayer < -20.0f) {
+                        this->crossoverState = 0;
                     }
+                    break;
                 }
-
-                if (!this->unk_664->xzDistToPlayer < 60.0f || !this->unk_664->yDistToPlayer < -20.0f) {
-                    this->crossoverState = 0;
-                }
-                break;
-
-                case 5:
-                case 6:
-                case 7:
-                if (!this->unk_664->xzDistToPlayer < 60.0f || !this->unk_664->yDistToPlayer < -20.0f) {
-                    this->crossoverState = 0;
-                }
-                break;
             }
+
         }
         else {
             this->crossoverState = 0;
