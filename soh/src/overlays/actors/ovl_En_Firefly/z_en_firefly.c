@@ -111,7 +111,7 @@ static DamageTable sDamageTable = {
     /* Unknown 2     */ DMG_ENTRY(0, 0x0),
 };
 
-static const SPEED_MULTIPLIER = 2.0F;
+static const f32 SPEED_MULTIPLIER = 1.6f;
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 5, ICHAIN_CONTINUE),  ICHAIN_F32_DIV1000(gravity, -500, ICHAIN_CONTINUE),
@@ -234,7 +234,7 @@ void EnFirefly_SetupRebound(EnFirefly* this) {
     this->actor.world.rot.x = 0x7000;
     this->timer = 18;
     this->skelAnime.playSpeed = SPEED_MULTIPLIER;
-    this->actor.speedXZ = 2.5f;
+    this->actor.speedXZ = 2.5f*SPEED_MULTIPLIER;
     this->actionFunc = EnFirefly_Rebound;
 }
 
@@ -414,7 +414,7 @@ void EnFirefly_FlyIdle(EnFirefly* this, PlayState* play) {
     if (this->actor.bgCheckFlags & 8) {
         Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.wallYaw, 2, 0xC00, 0x300);
     }
-    if ((this->timer == 0) && (this->actor.xzDistToPlayer < 200.0f) &&
+    if ((this->timer == 0) && (this->actor.xzDistToPlayer < 250.0f) &&
         (Player_GetMask(play) != PLAYER_MASK_SKULL)) {
         EnFirefly_SetupDiveAttack(this);
     }
@@ -692,6 +692,9 @@ void EnFirefly_Update(Actor* thisx, PlayState* play2) {
         }
         if (this->actionFunc != EnFirefly_DisturbDiveAttack && !(this->collider.base.atFlags & 4)) {
             EnFirefly_SetupRebound(this);
+        } else if (this->actionFunc == EnFirefly_DiveAttack || this->actionFunc == EnFirefly_DisturbDiveAttack) {
+            EnFirefly_SetupDisturbDiveAttack(this);
+            this->actor.world.rot.y = this->actor.shape.rot.y = this->actor.yawTowardsPlayer+0x8000;
         }
     }
 
