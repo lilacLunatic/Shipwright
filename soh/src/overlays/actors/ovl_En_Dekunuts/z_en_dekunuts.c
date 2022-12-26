@@ -5,6 +5,7 @@
  */
 
 #include "z_en_dekunuts.h"
+#include "overlays/actors/ovl_En_Nutsball/z_en_nutsball.h"
 #include "overlays/effects/ovl_Effect_Ss_Hahen/z_eff_ss_hahen.h"
 #include "objects/object_dekunuts/object_dekunuts.h"
 
@@ -68,7 +69,7 @@ static CollisionCheckInfoInit sColChkInfoInit = { 0x01, 0x0012, 0x0020, MASS_IMM
 static DamageTable sDamageTable = {
     /* Deku nut      */ DMG_ENTRY(0, 0x1),
     /* Deku stick    */ DMG_ENTRY(2, 0x0),
-    /* Slingshot     */ DMG_ENTRY(1, 0x0),
+    /* Slingshot     */ DMG_ENTRY(0, 0x0),
     /* Explosive     */ DMG_ENTRY(2, 0x0),
     /* Boomerang     */ DMG_ENTRY(1, 0x0),
     /* Normal arrow  */ DMG_ENTRY(2, 0x0),
@@ -100,6 +101,11 @@ static DamageTable sDamageTable = {
     /* Unknown 2     */ DMG_ENTRY(0, 0x0),
 };
 
+const static f32 BURROW_DIST_CLOSE = 160.0f;
+const static f32 BURROW_DIST_MID = 300.0f;
+const static f32 BURROW_DIST_FAR = 580.0f;
+const static f32 BURROW_DIST_VERY_FAR = 620.0f;
+
 static InitChainEntry sInitChain[] = {
     ICHAIN_S8(naviEnemyId, 0x4D, ICHAIN_CONTINUE),
     ICHAIN_F32(gravity, -1, ICHAIN_CONTINUE),
@@ -120,7 +126,7 @@ void EnDekunuts_Init(Actor* thisx, PlayState* play) {
         Collider_InitCylinder(play, &this->collider);
         Collider_SetCylinder(play, &this->collider, &this->actor, &sCylinderInit);
         CollisionCheck_SetInfo(&thisx->colChkInfo, &sDamageTable, &sColChkInfoInit);
-        this->shotsPerRound = ((thisx->params >> 8) & 0xFF);
+        this->shotsPerRound = ((thisx->params >> 8) & 0xFF)+1;
         thisx->params &= 0xFF;
         if ((this->shotsPerRound == 0xFF) || (this->shotsPerRound == 0)) {
             this->shotsPerRound = 1;
@@ -252,10 +258,10 @@ void EnDekunuts_Wait(EnDekunuts* this, PlayState* play) {
     }
 
     this->collider.dim.height = ((CLAMP(this->skelAnime.curFrame, 9.0f, 12.0f) - 9.0f) * 9.0f) + 5.0f;
-    if (!hasSlowPlaybackSpeed && (this->actor.xzDistToPlayer < 120.0f)) {
+    if (!hasSlowPlaybackSpeed && (this->actor.xzDistToPlayer < BURROW_DIST_CLOSE)) {
         EnDekunuts_SetupBurrow(this);
     } else if (SkelAnime_Update(&this->skelAnime)) {
-        if (this->actor.xzDistToPlayer < 120.0f) {
+        if (this->actor.xzDistToPlayer < BURROW_DIST_CLOSE) {
             EnDekunuts_SetupBurrow(this);
         } else if ((this->animFlagAndTimer == 0) && (this->actor.xzDistToPlayer > 320.0f)) {
             EnDekunuts_SetupLookAround(this);
@@ -265,7 +271,7 @@ void EnDekunuts_Wait(EnDekunuts* this, PlayState* play) {
     }
     if (hasSlowPlaybackSpeed &&
         ((this->actor.xzDistToPlayer > 160.0f) && (fabsf(this->actor.yDistToPlayer) < 120.0f)) &&
-        ((this->animFlagAndTimer == 0) || (this->actor.xzDistToPlayer < 480.0f))) {
+        ((this->animFlagAndTimer == 0) || (this->actor.xzDistToPlayer < BURROW_DIST_FAR))) {
         this->skelAnime.playSpeed = 1.0f;
     }
 }
@@ -275,7 +281,7 @@ void EnDekunuts_LookAround(EnDekunuts* this, PlayState* play) {
     if (Animation_OnFrame(&this->skelAnime, 0.0f) && (this->animFlagAndTimer != 0)) {
         this->animFlagAndTimer--;
     }
-    if ((this->actor.xzDistToPlayer < 120.0f) || (this->animFlagAndTimer == 0)) {
+    if ((this->actor.xzDistToPlayer < BURROW_DIST_CLOSE) || (this->animFlagAndTimer == 0)) {
         EnDekunuts_SetupBurrow(this);
     }
 }
@@ -286,10 +292,10 @@ void EnDekunuts_Stand(EnDekunuts* this, PlayState* play) {
         this->animFlagAndTimer--;
     }
     if (!(this->animFlagAndTimer & 0x1000)) {
-        Math_ApproachS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 2, 0xE38);
+        Math_ApproachS(&this->actor.shape.rot.y, aimToPlayerMovement(this, NUTS_SPEED, play), 2, 0xE38);
     }
     if (this->animFlagAndTimer == 0x1000) {
-        if ((this->actor.xzDistToPlayer > 480.0f) || (this->actor.xzDistToPlayer < 120.0f)) {
+        if ((this->actor.xzDistToPlayer > BURROW_DIST_FAR) || (this->actor.xzDistToPlayer < BURROW_DIST_CLOSE)) {
             EnDekunuts_SetupBurrow(this);
         } else {
             EnDekunuts_SetupThrowNut(this);
@@ -302,7 +308,7 @@ void EnDekunuts_Stand(EnDekunuts* this, PlayState* play) {
 void EnDekunuts_ThrowNut(EnDekunuts* this, PlayState* play) {
     Vec3f spawnPos;
 
-    Math_ApproachS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 2, 0xE38);
+    Math_ApproachS(&this->actor.shape.rot.y, aimToPlayerMovement(this, NUTS_SPEED, play), 2, 0xE38);
     if (SkelAnime_Update(&this->skelAnime)) {
         EnDekunuts_SetupStand(this);
     } else if (Animation_OnFrame(&this->skelAnime, 6.0f)) {
@@ -313,7 +319,9 @@ void EnDekunuts_ThrowNut(EnDekunuts* this, PlayState* play) {
                         this->actor.shape.rot.x, this->actor.shape.rot.y, this->actor.shape.rot.z, 0, true) != NULL) {
             Audio_PlayActorSound2(&this->actor, NA_SE_EN_NUTS_THROW);
         }
-    } else if ((this->animFlagAndTimer > 1) && Animation_OnFrame(&this->skelAnime, 12.0f)) {
+    } else if ((this->actor.xzDistToPlayer > BURROW_DIST_VERY_FAR) || (this->actor.xzDistToPlayer < BURROW_DIST_CLOSE)) {
+        EnDekunuts_SetupBurrow(this);
+    }else if ((this->animFlagAndTimer > 1) && Animation_OnFrame(&this->skelAnime, 12.0f)) {
         Animation_MorphToPlayOnce(&this->skelAnime, &gDekuNutsSpitAnim, -3.0f);
         if (this->animFlagAndTimer != 0) {
             this->animFlagAndTimer--;
@@ -337,7 +345,7 @@ void EnDekunuts_Burrow(EnDekunuts* this, PlayState* play) {
 void EnDekunuts_BeginRun(EnDekunuts* this, PlayState* play) {
     if (SkelAnime_Update(&this->skelAnime)) {
         this->runDirection = this->actor.yawTowardsPlayer + 0x8000;
-        this->runAwayCount = 3;
+        this->runAwayCount = 2;
         EnDekunuts_SetupRun(this);
     }
     Math_ApproachS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 2, 0xE38);
@@ -366,6 +374,10 @@ void EnDekunuts_Run(EnDekunuts* this, PlayState* play) {
         } else if (this->actor.bgCheckFlags & 8) {
             this->runDirection = this->actor.wallYaw;
         } else if (this->runAwayCount == 0) {
+            Math_Vec3f_Copy(&this->actor.home.pos, &this->actor.world.pos);
+            if (this->actor.child != NULL) {
+                Math_Vec3f_Copy(&this->actor.child->world.pos, &this->actor.world.pos);
+            }
             diffRotInit = Actor_WorldYawTowardPoint(&this->actor, &this->actor.home.pos);
             diffRot = diffRotInit - this->actor.yawTowardsPlayer;
             if (ABS(diffRot) > 0x2000) {

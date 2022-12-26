@@ -116,6 +116,12 @@ static InitChainEntry sInitChain[] = {
     ICHAIN_F32_DIV1000(gravity, -1500, ICHAIN_STOP),
 };
 
+const s16 InitialTime = 0x82;
+const s16 DropTime = 0x10;
+const s16 DropTimePlus = DropTime + 1;
+const f32 ScaleFactor = 0x50/DropTime;
+const s16 TakePlayerTime = 0x1E;
+
 void EnWallmas_Init(Actor* thisx, PlayState* play) {
     EnWallmas* this = (EnWallmas*)thisx;
 
@@ -130,14 +136,14 @@ void EnWallmas_Init(Actor* thisx, PlayState* play) {
     this->switchFlag = (u8)(thisx->params >> 0x8);
     thisx->params = thisx->params & 0xFF;
 
-    if (thisx->params == WMT_FLAG) {
+    if (thisx->params == WMT_FLAG  || this->actor.params == WMT_FLAG_TIMED) {
         if (Flags_GetSwitch(play, this->switchFlag) != 0) {
             Actor_Kill(thisx);
             return;
         }
 
         EnWallmas_ProximityOrSwitchInit(this);
-    } else if (thisx->params == WMT_PROXIMITY) {
+    } else if (thisx->params == WMT_PROXIMITY_TIMED || thisx->params == WMT_PROXIMITY) {
         EnWallmas_ProximityOrSwitchInit(this);
     } else {
         EnWallmas_TimerInit(this, play);
@@ -155,7 +161,7 @@ void EnWallmas_TimerInit(EnWallmas* this, PlayState* play) {
 
     this->actor.flags &= ~ACTOR_FLAG_0;
     this->actor.flags |= ACTOR_FLAG_5;
-    this->timer = 0x82;
+    this->timer = InitialTime;
     this->actor.velocity.y = 0.0f;
     this->actor.world.pos.y = player->actor.world.pos.y;
     this->actor.floorHeight = player->actor.floorHeight;
@@ -257,7 +263,7 @@ void EnWallmas_SetupDie(EnWallmas* this, PlayState* play) {
 
 void EnWallmas_SetupTakePlayer(EnWallmas* this, PlayState* play) {
     Animation_MorphToPlayOnce(&this->skelAnime, &gWallmasterHoverAnim, -5.0f);
-    this->timer = -0x1E;
+    this->timer = -TakePlayerTime;
     this->actionFunc = EnWallmas_TakePlayer;
     this->actor.speedXZ = 0.0f;
     this->actor.velocity.y = 0.0f;
@@ -271,7 +277,7 @@ void EnWallmas_ProximityOrSwitchInit(EnWallmas* this) {
     this->timer = 0;
     this->actor.draw = NULL;
     this->actor.flags &= ~ACTOR_FLAG_0;
-    if (this->actor.params == WMT_PROXIMITY) {
+    if (this->actor.params == WMT_PROXIMITY_TIMED || this->actor.params == WMT_PROXIMITY) {
         this->actionFunc = EnWallmas_WaitForProximity;
     } else {
         this->actionFunc = EnWallmas_WaitForSwitchFlag;
@@ -308,10 +314,10 @@ void EnWallmas_WaitToDrop(EnWallmas* this, PlayState* play) {
     if ((player->stateFlags1 & 0x100000) || (player->stateFlags1 & 0x8000000) || !(player->actor.bgCheckFlags & 1) ||
         ((this->actor.params == 1) && (320.0f < Math_Vec3f_DistXZ(&this->actor.home.pos, playerPos)))) {
         Audio_StopSfxById(NA_SE_EN_FALL_AIM);
-        this->timer = 0x82;
+        this->timer = InitialTime;
     }
 
-    if (this->timer == 0x50) {
+    if (this->timer == DropTime) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_FALL_AIM);
     }
 
@@ -376,7 +382,7 @@ void EnWallmas_ReturnToCeiling(EnWallmas* this, PlayState* play) {
     }
 
     if (this->actor.yDistToPlayer < -900.0f) {
-        if (this->actor.params == WMT_FLAG) {
+        if (this->actor.params == WMT_FLAG || this->actor.params == WMT_FLAG_TIMED) {
             Actor_Kill(&this->actor);
             return;
         }
@@ -449,7 +455,7 @@ void EnWallmas_TakePlayer(EnWallmas* this, PlayState* play) {
             player->actor.world.pos.y = this->actor.world.pos.y - 50.0f;
         }
 
-        if (this->timer == -0x1E) {
+        if (this->timer == -TakePlayerTime) {
             if (!LINK_IS_ADULT) {
                 func_8002F7DC(&this->actor, NA_SE_VO_LI_TAKEN_AWAY_KID);
             } else {
@@ -468,7 +474,7 @@ void EnWallmas_TakePlayer(EnWallmas* this, PlayState* play) {
     Math_StepToF(&this->actor.world.pos.x, player->actor.world.pos.x, 3.0f);
     Math_StepToF(&this->actor.world.pos.z, player->actor.world.pos.z, 3.0f);
 
-    if (this->timer == 0x1E) {
+    if (this->timer == TakePlayerTime) {
         func_80078884(NA_SE_OC_ABYSS);
         Play_TriggerRespawn(play);
     }
@@ -478,13 +484,16 @@ void EnWallmas_WaitForProximity(EnWallmas* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
     if (Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos) < 200.0f) {
         EnWallmas_TimerInit(this, play);
+        if (this->actor.params == WMT_PROXIMITY)
+            this->timer = DropTimePlus;
     }
 }
 
 void EnWallmas_WaitForSwitchFlag(EnWallmas* this, PlayState* play) {
     if (Flags_GetSwitch(play, this->switchFlag) != 0) {
         EnWallmas_TimerInit(this, play);
-        this->timer = 0x51;
+        if (this->actor.params == WMT_FLAG)
+            this->timer = DropTimePlus;
     }
 }
 
@@ -582,7 +591,7 @@ void EnWallmas_DrawXlu(EnWallmas* this, PlayState* play) {
     f32 xzScale;
     MtxF mf;
 
-    if ((this->actor.floorPoly == NULL) || ((this->timer >= 0x51) && (this->actionFunc != EnWallmas_Stun))) {
+    if ((this->actor.floorPoly == NULL) || ((this->timer >= DropTimePlus) && (this->actionFunc != EnWallmas_Stun))) {
         return;
     }
 
@@ -599,7 +608,7 @@ void EnWallmas_DrawXlu(EnWallmas* this, PlayState* play) {
         (this->actionFunc != EnWallmas_TakePlayer) && (this->actionFunc != EnWallmas_WaitForSwitchFlag)) {
         xzScale = this->actor.scale.x * 50.0f;
     } else {
-        xzScale = ((0x50 - this->timer) >= 0x51 ? 0x50 : (0x50 - this->timer)) * TIMER_SCALE;
+        xzScale = (((DropTime - this->timer) >= DropTimePlus ? DropTime : (DropTime - this->timer)) * TIMER_SCALE) * ScaleFactor;
     }
 
     Matrix_Scale(xzScale, 1.0f, xzScale, MTXMODE_APPLY);

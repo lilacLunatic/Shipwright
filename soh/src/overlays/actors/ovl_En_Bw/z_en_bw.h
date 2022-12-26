@@ -44,4 +44,6 @@ typedef struct EnBw {
     /* 0x02E0 */ ColliderCylinder collider2;
 } EnBw; // size = 0x032C
 
+s32 EnBw_Is_On_Fire(Actor* thisx);
+
 #endif

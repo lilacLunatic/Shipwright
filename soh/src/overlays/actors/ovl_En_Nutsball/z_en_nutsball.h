@@ -16,4 +16,6 @@ typedef struct EnNutsball {
     /* 0x0154 */ ColliderCylinder collider;
 } EnNutsball; // size = 0x01A0
 
+#define NUTS_SPEED 10.0f
+
 #endif

@@ -510,11 +510,12 @@ void EnPeehat_Ground_StateSeekPlayer(EnPeehat* this, PlayState* play) {
     }
     if (IS_DAY && (Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos) < this->xzDistMax)) {
         Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 1000, 0);
-        if (this->unk_2FA != 0) {
-            this->actor.shape.rot.y += 0x1C2;
-        } else {
-            this->actor.shape.rot.y -= 0x1C2;
-        }
+        Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 1, 500, 0);
+        // if (this->unk_2FA != 0) {
+        //     this->actor.shape.rot.y += 0x1C2;
+        // } else {
+        //     this->actor.shape.rot.y -= 0x1C2;
+        // }
     } else {
         EnPeehat_Ground_SetStateReturnHome(this);
     }

@@ -275,6 +275,8 @@ void BossFd2_Emerge(BossFd2* this, PlayState* play) {
             if (this->timers[0] == 0) {
                 if (this->work[FD2_FAKEOUT_COUNT] != 0) {
                     this->work[FD2_FAKEOUT_COUNT]--;
+                    Actor_Spawn(&play->actorCtx, play, ACTOR_EN_BW, this->actor.world.pos.x, 100,
+                                       this->actor.world.pos.z, 0, this->actor.world.rot.y, 0, 0x0, 0);
                     i = Rand_ZeroFloat(8.9f);
                     this->actor.world.pos.x = sHoleLocations[i].x;
                     this->actor.world.pos.z = sHoleLocations[i].z;

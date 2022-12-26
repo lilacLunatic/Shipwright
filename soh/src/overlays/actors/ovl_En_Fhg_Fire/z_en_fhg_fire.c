@@ -68,7 +68,7 @@ static ColliderCylinderInit sCylinderInit = {
     },
     {
         ELEMTYPE_UNK6,
-        { 0x00100700, 0x03, 0x20 },
+        { 0x20000000, 0x03, 0x20 },
         { 0x0D900700, 0x00, 0x00 },
         TOUCH_ON,
         BUMP_ON,
@@ -221,20 +221,25 @@ void EnFhgFire_LightningStrike(EnFhgFire* this, PlayState* play) {
             this->actor.shape.rot.y =
                 Camera_GetInputDirYaw(camera) + (this->work[FHGFIRE_VARIANCE_TIMER] & 0xFF) * 0x8000;
 
+            static const s16 NUM_TRAILS = 32;
+            static const s16 TRAIL_ANGLE_BASE = (0x8000 / NUM_TRAILS)*2;
+
             Math_ApproachF(&this->fwork[FHGFIRE_SCALE], 0.0f, 1.0f, 0.2f);
             if (this->work[FHGFIRE_TIMER] == 30) {
                 s16 randY = (Rand_ZeroOne() < 0.5f) ? 0x1000 : 0;
 
-                for (i = 0; i < 8; i++) {
-                    Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_EN_FHG_FIRE,
-                                       this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, 0,
-                                       (i * 0x2000) + randY, 0x4000, FHGFIRE_LIGHTNING_TRAIL + i);
-                }
+                for (i = 0; i < NUM_TRAILS; i++) {
+                    s16 pitch = 0;
+                    if (this->actor.world.pos.y > GND_BOSSROOM_CENTER_Y + 150.f)
+                        pitch = (s16)(Rand_CenteredFloat(0x8000));
 
-                for (i = 0; i < 8; i++) {
                     Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_EN_FHG_FIRE,
                                        this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, 0,
-                                       (i * 0x2000) + randY, 0, FHGFIRE_LIGHTNING_SHOCK);
+                                       (i * TRAIL_ANGLE_BASE) + randY, 0x4000+ pitch, FHGFIRE_LIGHTNING_TRAIL + i);
+
+                    Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_EN_FHG_FIRE,
+                                       this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, 0,
+                                       (i * TRAIL_ANGLE_BASE) + randY, 0+pitch, FHGFIRE_LIGHTNING_SHOCK);
                 }
             }
 
@@ -302,7 +307,7 @@ void EnFhgFire_LightningShock(EnFhgFire* this, PlayState* play) {
         CollisionCheck_SetAT(play, &play->colChkCtx, &this->collider.base);
     }
 
-    Actor_UpdateBgCheckInfo(play, &this->actor, 50.0f, 50.0f, 100.0f, 1);
+    Actor_UpdateBgCheckInfo(play, &this->actor, 50.0f, 5.0f, 100.0f, 1);
     if (this->actor.bgCheckFlags & 8) {
         Actor_Kill(&this->actor);
     }
@@ -412,6 +417,8 @@ void EnFhgFire_SpearLight(EnFhgFire* this, PlayState* play) {
     }
 }
 
+static const f32 MAX_BALL_SPEED = 23.0f;
+
 void EnFhgFire_EnergyBall(EnFhgFire* this, PlayState* play) {
     f32 dxL;
     f32 dyL;
@@ -499,7 +506,7 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, PlayState* play) {
                         func_800AA000(this->actor.xyzDistToPlayerSq, 0xFF, 0x14, 0x96);
                     } else {
                         if (bossGnd->flyMode == GND_FLY_NEUTRAL) {
-                            angleModX = Rand_CenteredFloat(0x2000);
+                            angleModX = Rand_ZeroFloat(0x1000);
                             angleModY = Rand_CenteredFloat(0x2000);
                             this->actor.speedXZ = 15.0f;
                         } else {
@@ -511,7 +518,7 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, PlayState* play) {
                             }
 
                             if (!canBottleReflect2 && (player->meleeWeaponAnimation >= 24)) {
-                                this->actor.speedXZ = 20.0f;
+                                this->actor.speedXZ = MAX_BALL_SPEED;
                                 this->work[FHGFIRE_RETURN_COUNT] = 4;
                             } else {
                                 this->actor.speedXZ += 1.0f;
@@ -564,9 +571,12 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, PlayState* play) {
                 break;
             case FHGFIRE_LIGHT_REFLECT:
                 if (this->work[FHGFIRE_TIMER] == 0) {
+                    static const s16 MAX_ANGLE = 0x1100;
                     s16 i3;
                     Vec3f sp88;
                     Vec3f sp7C = { 0.0f, -0.5f, 0.0f };
+                    f32 randAng = Rand_CenteredFloat(2.0f);
+                    f32 tempMaxSpeed = MAX_BALL_SPEED*(1.0f-0.8f*fabsf(randAng));
 
                     for (i3 = 0; i3 < 30; i3++) {
                         sp88.x = Rand_CenteredFloat(20.0f);
@@ -575,12 +585,14 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, PlayState* play) {
                         EffectSsFhgFlash_SpawnLightBall(play, &this->actor.world.pos, &sp88, &sp7C,
                                                         (s16)(Rand_ZeroOne() * 40.0f) + 80, FHGFLASH_LIGHTBALL_GREEN);
                     }
-                    this->actor.world.rot.y = Math_FAtan2F(dxL, dzL) * (0x8000 / M_PI);
+                    this->actor.world.rot.y = Math_FAtan2F(dxL, dzL) * (0x8000 / M_PI) + (s16)(MAX_ANGLE*randAng);
                     dxzL = sqrtf(SQ(dxL) + SQ(dzL));
                     this->actor.world.rot.x = Math_FAtan2F(dyL, dxzL) * (0x8000 / M_PI);
                     this->work[FHGFIRE_FIRE_MODE] = FHGFIRE_LIGHT_GREEN;
                     Audio_PlayActorSound2(&this->actor, NA_SE_IT_SWORD_REFLECT_MG);
                     this->actor.speedXZ += 2.0f;
+                    if (this->actor.speedXZ > tempMaxSpeed)
+                        this->actor.speedXZ = tempMaxSpeed;
                 }
                 break;
         }
@@ -615,7 +627,11 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, PlayState* play) {
                 this->work[FHGFIRE_KILL_TIMER] = 30;
                 this->actor.draw = NULL;
                 if (killMode == BALL_FIZZLE) {
+                    this->work[FHGFIRE_KILL_TIMER] = 50;
                     Audio_PlayActorSound2(&this->actor, NA_SE_EN_FANTOM_THUNDER_GND);
+                    Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_EN_FHG_FIRE,
+                                   this->actor.world.pos.x, (this->actor.world.pos.y + 200.0f),
+                                   this->actor.world.pos.z, 0, 0, 0, FHGFIRE_LIGHTNING_STRIKE);
                 }
                 return;
             } else {
@@ -627,8 +643,8 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, PlayState* play) {
         }
         Lights_PointNoGlowSetInfo(&this->lightInfo, (s16)this->actor.world.pos.x, (s16)this->actor.world.pos.y,
                                   (s16)this->actor.world.pos.z, 255, 255, 255, 200);
-        if (this->actor.speedXZ > 20.0f) {
-            this->actor.speedXZ = 20.0f;
+        if (this->actor.speedXZ > MAX_BALL_SPEED) {
+            this->actor.speedXZ = MAX_BALL_SPEED;
         }
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_FANTOM_FIRE - SFX_FLAG);
         // "Why ah ah ah ah"

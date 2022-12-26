@@ -105,15 +105,15 @@ static DamageTable D_809EC620 = {
     /* Giant's Knife */ DMG_ENTRY(4, 0xF),
     /* Fire arrow    */ DMG_ENTRY(0, 0x0),
     /* Ice arrow     */ DMG_ENTRY(0, 0x0),
-    /* Light arrow   */ DMG_ENTRY(0, 0x0),
+    /* Light arrow   */ DMG_ENTRY(0, 0x6),
     /* Unk arrow 1   */ DMG_ENTRY(0, 0x0),
     /* Unk arrow 2   */ DMG_ENTRY(0, 0x0),
     /* Unk arrow 3   */ DMG_ENTRY(0, 0x0),
     /* Fire magic    */ DMG_ENTRY(0, 0x0),
     /* Ice magic     */ DMG_ENTRY(0, 0x0),
-    /* Light magic   */ DMG_ENTRY(0, 0x0),
+    /* Light magic   */ DMG_ENTRY(0, 0x6),
     /* Shield        */ DMG_ENTRY(0, 0x0),
-    /* Mirror Ray    */ DMG_ENTRY(0, 0x0),
+    /* Mirror Ray    */ DMG_ENTRY(0, 0x6),
     /* Kokiri spin   */ DMG_ENTRY(2, 0xF),
     /* Giant spin    */ DMG_ENTRY(4, 0xF),
     /* Master spin   */ DMG_ENTRY(2, 0xF),
@@ -147,7 +147,7 @@ void EnDh_Init(Actor* thisx, PlayState* play) {
     ActorShape_Init(&this->actor.shape, 0.0f, ActorShadow_DrawCircle, 64.0f);
     this->actor.params = ENDH_WAIT_UNDERGROUND;
     this->actor.colChkInfo.mass = MASS_HEAVY;
-    this->actor.colChkInfo.health = LINK_IS_ADULT ? 14 : 20;
+    this->actor.colChkInfo.health = LINK_IS_ADULT ? 20 : 26;
     this->alpha = this->unk_258 = 255;
     this->actor.flags &= ~ACTOR_FLAG_0;
     Collider_InitCylinder(play, &this->collider1);
@@ -199,13 +199,14 @@ void EnDh_SetupWait(EnDh* this) {
 }
 
 void EnDh_Wait(EnDh* this, PlayState* play) {
+    Player* player = GET_PLAYER(play);
     if ((s32)this->skelAnime.curFrame == 5) {
         func_800F5ACC(NA_BGM_MINI_BOSS);
     }
     if (Actor_GetCollidedExplosive(play, &this->collider1.base)) {
         this->actor.params = ENDH_START_ATTACK_BOMB;
     }
-    if ((this->actor.params >= ENDH_START_ATTACK_GRAB) || (this->actor.params <= ENDH_HANDS_KILLED_4)) {
+    if ((this->actor.params >= ENDH_START_ATTACK_GRAB) || (this->actor.params <= ENDH_HANDS_KILLED_3)) {
         switch (this->actionState) {
             case 0:
                 this->actor.flags |= ACTOR_FLAG_0;
@@ -228,6 +229,23 @@ void EnDh_Wait(EnDh* this, PlayState* play) {
                 }
                 break;
             case 2:
+                f32 undeadSpawnDist = 100.0f;
+                f32 undeadSpawnSpacing = 50.0f;
+                s16 endstop = LINK_IS_CHILD ? 2 : 1;
+                if ((LINK_IS_ADULT && this->actor.colChkInfo.health < 15) || (LINK_IS_CHILD && this->actor.colChkInfo.health < 21)) {
+                    for (int ii = -2; ii <= endstop; ii++) {
+                        Actor_Spawn(&play->actorCtx,play,ACTOR_EN_RD, player->actor.world.pos.x+Math_SinS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_SinS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
+                                                                    player->actor.world.pos.y,
+                                                                    player->actor.world.pos.z+Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
+                                                                    0,this->actor.yawTowardsPlayer-0x4000,0,
+                                                                    0x4, 0);
+                        Actor_Spawn(&play->actorCtx,play,ACTOR_EN_RD, player->actor.world.pos.x-Math_SinS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_SinS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
+                                                                    player->actor.world.pos.y,
+                                                                    player->actor.world.pos.z-Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
+                                                                    0,this->actor.yawTowardsPlayer+0x4000,0,
+                                                                    0x4, 0);
+                    }
+                }
                 EnDh_SetupWalk(this);
                 break;
         }
@@ -320,8 +338,8 @@ void EnDh_Attack(EnDh* this, PlayState* play) {
             if (this->skelAnime.curFrame >= 4.0f) {
                 this->collider2.base.atFlags = this->collider2.elements[0].info.toucherFlags =
                     AT_ON | AT_TYPE_ENEMY; // also TOUCH_ON | TOUCH_SFX_WOOD
-                this->collider2.elements[0].info.toucher.dmgFlags = 0xFFCFFFFF;
-                this->collider2.elements[0].info.toucher.damage = 8;
+                this->collider2.elements[0].info.toucher.dmgFlags = 0x20000000;//0xFFCFFFFF
+                this->collider2.elements[0].info.toucher.damage = 0x30;
             }
             if (this->collider2.base.atFlags & AT_BOUNCED) {
                 this->collider2.base.atFlags &= ~(AT_HIT | AT_BOUNCED);
@@ -376,8 +394,8 @@ void EnDh_Burrow(EnDh* this, PlayState* play) {
             this->drawDirtWave++;
             this->collider1.base.atFlags = this->collider1.info.toucherFlags =
                 AT_ON | AT_TYPE_ENEMY; // also TOUCH_ON | TOUCH_SFX_WOOD
-            this->collider1.info.toucher.dmgFlags = 0xFFCFFFFF;
-            this->collider1.info.toucher.damage = 4;
+            this->collider1.info.toucher.dmgFlags = 0x20000000;//0xFFCFFFFF
+            this->collider1.info.toucher.damage = 0x20;
         case 1:
             this->dirtWavePhase += 0x47E;
             Math_SmoothStepToF(&this->dirtWaveSpread, 300.0f, 1.0f, 8.0f, 0.0f);
@@ -394,6 +412,19 @@ void EnDh_Burrow(EnDh* this, PlayState* play) {
             this->collider1.dim.radius = 35;
             this->collider1.base.atFlags = this->collider1.info.toucherFlags = AT_NONE; // Also TOUCH_NONE
             this->collider1.info.toucher.dmgFlags = this->collider1.info.toucher.damage = 0;
+
+            Actor* actor = play->actorCtx.actorLists[ACTORCAT_ENEMY].head;
+            while (actor != NULL) {
+                if (actor->id != ACTOR_EN_DH && actor->id != ACTOR_EN_DHA)
+                    Actor_Kill(actor);
+                actor = actor->next;
+            }
+            actor = play->actorCtx.actorLists[ACTORCAT_PROP].head;
+            while (actor != NULL) {
+                if (actor->id == ACTOR_EN_RD)
+                    Actor_Kill(actor);
+                actor = actor->next;
+            }
             EnDh_SetupWait(this);
             break;
     }
@@ -407,6 +438,21 @@ void EnDh_SetupDamage(EnDh* this) {
     Audio_PlayActorSound2(&this->actor, NA_SE_EN_DEADHAND_DAMAGE);
     this->curAction = DH_DAMAGE;
     EnDh_SetupAction(this, EnDh_Damage);
+}
+
+void EnDh_Summon_Wallmaster(EnDh* this, PlayState* play) {
+    Actor* actor = play->actorCtx.actorLists[ACTORCAT_ENEMY].head;
+    while (actor != NULL) {
+        if (actor->id == ACTOR_EN_WALLMAS)
+            return;
+        actor = actor->next;
+    }
+
+    Player* player = GET_PLAYER(play);
+    Actor_Spawn(&play->actorCtx,play,ACTOR_EN_WALLMAS,
+                player->actor.world.pos.x,player->actor.world.pos.y,player->actor.world.pos.z,
+                0,0,0,
+                0x0, 0);
 }
 
 void EnDh_Damage(EnDh* this, PlayState* play) {
@@ -454,6 +500,12 @@ void EnDh_Death(EnDh* this, PlayState* play) {
                 this->actor.scale.y -= 0.000075f;
                 this->actor.shape.shadowAlpha = this->alpha -= 5;
             } else {
+                Actor* actor = play->actorCtx.actorLists[ACTORCAT_ENEMY].head;
+                while (actor != NULL) {
+                    if (actor->id != ACTOR_EN_DH && actor->id != ACTOR_EN_DHA)
+                        Actor_Kill(actor);
+                    actor = actor->next;
+                }
                 Actor_Kill(&this->actor);
                 return;
             }
@@ -488,7 +540,8 @@ void EnDh_CollisionCheck(EnDh* this, PlayState* play) {
                 EnDh_SetupDeath(this);
                 Item_DropCollectibleRandom(play, &this->actor, &this->actor.world.pos, 0x90);
             } else {
-                if (((lastHealth >= 15) && (this->actor.colChkInfo.health < 15)) ||
+                if (((lastHealth >= 21) && (this->actor.colChkInfo.health < 21)) ||
+                    ((lastHealth >= 15) && (this->actor.colChkInfo.health < 15)) ||
                     ((lastHealth >= 9) && (this->actor.colChkInfo.health < 9)) ||
                     ((lastHealth >= 3) && (this->actor.colChkInfo.health < 3))) {
 
@@ -496,7 +549,28 @@ void EnDh_CollisionCheck(EnDh* this, PlayState* play) {
                 }
                 EnDh_SetupDamage(this);
             }
+        } else if (this->actor.colChkInfo.damageEffect == 6) {
+            this->retreat++;
+            EnDh_SetupRetreat(this,play);
         }
+    }
+}
+
+void EnDh_Detect_Body(EnDh* this, PlayState* play) {
+    s16 bodyCount = 0;
+    if (this->actionFunc == EnDh_Walk || this->actionFunc == EnDh_Attack) {
+        Actor* actor = play->actorCtx.actorLists[ACTORCAT_PROP].head;
+        while (actor != NULL) {
+            if (actor->id == ACTOR_EN_RD) {
+                bodyCount++;
+            }
+            actor = actor->next;
+        }
+    }
+
+    if (bodyCount >= 4) {
+        this->retreat++;
+        EnDh_SetupRetreat(this,play);
     }
 }
 
@@ -507,6 +581,7 @@ void EnDh_Update(Actor* thisx, PlayState* play) {
     s32 pad40;
 
     EnDh_CollisionCheck(this, play);
+    EnDh_Detect_Body(this, play);
     this->actionFunc(this, play);
     Actor_MoveForward(&this->actor);
     Actor_UpdateBgCheckInfo(play, &this->actor, 20.0f, 45.0f, 45.0f, 0x1D);

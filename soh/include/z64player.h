@@ -682,7 +682,15 @@ typedef struct Player {
     /* 0x???? */ f32        mouseQuickspinX[5];
     /* 0x???? */ f32        mouseQuickspinY[5];
     /* 0x???? */ u8         quickspinCount;
+    //Chromeless combat
+                 u8         shieldRelaxTimer;
+                 u8         shieldUpTimer;
+                 u8         shieldEntry;
+                 u8         crossoverState;
+                 Vec3f      entryDiff;
     // #endregion
-} Player; // size = 0xA94
+} Player;
 
+
+s32 Player_isRangedWeaponReady(PlayState* play);
 #endif

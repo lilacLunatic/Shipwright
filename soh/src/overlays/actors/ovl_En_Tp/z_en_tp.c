@@ -91,10 +91,10 @@ static DamageTable sDamageTable = {
     /* Deku stick    */ DMG_ENTRY(2, TAILPASARAN_DMGEFF_INSULATING),
     /* Slingshot     */ DMG_ENTRY(0, TAILPASARAN_DMGEFF_NONE),
     /* Explosive     */ DMG_ENTRY(0, TAILPASARAN_DMGEFF_NONE),
-    /* Boomerang     */ DMG_ENTRY(1, TAILPASARAN_DMGEFF_INSULATING),
+    /* Boomerang     */ DMG_ENTRY(1, TAILPASARAN_DMGEFF_DEKUNUT),
     /* Normal arrow  */ DMG_ENTRY(0, TAILPASARAN_DMGEFF_NONE),
     /* Hammer swing  */ DMG_ENTRY(2, TAILPASARAN_DMGEFF_SHOCKING),
-    /* Hookshot      */ DMG_ENTRY(0, TAILPASARAN_DMGEFF_NONE),
+    /* Hookshot      */ DMG_ENTRY(1, TAILPASARAN_DMGEFF_SHOCKING),
     /* Kokiri sword  */ DMG_ENTRY(1, TAILPASARAN_DMGEFF_SHOCKING),
     /* Master sword  */ DMG_ENTRY(2, TAILPASARAN_DMGEFF_SHOCKING),
     /* Giant's Knife */ DMG_ENTRY(4, TAILPASARAN_DMGEFF_SHOCKING),
@@ -120,6 +120,9 @@ static DamageTable sDamageTable = {
     /* Hammer jump   */ DMG_ENTRY(4, TAILPASARAN_DMGEFF_SHOCKING),
     /* Unknown 2     */ DMG_ENTRY(0, TAILPASARAN_DMGEFF_NONE),
 };
+
+static const s16 RISE_SPEED = 3;
+static const s16 HEAD_WAIT_TIME = 60/RISE_SPEED;
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_F32(targetArrowOffset, 10, ICHAIN_STOP),
@@ -221,7 +224,7 @@ void EnTp_Tail_FollowHead(EnTp* this, PlayState* play) {
 
             this->actor.world.pos = this->actor.parent->prevPos;
         } else {
-            Math_SmoothStepToF(&this->actor.world.pos.y, this->actor.parent->world.pos.y - 4.0f, 1.0f, 1.0f, 0.0f);
+            Math_SmoothStepToF(&this->actor.world.pos.y, this->actor.parent->world.pos.y - 4.0f, 1.0f, RISE_SPEED, 0.0f);
             angle = this->head->actor.shape.rot.y + 0x4000;
             phase = 2000 * (this->head->unk_15C + this->timer);
             this->actor.world.pos.x =
@@ -367,7 +370,7 @@ void EnTp_Fragment_Fade(EnTp* this, PlayState* play) {
 }
 
 void EnTp_Head_SetupTakeOff(EnTp* this) {
-    this->timer = (Rand_ZeroOne() * 15.0f) + 40.0f;
+    this->timer = (Rand_ZeroOne() * 15.0f) + 25.0f;
     this->actionIndex = TAILPASARAN_ACTION_HEAD_TAKEOFF;
     EnTp_SetupAction(this, EnTp_Head_TakeOff);
 }
@@ -379,9 +382,9 @@ void EnTp_Head_TakeOff(EnTp* this, PlayState* play) {
     s32 pad;
     Player* player = GET_PLAYER(play);
 
-    Math_SmoothStepToF(&this->actor.speedXZ, 2.5f, 0.1f, 0.2f, 0.0f);
+    Math_SmoothStepToF(&this->actor.speedXZ, 3.0f, 0.1f, 0.2f, 0.0f);
     Math_SmoothStepToF(&this->actor.world.pos.y, player->actor.world.pos.y + 85.0f + this->horizontalVariation, 1.0f,
-                       this->actor.speedXZ * 0.25f, 0.0f);
+                       this->actor.speedXZ * 0.5f, 0.0f);
     Audio_PlaySoundGeneral(NA_SE_EN_TAIL_FLY - SFX_FLAG, &this->actor.projectedPos, 4, &D_801333E0, &D_801333E0,
                            &D_801333E8);
 
@@ -402,14 +405,14 @@ void EnTp_Head_TakeOff(EnTp* this, PlayState* play) {
 
     this->actor.world.pos.y +=
         Math_CosF(this->heightPhase) * ((this->actor.speedXZ * 0.25f) + this->extraHeightVariation);
-    this->actor.world.rot.y += this->unk_164;
+    //this->actor.world.rot.y += this->unk_164;
     this->heightPhase += 0.2f;
 
     if (this->timer != 0) {
         this->timer--;
     }
 
-    Math_SmoothStepToS(&this->actor.world.rot.y, Math_Vec3f_Yaw(&this->actor.world.pos, &this->actor.home.pos), 1, 750,
+    Math_SmoothStepToS(&this->actor.world.rot.y, Math_Vec3f_Yaw(&this->actor.world.pos, &this->actor.home.pos), 1, 0x0800,
                        0);
 
     if (this->timer == 0) {
@@ -423,14 +426,14 @@ void EnTp_Head_SetupWait(EnTp* this) {
     this->actionIndex = TAILPASARAN_ACTION_HEAD_WAIT;
     this->unk_150 = 0;
     this->actor.shape.rot.x = -0x4000;
-    this->timer = 60;
+    this->timer = HEAD_WAIT_TIME;
     this->unk_15C = 0;
     this->actor.speedXZ = 0.0f;
     EnTp_SetupAction(this, EnTp_Head_Wait);
 }
 
 /**
- * Awaken and rise from the ground when Player is closer than 200
+ * Awaken and rise from the ground when Player is closer than 300
  */
 void EnTp_Head_Wait(EnTp* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
@@ -438,7 +441,7 @@ void EnTp_Head_Wait(EnTp* this, PlayState* play) {
 
     this->unk_15C--;
 
-    if (this->actor.xzDistToPlayer < 200.0f) {
+    if (this->actor.xzDistToPlayer < 300.0f) {
         if (this->collider.base.atFlags & AT_HIT) {
             this->collider.base.atFlags &= ~AT_HIT;
             if (&player->actor == this->collider.base.at) {
@@ -453,7 +456,7 @@ void EnTp_Head_Wait(EnTp* this, PlayState* play) {
             Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 1500, 0);
 
             yaw = Math_Vec3f_Yaw(&this->actor.home.pos, &player->actor.world.pos) + 0x4000;
-            Math_SmoothStepToF(&this->actor.world.pos.y, this->actor.home.pos.y + 30.0f, 0.3f, 1.0f, 0.3f);
+            Math_SmoothStepToF(&this->actor.world.pos.y, this->actor.home.pos.y + 40.0f, 0.3f, RISE_SPEED, 0.3f);
             this->actor.world.pos.x = this->actor.home.pos.x +
                                       (Math_SinS(2000 * this->unk_15C) * (Math_SinS(yaw) * this->horizontalVariation));
             this->actor.world.pos.z = this->actor.home.pos.z +
@@ -467,7 +470,7 @@ void EnTp_Head_Wait(EnTp* this, PlayState* play) {
         Math_SmoothStepToS(&this->actor.shape.rot.x, -0x4000, 1, 500, 0);
 
         if (Math_SmoothStepToF(&this->actor.world.pos.y, this->actor.home.pos.y, 0.3f, 1.5f, 0.3f) == 0.0f) {
-            this->timer = 60;
+            this->timer = HEAD_WAIT_TIME;
         } else {
             yaw = Math_Vec3f_Yaw(&this->actor.home.pos, &player->actor.world.pos);
             this->actor.world.pos.x =

@@ -1,3 +1,5 @@
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_INFO
+
 #include "OTRGlobals.h"
 #include <ResourceMgr.h>
 #include <Scene.h>
@@ -55,6 +57,8 @@ bool Scene_CommandSpawnList(PlayState* play, Ship::SceneCommand* cmd)
             entries[i].rot.x = cmdStartPos->entries[i].rotX;
             entries[i].rot.y = cmdStartPos->entries[i].rotY;
             entries[i].rot.z = cmdStartPos->entries[i].rotZ;
+
+            SPDLOG_INFO("Spawn {0:d} - ID: {1:x}, Parameters: {2:x}", i, (uint16_t)entries[i].id, (uint16_t)entries[i].params);
         }
 
         linkSpawnEntry = &entries[play->setupEntranceList[play->curSpawn].spawn];
@@ -75,6 +79,44 @@ bool Scene_CommandSpawnList(PlayState* play, Ship::SceneCommand* cmd)
     return false;
 }
 
+const std::map<u16, std::map<u16, std::vector<std::tuple<int, int, Ship::ActorSpawnEntry>>>> sceneActorOverrides = {
+    {SCENE_SPOT00, {
+        {0x0, {
+            {-1, -1, {ACTOR_EN_MB, -4010,-300,1700, 0,8104,0, -0x1}},
+            {-1, -1, {ACTOR_EN_MB, -3157,-300,945, 0,8104,0, -0x1}},
+            {-1, -1, {ACTOR_EN_MB, -5245,-300,2000, 0,-1321,0, -0x1}},
+        } },
+    } },
+    {SCENE_BMORI1, {
+        {0x0, {
+            {-1, -1, {ACTOR_EN_ST, 118,510,155, 0,0,0, 0x4}}
+        } },
+        {0x3, {
+            {-1, 4, {ACTOR_EN_BB, 1387,510,-1436, 0,0x4000,0, 0xffff}},
+            {-1, -1, {ACTOR_EN_BB, 1187,463,-1436, 0,-0x4000,0, 0xffff}}
+        } },
+        {0x8, {
+            {-1, -1, {ACTOR_EN_DEKUNUTS, -1288,242,-2109, 0,25009,0, 5 << 8}},
+            {-1, -1, {ACTOR_EN_DEKUNUTS, -499,242,-2680, 0,-16512,0, 5 << 8}},
+        } },
+        {0x11, {
+            {-1, -1, {ACTOR_EN_WALLMAS, 128,-779,-1658, 0,0,0, 0x0}},
+            {-1, -1, {ACTOR_EN_WALLMAS, 128,-779,-1658, 0,0,0, 0x4 | (0x10 << 8)}},
+            {-1, -1, {ACTOR_EN_WALLMAS, 128,-779,-1658, 0,0,0, 0x4 | (0x11 << 8)}},
+            {-1, -1, {ACTOR_EN_WALLMAS, 128,-779,-1658, 0,0,0, 0x4 | (0x12 << 8)}},
+        } },
+        {0x0f, {
+            {-1, -1, {ACTOR_EN_WALLMAS, 1830,404,-2700, 0,0,0, 0x2 | (0x20+11 << 8)}},
+            {-1, -1, {ACTOR_EN_ST, 2069,720,-3002, 0,-32768,0, 0x4}}
+        } },
+    } },
+    {SCENE_HIDAN, {
+        {0x18, {
+            {-1, 0, {ACTOR_EN_FD, -2928,2920,139, 0,0,0, 0x0}}
+        } },
+    } },
+};
+
 bool Scene_CommandActorList(PlayState* play, Ship::SceneCommand* cmd) {
     Ship::SetActorList* cmdActor = (Ship::SetActorList*)cmd;
 
@@ -84,6 +126,23 @@ bool Scene_CommandActorList(PlayState* play, Ship::SceneCommand* cmd) {
         play->setupActorList = (ActorEntry*)cmdActor->cachedGameData;
     else
     {
+        if (sceneActorOverrides.find(play->sceneNum) != sceneActorOverrides.end() &&
+                        sceneActorOverrides.at(play->sceneNum).find(play->roomCtx.curRoom.num) != sceneActorOverrides.at(play->sceneNum).end()) {
+            auto& roomOverrides = sceneActorOverrides.at(play->sceneNum).at(play->roomCtx.curRoom.num);
+            for (auto& [setup, index, entry] : roomOverrides) {
+                if (setup == -1 || setup == gSaveContext.sceneSetupIndex) {
+                    if (index == -1) {
+                        cmdActor->entries.push_back(entry);
+                    } else {
+                        cmdActor->entries[index] = entry;
+                    }
+                }
+            }
+            play->numSetupActors = cmdActor->entries.size();
+        }
+
+        SPDLOG_INFO("Scene: 0x{0:x}, Room: 0x{1:x}, Setup: 0x{2:x}", (uint16_t)play->sceneNum, (uint16_t)play->roomCtx.curRoom.num, (uint32_t)gSaveContext.sceneSetupIndex);
+
         ActorEntry* entries = (ActorEntry*)malloc(cmdActor->entries.size() * sizeof(ActorEntry));
 
         for (int i = 0; i < cmdActor->entries.size(); i++)
@@ -96,6 +155,10 @@ bool Scene_CommandActorList(PlayState* play, Ship::SceneCommand* cmd) {
             entries[i].rot.y = cmdActor->entries[i].rotY;
             entries[i].rot.z = cmdActor->entries[i].rotZ;
             entries[i].params = cmdActor->entries[i].initVar;
+
+            SPDLOG_INFO("Entity {0:d}\t ID: 0x{1:x}, \tParams: 0x{2:x}, \tpos: {3:d},{4:d},{5:d}, \t{6:d},{7:d},{8:d}",
+                        i, (uint16_t)entries[i].id, (uint16_t)entries[i].params,
+                        entries[i].pos.x, entries[i].pos.y, entries[i].pos.z, entries[i].rot.x, entries[i].rot.y, entries[i].rot.z);
         }
 
         cmdActor->cachedGameData = entries;

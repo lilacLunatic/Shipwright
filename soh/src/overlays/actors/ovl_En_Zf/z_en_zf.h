@@ -33,7 +33,8 @@ typedef enum {
     /* 19 */ ENZF_ACTION_HOP_AWAY,
     /* 20 */ ENZF_ACTION_HOP_AND_TAUNT,
     /* 21 */ ENZF_ACTION_DRAW_SWORD,
-    /* 22 */ ENZF_ACTION_JUMP_UP
+    /* 22 */ ENZF_ACTION_JUMP_UP,
+    /* 23 */ ENZF_SPIN_DODGE
 } EnZfAction;
 
 typedef enum {
@@ -89,6 +90,11 @@ typedef enum {
     /* 0x31 */ ENZF_LIMB_MAX
 } EnZfLimb; // used for both Lizalfos and Dinalfos
 
+typedef enum {
+    ENZF_HIGH = 0,
+    ENFZ_SIDE = 1
+} EnZfStance;
+
 typedef struct EnZf {
     /* 0x0000 */ Actor actor;
     /* 0x014C */ SkelAnime skelAnime;
@@ -119,6 +125,18 @@ typedef struct EnZf {
     /* 0x04E4 */ Vec3f rightFootPos;
     /* 0x04F0 */ Vec3f leftFootPos;
     /* 0x04FC */ Vec3f bodyPartsPos[9];
-} EnZf; // size = 0x0568
+    /* 0x0500 */ f32 approachRate;
+    /* 0x0504 */ u8 stance;
+                 u8 ignoreAttack;
+                 s32 stanceTimer;
+                 f32 stanceTransition;
+                 s16 selectionTimer;
+                 s16 cautionTimer;
+                 //DEBUG
+                 //  Vec3f recordedPosition;
+                 //  Vec3s recordedRotation;
+                 //  s32 isBelow;
+                 //DEBUG
+} EnZf; // size = 0x0572
 
 #endif

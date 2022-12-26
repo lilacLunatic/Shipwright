@@ -8,9 +8,9 @@ void EnRd_Destroy(Actor* thisx, PlayState* play);
 void EnRd_Update(Actor* thisx, PlayState* play);
 void EnRd_Draw(Actor* thisx, PlayState* play);
 
-void func_80AE269C(EnRd* this);
+void func_80AE269C(EnRd* this, PlayState* play);
 void func_80AE2744(EnRd* this, PlayState* play);
-void func_80AE2970(EnRd* this);
+void func_80AE2970(EnRd* this, PlayState* play);
 void func_80AE2A10(EnRd* this, PlayState* play);
 void func_80AE2C1C(EnRd* this, PlayState* play);
 void func_80AE2F50(EnRd* this, PlayState* play);
@@ -89,8 +89,8 @@ static DamageTable sDamageTable = {
     /* Giant spin    */ DMG_ENTRY(4, 0xF),
     /* Master spin   */ DMG_ENTRY(2, 0xF),
     /* Kokiri jump   */ DMG_ENTRY(2, 0xF),
-    /* Giant jump    */ DMG_ENTRY(8, 0xF),
-    /* Master jump   */ DMG_ENTRY(4, 0xF),
+    /* Giant jump    */ DMG_ENTRY(4, 0xF),
+    /* Master jump   */ DMG_ENTRY(2, 0xF),
     /* Unknown 1     */ DMG_ENTRY(0, 0x0),
     /* Unblockable   */ DMG_ENTRY(0, 0x0),
     /* Hammer jump   */ DMG_ENTRY(4, 0xF),
@@ -116,6 +116,13 @@ static Color_RGBA8 D_80AE493C = { 0, 0, 255, 0 };
 static Vec3f D_80AE4940 = { 300.0f, 0.0f, 0.0f };
 static Vec3f D_80AE494C = { 300.0f, 0.0f, 0.0f };
 static Vec3f D_80AE4958 = { 0.25f, 0.25f, 0.25f };
+
+static const f32 HearingRange = 180.0f;
+static const f32 HomeRange = HearingRange;
+static const f32 SenseRange = 60.0f;
+static const f32 AttackRange = 45.0f;
+
+#define ENRD_DROPPED_ITEM 0x10//0x90
 
 void EnRd_SetupAction(EnRd* this, EnRdActionFunc actionFunc) {
     this->actionFunc = actionFunc;
@@ -156,9 +163,9 @@ void EnRd_Init(Actor* thisx, PlayState* play) {
     Collider_SetCylinder(play, &this->collider, thisx, &sCylinderInit);
 
     if (thisx->params >= -2) {
-        func_80AE269C(this);
+        func_80AE269C(this,play);
     } else {
-        func_80AE2970(this);
+        func_80AE2970(this,play);
     }
 
     SkelAnime_Update(&this->skelAnime);
@@ -195,7 +202,12 @@ void func_80AE2630(PlayState* play, Actor* thisx, s32 arg2) {
     }
 }
 
-void func_80AE269C(EnRd* this) {
+void func_80AE269C(EnRd* this, PlayState* play) {
+    if (this->actor.params < -1) {
+        func_80AE2B90(this,play);
+        return;
+    }
+
     if (this->actor.params != 2) {
         Animation_MorphToLoop(&this->skelAnime, &gGibdoRedeadIdleAnim, -6.0f);
     } else {
@@ -246,8 +258,7 @@ void func_80AE2744(EnRd* this, PlayState* play) {
         }
 
         this->unk_305 = 0;
-
-        if (this->actor.xzDistToPlayer <= 150.0f && func_8002DDE4(play)) {
+        if (((this->actor.xzDistToPlayer <= HearingRange) && func_8002DDE4(play)) || (this->actor.xzDistToPlayer <= SenseRange)) {//Causes the undead to only notice the player if they are making noise
             // Add a height check to redeads/gibdos freeze when Enemy Randomizer is on.
             // Without the height check, redeads/gibdos can freeze the player from insane distances in
             // vertical rooms (like the first room in Deku Tree), making these rooms nearly unplayable.
@@ -267,7 +278,7 @@ void func_80AE2744(EnRd* this, PlayState* play) {
     }
 }
 
-void func_80AE2970(EnRd* this) {
+void func_80AE2970(EnRd* this, PlayState* play) {
     Animation_Change(&this->skelAnime, &gGibdoRedeadIdleAnim, 0, 0, Animation_GetLastFrame(&gGibdoRedeadIdleAnim),
                      ANIMMODE_LOOP, -6.0f);
     this->unk_31B = 11;
@@ -285,7 +296,7 @@ void func_80AE2A10(EnRd* this, PlayState* play) {
         Math_SmoothStepToS(&this->actor.shape.rot.x, 0, 1, 0x7D0, 0);
         if (Math_SmoothStepToF(&this->actor.world.pos.y, this->actor.home.pos.y, 0.3f, 2.0f, 0.3f) == 0.0f) {
             this->actor.gravity = -3.5f;
-            func_80AE269C(this);
+            func_80AE269C(this,play);
         }
     } else {
         if (this->actor.world.pos.y == this->actor.home.pos.y) {
@@ -305,7 +316,7 @@ void func_80AE2A10(EnRd* this, PlayState* play) {
 void func_80AE2B90(EnRd* this, PlayState* play) {
     Animation_Change(&this->skelAnime, &gGibdoRedeadWalkAnim, 1.0f, 4.0f,
                      Animation_GetLastFrame(&gGibdoRedeadWalkAnim), ANIMMODE_LOOP_INTERP, -4.0f);
-    this->actor.speedXZ = 0.4f;
+    this->actor.speedXZ = 0.4f*4;
     this->unk_31B = 4;
     EnRd_SetupAction(this, func_80AE2C1C);
 }
@@ -319,18 +330,18 @@ void func_80AE2C1C(EnRd* this, PlayState* play) {
     s16 sp32 = this->actor.yawTowardsPlayer - this->actor.shape.rot.y - this->unk_30E - this->unk_310;
 
     this->skelAnime.playSpeed = this->actor.speedXZ;
-    Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 1, 0xFA, 0);
+    Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 1, 0xFA*6, 0);
     Math_SmoothStepToS(&this->unk_30E, 0, 1, 0x64, 0);
     Math_SmoothStepToS(&this->unk_310, 0, 1, 0x64, 0);
     this->actor.world.rot.y = this->actor.shape.rot.y;
     SkelAnime_Update(&this->skelAnime);
 
-    if (Actor_WorldDistXYZToPoint(&player->actor, &this->actor.home.pos) >= 150.0f) {
+    if (Actor_WorldDistXYZToPoint(&player->actor, &this->actor.home.pos) >= HomeRange) {
         func_80AE2F50(this, play);
     }
 
-    if ((ABS(sp32) < 0x1554) && (Actor_WorldDistXYZToActor(&this->actor, &player->actor) <= 150.0f)) {
-        if (!(player->stateFlags1 & 0x2C6080) && !(player->stateFlags2 & 0x80)) {
+    if ((ABS(sp32) < 0x2554) && (Actor_WorldDistXYZToActor(&this->actor, &player->actor) <= HearingRange)) {
+        if (!(player->stateFlags1 & 0x2C6080) && !(player->stateFlags2 & 0x80)) {//Causes the undead to only notice the player if they are making noise
             if (this->unk_306 == 0) {
                 if (!(this->unk_312 & 0x80)) {
                     player->actor.freezeTimer = 40;
@@ -350,7 +361,7 @@ void func_80AE2C1C(EnRd* this, PlayState* play) {
         this->unk_307--;
     }
 
-    if (!this->unk_307 && (Actor_WorldDistXYZToActor(&this->actor, &player->actor) <= 45.0f) &&
+    if (!this->unk_307 && (Actor_WorldDistXYZToActor(&this->actor, &player->actor) <= AttackRange) &&
         Actor_IsFacingPlayer(&this->actor, 0x38E3)) {
         player->actor.freezeTimer = 0;
         if (play->grabPlayer(play, player)) {
@@ -390,7 +401,7 @@ void func_80AE2FD0(EnRd* this, PlayState* play) {
         this->actor.speedXZ = 0.0f;
         if (Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.home.rot.y, 1, 0x1C2, 0) == 0) {
             if (this->actor.params != 2) {
-                func_80AE269C(this);
+                func_80AE269C(this,play);
             } else {
                 func_80AE39D4(this);
             }
@@ -402,8 +413,8 @@ void func_80AE2FD0(EnRd* this, PlayState* play) {
     this->actor.world.rot.y = this->actor.shape.rot.y;
     SkelAnime_Update(&this->skelAnime);
 
-    if (!(player->stateFlags1 & 0x2C6080) && !(player->stateFlags2 & 0x80) &&
-        (Actor_WorldDistXYZToPoint(&player->actor, &this->actor.home.pos) < 150.0f)) {
+    if (!(player->stateFlags1 & 0x2C6080) && !(player->stateFlags2 & 0x80) && //Causes the undead to only notice the player if they are making noise
+        (Actor_WorldDistXYZToPoint(&player->actor, &this->actor.home.pos) < HomeRange)) {
         this->actor.targetMode = 0;
         func_80AE2B90(this, play);
     } else if (this->actor.params > 0) {
@@ -439,13 +450,13 @@ void func_80AE3260(EnRd* this, PlayState* play) {
 
         Math_SmoothStepToS(&this->actor.shape.rot.y, targetY, 1, 0xFA, 0);
 
-        if (Actor_WorldDistXYZToPoint(&this->actor, &thisPos) >= 45.0f) {
+        if (Actor_WorldDistXYZToPoint(&this->actor, &thisPos) >= AttackRange) {
             this->actor.speedXZ = 0.4f;
         } else {
             this->actor.speedXZ = 0.0f;
 
             if (this->actor.params != 2) {
-                func_80AE269C(this);
+                func_80AE269C(this,play);
             } else {
                 func_80AE39D4(this);
             }
@@ -596,7 +607,7 @@ void func_80AE39D4(EnRd* this) {
 
 void func_80AE3A54(EnRd* this, PlayState* play) {
     if (SkelAnime_Update(&this->skelAnime)) {
-        func_80AE269C(this);
+        func_80AE269C(this,play);
     }
 }
 
@@ -628,7 +639,7 @@ void func_80AE3B18(EnRd* this, PlayState* play) {
 
         if (this->actor.parent != NULL) {
             func_80AE31DC(this);
-        } else if (Actor_WorldDistXYZToPoint(&player->actor, &this->actor.home.pos) >= 150.0f) {
+        } else if (Actor_WorldDistXYZToPoint(&player->actor, &this->actor.home.pos) >= HomeRange) {
             func_80AE2F50(this, play);
         } else {
             func_80AE2B90(this, play);
@@ -687,7 +698,7 @@ void func_80AE3DE4(EnRd* this) {
     this->unk_31B = 1;
     this->actor.speedXZ = 0.0f;
     this->actor.world.rot.y = this->actor.shape.rot.y;
-    if (gSaveContext.sunsSongState != SUNSSONG_INACTIVE) {
+    if (gSaveContext.sunsSongState != SUNSSONG_INACTIVE && this->actor.params != 4) {//Prevent summoned undead from being affected by the Sun's Song
         this->unk_318 = 1;
         this->unk_316 = 0x258;
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_LIGHT_ARROW_HIT);
@@ -717,7 +728,8 @@ void func_80AE3ECC(EnRd* this, PlayState* play) {
         if (this->actor.colChkInfo.health == 0) {
             func_80AE2630(play, &this->actor, 1);
             func_80AE3C20(this);
-            Item_DropCollectibleRandom(play, &this->actor, &this->actor.world.pos, 0x90);
+            if (this->actor.params != 4)
+                Item_DropCollectibleRandom(play, &this->actor, &this->actor.world.pos, ENRD_DROPPED_ITEM);
         } else {
             func_80AE3A8C(this);
         }
@@ -752,7 +764,7 @@ void func_80AE4114(EnRd* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
     if ((gSaveContext.sunsSongState != SUNSSONG_INACTIVE) && (this->actor.shape.rot.x == 0) && (this->unk_318 == 0) &&
-        (this->unk_31B != 9) && (this->unk_31B != 10) && (this->unk_31B != 1)) {
+        (this->unk_31B != 9) && (this->unk_31B != 10) && (this->unk_31B != 1) && (this->actor.params != 4) && (this->actor.params >= -1)) {//Prevent summoned undead and Gibdos from being affected by the Sun's Song
         func_80AE3DE4(this);
         return;
     }
@@ -774,6 +786,10 @@ void func_80AE4114(EnRd* this, PlayState* play) {
                     return;
                 }
 
+                if ((this->actor.params < -1) && (this->unk_31C == 14)) {//Gibdos are unaffected by fire
+                    return;
+                }
+
                 this->unk_318 = 0;
                 this->unk_316 = 0;
 
@@ -788,9 +804,11 @@ void func_80AE4114(EnRd* this, PlayState* play) {
                 if (this->actor.colChkInfo.health == 0) {
                     func_80AE2630(play, &this->actor, 1);
                     func_80AE3C20(this);
-                    Item_DropCollectibleRandom(play, 0, &this->actor.world.pos, 0x90);
+                    if (this->actor.params != 4)
+                        Item_DropCollectibleRandom(play, 0, &this->actor.world.pos, ENRD_DROPPED_ITEM);
                 } else {
-                    func_80AE3A8C(this);
+                    if (this->actor.params >= -1)
+                        func_80AE3A8C(this);
                 }
             }
         }
