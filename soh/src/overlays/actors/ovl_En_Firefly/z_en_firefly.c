@@ -111,15 +111,18 @@ static DamageTable sDamageTable = {
     /* Unknown 2     */ DMG_ENTRY(0, 0x0),
 };
 
+static const f32 SPEED_MULTIPLIER = 1.6f;
+
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 5, ICHAIN_CONTINUE),  ICHAIN_F32_DIV1000(gravity, -500, ICHAIN_CONTINUE),
-    ICHAIN_F32(minVelocityY, -4, ICHAIN_CONTINUE),    ICHAIN_U8(targetMode, 2, ICHAIN_CONTINUE),
+    ICHAIN_F32(minVelocityY, -4, ICHAIN_CONTINUE),    ICHAIN_U8(targetMode, 10, ICHAIN_CONTINUE),
     ICHAIN_F32(targetArrowOffset, 4000, ICHAIN_STOP),
 };
 
 void EnFirefly_Extinguish(EnFirefly* this) {
     this->actor.params += 2;
     this->collider.elements[0].info.toucher.effect = 0; // None
+    this->collider.elements[0].info.toucher.damage = 0x08;
     this->auraType = KEESE_AURA_NONE;
     this->onFire = false;
     this->actor.naviEnemyId = 0x12; // Keese
@@ -132,6 +135,7 @@ void EnFirefly_Ignite(EnFirefly* this) {
         this->actor.params -= 2;
     }
     this->collider.elements[0].info.toucher.effect = 1; // Fire
+    this->collider.elements[0].info.toucher.damage = 0x10;
     this->auraType = KEESE_AURA_FIRE;
     this->onFire = true;
     this->actor.naviEnemyId = 0x11; // Fire Keese
@@ -165,6 +169,7 @@ void EnFirefly_Init(Actor* thisx, PlayState* play) {
         this->timer = Rand_S16Offset(20, 60);
         this->actor.shape.rot.x = 0x1554;
         this->auraType = KEESE_AURA_FIRE;
+        this->collider.elements[0].info.toucher.damage = 0x10;
         this->actor.naviEnemyId = 0x11; // Fire Keese
         this->maxAltitude = this->actor.home.pos.y;
     } else {
@@ -202,7 +207,7 @@ void EnFirefly_Destroy(Actor* thisx, PlayState* play) {
 
 void EnFirefly_SetupFlyIdle(EnFirefly* this) {
     this->timer = Rand_S16Offset(70, 100);
-    this->actor.speedXZ = (Rand_ZeroOne() * 1.5f) + 1.5f;
+    this->actor.speedXZ = ((Rand_ZeroOne() * 1.5f) + 1.5f)*SPEED_MULTIPLIER;
     Math_ScaledStepToS(&this->actor.shape.rot.y, Actor_WorldYawTowardPoint(&this->actor, &this->actor.home.pos), 0x300);
     this->targetPitch = ((this->maxAltitude < this->actor.world.pos.y) ? 0xC00 : -0xC00) + 0x1554;
     this->skelAnime.playSpeed = 1.0f;
@@ -237,21 +242,21 @@ void EnFirefly_SetupDie(EnFirefly* this) {
 void EnFirefly_SetupRebound(EnFirefly* this) {
     this->actor.world.rot.x = 0x7000;
     this->timer = 18;
-    this->skelAnime.playSpeed = 1.0f;
-    this->actor.speedXZ = 2.5f;
+    this->skelAnime.playSpeed = SPEED_MULTIPLIER;
+    this->actor.speedXZ = 2.5f*SPEED_MULTIPLIER;
     this->actionFunc = EnFirefly_Rebound;
 }
 
 void EnFirefly_SetupDiveAttack(EnFirefly* this) {
     this->timer = Rand_S16Offset(70, 100);
-    this->skelAnime.playSpeed = 1.0f;
+    this->skelAnime.playSpeed = SPEED_MULTIPLIER;
     this->targetPitch = ((this->actor.yDistToPlayer > 0.0f) ? -0xC00 : 0xC00) + 0x1554;
     this->actionFunc = EnFirefly_DiveAttack;
 }
 
 void EnFirefly_SetupFlyAway(EnFirefly* this) {
     this->timer = 150;
-    this->skelAnime.playSpeed = 1.0f;
+    this->skelAnime.playSpeed = SPEED_MULTIPLIER;
     this->targetPitch = 0x954;
     this->actionFunc = EnFirefly_FlyAway;
 }
@@ -261,7 +266,7 @@ void EnFirefly_SetupStunned(EnFirefly* this) {
     Actor_SetColorFilter(&this->actor, 0, 0xFF, 0, 80);
     this->auraType = KEESE_AURA_NONE;
     this->actor.velocity.y = 0.0f;
-    this->skelAnime.playSpeed = 3.0f;
+    this->skelAnime.playSpeed = 3.0f*SPEED_MULTIPLIER;
     Audio_PlayActorSound2(&this->actor, NA_SE_EN_GOMA_JR_FREEZE);
     this->actionFunc = EnFirefly_Stunned;
 }
@@ -294,10 +299,10 @@ void EnFirefly_SetupPerch(EnFirefly* this) {
 }
 
 void EnFirefly_SetupDisturbDiveAttack(EnFirefly* this) {
-    this->skelAnime.playSpeed = 3.0f;
+    this->skelAnime.playSpeed = 3.0f*SPEED_MULTIPLIER;
     this->actor.shape.rot.x = 0x1554;
     this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
-    this->actor.speedXZ = 3.0f;
+    this->actor.speedXZ = 3.0f*SPEED_MULTIPLIER;
     this->timer = 50;
     this->actionFunc = EnFirefly_DisturbDiveAttack;
 }
@@ -383,7 +388,7 @@ void EnFirefly_FlyIdle(EnFirefly* this, PlayState* play) {
         this->timer--;
     }
     skelanimeUpdated = Animation_OnFrame(&this->skelAnime, 0.0f);
-    this->actor.speedXZ = (Rand_ZeroOne() * 1.5f) + 1.5f;
+    this->actor.speedXZ = ((Rand_ZeroOne() * 1.5f) + 1.5f)*SPEED_MULTIPLIER;
     if (this->onFire || (this->actor.params == KEESE_ICE_FLY) ||
         ((EnFirefly_ReturnToPerch(this, play) == 0) && (EnFirefly_SeekTorch(this, play) == 0))) {
         if (skelanimeUpdated) {
@@ -418,7 +423,7 @@ void EnFirefly_FlyIdle(EnFirefly* this, PlayState* play) {
     if (this->actor.bgCheckFlags & 8) {
         Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.wallYaw, 2, 0xC00, 0x300);
     }
-    if ((this->timer == 0) && (this->actor.xzDistToPlayer < 200.0f) &&
+    if ((this->timer == 0) && (this->actor.xzDistToPlayer < 250.0f) &&
         (Player_GetMask(play) != PLAYER_MASK_SKULL)) {
         EnFirefly_SetupDiveAttack(this);
     }
@@ -441,6 +446,12 @@ void EnFirefly_Fall(EnFirefly* this, PlayState* play) {
             this->timer--;
         }
         if ((this->actor.bgCheckFlags & 1) || (this->timer == 0)) {
+            EnFirefly *buddy;
+            buddy = (EnFirefly*)Actor_FindNearby(play, (Actor*)(this), ACTOR_EN_FIREFLY, ACTORCAT_ENEMY, 400.0f);
+            if (buddy != NULL) {
+                if (buddy->actionFunc == EnFirefly_Perch)
+                    EnFirefly_SetupDisturbDiveAttack(buddy);
+            }
             EnFirefly_SetupDie(this);
         }
     }
@@ -467,7 +478,7 @@ void EnFirefly_DiveAttack(EnFirefly* this, PlayState* play) {
     if (this->timer != 0) {
         this->timer--;
     }
-    Math_StepToF(&this->actor.speedXZ, 4.0f, 0.5f);
+    Math_StepToF(&this->actor.speedXZ, 4.0f*SPEED_MULTIPLIER, 0.5f);
     if (this->actor.bgCheckFlags & 8) {
         Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.wallYaw, 2, 0xC00, 0x300);
         Math_ScaledStepToS(&this->actor.shape.rot.x, this->targetPitch, 0x100);
@@ -483,7 +494,7 @@ void EnFirefly_DiveAttack(EnFirefly* this, PlayState* play) {
         Math_SmoothStepToS(&this->actor.shape.rot.x, Actor_WorldPitchTowardPoint(&this->actor, &preyPos) + 0x1554, 2,
                            0x400, 0x100);
     } else {
-        this->skelAnime.playSpeed = 1.5f;
+        this->skelAnime.playSpeed = 1.5f*SPEED_MULTIPLIER;
         if (this->actor.xzDistToPlayer > 80.0f) {
             Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 2, 0xC00, 0x300);
         }
@@ -528,7 +539,7 @@ void EnFirefly_FlyAway(EnFirefly* this, PlayState* play) {
         EnFirefly_SetupFlyIdle(this);
         return;
     }
-    Math_StepToF(&this->actor.speedXZ, 3.0f, 0.3f);
+    Math_StepToF(&this->actor.speedXZ, 3.0f*SPEED_MULTIPLIER, 0.3f);
     if (this->actor.bgCheckFlags & 1) {
         this->targetPitch = 0x954;
     } else if ((this->actor.bgCheckFlags & 0x10) || (this->maxAltitude < this->actor.world.pos.y)) {
@@ -564,6 +575,12 @@ void EnFirefly_Stunned(EnFirefly* this, PlayState* play) {
 
 void EnFirefly_FrozenFall(EnFirefly* this, PlayState* play) {
     if ((this->actor.bgCheckFlags & 1) || (this->actor.floorHeight == BGCHECK_Y_MIN)) {
+        EnFirefly *buddy;
+        buddy = (EnFirefly*)Actor_FindNearby(play, (Actor*)(this), ACTOR_EN_FIREFLY, ACTORCAT_ENEMY, 400.0f);
+        if (buddy != NULL) {
+            if (buddy->actionFunc == EnFirefly_Perch)
+                EnFirefly_SetupDisturbDiveAttack(buddy);
+        }
         this->actor.colorFilterTimer = 0;
         EnFirefly_SetupDie(this);
     } else {
@@ -584,7 +601,7 @@ void EnFirefly_Perch(EnFirefly* this, PlayState* play) {
         this->timer = 1;
     }
 
-    if (this->actor.xzDistToPlayer < 120.0f) {
+    if (this->actor.xzDistToPlayer < 220.0f && Rand_ZeroOne() < 0.1f) {
         EnFirefly_SetupDisturbDiveAttack(this);
     }
 }
@@ -682,8 +699,11 @@ void EnFirefly_Update(Actor* thisx, PlayState* play2) {
         if (this->onFire) {
             EnFirefly_Extinguish(this);
         }
-        if (this->actionFunc != EnFirefly_DisturbDiveAttack) {
+        if (this->actionFunc != EnFirefly_DisturbDiveAttack && !(this->collider.base.atFlags & 4)) {
             EnFirefly_SetupRebound(this);
+        } else if (this->actionFunc == EnFirefly_DiveAttack || this->actionFunc == EnFirefly_DisturbDiveAttack) {
+            EnFirefly_SetupDisturbDiveAttack(this);
+            this->actor.world.rot.y = this->actor.shape.rot.y = this->actor.yawTowardsPlayer+0x8000;
         }
     }
 
@@ -707,7 +727,8 @@ void EnFirefly_Update(Actor* thisx, PlayState* play2) {
     this->collider.elements[0].dim.worldSphere.center.y = this->actor.world.pos.y + 10.0f;
     this->collider.elements[0].dim.worldSphere.center.z = this->actor.world.pos.z;
 
-    if ((this->actionFunc == EnFirefly_DiveAttack) || (this->actionFunc == EnFirefly_DisturbDiveAttack)) {
+    if ((this->actionFunc == EnFirefly_DiveAttack) || (this->actionFunc == EnFirefly_DisturbDiveAttack)/* ||
+                !(this->auraType == KEESE_AURA_NONE)*/) {
         CollisionCheck_SetAT(play, &play->colChkCtx, &this->collider.base);
     }
 

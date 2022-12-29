@@ -68,7 +68,7 @@ static ColliderCylinderInit sCylinderInit = {
     },
     {
         ELEMTYPE_UNK0,
-        { 0xFFCFFFFF, 0x04, 0x10 },
+        { 0x20000000, 0x04, 0x10 },
         { 0xFFCFFFFF, 0x00, 0x00 },
         TOUCH_ON | TOUCH_SFX_HARD,
         BUMP_ON | BUMP_HOOKABLE,
@@ -91,13 +91,13 @@ static DamageTable sDamageTable = {
     /* Kokiri sword  */ DMG_ENTRY(1, 0x0),
     /* Master sword  */ DMG_ENTRY(2, 0x0),
     /* Giant's Knife */ DMG_ENTRY(4, 0x0),
-    /* Fire arrow    */ DMG_ENTRY(4, 0x2),
+    /* Fire arrow    */ DMG_ENTRY(3, 0x2),
     /* Ice arrow     */ DMG_ENTRY(2, 0x0),
     /* Light arrow   */ DMG_ENTRY(4, 0x4),
     /* Unk arrow 1   */ DMG_ENTRY(4, 0x0),
     /* Unk arrow 2   */ DMG_ENTRY(2, 0x0),
     /* Unk arrow 3   */ DMG_ENTRY(2, 0x0),
-    /* Fire magic    */ DMG_ENTRY(4, 0x2),
+    /* Fire magic    */ DMG_ENTRY(1, 0x2),
     /* Ice magic     */ DMG_ENTRY(0, 0x0),
     /* Light magic   */ DMG_ENTRY(4, 0x4),
     /* Shield        */ DMG_ENTRY(0, 0x0),
@@ -298,7 +298,7 @@ void EnFloormas_SetupSplit(EnFloormas* this) {
     this->actor.speedXZ = 4.0f;
     this->actor.velocity.y = 7.0f;
     // using div creates a signed check.
-    this->actor.colChkInfo.health = sColChkInfoInit.health >> 1;
+    this->actor.colChkInfo.health = 3; //sColChkInfoInit.health >> 1;
     this->actionFunc = EnFloormas_Split;
 }
 
@@ -445,7 +445,7 @@ void EnFloormas_Die(EnFloormas* this, PlayState* play) {
 
 void EnFloormas_BigDecideAction(EnFloormas* this, PlayState* play) {
     if (SkelAnime_Update(&this->skelAnime)) {
-        // within 400 units of link and within 90 degrees rotation of him
+        // within 400 units of link and NOT within 90 degrees rotation of him
         if (this->actor.xzDistToPlayer < 400.0f && !Actor_IsFacingPlayer(&this->actor, 0x4000)) {
             this->actionTarget = this->actor.yawTowardsPlayer;
             EnFloormas_SetupTurn(this);
@@ -494,7 +494,7 @@ void EnFloormas_BigWalk(EnFloormas* this, PlayState* play) {
         EnFloormas_SetupTurn(this);
     } else if ((this->actor.xzDistToPlayer < 400.0f) && !Actor_IsFacingPlayer(&this->actor, 0x4000)) {
         // set target rotation to link.
-        this->actionTarget = this->actor.yawTowardsPlayer;
+        this->actionTarget = aimToPlayerMovement(&this->actor,7.0,play); /*this->actor.yawTowardsPlayer*/;
         EnFloormas_SetupTurn(this);
     } else if (this->actionTimer == 0) {
         EnFloormas_SetupBigStopWalk(this);

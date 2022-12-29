@@ -208,7 +208,7 @@ void EnVm_Wait(EnVm* this, PlayState* play) {
                     }
                 }
             } else {
-                this->headRotY -= 0x1F4;
+                this->headRotY -= 0x1F4*2;
             }
 
             SkelAnime_Update(&this->skelAnime);
@@ -289,10 +289,18 @@ void EnVm_Attack(EnVm* this, PlayState* play) {
         if (--this->timer > 300) {
             return;
         }
+        
+        s16 frameScaleY = this->timer-200;
+        if (frameScaleY <= 0)
+            frameScaleY = 1;
+        else {
+            frameScaleY = 1+frameScaleY/10;
+        }
+        
 
-        Math_SmoothStepToS(&this->headRotY, -this->actor.shape.rot.y + this->actor.yawTowardsPlayer, 10, 0xDAC, 0);
-        Math_SmoothStepToS(&this->beamRot.y, this->actor.yawTowardsPlayer, 10, 0xDAC, 0);
-        Math_SmoothStepToS(&this->beamRot.x, pitch, 10, 0xDAC, 0);
+        Math_SmoothStepToS(&this->headRotY, -this->actor.shape.rot.y + this->actor.yawTowardsPlayer, frameScaleY, 0xDAC, 0);
+        Math_SmoothStepToS(&this->beamRot.y, this->actor.yawTowardsPlayer, frameScaleY, 0xDAC, 0);
+        Math_SmoothStepToS(&this->beamRot.x, pitch, 5, 0xDAC, 0xDAC/20);
         playerPos = player->actor.world.pos;
 
         if (player->actor.floorHeight > BGCHECK_Y_MIN) {

@@ -82,10 +82,13 @@ void EnNutsball_Init(Actor* thisx, PlayState* play) {
     }
 
     if (this->objBankIndex < 0) {
-        Actor_Kill(&this->actor);
-    } else {
-        this->actionFunc = func_80ABBB34;
+        this->objBankIndex = Object_Spawn(&play->objectCtx,sObjectIDs[this->actor.params]);
+        if (this->objBankIndex < 0) {
+            Actor_Kill(&this->actor);
+        }
     }
+
+    this->actionFunc = func_80ABBB34;
 }
 
 void EnNutsball_Destroy(Actor* thisx, PlayState* play) {
@@ -101,7 +104,7 @@ void func_80ABBB34(EnNutsball* this, PlayState* play) {
         this->actor.shape.rot.y = 0;
         this->timer = 30;
         this->actionFunc = func_80ABBBA8;
-        this->actor.speedXZ = 10.0f;
+        this->actor.speedXZ = NUTS_SPEED;
     }
 }
 

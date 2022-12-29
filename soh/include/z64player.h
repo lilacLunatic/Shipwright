@@ -678,6 +678,16 @@ typedef struct Player {
     // Upstream TODO: Rename this to make it more obvious it is apart of an enhancement
     /*        */ u8         boomerangQuickRecall; // Has the player pressed the boomerang button while it's in the air still?
     // #endregion
+    // #region SOH [Combat Mod]
+                 u8         shieldRelaxTimer;
+                 u8         shieldUpTimer;
+                 u8         shieldEntry;
+                 u8         crossoverState;
+                 Vec3f      entryDiff;
+    // #endregion
 } Player; // size = 0xA94
 
+
+
+s32 Player_isRangedWeaponReady(PlayState* play);
 #endif

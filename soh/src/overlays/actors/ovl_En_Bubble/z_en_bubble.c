@@ -29,8 +29,8 @@ static ColliderJntSphElementInit sJntSphElementsInit[2] = {
     {
         {
             ELEMTYPE_UNK0,
-            { 0x00000000, 0x00, 0x04 },
-            { 0xFFCFD753, 0x00, 0x00 },
+            { 0x00000000, 0x00, 0x08 },
+            { 0xFFCDE742, 0x00, 0x00 },
             TOUCH_NONE,
             BUMP_ON,
             OCELEM_ON,
@@ -41,9 +41,9 @@ static ColliderJntSphElementInit sJntSphElementsInit[2] = {
         {
             ELEMTYPE_UNK0,
             { 0x00000000, 0x00, 0x00 },
-            { 0x00002824, 0x00, 0x00 },
+            { 0x0002183D, 0x00, 0x00 },
             TOUCH_NONE,
-            BUMP_ON | BUMP_NO_AT_INFO | BUMP_NO_DAMAGE | BUMP_NO_SWORD_SFX | BUMP_NO_HITMARK,
+            BUMP_ON | BUMP_NO_AT_INFO /*| BUMP_NO_DAMAGE*/ | BUMP_NO_SWORD_SFX | BUMP_NO_HITMARK,
             OCELEM_NONE,
         },
         { 0, { { 0, 0, 0 }, 16 }, 100 },
@@ -72,6 +72,11 @@ static Vec3f sEffectAccel = { 0.0f, -0.5f, 0.0f };
 static Color_RGBA8 sEffectPrimColor = { 255, 255, 255, 255 };
 
 static Color_RGBA8 sEffectEnvColor = { 150, 150, 150, 0 };
+
+static const MovementSpeedBase = 6.0f;
+static const MovementSpeedAug = 7.2000001f;
+static const MovementSpeedYBase = 3.0f;
+static const MovementSpeedYAug = 3.6000001f;
 
 void EnBubble_SetDimensions(EnBubble* this, f32 dim) {
     f32 a;
@@ -102,7 +107,7 @@ u32 func_809CBCBC(EnBubble* this) {
 
     info->toucher.dmgFlags = 0x8;
     info->toucher.effect = 0;
-    info->toucher.damage = 4;
+    info->toucher.damage = 8;
     info->toucherFlags = TOUCH_ON;
     this->actor.velocity.y = 0.0f;
     return 6;
@@ -213,14 +218,16 @@ void EnBubble_Fly(EnBubble* this, PlayState* play) {
         bumpActor = this->colliderSphere.base.ac;
         this->normalizedBumpVelocity = bumpActor->velocity;
         EnBubble_Vec3fNormalize(&this->normalizedBumpVelocity);
-        this->velocityFromBump.x += (this->normalizedBumpVelocity.x * 3.0f);
-        this->velocityFromBump.y += (this->normalizedBumpVelocity.y * 3.0f);
-        this->velocityFromBump.z += (this->normalizedBumpVelocity.z * 3.0f);
+        this->velocityFromBump.x += (this->normalizedBumpVelocity.x * MovementSpeedBase);
+        this->velocityFromBump.y += (this->normalizedBumpVelocity.y * MovementSpeedBase);
+        this->velocityFromBump.z += (this->normalizedBumpVelocity.z * MovementSpeedBase);
+        //this->gravityTimer = 0;
     }
-    this->sinkSpeed -= 0.1f;
+    this->sinkSpeed -= this->gravityTimer ? 0.2f/this->gravityTimer : 0.2f;
     if (this->sinkSpeed < this->actor.minVelocityY) {
         this->sinkSpeed = this->actor.minVelocityY;
     }
+    DECR(this->gravityTimer);
     sp54.x = this->velocityFromBounce.x + this->velocityFromBump.x;
     sp54.y = this->velocityFromBounce.y + this->velocityFromBump.y + this->sinkSpeed;
     sp54.z = this->velocityFromBounce.z + this->velocityFromBump.z;
@@ -245,15 +252,16 @@ void EnBubble_Fly(EnBubble* this, PlayState* play) {
         if (bounceCount > (s16)(Rand_ZeroOne() * 10.0f)) {
             this->bounceCount = 0;
         }
-        bounceSpeed = (this->bounceCount == 0) ? 3.6000001f : 3.0f;
+        bounceSpeed = (this->bounceCount == 0) ? MovementSpeedAug : MovementSpeedBase;
         this->velocityFromBump.x = this->velocityFromBump.y = this->velocityFromBump.z = 0.0f;
         this->velocityFromBounce.x = (this->bounceDirection.x * bounceSpeed);
-        this->velocityFromBounce.y = (this->bounceDirection.y * bounceSpeed);
+        this->velocityFromBounce.y = (this->bounceDirection.y * bounceSpeed*0.8f);
         this->velocityFromBounce.z = (this->bounceDirection.z * bounceSpeed);
         this->sinkSpeed = 0.0f;
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_AWA_BOUND);
         this->graphicRotSpeed = 128.0f;
         this->graphicEccentricity = 0.48f;
+        this->gravityTimer = 0;
     } else if (this->actor.bgCheckFlags & 0x20 && sp54.y < 0.0f) {
         sp60.x = sp60.z = 0.0f;
         sp60.y = 1.0f;
@@ -264,15 +272,16 @@ void EnBubble_Fly(EnBubble* this, PlayState* play) {
         if (bounceCount > (s16)(Rand_ZeroOne() * 10.0f)) {
             this->bounceCount = 0;
         }
-        bounceSpeed = (this->bounceCount == 0) ? 3.6000001f : 3.0f;
+        bounceSpeed = (this->bounceCount == 0) ? MovementSpeedAug : MovementSpeedBase;
         this->velocityFromBump.x = this->velocityFromBump.y = this->velocityFromBump.z = 0.0f;
         this->velocityFromBounce.x = (this->bounceDirection.x * bounceSpeed);
-        this->velocityFromBounce.y = (this->bounceDirection.y * bounceSpeed);
+        this->velocityFromBounce.y = (this->bounceDirection.y * bounceSpeed*0.8f);
         this->velocityFromBounce.z = (this->bounceDirection.z * bounceSpeed);
         this->sinkSpeed = 0.0f;
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_AWA_BOUND);
         this->graphicRotSpeed = 128.0f;
         this->graphicEccentricity = 0.48f;
+        this->gravityTimer = 0;
     }
     this->actor.velocity.x = this->velocityFromBounce.x + this->velocityFromBump.x;
     this->actor.velocity.y = this->velocityFromBounce.y + this->velocityFromBump.y + this->sinkSpeed;
@@ -287,13 +296,23 @@ u32 func_809CC648(EnBubble* this) {
         return false;
     }
     this->colliderSphere.base.acFlags &= ~AC_HIT;
-    if (this->colliderSphere.elements[1].info.bumperFlags & BUMP_HIT) {
-        this->unk_1F0.x = this->colliderSphere.base.ac->velocity.x / 10.0f;
-        this->unk_1F0.y = this->colliderSphere.base.ac->velocity.y / 10.0f;
-        this->unk_1F0.z = this->colliderSphere.base.ac->velocity.z / 10.0f;
-        this->graphicRotSpeed = 128.0f;
-        this->graphicEccentricity = 0.48f;
+    if (this->actor.colChkInfo.damageEffect == 1) {
+        //Reduce velocity to nothing
+        this->actor.velocity.x = this->actor.velocity.y = this->actor.velocity.z =
+        this->velocityFromBounce.x = this->velocityFromBounce.y = this->velocityFromBounce.z =
+        this->velocityFromBump.x = this->velocityFromBump.y = this->velocityFromBump.z =
+        this->sinkSpeed = 0.0f;
+        this->gravityTimer = 30;
         return false;
+    } else {
+        if (this->colliderSphere.elements[1].info.bumperFlags & BUMP_HIT) {
+            this->unk_1F0.x = this->colliderSphere.base.ac->velocity.x / 10.0f;
+            this->unk_1F0.y = this->colliderSphere.base.ac->velocity.y / 10.0f;
+            this->unk_1F0.z = this->colliderSphere.base.ac->velocity.z / 10.0f;
+            this->graphicRotSpeed = 128.0f;
+            this->graphicEccentricity = 0.48f;
+            return false;
+        }
     }
     this->unk_208 = 8;
     return true;
@@ -343,10 +362,11 @@ void EnBubble_Init(Actor* thisx, PlayState* play) {
     this->bounceDirection.y = Rand_ZeroOne();
     this->bounceDirection.z = Rand_ZeroOne();
     EnBubble_Vec3fNormalize(&this->bounceDirection);
-    this->velocityFromBounce.x = this->bounceDirection.x * 3.0f;
-    this->velocityFromBounce.y = this->bounceDirection.y * 3.0f;
-    this->velocityFromBounce.z = this->bounceDirection.z * 3.0f;
+    this->velocityFromBounce.x = this->bounceDirection.x * MovementSpeedBase;
+    this->velocityFromBounce.y = this->bounceDirection.y * MovementSpeedBase;
+    this->velocityFromBounce.z = this->bounceDirection.z * MovementSpeedBase;
     EnBubble_SetDimensions(this, 0.0f);
+    this->gravityTimer = 0;
     this->actionFunc = EnBubble_Wait;
 }
 

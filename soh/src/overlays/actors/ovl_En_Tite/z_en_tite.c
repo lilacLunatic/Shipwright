@@ -15,7 +15,7 @@
 // EnTite_Idle
 #define vIdleTimer actionVar1
 
-// EnTite_Attack (vQueuedJumps also used by EnTite_MoveTowardPlayer)
+// EnTite_Attack (vQueuedJumps also used by EnTite_FreeHopping)
 #define vAttackState actionVar1
 #define vQueuedJumps actionVar2
 
@@ -59,14 +59,15 @@ void EnTite_Draw(Actor* thisx, PlayState* play);
 
 void EnTite_SetupIdle(EnTite* this);
 void EnTite_SetupTurnTowardPlayer(EnTite* this);
-void EnTite_SetupMoveTowardPlayer(EnTite* this);
+void EnTite_SetupMoveTowardPlayer(EnTite* this, PlayState* play);
+void EnTite_SetupDodgePlayer(EnTite* this, PlayState* play);
 void EnTite_SetupDeathCry(EnTite* this);
 void EnTite_SetupFlipUpright(EnTite* this);
 
 void EnTite_Idle(EnTite* this, PlayState* play);
 void EnTite_Attack(EnTite* this, PlayState* play);
 void EnTite_TurnTowardPlayer(EnTite* this, PlayState* play);
-void EnTite_MoveTowardPlayer(EnTite* this, PlayState* play);
+void EnTite_FreeHopping(EnTite* this, PlayState* play);
 void EnTite_Recoil(EnTite* this, PlayState* play);
 void EnTite_Stunned(EnTite* this, PlayState* play);
 void EnTite_DeathCry(EnTite* this, PlayState* play);
@@ -170,6 +171,13 @@ static Vec3f sIceChunks[12] = {
     { 10.0f, 0.0f, -10.0f },  { 0.0f, 20.0f, 20.0f },    { -10.0f, 0.0f, 10.0f },  { -10.0f, 0.0f, -10.0f },
 };
 
+static const f32 MAX_DIST = 500.0f;
+static const f32 ATTACK_DIST = 300.0f;
+static const f32 VERTICAL_DIST = 200.0f;
+static const f32 TURN_MULT = 2.0f;
+static const f32 MOVEMENT_SPEED = 6.0;
+static const f32 RECALL_SPEED = -8.0;
+
 void EnTite_SetupAction(EnTite* this, EnTiteActionFunc actionFunc) {
     this->actionFunc = actionFunc;
 }
@@ -189,14 +197,14 @@ void EnTite_Init(Actor* thisx, PlayState* play) {
     this->bodyBreak.val = BODYBREAK_STATUS_FINISHED;
     thisx->focus.pos = thisx->world.pos;
     thisx->focus.pos.y += 20.0f;
-    thisx->colChkInfo.health = 2;
+    thisx->colChkInfo.health = 3;
     thisx->colChkInfo.mass = MASS_HEAVY;
     Collider_InitJntSph(play, &this->collider);
     Collider_SetJntSph(play, &this->collider, thisx, &sJntSphInit, &this->colliderItem);
     this->unk_2DC = 0x1D;
     if (this->actor.params == TEKTITE_BLUE) {
         this->unk_2DC |= 0x40; // Don't use the actor engine's ripple spawning code
-        thisx->colChkInfo.health = 4;
+        thisx->colChkInfo.health = 8;
         thisx->naviEnemyId += 1;
     }
     EnTite_SetupIdle(this);
@@ -246,7 +254,7 @@ void EnTite_Idle(EnTite* this, PlayState* play) {
     }
     if (this->vIdleTimer > 0) {
         this->vIdleTimer--;
-    } else if ((this->actor.xzDistToPlayer < 300.0f) && (this->actor.yDistToPlayer <= 80.0f)) {
+    } else if ((this->actor.xzDistToPlayer < MAX_DIST) && (this->actor.yDistToPlayer <= VERTICAL_DIST)) {
         EnTite_SetupTurnTowardPlayer(this);
     }
 }
@@ -282,9 +290,10 @@ void EnTite_Attack(EnTite* this, PlayState* play) {
                     this->actor.world.pos.y += this->actor.yDistToWater;
                     Audio_PlayActorSound2(&this->actor, NA_SE_EN_TEKU_JUMP_WATER);
                 }
-                this->actor.velocity.y = 8.0f;
+                
+                this->actor.velocity.y = (f32)Rand_S16Offset(6,8);
                 this->actor.gravity = -1.0f;
-                this->actor.speedXZ = 4.0f;
+                this->actor.speedXZ = (f32)Rand_S16Offset(2,16);
                 break;
             case TEKTITE_MID_LUNGE:
                 // Continue trajectory until tektite has negative velocity and has landed on ground/water surface
@@ -348,7 +357,7 @@ void EnTite_Attack(EnTite* this, PlayState* play) {
             Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 1, 1000, 0);
             this->actor.shape.rot.y = this->actor.world.rot.y;
             angleToPlayer = this->actor.yawTowardsPlayer - this->actor.shape.rot.y;
-            if ((this->actor.xzDistToPlayer > 300.0f) && (this->actor.yDistToPlayer > 80.0f)) {
+            if ((this->actor.xzDistToPlayer > MAX_DIST) && (this->actor.yDistToPlayer > VERTICAL_DIST)) {
                 EnTite_SetupIdle(this);
             } else if (ABS(angleToPlayer) >= 9000) {
                 EnTite_SetupTurnTowardPlayer(this);
@@ -370,7 +379,7 @@ void EnTite_Attack(EnTite* this, PlayState* play) {
                 Player* player = GET_PLAYER(play);
                 this->collider.base.atFlags &= ~AT_HIT;
                 Animation_MorphToLoop(&this->skelAnime, &object_tite_Anim_0012E4, 4.0f);
-                this->actor.speedXZ = -6.0f;
+                this->actor.speedXZ = RECALL_SPEED;
                 this->actor.world.rot.y = this->actor.yawTowardsPlayer;
                 if (&player->actor == this->collider.base.at) {
                     if (!(this->collider.base.atFlags & AT_BOUNCED)) {
@@ -423,6 +432,7 @@ void EnTite_Attack(EnTite* this, PlayState* play) {
 void EnTite_SetupTurnTowardPlayer(EnTite* this) {
     Animation_PlayLoop(&this->skelAnime, &object_tite_Anim_000A14);
     this->action = TEKTITE_TURN_TOWARD_PLAYER;
+    this->actor.world.rot.y = this->actor.shape.rot.y;
     if ((this->actor.bgCheckFlags & 3) || ((this->actor.params == TEKTITE_BLUE) && (this->actor.bgCheckFlags & 0x20))) {
         if (this->actor.velocity.y <= 0.0f) {
             this->actor.gravity = 0.0f;
@@ -451,10 +461,10 @@ void EnTite_TurnTowardPlayer(EnTite* this, PlayState* play) {
     angleToPlayer = Actor_WorldYawTowardActor(&this->actor, &GET_PLAYER(play)->actor) - this->actor.world.rot.y;
     if (angleToPlayer > 0) {
         turnVelocity = (angleToPlayer / 42.0f) + 10.0f;
-        this->actor.world.rot.y += (turnVelocity * 2);
+        this->actor.world.rot.y += (turnVelocity * 2*TURN_MULT);
     } else {
         turnVelocity = (angleToPlayer / 42.0f) - 10.0f;
-        this->actor.world.rot.y += (turnVelocity * 2);
+        this->actor.world.rot.y += (turnVelocity * 2*TURN_MULT);
     }
     if (angleToPlayer > 0) {
         this->skelAnime.playSpeed = turnVelocity * 0.01f;
@@ -476,36 +486,94 @@ void EnTite_TurnTowardPlayer(EnTite* this, PlayState* play) {
 
     // Idle if player is far enough away from the tektite, move or attack if almost facing player
     this->actor.shape.rot.y = this->actor.world.rot.y;
-    if ((this->actor.xzDistToPlayer > 300.0f) && (this->actor.yDistToPlayer > 80.0f)) {
+    if ((this->actor.xzDistToPlayer > MAX_DIST) && (this->actor.yDistToPlayer > VERTICAL_DIST)) {
         EnTite_SetupIdle(this);
     } else if (Actor_IsFacingPlayer(&this->actor, 3640)) {
-        if ((this->actor.xzDistToPlayer <= 180.0f) && (this->actor.yDistToPlayer <= 80.0f)) {
+        if ((this->actor.xzDistToPlayer <= ATTACK_DIST) && (this->actor.yDistToPlayer <= VERTICAL_DIST)) {
             EnTite_SetupAttack(this);
         } else {
-            EnTite_SetupMoveTowardPlayer(this);
+            EnTite_SetupMoveTowardPlayer(this, play);
         }
     }
 }
 
-void EnTite_SetupMoveTowardPlayer(EnTite* this) {
+s32 EnTite_ProjectWallColision(EnTite* this, PlayState* play, f32 dist, s16 relAngle) {
+    s16 angle = (s16)(this->actor.yawTowardsPlayer + relAngle);
+    f32 dx = Math_SinS(angle) * dist;
+    f32 dz = Math_CosS(angle) * dist;
+    Vec3f newPos = this->actor.world.pos;
+    newPos.x += dx;
+    newPos.z += dz;
+    Vec3f finalPos;
+    s32 bgId;
+    s32 wallHit = BgCheck_EntitySphVsWall3(&play->colCtx,&finalPos,&newPos, &this->actor.prevPos,20.0f,
+                &this->actor.wallPoly, &bgId, &this->actor, 40.0f);
+    
+    return wallHit;
+}
+
+void EnTite_SetupMoveTowardPlayer(EnTite* this, PlayState* play) {
     Animation_PlayLoop(&this->skelAnime, &object_tite_Anim_000C70);
     this->action = TEKTITE_MOVE_TOWARD_PLAYER;
-    this->actor.velocity.y = 10.0f;
+    this->vQueuedJumps = Rand_S16Offset(0, 2);
+    
+    f32 distance = 75.0*(this->vQueuedJumps+1);
+    s16 angle = 0x1500;
+    s32 wallHitL = EnTite_ProjectWallColision(this, play, distance, angle);
+    s32 wallHitR = EnTite_ProjectWallColision(this, play, distance, -angle);//(s16)0x4000+(s16)0x4000+(s16)0x4000
+    
+    this->actor.world.rot.y = this->actor.yawTowardsPlayer + 
+                (wallHitL ? (wallHitR ? 0 : -angle) : (wallHitR ? angle : (Rand_ZeroOne() < 0.5f ? -angle : angle)) );
+    this->actor.velocity.y = MOVEMENT_SPEED;
     this->actor.gravity = -1.0f;
-    this->actor.speedXZ = 4.0f;
-    this->vQueuedJumps = Rand_S16Offset(1, 3);
+    this->actor.speedXZ = MOVEMENT_SPEED;
+    
     if ((this->actor.params == TEKTITE_BLUE) && (this->actor.bgCheckFlags & 0x20)) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_TEKU_JUMP_WATER);
     } else {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_STAL_JUMP);
     }
-    EnTite_SetupAction(this, EnTite_MoveTowardPlayer);
+    EnTite_SetupAction(this, EnTite_FreeHopping);
+}
+
+void EnTite_SetupDodgePlayer(EnTite* this, PlayState* play) {
+    Animation_PlayLoop(&this->skelAnime, &object_tite_Anim_000C70);
+    this->action = TEKTITE_MOVE_TOWARD_PLAYER;
+    this->vQueuedJumps = Rand_S16Offset(0, 1);
+    
+    f32 distance = 75.0*(this->vQueuedJumps+1);
+    s16 angle = 0x5000;
+    s32 wallHitL = EnTite_ProjectWallColision(this, play, distance, angle);
+    s32 wallHitR = EnTite_ProjectWallColision(this, play, distance, -angle);//(s16)0x4000+(s16)0x4000+(s16)0x4000
+    
+    if (!wallHitL && !wallHitR)
+        this->actor.world.rot.y = this->actor.yawTowardsPlayer + (Rand_ZeroOne() < 0.5f ? -angle : angle);
+    else if (!wallHitL)
+        this->actor.world.rot.y = this->actor.yawTowardsPlayer + angle;
+    else if (!wallHitR)
+        this->actor.world.rot.y = this->actor.yawTowardsPlayer + -angle;
+    else {
+        if (!EnTite_ProjectWallColision(this, play, distance, 0x7FFF))
+            this->actor.world.rot.y = this->actor.yawTowardsPlayer + 0x7FFF;
+    }
+                
+                
+    this->actor.velocity.y = MOVEMENT_SPEED;
+    this->actor.gravity = -1.0f;
+    this->actor.speedXZ = MOVEMENT_SPEED;
+    
+    if ((this->actor.params == TEKTITE_BLUE) && (this->actor.bgCheckFlags & 0x20)) {
+        Audio_PlayActorSound2(&this->actor, NA_SE_EN_TEKU_JUMP_WATER);
+    } else {
+        Audio_PlayActorSound2(&this->actor, NA_SE_EN_STAL_JUMP);
+    }
+    EnTite_SetupAction(this, EnTite_FreeHopping);
 }
 
 /**
  *  Jumping toward player as a method of travel (different from attacking, has no hitbox)
  */
-void EnTite_MoveTowardPlayer(EnTite* this, PlayState* play) {
+void EnTite_FreeHopping(EnTite* this, PlayState* play) {
     Math_SmoothStepToF(&this->actor.speedXZ, 0.0f, 0.1f, 1.0f, 0.0f);
     SkelAnime_Update(&this->skelAnime);
 
@@ -534,7 +602,7 @@ void EnTite_MoveTowardPlayer(EnTite* this, PlayState* play) {
         // slightly turn toward player upon landing and snap to ground or water.
         this->actor.speedXZ = 0.0f;
         Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 1, 4000, 0);
-        this->actor.world.rot.y = this->actor.shape.rot.y;
+        //this->actor.world.rot.y = this->actor.shape.rot.y;
         if ((this->actor.params != TEKTITE_BLUE) || !(this->actor.bgCheckFlags & 0x20)) {
             if (this->actor.floorHeight > BGCHECK_Y_MIN) {
                 this->actor.world.pos.y = this->actor.floorHeight;
@@ -559,14 +627,14 @@ void EnTite_MoveTowardPlayer(EnTite* this, PlayState* play) {
         }
 
         // Idle or turn if player is too far away, otherwise keep jumping
-        if (((this->actor.xzDistToPlayer > 300.0f) && (this->actor.yDistToPlayer > 80.0f))) {
+        if (((this->actor.xzDistToPlayer > MAX_DIST) && (this->actor.yDistToPlayer > VERTICAL_DIST))) {
             EnTite_SetupIdle(this);
-        } else if (((this->actor.xzDistToPlayer <= 180.0f)) && ((this->actor.yDistToPlayer <= 80.0f))) {
+        } else if (((this->actor.xzDistToPlayer <= ATTACK_DIST)) && ((this->actor.yDistToPlayer <= VERTICAL_DIST))) {
             if (this->vQueuedJumps <= 0) {
                 EnTite_SetupTurnTowardPlayer(this);
             } else {
-                this->actor.velocity.y = 10.0f;
-                this->actor.speedXZ = 4.0f;
+                this->actor.velocity.y = MOVEMENT_SPEED;
+                this->actor.speedXZ = MOVEMENT_SPEED;
                 this->actor.flags |= ACTOR_FLAG_24;
                 this->actor.gravity = -1.0f;
                 if ((this->actor.params == TEKTITE_BLUE) && (this->actor.bgCheckFlags & 0x20)) {
@@ -576,8 +644,8 @@ void EnTite_MoveTowardPlayer(EnTite* this, PlayState* play) {
                 }
             }
         } else {
-            this->actor.velocity.y = 10.0f;
-            this->actor.speedXZ = 4.0f;
+            this->actor.velocity.y = MOVEMENT_SPEED;
+            this->actor.speedXZ = MOVEMENT_SPEED;
             this->actor.flags |= ACTOR_FLAG_24;
             this->actor.gravity = -1.0f;
             if ((this->actor.params == TEKTITE_BLUE) && (this->actor.bgCheckFlags & 0x20)) {
@@ -591,7 +659,7 @@ void EnTite_MoveTowardPlayer(EnTite* this, PlayState* play) {
         // Turn slowly toward player
         this->actor.flags |= ACTOR_FLAG_24;
         Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 1, 1000, 0);
-        if (this->actor.velocity.y >= 6.0f) {
+        if (this->actor.velocity.y >= 4.0f) {
             if (this->actor.bgCheckFlags & 1) {
                 func_800355B8(play, &this->frontLeftFootPos);
                 func_800355B8(play, &this->frontRightFootPos);
@@ -605,7 +673,8 @@ void EnTite_MoveTowardPlayer(EnTite* this, PlayState* play) {
 void EnTite_SetupRecoil(EnTite* this) {
     this->action = TEKTITE_RECOIL;
     Animation_MorphToLoop(&this->skelAnime, &object_tite_Anim_0012E4, 4.0f);
-    this->actor.speedXZ = -6.0f;
+    this->actor.velocity.y = 0;
+    this->actor.speedXZ = RECALL_SPEED;
     this->actor.world.rot.y = this->actor.yawTowardsPlayer;
     this->actor.gravity = -1.0f;
     EnTite_SetupAction(this, EnTite_Recoil);
@@ -652,16 +721,16 @@ void EnTite_Recoil(EnTite* this, PlayState* play) {
                                                                              (this->actor.bgCheckFlags & 0x20)))) {
         this->actor.world.rot.y = this->actor.shape.rot.y;
         this->collider.base.atFlags &= ~AT_HIT;
-        if ((this->actor.xzDistToPlayer > 300.0f) && (this->actor.yDistToPlayer > 80.0f) &&
+        if ((this->actor.xzDistToPlayer > MAX_DIST) && (this->actor.yDistToPlayer > VERTICAL_DIST) &&
             (ABS(this->actor.shape.rot.x) < 4000) && (ABS(this->actor.shape.rot.z) < 4000) &&
             ((this->actor.bgCheckFlags & 1) ||
              ((this->actor.params == TEKTITE_BLUE) && (this->actor.bgCheckFlags & 0x20)))) {
-            EnTite_SetupIdle(this);
-        } else if ((this->actor.xzDistToPlayer < 180.0f) && (this->actor.yDistToPlayer <= 80.0f) &&
+            EnTite_SetupMoveTowardPlayer(this, play);
+        } else if ((this->actor.xzDistToPlayer < ATTACK_DIST) && (this->actor.yDistToPlayer <= VERTICAL_DIST) &&
                    (ABS(angleToPlayer) <= 6000)) {
             EnTite_SetupAttack(this);
         } else {
-            EnTite_SetupMoveTowardPlayer(this);
+            EnTite_SetupDodgePlayer(this, play);
         }
     }
     SkelAnime_Update(&this->skelAnime);
@@ -671,7 +740,7 @@ void EnTite_SetupStunned(EnTite* this) {
     Animation_Change(&this->skelAnime, &object_tite_Anim_0012E4, 0.0f, 0.0f,
                      (f32)Animation_GetLastFrame(&object_tite_Anim_0012E4), ANIMMODE_LOOP, 4.0f);
     this->action = TEKTITE_STUNNED;
-    this->actor.speedXZ = -6.0f;
+    this->actor.speedXZ = RECALL_SPEED;
     this->actor.world.rot.y = this->actor.yawTowardsPlayer;
     if (this->damageEffect == 0xF) {
         this->spawnIceTimer = 48;
@@ -724,16 +793,16 @@ void EnTite_Stunned(EnTite* this, PlayState* play) {
             EnTite_SetupDeathCry(this);
         } else if (this->flipState == TEKTITE_FLIPPED) {
             EnTite_SetupFlipUpright(this);
-        } else if (((this->actor.xzDistToPlayer > 300.0f) && (this->actor.yDistToPlayer > 80.0f) &&
+        } else if (((this->actor.xzDistToPlayer > MAX_DIST) && (this->actor.yDistToPlayer > VERTICAL_DIST) &&
                     (ABS(this->actor.shape.rot.x) < 4000) && (ABS(this->actor.shape.rot.z) < 4000)) &&
                    ((this->actor.bgCheckFlags & 1) ||
                     ((this->actor.params == TEKTITE_BLUE) && (this->actor.bgCheckFlags & 0x20)))) {
             EnTite_SetupIdle(this);
-        } else if ((this->actor.xzDistToPlayer < 180.0f) && (this->actor.yDistToPlayer <= 80.0f) &&
+        } else if ((this->actor.xzDistToPlayer < ATTACK_DIST) && (this->actor.yDistToPlayer <= VERTICAL_DIST) &&
                    (ABS(angleToPlayer) <= 6000)) {
             EnTite_SetupAttack(this);
         } else {
-            EnTite_SetupMoveTowardPlayer(this);
+            EnTite_SetupMoveTowardPlayer(this, play);
         }
     }
     SkelAnime_Update(&this->skelAnime);
@@ -877,7 +946,7 @@ void EnTite_CheckDamage(Actor* thisx, PlayState* play) {
         }
         // If hammer has recently hit the floor and player is close to tektite, flip over
     } else if ((thisx->colChkInfo.health != 0) && (play->actorCtx.unk_02 != 0) &&
-               (thisx->xzDistToPlayer <= 400.0f) && (thisx->bgCheckFlags & 1)) {
+               (thisx->xzDistToPlayer <= 200.0f) && (thisx->bgCheckFlags & 1)) {
         if (this->flipState == TEKTITE_FLIPPED) {
             EnTite_SetupFlipUpright(this);
         } else if ((this->action >= TEKTITE_IDLE) || (this->action >= TEKTITE_IDLE)) {
