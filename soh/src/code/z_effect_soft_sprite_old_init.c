@@ -1176,6 +1176,9 @@ void EffectSsDeadSound_SpawnStationary(PlayState* play, Vec3f* pos, u16 sfxId, s
  */
 void EffectSsIceSmoke_Spawn(PlayState* play, Vec3f* pos, Vec3f* velocity, Vec3f* accel, s16 scale) {
     EffectSsIceSmokeInitParams initParams;
+    s32 objBankIdx = Object_GetIndex(&play->objectCtx, OBJECT_FZ);
+    if (objBankIdx <= 0)
+        Object_Spawn(&play->objectCtx,OBJECT_FZ);
 
     Math_Vec3f_Copy(&initParams.pos, pos);
     Math_Vec3f_Copy(&initParams.velocity, velocity);
