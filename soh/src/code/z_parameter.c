@@ -3301,7 +3301,7 @@ s32 func_80087708(PlayState* play, s16 arg1, s16 arg2) {
         case 3:
             if (gSaveContext.magicState == 0) {
                 if (gSaveContext.magic > arg1) {
-                    play->interfaceCtx.unk_230 = 80;
+                    play->interfaceCtx.unk_230 = 1;
                     gSaveContext.magicState = 7;
                     return 1;
                 } else {

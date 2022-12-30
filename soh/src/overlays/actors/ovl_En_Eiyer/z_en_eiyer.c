@@ -73,7 +73,7 @@ static CollisionCheckInfoInit sColChkInfoInit = { 2, 45, 15, 100 };
 static DamageTable sDamageTable = {
     /* Deku nut      */ DMG_ENTRY(0, 0x1),
     /* Deku stick    */ DMG_ENTRY(2, 0x0),
-    /* Slingshot     */ DMG_ENTRY(1, 0x0),
+    /* Slingshot     */ DMG_ENTRY(0, 0x0),
     /* Explosive     */ DMG_ENTRY(2, 0x0),
     /* Boomerang     */ DMG_ENTRY(0, 0x1),
     /* Normal arrow  */ DMG_ENTRY(2, 0x0),
@@ -108,6 +108,7 @@ static DamageTable sDamageTable = {
 static InitChainEntry sInitChain[] = {
     ICHAIN_S8(naviEnemyId, 0x19, ICHAIN_CONTINUE),
     ICHAIN_VEC3F_DIV1000(scale, 5, ICHAIN_CONTINUE),
+    ICHAIN_U8(targetMode, 10, ICHAIN_CONTINUE),
     ICHAIN_F32(targetArrowOffset, 2500, ICHAIN_STOP),
 };
 
@@ -425,9 +426,9 @@ void EnEiyer_Glide(EnEiyer* this, PlayState* play) {
     this->actor.world.pos.y = this->basePos.y - cosf((curFrame - 5.0f) * (M_PI / 40)) * 5.0f;
 
     if (curFrame <= 45.0f) {
-        Math_StepToF(&this->actor.speedXZ, 1.0f, 0.03f);
-    } else {
         Math_StepToF(&this->actor.speedXZ, 1.5f, 0.03f);
+    } else {
+        Math_StepToF(&this->actor.speedXZ, 2.0f, 0.03f);
     }
 
     if (this->actor.bgCheckFlags & 8) {

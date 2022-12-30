@@ -64,7 +64,7 @@ static CollisionCheckInfoInit sColChkInfoInit = { 2, 45, 15, 100 };
 static DamageTable sDamageTable = {
     /* Deku nut      */ DMG_ENTRY(0, 0x1),
     /* Deku stick    */ DMG_ENTRY(2, 0x0),
-    /* Slingshot     */ DMG_ENTRY(1, 0x0),
+    /* Slingshot     */ DMG_ENTRY(0, 0x0),
     /* Explosive     */ DMG_ENTRY(2, 0x0),
     /* Boomerang     */ DMG_ENTRY(0, 0x1),
     /* Normal arrow  */ DMG_ENTRY(2, 0x0),
