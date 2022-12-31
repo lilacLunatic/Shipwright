@@ -2476,7 +2476,7 @@ s32 EnZf_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* po
     EnZf* this = (EnZf*)thisx;
 
     switch (limbIndex) {
-        case ENZF_LIMB_UPPER_BODY_ROOT:
+        case ENZF_LIMB_UPPER_BODY_ROOT: ;
             Player* player = GET_PLAYER(play);
             if (LINK_IS_CHILD || Player_IsInCrouchBlock(player))
                 rot->z += 0x0500;
