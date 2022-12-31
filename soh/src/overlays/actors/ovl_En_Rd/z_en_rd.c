@@ -258,7 +258,8 @@ void func_80AE2744(EnRd* this, PlayState* play) {
         }
 
         this->unk_305 = 0;
-        if (((this->actor.xzDistToPlayer <= HearingRange) && func_8002DDE4(play)) || (this->actor.xzDistToPlayer <= SenseRange)) {//Causes the undead to only notice the player if they are making noise
+
+        if ((this->actor.xzDistToPlayer <= HearingRange && func_8002DDE4(play)) || (this->actor.xzDistToPlayer <= SenseRange)) {//Causes the undead to only notice the player if they are making noise
             // Without the height check, redeads/gibdos can freeze the player from insane distances in
             // vertical rooms (like the first room in Deku Tree), making these rooms nearly unplayable.
             s8 enemyRando = CVar_GetS32("gRandomizedEnemies", 0);

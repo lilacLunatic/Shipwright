@@ -84,7 +84,7 @@ void EnMThunder_Init(Actor* thisx, PlayState* play2) {
     Actor_SetScale(&this->actor, 0.1f);
     this->unk_1CA = 0;
 
-    if (player->stateFlags2 & 0x20000) {
+    if (player->stateFlags2 & PLAYER_STATE2_17) {//0x20000 is PLAYER_STATE2_17 in z_player.c
         if (!gSaveContext.isMagicAcquired || gSaveContext.magicState ||
             (((this->actor.params & 0xFF00) >> 8) &&
              !(func_80087708(play, (this->actor.params & 0xFF00) >> 8, 0)))) {

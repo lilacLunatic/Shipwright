@@ -238,12 +238,12 @@ void EnDh_Wait(EnDh* this, PlayState* play) {
                                                                     player->actor.world.pos.y,
                                                                     player->actor.world.pos.z+Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
                                                                     0,this->actor.yawTowardsPlayer-0x4000,0,
-                                                                    0x4, 0);
+                                                                    0x4, false);
                         Actor_Spawn(&play->actorCtx,play,ACTOR_EN_RD, player->actor.world.pos.x-Math_SinS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_SinS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
                                                                     player->actor.world.pos.y,
                                                                     player->actor.world.pos.z-Math_CosS(this->actor.yawTowardsPlayer+0x4000)*undeadSpawnDist+Math_CosS(this->actor.yawTowardsPlayer)*undeadSpawnSpacing*ii,
                                                                     0,this->actor.yawTowardsPlayer+0x4000,0,
-                                                                    0x4, 0);
+                                                                    0x4, false);
                     }
                 }
                 EnDh_SetupWalk(this);
@@ -452,7 +452,7 @@ void EnDh_Summon_Wallmaster(EnDh* this, PlayState* play) {
     Actor_Spawn(&play->actorCtx,play,ACTOR_EN_WALLMAS,
                 player->actor.world.pos.x,player->actor.world.pos.y,player->actor.world.pos.z,
                 0,0,0,
-                0x0, 0);
+                0x0, false);
 }
 
 void EnDh_Damage(EnDh* this, PlayState* play) {
