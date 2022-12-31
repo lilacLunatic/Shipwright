@@ -24,9 +24,10 @@
 #include "z64skin.h"
 #include "z64transition.h"
 #include "z64interface.h"
+#include "alignment.h"
 #include "sequence.h"
 #include "sfx.h"
-#include <libultraship/color.h>
+#include <color.h>
 #include "ichain.h"
 #include "regs.h"
 
@@ -211,6 +212,81 @@ typedef struct {
     /* 0x0120 */ s32    flags;
     /* 0x0124 */ s32    unk_124;
 } View; // size = 0x128
+
+typedef enum {
+    /*  0 */ SETUPDL_0,
+    /*  1 */ SETUPDL_1,
+    /*  2 */ SETUPDL_2,
+    /*  3 */ SETUPDL_3,
+    /*  4 */ SETUPDL_4,
+    /*  5 */ SETUPDL_5,
+    /*  6 */ SETUPDL_6,
+    /*  7 */ SETUPDL_7,
+    /*  8 */ SETUPDL_8,
+    /*  9 */ SETUPDL_9,
+    /* 10 */ SETUPDL_10,
+    /* 11 */ SETUPDL_11,
+    /* 12 */ SETUPDL_12,
+    /* 13 */ SETUPDL_13,
+    /* 14 */ SETUPDL_14,
+    /* 15 */ SETUPDL_15,
+    /* 16 */ SETUPDL_16,
+    /* 17 */ SETUPDL_17,
+    /* 18 */ SETUPDL_18,
+    /* 19 */ SETUPDL_19,
+    /* 20 */ SETUPDL_20,
+    /* 21 */ SETUPDL_21,
+    /* 22 */ SETUPDL_22,
+    /* 23 */ SETUPDL_23,
+    /* 24 */ SETUPDL_24,
+    /* 25 */ SETUPDL_25,
+    /* 26 */ SETUPDL_26,
+    /* 27 */ SETUPDL_27,
+    /* 28 */ SETUPDL_28,
+    /* 29 */ SETUPDL_29,
+    /* 30 */ SETUPDL_30,
+    /* 31 */ SETUPDL_31,
+    /* 32 */ SETUPDL_32,
+    /* 33 */ SETUPDL_33,
+    /* 34 */ SETUPDL_34,
+    /* 35 */ SETUPDL_35,
+    /* 36 */ SETUPDL_36,
+    /* 37 */ SETUPDL_37,
+    /* 38 */ SETUPDL_38,
+    /* 39 */ SETUPDL_39,
+    /* 40 */ SETUPDL_40,
+    /* 41 */ SETUPDL_41,
+    /* 42 */ SETUPDL_42,
+    /* 43 */ SETUPDL_43,
+    /* 44 */ SETUPDL_44,
+    /* 45 */ SETUPDL_45,
+    /* 46 */ SETUPDL_46,
+    /* 47 */ SETUPDL_47,
+    /* 48 */ SETUPDL_48,
+    /* 49 */ SETUPDL_49,
+    /* 50 */ SETUPDL_50,
+    /* 51 */ SETUPDL_51,
+    /* 52 */ SETUPDL_52,
+    /* 53 */ SETUPDL_53,
+    /* 54 */ SETUPDL_54,
+    /* 55 */ SETUPDL_55,
+    /* 56 */ SETUPDL_56,
+    /* 57 */ SETUPDL_57,
+    /* 58 */ SETUPDL_58,
+    /* 59 */ SETUPDL_59,
+    /* 60 */ SETUPDL_60,
+    /* 61 */ SETUPDL_61,
+    /* 62 */ SETUPDL_62,
+    /* 63 */ SETUPDL_63,
+    /* 64 */ SETUPDL_64,
+    /* 65 */ SETUPDL_65,
+    /* 66 */ SETUPDL_66,
+    /* 67 */ SETUPDL_67,
+    /* 68 */ SETUPDL_68,
+    /* 69 */ SETUPDL_69,
+    /* 70 */ SETUPDL_70,
+    /* 71 */ SETUPDL_MAX
+} SetupDL;
 
 typedef struct {
     /* 0x00 */ u8   seqId;
@@ -1181,6 +1257,7 @@ typedef struct {
     /*      */ s32 returnEntranceIndex;
     /*      */ s8 roomIndex;
     /*      */ s8 data;
+    /*      */ s8 exitScene;
     /*      */ Vec3f pos;
 } BetterSceneSelectGrottoData;
 
@@ -1228,7 +1305,7 @@ typedef struct {
 } TransitionActorContext;
 
 // Global Context (dbg ram start: 80212020)
-typedef struct GlobalContext {
+typedef struct PlayState {
     /* 0x00000 */ GameState state;
     /* 0x000A4 */ s16 sceneNum;
     /* 0x000A6 */ u8 sceneConfig;
@@ -1266,15 +1343,15 @@ typedef struct GlobalContext {
     /* 0x117A4 */ ObjectContext objectCtx;
     /* 0x11CBC */ RoomContext roomCtx;
     /* 0x11D34 */ TransitionActorContext transiActorCtx;
-    /* 0x11D3C */ void (*playerInit)(Player* player, struct GlobalContext* globalCtx, FlexSkeletonHeader* skelHeader);
-    /* 0x11D40 */ void (*playerUpdate)(Player* player, struct GlobalContext* globalCtx, Input* input);
-    /* 0x11D44 */ s32 (*isPlayerDroppingFish)(struct GlobalContext* globalCtx);
-    /* 0x11D48 */ s32 (*startPlayerFishing)(struct GlobalContext* globalCtx);
-    /* 0x11D4C */ s32 (*grabPlayer)(struct GlobalContext* globalCtx, Player* player);
-    /* 0x11D50 */ s32 (*startPlayerCutscene)(struct GlobalContext* globalCtx, Actor* actor, s32 mode);
-    /* 0x11D54 */ void (*func_11D54)(Player* player, struct GlobalContext* globalCtx);
-    /* 0x11D58 */ s32 (*damagePlayer)(struct GlobalContext* globalCtx, s32 damage);
-    /* 0x11D5C */ void (*talkWithPlayer)(struct GlobalContext* globalCtx, Actor* actor);
+    /* 0x11D3C */ void (*playerInit)(Player* player, struct PlayState* play, FlexSkeletonHeader* skelHeader);
+    /* 0x11D40 */ void (*playerUpdate)(Player* player, struct PlayState* play, Input* input);
+    /* 0x11D44 */ s32 (*isPlayerDroppingFish)(struct PlayState* play);
+    /* 0x11D48 */ s32 (*startPlayerFishing)(struct PlayState* play);
+    /* 0x11D4C */ s32 (*grabPlayer)(struct PlayState* play, Player* player);
+    /* 0x11D50 */ s32 (*startPlayerCutscene)(struct PlayState* play, Actor* actor, s32 mode);
+    /* 0x11D54 */ void (*func_11D54)(Player* player, struct PlayState* play);
+    /* 0x11D58 */ s32 (*damagePlayer)(struct PlayState* play, s32 damage);
+    /* 0x11D5C */ void (*talkWithPlayer)(struct PlayState* play, Actor* actor);
     /* 0x11D60 */ MtxF viewProjectionMtxF;
     /* 0x11DA0 */ MtxF billboardMtxF;
     /* 0x11DE0 */ Mtx* billboardMtx;
@@ -1315,12 +1392,30 @@ typedef struct GlobalContext {
     /* 0x1242B */ u8 unk_1242B;
     /* 0x1242C */ SceneTableEntry* loadedScene;
     /* 0x12430 */ char unk_12430[0xE8];
-} GlobalContext; // size = 0x12518
+                  u8 stairsCount;
+} PlayState; // size = 0x12518
 
 typedef struct {
     /* 0x0000 */ GameState state;
     /* 0x00A8 */ View view;
 } OpeningContext; // size = 0x1D0
+
+typedef struct {
+    /* 0x00 */ u32 stickColorR;
+    /* 0x04 */ u32 stickColorG;
+    /* 0x08 */ u32 stickColorB;
+    /* 0x0C */ u32 stickColorA;
+    /* 0x10 */ f32 stickTexX;
+    /* 0x14 */ f32 stickTexY;
+    /* 0x18 */ u32 arrowColorR;
+    /* 0x1C */ u32 arrowColorG;
+    /* 0x20 */ u32 arrowColorB;
+    /* 0x24 */ u32 arrowColorA;
+    /* 0x28 */ f32 arrowTexX;
+    /* 0x2C */ f32 arrowTexY;
+    /* 0x30 */ f32 z;
+    /* 0x34 */ s32 isEnabled;
+} StickDirectionPrompt;
 
 typedef struct {
     /* 0x00000 */ GameState state;
@@ -1392,6 +1487,14 @@ typedef struct {
     /* 0x1CAD2 */ s16 kbdY;
     /* 0x1CAD4 */ s16 newFileNameCharCount;
     /* 0x1CAD6 */ s16 unk_1CAD6[5];
+    s16 logoAlpha;
+    s8 questType[3]; // 0 for Normal, 1 for MQ
+    StickDirectionPrompt stickLeftPrompt;
+    StickDirectionPrompt stickRightPrompt;
+    f32 arrowAnimTween;
+    f32 stickAnimTween;
+    u8 arrowAnimState;
+    u8 stickAnimState;
 } FileChooseContext; // size = 0x1CAE0
 
 typedef enum {
@@ -1786,7 +1889,6 @@ typedef struct {
     /* 0x0250 */ IrqMgrClient irqClient;
 } SchedContext; // size = 0x258
 
-// ========================
 
 #define OS_SC_RETRACE_MSG       1
 #define OS_SC_DONE_MSG          2

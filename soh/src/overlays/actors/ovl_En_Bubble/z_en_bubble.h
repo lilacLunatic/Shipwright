@@ -6,7 +6,7 @@
 
 struct EnBubble;
 
-typedef void (*EnBubbleActionFunc)(struct EnBubble*, GlobalContext*);
+typedef void (*EnBubbleActionFunc)(struct EnBubble*, PlayState*);
 
 typedef struct EnBubble {
     /* 0x0000 */ Actor actor;
@@ -30,6 +30,7 @@ typedef struct EnBubble {
     /* 0x0244 */ Vec3f normalizedBumpVelocity;
     /* 0x0250 */ Vec3f velocityFromBump;
     /* 0x025C */ f32 sinkSpeed;
+                 s16 gravityTimer;
 } EnBubble; // size = 0x0260
 
 #endif

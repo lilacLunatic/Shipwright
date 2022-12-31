@@ -6,13 +6,15 @@
 
 typedef enum {
     /* 0x00 */ WMT_TIMER,
-    /* 0x01 */ WMT_PROXIMITY,
-    /* 0x02 */ WMT_FLAG
+    /* 0x01 */ WMT_PROXIMITY_TIMED,
+    /* 0x02 */ WMT_FLAG,
+    /* 0x03 */ WMT_PROXIMITY,
+    /* 0x04 */ WMT_FLAG_TIMED
 } WallmasType;
 
 struct EnWallmas;
 
-typedef void (*EnWallmasActionFunc)(struct EnWallmas*, GlobalContext*);
+typedef void (*EnWallmasActionFunc)(struct EnWallmas*, PlayState*);
 
 typedef struct EnWallmas {
     /* 0x0000 */ Actor actor;

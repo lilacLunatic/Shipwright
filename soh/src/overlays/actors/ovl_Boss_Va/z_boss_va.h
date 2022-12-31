@@ -6,7 +6,7 @@
 
 struct BossVa;
 
-typedef void (*BossVaActionFunc)(struct BossVa*, GlobalContext*);
+typedef void (*BossVaActionFunc)(struct BossVa*, PlayState*);
 
 typedef struct BossVa {
     /* 0x0000 */ Actor actor;
@@ -45,6 +45,7 @@ typedef struct BossVa {
     /* 0x02D8 */ ColliderJntSph colliderSph;
     /* 0x02F8 */ ColliderJntSphElement elements[1];
     /* 0x0338 */ ColliderQuad colliderLightning;
+                 s16 decisionState;
 } BossVa; // size = 0x03B8
 
 typedef enum {

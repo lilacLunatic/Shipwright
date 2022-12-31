@@ -6,7 +6,7 @@
 
 struct EnFd;
 
-typedef void (*EnFdActionFunc)(struct EnFd* this, GlobalContext* globalCtx);
+typedef void (*EnFdActionFunc)(struct EnFd* this, PlayState* play);
 
 typedef enum {
     FD_EFFECT_NONE,
@@ -49,6 +49,7 @@ typedef struct EnFd {
     /* 0x04DC */ Vec3s jointTable[27];
     /* 0x057E */ Vec3s morphTable[27];
     /* 0x0620 */ EnFdEffect effects[200];
+                 s16 storedParams;
 } EnFd; // size = 0x31E0
 
 #endif

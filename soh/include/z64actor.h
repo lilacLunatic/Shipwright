@@ -5,6 +5,7 @@
 #include "z64animation.h"
 #include "z64math.h"
 #include "z64collision_check.h"
+#include "soh/Enhancements/item-tables/ItemTableTypes.h"
 
 #define ACTOR_NUMBER_MAX 2000
 #define INVISIBLE_ACTOR_MAX 20
@@ -13,14 +14,14 @@
 #define MASS_HEAVY 0xFE // Can only be pushed by OC collisions with IMMOVABLE and HEAVY objects.
 
 struct Actor;
-struct GlobalContext;
+struct PlayState;
 struct Lights;
 
-typedef void (*ActorFunc)(struct Actor*, struct GlobalContext*);
+typedef void (*ActorFunc)(struct Actor*, struct PlayState*);
 typedef void (*ActorResetFunc)(void);
-typedef void (*ActorShadowFunc)(struct Actor*, struct Lights*, struct GlobalContext*);
-typedef u16 (*callback1_800343CC)(struct GlobalContext*, struct Actor*);
-typedef s16 (*callback2_800343CC)(struct GlobalContext*, struct Actor*);
+typedef void (*ActorShadowFunc)(struct Actor*, struct Lights*, struct PlayState*);
+typedef u16 (*callback1_800343CC)(struct PlayState*, struct Actor*);
+typedef s16 (*callback2_800343CC)(struct PlayState*, struct Actor*);
 
 typedef struct {
     Vec3f pos;
@@ -102,12 +103,12 @@ typedef struct {
     /* 0x18 */ Vec3f feetPos[2]; // Update by using `Actor_SetFeetPos` in PostLimbDraw
 } ActorShape; // size = 0x30
 
-#define ACTOR_FLAG_0 (1 << 0)
+#define ACTOR_FLAG_0 (1 << 0)//Can actor be targeted?
 #define ACTOR_FLAG_2 (1 << 2)
 #define ACTOR_FLAG_3 (1 << 3)
-#define ACTOR_FLAG_4 (1 << 4)
+#define ACTOR_FLAG_4 (1 << 4)//If this is set, an actor will be updated on a given frame regardless of draw distance settings or distance from the player
 #define ACTOR_FLAG_5 (1 << 5)
-#define ACTOR_FLAG_6 (1 << 6)
+#define ACTOR_FLAG_6 (1 << 6)//Determines if an actor should be updated on a given frame based on draw distance
 #define ACTOR_FLAG_7 (1 << 7)
 #define ACTOR_FLAG_8 (1 << 8)
 #define ACTOR_FLAG_9 (1 << 9)
@@ -277,7 +278,7 @@ typedef enum {
 
 struct EnItem00;
 
-typedef void (*EnItem00ActionFunc)(struct EnItem00*, struct GlobalContext*);
+typedef void (*EnItem00ActionFunc)(struct EnItem00*, struct PlayState*);
 
 typedef struct EnItem00 {
     /* 0x000 */ Actor actor;
@@ -291,6 +292,7 @@ typedef struct EnItem00 {
     /* 0x15C */ f32 scale;
     /* 0x160 */ ColliderCylinder collider;
     s16 ogParams;
+    GetItemEntry randoGiEntry;
 } EnItem00; // size = 0x1AC
 
 // Only A_OBJ_SIGNPOST_OBLONG and A_OBJ_SIGNPOST_ARROW are used in room files.
@@ -312,7 +314,7 @@ typedef enum {
 
 struct EnAObj;
 
-typedef void (*EnAObjActionFunc)(struct EnAObj*, struct GlobalContext*);
+typedef void (*EnAObjActionFunc)(struct EnAObj*, struct PlayState*);
 
 typedef struct EnAObj {
     /* 0x000 */ DynaPolyActor dyna;
@@ -348,10 +350,14 @@ typedef enum {
 #define DEFINE_ACTOR_UNSET(enum) enum,
 #define DEFINE_ACTOR(_0, enum, _2) DEFINE_ACTOR_INTERNAL(_0, enum, _2)
 
-typedef enum {
+#ifdef __cplusplus
+enum ActorID : int {
+#else
+enum ActorID {
+#endif
     #include "tables/actor_table.h"
     /* 0x0192 */ ACTOR_ID_MAX // originally "ACTOR_DLF_MAX"
-} ActorID;
+};
 
 #undef DEFINE_ACTOR
 #undef DEFINE_ACTOR_INTERNAL

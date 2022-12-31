@@ -6,7 +6,7 @@
 
 struct EnNutsball;
 
-typedef void (*EnNutsballActionFunc)(struct EnNutsball*, GlobalContext*);
+typedef void (*EnNutsballActionFunc)(struct EnNutsball*, PlayState*);
 
 typedef struct EnNutsball {
     /* 0x0000 */ Actor actor;
@@ -15,5 +15,7 @@ typedef struct EnNutsball {
     /* 0x0152 */ s16 timer;
     /* 0x0154 */ ColliderCylinder collider;
 } EnNutsball; // size = 0x01A0
+
+#define NUTS_SPEED 10.0f
 
 #endif

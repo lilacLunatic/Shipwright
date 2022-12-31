@@ -1,5 +1,15 @@
 cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
 
+################################################################################
+# Settings for clangd lsp
+################################################################################
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
+if(CMAKE_EXPORT_COMPILE_COMMANDS)
+  set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES 
+      ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+endif()
+################################################################################
+
 set(CMAKE_SYSTEM_VERSION 10.0 CACHE STRING "" FORCE)
 set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard to use")
 #set(CMAKE_C_STANDARD 11 CACHE STRING "The C standard to use") - issue with soh compile with MSVC
@@ -7,12 +17,18 @@ set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard to use")
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version" FORCE)
 
 project(Ship LANGUAGES C CXX
-	VERSION 4.0.3)
-set(PROJECT_BUILD_NAME "ZHORA DELTA" CACHE STRING "")
+	VERSION 5.1.3)
+set(PROJECT_BUILD_NAME "BRADLEY DELTA" CACHE STRING "")
 set(PROJECT_TEAM "github.com/harbourmasters" CACHE STRING "")
 
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT soh)
 add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
+
+if (CMAKE_SYSTEM_NAME MATCHES "Windows|Linux")
+    if(NOT DEFINED BUILD_CROWD_CONTROL)
+        set(BUILD_CROWD_CONTROL ON)
+    endif()
+endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 include(CMake/automate-vcpkg.cmake)
@@ -43,50 +59,19 @@ endif()
 # Global configuration types
 ################################################################################
 if (CMAKE_SYSTEM_NAME STREQUAL "NintendoSwitch")
-set(CMAKE_C_FLAGS_DEBUG "-O3 -ffast-math")
-set(CMAKE_CXX_FLAGS_DEBUG "-O3 -ffast-math")
+set(CMAKE_C_FLAGS_DEBUG "-g -ffast-math -DDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -ffast-math -DDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "-O3 -ffast-math -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math -DNDEBUG")
 else()
-set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
-set(CMAKE_OBJCXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+set(CMAKE_C_FLAGS_RELEASE "-O2 -g3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -g3")
+set(CMAKE_OBJCXX_FLAGS_RELEASE "-O2 -g3")
 endif()
+set(CMAKE_C_FLAGS_DEBUG "-g3")
 
 if(NOT CMAKE_BUILD_TYPE )
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build." FORCE)
-endif()
-
-################################################################################
-# Global compiler options
-################################################################################
-if(MSVC)
-    # remove default flags provided with CMake for MSVC
-    set(CMAKE_C_FLAGS "")
-    set(CMAKE_C_FLAGS_DEBUG "")
-    set(CMAKE_C_FLAGS_RELEASE "")
-    set(CMAKE_CXX_FLAGS "")
-    set(CMAKE_CXX_FLAGS_DEBUG "")
-    set(CMAKE_CXX_FLAGS_RELEASE "")
-endif()
-
-################################################################################
-# Global linker options
-################################################################################
-if(MSVC)
-    # remove default flags provided with CMake for MSVC
-    set(CMAKE_EXE_LINKER_FLAGS "")
-    set(CMAKE_MODULE_LINKER_FLAGS "")
-    set(CMAKE_SHARED_LINKER_FLAGS "")
-    set(CMAKE_STATIC_LINKER_FLAGS "")
-    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS}")
-    set(CMAKE_MODULE_LINKER_FLAGS_DEBUG "${CMAKE_MODULE_LINKER_FLAGS}")
-    set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS}")
-    set(CMAKE_STATIC_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS}")
-    set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS}")
-    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS}")
-    set(CMAKE_STATIC_LINKER_FLAGS_RELEASE "${CMAKE_STATIC_LINKER_FLAGS}")
 endif()
 
 ################################################################################
@@ -114,9 +99,8 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 ################################################################################
 # Sub-projects
 ################################################################################
-add_subdirectory(libultraship/libultraship ${CMAKE_BINARY_DIR}/libultraship)
+add_subdirectory(libultraship ${CMAKE_BINARY_DIR}/libultraship)
 add_subdirectory(ZAPDTR/ZAPD ${CMAKE_BINARY_DIR}/ZAPD)
-add_subdirectory(ZAPDTR/ZAPDUtils ${CMAKE_BINARY_DIR}/ZAPDUtils)
 add_subdirectory(OTRExporter)
 add_subdirectory(soh)
 if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin|NintendoSwitch|CafeOS")

@@ -266,6 +266,8 @@ void PadMgr_ProcessInputs(PadMgr* padMgr) {
                 input->cur.button = 0;
                 input->cur.stick_x = 0;
                 input->cur.stick_y = 0;
+                input->cur.left_click = 0;
+                input->cur.right_click = 0;
                 input->cur.err_no = padnow1->err_no;
                 if (padMgr->ctrlrIsConnected[i]) {
                     padMgr->ctrlrIsConnected[i] = false;
@@ -290,11 +292,16 @@ void PadMgr_ProcessInputs(PadMgr* padMgr) {
         input->press.stick_y += (s8)(input->cur.stick_y - input->prev.stick_y);
     }
 
+    buttonDiff = input->prev.left_click != input->cur.left_click;
+    input->press.left_click = buttonDiff;
+
+    buttonDiff = input->prev.right_click != input->cur.right_click;
+    input->press.right_click = buttonDiff;
     controllerCallback.rumble = (padMgr->rumbleEnable[0] > 0);
 
     if (HealthMeter_IsCritical()) {
         controllerCallback.ledColor = 0;
-    } else if (gGlobalCtx) {
+    } else if (gPlayState) {
         switch (CUR_EQUIP_VALUE(EQUIP_TUNIC) - 1) {
             case PLAYER_TUNIC_KOKIRI:
                 controllerCallback.ledColor = 1;
@@ -331,7 +338,7 @@ void PadMgr_HandleRetraceMsg(PadMgr* padMgr) {
     osContGetReadData(padMgr->pads);
 
     for (i = 0; i < __osMaxControllers; i++) {
-        padMgr->padStatus[i].status = CVar_GetS32("gRumbleEnabled", 0) && Controller_ShouldRumble(i);
+        padMgr->padStatus[i].status = Controller_ShouldRumble(i);
     }
 
     if (padMgr->preNMIShutdown) {

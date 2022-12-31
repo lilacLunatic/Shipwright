@@ -44,8 +44,8 @@ typedef enum {
 } OpenKakarikoSetting;
 
 typedef enum {
-    OPENDOOROFTIME_INTENDED,
     OPENDOOROFTIME_CLOSED,
+    OPENDOOROFTIME_SONGONLY,
     OPENDOOROFTIME_OPEN,
 } OpenDoorOfTimeSetting;
 
@@ -91,6 +91,12 @@ typedef enum {
     SHUFFLEDUNGEONS_ON,
     SHUFFLEDUNGEONS_GANON,
 } ShuffleDungeonEntrancesSetting;
+
+typedef enum {
+    SHUFFLEBOSSES_OFF,
+    SHUFFLEBOSSES_AGE_RESTRICTED,
+    SHUFFLEBOSSES_FULL,
+} ShuffleBossEntrancesSetting;
 
 typedef enum {
     SHUFFLEINTERIORS_OFF,
@@ -167,6 +173,11 @@ typedef enum {
 } ShuffleMerchantsSetting;
 
 typedef enum {
+    SHUFFLEFROGSONGRUPEES_OFF,
+    SHUFFLEFROGSONGRUPEES_ON,
+} ShuffleFrogSongRupeesSetting;
+
+typedef enum {
     SHUFFLEADULTTRADEQUEST_OFF,
     SHUFFLEADULTTRADEQUEST_ON,
 } ShuffleAdultTradeQuestSetting;
@@ -203,6 +214,13 @@ typedef enum {
 } GerudoKeysSetting;
 
 typedef enum {
+    KEYRINGS_OFF,
+    KEYRINGS_RANDOM,
+    KEYRINGS_RANDOM_COUNT,
+    KEYRINGS_SELECTION,
+} KeyRingsSetting;
+
+typedef enum {
     BOSSKEYSANITY_START_WITH,
     BOSSKEYSANITY_VANILLA,
     BOSSKEYSANITY_OWN_DUNGEON,
@@ -224,6 +242,7 @@ typedef enum {
     GANONSBOSSKEY_LACS_REWARDS,
     GANONSBOSSKEY_LACS_DUNGEONS,
     GANONSBOSSKEY_LACS_TOKENS,
+    GANONSBOSSKEY_FINAL_GS_REWARD,
 } GanonsBossKeySetting;
 
 typedef enum {
@@ -380,9 +399,19 @@ typedef struct {
     uint8_t startingAge;
     uint8_t resolvedStartingAge;
     uint8_t shuffleDungeonEntrances;
+    uint8_t shuffleBossEntrances;
     uint8_t shuffleOverworldEntrances;
     uint8_t shuffleInteriorEntrances;
     uint8_t shuffleGrottoEntrances;
+    uint8_t shuffleOwlDrops;
+    uint8_t shuffleWarpSongs;
+    uint8_t shuffleOverworldSpawns;
+    uint8_t mixedEntrancePools;
+    uint8_t mixDungeons;
+    uint8_t mixOverworld;
+    uint8_t mixInteriors;
+    uint8_t mixGrottos;
+    uint8_t decoupleEntrances;
     uint8_t bombchusInLogic;
     uint8_t ammoDrops;
     uint8_t heartDropRefill;
@@ -406,6 +435,7 @@ typedef struct {
     uint8_t shuffleFrogSongRupees;
     uint8_t shuffleAdultTradeQuest;
     uint8_t shuffleChestMinigame;
+    uint8_t shuffle100GsReward;
 
     uint8_t mapsAndCompasses;
     uint8_t keysanity;
@@ -887,9 +917,19 @@ void UpdateSettings(std::unordered_map<RandomizerSettingKey, uint8_t> cvarSettin
   extern uint8_t ResolvedStartingAge;
   extern Option ShuffleEntrances;
   extern Option ShuffleDungeonEntrances;
+  extern Option ShuffleBossEntrances;
   extern Option ShuffleOverworldEntrances;
   extern Option ShuffleInteriorEntrances;
   extern Option ShuffleGrottoEntrances;
+  extern Option ShuffleOwlDrops;
+  extern Option ShuffleWarpSongs;
+  extern Option ShuffleOverworldSpawns;
+  extern Option MixedEntrancePools;
+  extern Option MixDungeons;
+  extern Option MixOverworld;
+  extern Option MixInteriors;
+  extern Option MixGrottos;
+  extern Option DecoupleEntrances;
   extern Option BombchusInLogic;
   extern Option AmmoDrops;
   extern Option HeartDropRefill;
@@ -912,6 +952,7 @@ void UpdateSettings(std::unordered_map<RandomizerSettingKey, uint8_t> cvarSettin
   extern Option ShuffleFrogSongRupees;
   extern Option ShuffleAdultTradeQuest;
   extern Option ShuffleChestMinigame;
+  extern Option Shuffle100GSReward;
 
   extern Option MapsAndCompasses;
   extern Option Keysanity;
@@ -925,6 +966,7 @@ void UpdateSettings(std::unordered_map<RandomizerSettingKey, uint8_t> cvarSettin
   extern Option LACSDungeonCount;
   extern Option LACSTokenCount;
   extern Option KeyRings;
+  extern Option KeyRingsRandomCount;
   extern Option RingFortress;
   extern Option RingForest;
   extern Option RingFire;
@@ -1044,6 +1086,7 @@ void UpdateSettings(std::unordered_map<RandomizerSettingKey, uint8_t> cvarSettin
   extern Option StartingWallet;
   extern Option StartingShardOfAgony;
   extern Option StartingDoubleDefense;
+  extern Option StartingBunnyHood;
   extern Option StartingHearts;
   extern Option StartingKokiriEmerald;
   extern Option StartingGoronRuby;
@@ -1287,5 +1330,5 @@ void UpdateSettings(std::unordered_map<RandomizerSettingKey, uint8_t> cvarSettin
 
   extern std::vector<Menu *> mainMenu;
 
-  extern std::vector<Option *> vanillaLogicDefaults;
+  extern std::vector<std::pair<Option*, uint8_t>> vanillaLogicOverrides;
 }

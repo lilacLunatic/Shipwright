@@ -148,7 +148,10 @@ static int GetMaxGSCount() {
   //Get the max amount of GS which could be useful from token reward locations
   int maxUseful = 0;
   //If the highest advancement item is a token, we know it is useless since it won't lead to an otherwise useful item
-  if (Location(KAK_50_GOLD_SKULLTULA_REWARD)->GetPlacedItem().IsAdvancement() && Location(KAK_50_GOLD_SKULLTULA_REWARD)->GetPlacedItem().GetItemType() != ITEMTYPE_TOKEN) {
+  if (Location(KAK_100_GOLD_SKULLTULA_REWARD)->GetPlacedItem().IsAdvancement() && Location(KAK_100_GOLD_SKULLTULA_REWARD)->GetPlacedItem().GetItemType() != ITEMTYPE_TOKEN) {
+    maxUseful = 100;
+  }
+  else if (Location(KAK_50_GOLD_SKULLTULA_REWARD)->GetPlacedItem().IsAdvancement() && Location(KAK_50_GOLD_SKULLTULA_REWARD)->GetPlacedItem().GetItemType() != ITEMTYPE_TOKEN) {
     maxUseful = 50;
   }
   else if (Location(KAK_40_GOLD_SKULLTULA_REWARD)->GetPlacedItem().IsAdvancement() && Location(KAK_40_GOLD_SKULLTULA_REWARD)->GetPlacedItem().GetItemType() != ITEMTYPE_TOKEN) {
@@ -163,8 +166,8 @@ static int GetMaxGSCount() {
   else if (Location(KAK_10_GOLD_SKULLTULA_REWARD)->GetPlacedItem().IsAdvancement() && Location(KAK_10_GOLD_SKULLTULA_REWARD)->GetPlacedItem().GetItemType() != ITEMTYPE_TOKEN) {
     maxUseful = 10;
   }
-  //Return max of the two possible reasons tokens could be important
-  return std::max(maxUseful, maxBridge);
+  //Return max of the two possible reasons tokens could be important, minus the tokens in the starting inventory
+  return std::max(maxUseful, maxBridge) - StartingSkulltulaToken.Value<uint8_t>();
 }
 
 std::string GetShopItemBaseName(std::string itemName) {
@@ -296,7 +299,7 @@ std::vector<uint32_t> GetAccessibleLocations(const std::vector<uint32_t>& allowe
           entranceSphere.push_back(&exit);
           exit.AddToPool();
           // Don't list a coupled entrance from both directions
-          if (exit.GetReplacement()->GetReverse() != nullptr /*&& !DecoupleEntrances*/) {
+          if (exit.GetReplacement()->GetReverse() != nullptr && !exit.IsDecoupled()) {
             exit.GetReplacement()->GetReverse()->AddToPool();
           }
         }
@@ -772,7 +775,7 @@ static void RandomizeOwnDungeon(const Dungeon::DungeonInfo* dungeon) {
 
   //Add specific items that need be randomized within this dungeon
   if (Keysanity.Is(KEYSANITY_OWN_DUNGEON) && dungeon->GetSmallKey() != NONE) {
-    std::vector<uint32_t> dungeonSmallKeys = FilterAndEraseFromPool(ItemPool, [dungeon](const uint32_t i){ return i == dungeon->GetSmallKey();});
+    std::vector<uint32_t> dungeonSmallKeys = FilterAndEraseFromPool(ItemPool, [dungeon](const uint32_t i){ return (i == dungeon->GetSmallKey()) || (i == dungeon->GetKeyRing());});
     AddElementsToPool(dungeonItems, dungeonSmallKeys);
   }
 
@@ -813,10 +816,10 @@ static void RandomizeDungeonItems() {
 
   for (auto dungeon : dungeonList) {
     if (Keysanity.Is(KEYSANITY_ANY_DUNGEON)) {
-      auto dungeonKeys = FilterAndEraseFromPool(ItemPool, [dungeon](const uint32_t i){return i == dungeon->GetSmallKey();});
+      auto dungeonKeys = FilterAndEraseFromPool(ItemPool, [dungeon](const uint32_t i){return (i == dungeon->GetSmallKey()) || (i == dungeon->GetKeyRing());});
       AddElementsToPool(anyDungeonItems, dungeonKeys);
     } else if (Keysanity.Is(KEYSANITY_OVERWORLD)) {
-      auto dungeonKeys = FilterAndEraseFromPool(ItemPool, [dungeon](const uint32_t i){return i == dungeon->GetSmallKey();});
+      auto dungeonKeys = FilterAndEraseFromPool(ItemPool, [dungeon](const uint32_t i){return (i == dungeon->GetSmallKey()) || (i == dungeon->GetKeyRing());});
       AddElementsToPool(overworldItems, dungeonKeys);
     }
 
@@ -905,10 +908,15 @@ void VanillaFill() {
     ShuffleAllEntrances();
     printf("\x1b[7;32HDone");
   }
+  // Populate the playthrough for entrances so they are placed in the spoiler log
+  GeneratePlaythrough();
   //Finish up
   CreateItemOverrides();
   CreateEntranceOverrides();
   CreateAlwaysIncludedMessages();
+  if (ShuffleWarpSongs) {
+    CreateWarpSongTexts();
+  }
 }
 
 void ClearProgress() {
@@ -1070,6 +1078,9 @@ int Fill() {
       }
       if (ShuffleMerchants.Is(SHUFFLEMERCHANTS_HINTS)) {
         CreateMerchantsHints();
+      }
+      if (ShuffleWarpSongs) {
+        CreateWarpSongTexts();
       }
       return 1;
     }
