@@ -3340,7 +3340,7 @@ Actor* Actor_Spawn(ActorContext* actorCtx, PlayState* play, s16 actorId, f32 pos
 
     objBankIndex = Object_GetIndex(&play->objectCtx, actorInit->objectId);
 
-    if (objBankIndex < 0 && (/*!gMapLoading ||*/ CVar_GetS32("gRandomizedEnemies", 0))) { //This is being commented out to enable actor spawn overrides, this will spawn extra enemies in the graveyard if they are not erased
+    if (objBankIndex < 0 /*&& (!gMapLoading || CVar_GetS32("gRandomizedEnemies", 0))*/) { //This is being commented out to enable actor spawn overrides, this will spawn extra enemies in the graveyard if they are not erased
         objBankIndex = 0;
     }
 

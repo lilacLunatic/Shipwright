@@ -86,6 +86,7 @@ void EnBb_SetupWhite(PlayState* play, EnBb* this);
 void EnBb_White(EnBb* this, PlayState* play);
 
 void EnBb_InitGreen(EnBb* this, PlayState* play);
+void EnBb_SetupGreen(EnBb* this);
 void EnBb_Green(EnBb* this, PlayState* play);
 
 void EnBb_Stunned(EnBb* this, PlayState* play);
