@@ -228,7 +228,7 @@ void EnDh_Wait(EnDh* this, PlayState* play) {
                     this->actor.shape.yOffset += 500.0f;
                 }
                 break;
-            case 2:
+            case 2: ;
                 f32 undeadSpawnDist = 100.0f;
                 f32 undeadSpawnSpacing = 50.0f;
                 s16 endstop = LINK_IS_CHILD ? 2 : 1;
