@@ -8,6 +8,8 @@ struct EnBomChu;
 
 typedef void (*EnBomChuActionFunc)(struct EnBomChu*, PlayState*);
 
+#define BOMBCHU_PARAM_TRAIL_DUMMY (1 << 8)
+
 typedef struct EnBomChu {
     /* 0x0000 */ Actor actor;
     /* 0x014C */ EnBomChuActionFunc actionFunc;

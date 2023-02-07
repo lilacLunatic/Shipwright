@@ -57,7 +57,7 @@ void EnBomBowlPit_DetectHit(EnBomBowlPit* this, PlayState* play) {
         chu = (EnBomChu*)play->actorCtx.actorLists[ACTORCAT_EXPLOSIVE].head;
 
         while (chu != NULL) {
-            if ((&chu->actor == &this->actor) || (chu->actor.id != ACTOR_EN_BOM_CHU)) {
+            if ((&chu->actor == &this->actor) || (chu->actor.id != ACTOR_EN_BOM_CHU) || (chu->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY)) {
                 chu = (EnBomChu*)chu->actor.next;
                 continue;
             }

@@ -407,6 +407,8 @@ namespace GameMenuBar {
                     UIWidgets::Tooltip("Helps FW persist between ages, gives child and adult separate FW points, and can be used in more places.");
                     UIWidgets::PaddedEnhancementCheckbox("Static Explosion Radius", "gStaticExplosionRadius", true, false);
                     UIWidgets::Tooltip("Explosions are now a static size, like in Majora's Mask and OoT3D. Makes bombchu hovering much easier.");
+                    UIWidgets::PaddedEnhancementCheckbox("Bombchu Trail Preview", "gChuTrailPreview", true, false);
+                    UIWidgets::Tooltip("Bombchus show a preview of their predicted path while you hold them.");
                     ImGui::EndMenu();
                 }
 

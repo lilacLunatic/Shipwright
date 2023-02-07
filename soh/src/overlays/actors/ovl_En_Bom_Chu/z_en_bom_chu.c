@@ -15,6 +15,8 @@ void EnBomChu_WaitForRelease(EnBomChu* this, PlayState* play);
 void EnBomChu_Move(EnBomChu* this, PlayState* play);
 void EnBomChu_WaitForKill(EnBomChu* this, PlayState* play);
 
+static EnBomChu* trailDummy;
+
 const ActorInit En_Bom_Chu_InitVars = {
     ACTOR_EN_BOM_CHU,
     ACTORCAT_EXPLOSIVE,
@@ -55,6 +57,33 @@ static ColliderJntSphInit sJntSphInit = {
     sJntSphElemInit,
 };
 
+static ColliderJntSphElementInit Dummy_sJntSphElemInit[] = {
+    {
+        {
+            ELEMTYPE_UNK0,
+            { 0x00000000, 0x00, 0x00 },
+            { 0xFFCFFFFF, 0x00, 0x00 },
+            TOUCH_NONE,
+            BUMP_NONE,
+            OCELEM_NONE,
+        },
+        { 1, { { 0, 0, 0 }, 12 }, 100 },
+    },
+};
+
+static ColliderJntSphInit Dummy_sJntSphInit = {
+    {
+        COLTYPE_NONE,
+        AT_NONE,
+        AC_NONE | AC_TYPE_PLAYER,
+        OC1_NONE | OC1_TYPE_1 | OC1_TYPE_2,
+        OC2_TYPE_2,
+        COLSHAPE_JNTSPH,
+    },
+    ARRAY_COUNT(Dummy_sJntSphElemInit),
+    Dummy_sJntSphElemInit,
+};
+
 static InitChainEntry sInitChain[] = {
     ICHAIN_U8(targetMode, 2, ICHAIN_CONTINUE),
     ICHAIN_VEC3F_DIV1000(scale, 1000 * BOMBCHU_SCALE, ICHAIN_STOP),
@@ -71,9 +100,15 @@ void EnBomChu_Init(Actor* thisx, PlayState* play) {
 
     Actor_ProcessInitChain(&this->actor, sInitChain);
     Collider_InitJntSph(play, &this->collider);
-    Collider_SetJntSph(play, &this->collider, &this->actor, &sJntSphInit, this->colliderElements);
 
-    this->collider.elements[0].dim.worldSphere.radius = this->collider.elements[0].dim.modelSphere.radius;
+    if (!(this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY)){
+        Collider_SetJntSph(play, &this->collider, &this->actor, &sJntSphInit, this->colliderElements);
+        this->collider.elements[0].dim.worldSphere.radius = this->collider.elements[0].dim.modelSphere.radius;
+    }
+    else {
+        Collider_SetJntSph(play, &this->collider, &this->actor, &Dummy_sJntSphInit, this->colliderElements);
+        this->collider.elements[0].dim.worldSphere.radius = 0;
+    }
 
     for (i = 0; i < 4; i++) {
         blureInit.p1StartColor[i] = p1StartColor[i];
@@ -93,6 +128,15 @@ void EnBomChu_Init(Actor* thisx, PlayState* play) {
     this->actor.room = -1;
     this->timer = 120;
     this->actionFunc = EnBomChu_WaitForRelease;
+
+    if (!(this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY) && CVarGetInteger("gChuTrailPreview", 0)) {
+        trailDummy = (EnBomChu *) Actor_Spawn(&play->actorCtx, play, this->actor.id, this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z,
+                this->actor.world.rot.x, this->actor.world.rot.y, this->actor.world.rot.z, BOMBCHU_PARAM_TRAIL_DUMMY, false);
+        trailDummy->collider.base.acFlags = AC_NONE;
+        trailDummy->collider.base.ocFlags1 = OC1_NONE;
+        trailDummy->collider.base.ocFlags2 = OC2_NONE;
+        trailDummy->collider.base.colType = COLTYPE_NONE;
+    }
 }
 
 void EnBomChu_Destroy(Actor* thisx, PlayState* play) {
@@ -104,6 +148,10 @@ void EnBomChu_Destroy(Actor* thisx, PlayState* play) {
 }
 
 void EnBomChu_Explode(EnBomChu* this, PlayState* play) {
+    if (this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY){
+        Actor_Kill(&this->actor);
+        return;
+    }
     EnBom* bomb;
     s32 i;
 
@@ -212,11 +260,25 @@ void EnBomChu_WaitForRelease(EnBomChu* this, PlayState* play) {
     }
 
     if (this->timer == 0) {
+        if (!(this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY) && trailDummy)
+            Actor_Kill((Actor *) trailDummy);
         EnBomChu_Explode(this, play);
         return;
     }
 
+    if (CVarGetInteger("gChuTrailPreview", 0) && !(this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY) &&
+            trailDummy && trailDummy->timer > 0 &&
+            trailDummy->timer < 120 && trailDummy->timer % 30 == 0) {
+        s16 timer = trailDummy->timer;
+        Actor_Kill((Actor *)trailDummy);
+        trailDummy = (EnBomChu *) Actor_Spawn(&play->actorCtx, play, this->actor.id, this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z,
+                this->actor.world.rot.x, this->actor.world.rot.y, this->actor.world.rot.z, BOMBCHU_PARAM_TRAIL_DUMMY, false);
+        trailDummy->timer = timer;
+    }
+
     if (Actor_HasNoParent(&this->actor, play)) {
+        if (!(this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY))
+            Actor_Kill((Actor *) trailDummy);
         this->actor.world.pos = player->actor.world.pos;
         Actor_UpdateBgCheckInfo(play, &this->actor, 0.0f, 0.0f, 0.0f, 4);
         this->actor.shape.rot.y = player->actor.shape.rot.y;
@@ -240,8 +302,10 @@ void EnBomChu_WaitForRelease(EnBomChu* this, PlayState* play) {
         //! @bug there is no NULL check on the floor poly.  If the player is out of bounds the floor poly will be NULL
         //! and will cause a crash inside this function.
         EnBomChu_UpdateFloorPoly(this, this->actor.floorPoly, play);
-        this->actor.flags |= ACTOR_FLAG_0; // make chu targetable
-        func_8002F850(play, &this->actor);
+        if (!(this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY)) {
+            this->actor.flags |= ACTOR_FLAG_0; // make chu targetable
+            func_8002F850(play, &this->actor);
+        }
         this->actionFunc = EnBomChu_Move;
     }
 }
@@ -259,6 +323,8 @@ void EnBomChu_Move(EnBomChu* this, PlayState* play) {
     Vec3f posUpDown;
 
     this->actor.speedXZ = 8.0f;
+    if (this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY)
+        this->actor.speedXZ *= 3;
     lineLength = this->actor.speedXZ * 2.0f;
 
     if (this->timer != 0) {
@@ -266,7 +332,8 @@ void EnBomChu_Move(EnBomChu* this, PlayState* play) {
     }
 
     if ((this->timer == 0) || (this->collider.base.acFlags & AC_HIT) ||
-        ((this->collider.base.ocFlags1 & OC1_HIT) && (this->collider.base.oc->category != ACTORCAT_PLAYER))) {
+        ((this->collider.base.ocFlags1 & OC1_HIT) && (this->collider.base.oc->category != ACTORCAT_PLAYER)
+         && !(this->collider.base.oc->id == ACTOR_EN_BOM_CHU && this->collider.base.oc->params & BOMBCHU_PARAM_TRAIL_DUMMY))) {
         EnBomChu_Explode(this, play);
         return;
     }
@@ -348,7 +415,8 @@ void EnBomChu_Move(EnBomChu* this, PlayState* play) {
     Math_ScaledStepToS(&this->actor.shape.rot.y, this->actor.world.rot.y, 0x800);
     Math_ScaledStepToS(&this->actor.shape.rot.z, this->actor.world.rot.z, 0x800);
 
-    func_8002F8F0(&this->actor, NA_SE_IT_BOMBCHU_MOVE - SFX_FLAG);
+    if (!(this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY))
+        func_8002F8F0(&this->actor, NA_SE_IT_BOMBCHU_MOVE - SFX_FLAG);
 }
 
 void EnBomChu_WaitForKill(EnBomChu* this, PlayState* play) {
@@ -486,6 +554,8 @@ void EnBomChu_Update(Actor* thisx, PlayState* play2) {
 const Color_RGB8 BombchuColorOriginal = { 209, 34, -35 };
 
 void EnBomChu_Draw(Actor* thisx, PlayState* play) {
+    if ((thisx->params & BOMBCHU_PARAM_TRAIL_DUMMY))
+        return;
     s32 pad;
     EnBomChu* this = (EnBomChu*)thisx;
     f32 colorIntensity;
