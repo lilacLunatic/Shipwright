@@ -260,14 +260,14 @@ void EnBomChu_WaitForRelease(EnBomChu* this, PlayState* play) {
     }
 
     if (this->timer == 0) {
-        if (!(this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY) && trailDummy)
+        if (!(this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY) && trailDummy != NULL)
             Actor_Kill((Actor *) trailDummy);
         EnBomChu_Explode(this, play);
         return;
     }
 
     if (CVarGetInteger("gChuTrailPreview", 0) && !(this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY) &&
-            trailDummy && trailDummy->timer > 0 &&
+            trailDummy != NULL && trailDummy->timer > 0 &&
             trailDummy->timer < 120 && trailDummy->timer % 30 == 0) {
         s16 timer = trailDummy->timer;
         Actor_Kill((Actor *)trailDummy);
@@ -277,7 +277,7 @@ void EnBomChu_WaitForRelease(EnBomChu* this, PlayState* play) {
     }
 
     if (Actor_HasNoParent(&this->actor, play)) {
-        if (!(this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY))
+        if (!(this->actor.params & BOMBCHU_PARAM_TRAIL_DUMMY) && trailDummy != NULL)
             Actor_Kill((Actor *) trailDummy);
         this->actor.world.pos = player->actor.world.pos;
         Actor_UpdateBgCheckInfo(play, &this->actor, 0.0f, 0.0f, 0.0f, 4);
