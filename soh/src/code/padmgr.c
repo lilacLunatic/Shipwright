@@ -268,6 +268,9 @@ void PadMgr_ProcessInputs(PadMgr* padMgr) {
                 input->cur.button = 0;
                 input->cur.stick_x = 0;
                 input->cur.stick_y = 0;
+                input->cur.left_click = 0;
+                input->cur.right_click = 0;
+
                 input->cur.err_no = padnow1->err_no;
                 if (padMgr->ctrlrIsConnected[i]) {
                     padMgr->ctrlrIsConnected[i] = false;
@@ -290,6 +293,12 @@ void PadMgr_ProcessInputs(PadMgr* padMgr) {
         PadUtils_UpdateRelXY(input);
         input->press.stick_x += (s8)(input->cur.stick_x - input->prev.stick_x);
         input->press.stick_y += (s8)(input->cur.stick_y - input->prev.stick_y);
+        buttonDiff = input->prev.left_click != input->cur.left_click;
+        input->press.left_click = buttonDiff;
+    
+        buttonDiff = input->prev.right_click != input->cur.right_click;
+        input->press.right_click = buttonDiff;
+
     }
 
     uint8_t rumble = (padMgr->rumbleEnable[0] > 0);

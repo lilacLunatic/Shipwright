@@ -1692,6 +1692,7 @@ void func_8083315C(PlayState* play, Player* this) {
 
     D_808535DC = Camera_GetInputDirYaw(GET_ACTIVE_CAM(play)) + D_808535D8;
 
+    this->quickspinCount = (this->quickspinCount + 1) % 5;
     this->unk_846 = (this->unk_846 + 1) % 4;
 
     if (D_808535D4 < 55.0f) {
@@ -1702,6 +1703,12 @@ void func_8083315C(PlayState* play, Player* this) {
         phi_v0 = (u16)((s16)(D_808535DC - this->actor.shape.rot.y) + 0x2000) >> 14;
     }
 
+    if(CVarGetInteger("gMouseTouchEnabled", 0)){
+        f32 x = sControlInput->cur.touch_x;
+        f32 y = sControlInput->cur.touch_y;
+        this->mouseQuickspinX[this->quickspinCount] = x;
+        this->mouseQuickspinY[this->quickspinCount] = y;
+    }
     this->unk_847[this->unk_846] = phi_v1;
     this->unk_84B[this->unk_846] = phi_v0;
 }
@@ -3506,6 +3513,7 @@ void func_80837530(PlayState* play, Player* this, s32 arg2) {
 s32 func_808375D8(Player* this) {
     s8 sp3C[4];
     s8* iter;
+    s8 iterMouse;
     s8* iter2;
     s8 temp1;
     s8 temp2;
@@ -3515,6 +3523,40 @@ s32 func_808375D8(Player* this) {
         return 0;
     }
 
+    if(CVarGetInteger("gMouseTouchEnabled", 0)){ //mouse quickspin
+        iter2 = &sp3C[0];
+        u32 willSpin = 1;
+        for (i = 0; i < 4; i++, iter2++){
+            f32 relY = this->mouseQuickspinY[i + 1] - this->mouseQuickspinY[i];
+            f32 relX = this->mouseQuickspinX[i + 1] - this->mouseQuickspinX[i];
+            s16 aTan = Math_Atan2S(relY, -relX);
+            iterMouse = (u16)(aTan + 0x2000) >> 9;
+            if ((*iter2 = iterMouse) < 0) {
+                willSpin = 0;
+                break;
+            }
+            *iter2 *= 2;
+        }
+        temp1 = sp3C[0] - sp3C[1];
+        if (ABS(temp1) < 10) {
+            willSpin = 0;
+        }
+        iter2 = &sp3C[1];
+        for (i = 1; i < 3; i++, iter2++) {
+            temp2 = *iter2 - *(iter2 + 1);
+            if ((ABS(temp2) < 10) || (temp2 * temp1 < 0)) {
+                willSpin = 0;
+                break;
+            }
+        }
+        if (willSpin){
+            return 1;
+        }
+    }
+    sp3C[0] = 0;
+    sp3C[1] = 0;
+    sp3C[2] = 0;
+    sp3C[3] = 0;
     iter = &this->unk_847[0];
     iter2 = &sp3C[0];
     for (i = 0; i < 4; i++, iter++, iter2++) {
@@ -5494,6 +5536,14 @@ s32 func_8083C2B0(Player* this, PlayState* play) {
         func_808323B4(play, this);
 
         if (func_80835C58(play, this, func_80843188, 0)) {
+            /* MOD: move cursor to the middle on shield pull (RR) */
+            if (CVarGetInteger("gMouseTouchEnabled", 0)) {
+                u32 width = OTRGetCurrentWidth();
+                u32 height = OTRGetCurrentHeight();
+                OTRMoveCursor(width/2, height/2);
+            }
+            /* */
+
             this->stateFlags1 |= PLAYER_STATE1_SHIELDING;
 
             if (!Player_IsChildWithHylianShield(this)) {
@@ -6132,20 +6182,29 @@ void func_8083DFE0(Player* this, f32* arg1, s16* arg2) {
         } 
         
         if (CVarGetInteger("gEnableWalkModify", 0) && !CVarGetInteger("gWalkModifierDoesntChangeJump", 0)) {
-            if (CVarGetInteger("gWalkSpeedToggle", 0)) {
-                if (gWalkSpeedToggle1) {
-                    maxSpeed *= CVarGetFloat("gWalkModifierOne", 1.0f);
-                } else if (gWalkSpeedToggle2) {
-                    maxSpeed *= CVarGetFloat("gWalkModifierTwo", 1.0f);
-                }
-            } else {
-                if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_MODIFIER1)) {
-                    maxSpeed *= CVarGetFloat("gWalkModifierOne", 1.0f);
-                } else if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_MODIFIER2)) {
-                    maxSpeed *= CVarGetFloat("gWalkModifierTwo", 1.0f);
-                }
-            }
-        }
+             f32 modifierValue = 1.0;
+             if (CVarGetInteger("gWalkSpeedToggle", 0)) {
+                 if (gWalkSpeedToggle1) {
+                     maxSpeed *= CVarGetFloat("gWalkModifierOne", 1.0f);
+                     modifierValue = CVarGetFloat("gWalkModifierOne", 1.0f);
+                 } else if (gWalkSpeedToggle2) {
+                     maxSpeed *= CVarGetFloat("gWalkModifierTwo", 1.0f);
+                     modifierValue = CVarGetFloat("gWalkModifierTwo", 1.0f);
+                 }
+             } else {
+                 if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_MODIFIER1)) {
+                     maxSpeed *= CVarGetFloat("gWalkModifierOne", 1.0f);
+                     modifierValue = CVarGetFloat("gWalkModifierOne", 1.0f);
+                 } else if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_MODIFIER2)) {
+                     maxSpeed *= CVarGetFloat("gWalkModifierTwo", 1.0f);
+                     modifierValue = CVarGetFloat("gWalkModifierTwo", 1.0f);
+                 }
+             }
+ 
+             if (modifierValue > 1.0 || !CVarGetInteger("gWalkModifierToInputs", 0)) {
+                 maxSpeed *= modifierValue;
+             }
+         }
 
         this->linearVelocity = CLAMP(this->linearVelocity, -maxSpeed, maxSpeed);
     }
@@ -8188,6 +8247,19 @@ void func_80843188(Player* this, PlayState* play) {
         sp54 = sControlInput->rel.stick_y * 100;
         sp50 = sControlInput->rel.stick_x * (CVarGetInteger("gMirroredWorld", 0) ? 120 : -120);
         sp4E = this->actor.shape.rot.y - Camera_GetInputDirYaw(GET_ACTIVE_CAM(play));
+
+        if (CVarGetInteger("gMouseTouchEnabled", 0)) {
+            u32 width = OTRGetCurrentWidth();
+            u32 height = OTRGetCurrentHeight();
+            /*
+             * Y: -12800 ~ +12700
+             * X: -15360 ~ +15240
+             */
+            f32 xBound = 15360 / ((f32)width / 2);
+            f32 yBound = 12800 / ((f32)height / 2);
+            sp54 += +(sControlInput->cur.touch_y - (height) / 2) * yBound;
+            sp50 += +(sControlInput->cur.touch_x - (width) / 2) * xBound * (CVarGetInteger("gMirroredWorld", 0) ? 1 : -1);
+        }
 
         sp40 = Math_CosS(sp4E);
         sp4C = (Math_SinS(sp4E) * sp50) + (sp54 * sp40);
@@ -10599,6 +10671,30 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
 
     sControlInput = input;
 
+    if (CVarGetInteger("gEnableWalkModify", 0)) {
+        f32 modifierValue = 1.0;
+        if (CVarGetInteger("gWalkSpeedToggle", 0)) {
+            if (gWalkSpeedToggle1 || sControlInput->cur.middle_click) {
+                modifierValue = CVarGetFloat("gWalkModifierOne", 1.0f);
+            } else if (gWalkSpeedToggle2) {
+                modifierValue = CVarGetFloat("gWalkModifierTwo", 1.0f);
+            }
+        } else {
+            if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_MODIFIER1) || sControlInput->cur.middle_click) {
+                modifierValue = CVarGetFloat("gWalkModifierOne", 1.0f);
+            } else if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_MODIFIER2)) {
+                modifierValue = CVarGetFloat("gWalkModifierTwo", 1.0f);
+            }
+        }
+
+        if (modifierValue < 1.0 && CVarGetInteger("gWalkModifierToInputs", 0)) {
+            s32 old_stick_x = input->rel.stick_x;
+            s32 old_stick_y = input->rel.stick_y;
+            input->rel.stick_x *= modifierValue * ABS(cosf(Math_Atan2F(old_stick_x, old_stick_y)));
+            input->rel.stick_y *= modifierValue * ABS(sinf(Math_Atan2F(old_stick_x, old_stick_y)));
+        }
+    }
+
     if (this->unk_A86 < 0) {
         this->unk_A86++;
         if (this->unk_A86 == 0) {
@@ -11364,6 +11460,24 @@ s16 func_8084ABD8(PlayState* play, Player* this, s32 arg2, s16 arg3) {
     s16 temp2;
     s16 temp3;
     bool gInvertAimingXAxis = (CVarGetInteger("gInvertAimingXAxis", 0) && !CVarGetInteger("gMirroredWorld", 0)) || (!CVarGetInteger("gInvertAimingXAxis", 0) && CVarGetInteger("gMirroredWorld", 0));
+    /* TODO: Move all this mouse stuff somewhere more appropriate */
+    if(CVarGetInteger("gMouseTouchEnabled", 0)) {
+        int mouseX, mouseY;
+        SDL_GetRelativeMouseState(&mouseX, &mouseY);
+
+        sControlInput->cur.mouse_move_x = mouseX;
+        sControlInput->cur.mouse_move_y = mouseY;
+        if (fabsf(sControlInput->cur.mouse_move_x) > 0) {
+            //printf("x:%d\n", sControlInput->cur.mouse_move_x);
+            this->actor.focus.rot.y -= (sControlInput->cur.mouse_move_x) * 12.0f * (CVarGetFloat("gFirstPersonCameraSensitivity", 1.0f)) *\
+                                       (gInvertAimingXAxis ? -1 : 1);
+        }
+        if (fabsf(sControlInput->cur.mouse_move_y) > 0) {
+            //printf("y:%d\n", sControlInput->cur.mouse_move_y);
+            this->actor.focus.rot.x += (sControlInput->cur.mouse_move_y) * 12.0f * (CVarGetFloat("gFirstPersonCameraSensitivity", 1.0f));
+        }
+    }
+    /* ********************************************************** */
 
     if (!func_8002DD78(this) && !func_808334B4(this) && (arg2 == 0) && !CVarGetInteger("gDisableAutoCenterViewFirstPerson", 0)) {
         temp2 = sControlInput->rel.stick_y * 240.0f * (CVarGetInteger("gInvertAimingYAxis", 1) ? 1 : -1); // Sensitivity not applied here because higher than default sensitivies will allow the camera to escape the autocentering, and glitch out massively
