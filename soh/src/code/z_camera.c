@@ -1422,6 +1422,20 @@ s32 SetCameraManual(Camera* camera) {
     f32 newCamX = -D_8015BD7C->state.input[0].cur.right_stick_x * 10.0f;
     f32 newCamY = D_8015BD7C->state.input[0].cur.right_stick_y * 10.0f;
 
+    int mouseX, mouseY;
+    SDL_GetRelativeMouseState(&mouseX, &mouseY);
+    D_8015BD7C->state.input[0].cur.mouse_move_x = mouseX;
+    D_8015BD7C->state.input[0].cur.mouse_move_y = mouseY;
+
+    if (CVarGetInteger("gMouseTouchEnabled", 0) != 1) {
+        mouseX = 0.0f;
+        mouseY = 0.0f;
+    }
+
+    newCamX -= mouseX * 40.0f;
+    newCamY += mouseY * 40.0f;
+
+
     if ((fabsf(newCamX) >= 15.0f || fabsf(newCamY) >= 15.0f) && camera->play->manualCamera == false) {
         camera->play->manualCamera = true;
 
@@ -1485,8 +1499,20 @@ s32 Camera_Free(Camera* camera) {
 
     camera->animState = 0;
 
-    f32 newCamX = -D_8015BD7C->state.input[0].cur.right_stick_x * 10.0f * (CVarGetFloat("gThirdPersonCameraSensitivityX", 1.0f));
-    f32 newCamY = D_8015BD7C->state.input[0].cur.right_stick_y * 10.0f * (CVarGetFloat("gThirdPersonCameraSensitivityY", 1.0f));
+    int mouseX, mouseY;
+    mouseX = D_8015BD7C->state.input[0].cur.mouse_move_x;
+    mouseY = D_8015BD7C->state.input[0].cur.mouse_move_y;
+
+    if (CVarGetInteger("gMouseTouchEnabled", 0) != 1 || 
+            /* Disable mouse movement when holding down the shield */
+            camera->player->stateFlags1 & 0x400000 ) {
+        mouseX = 0.0f;
+        mouseY = 0.0f;
+    }
+
+    f32 newCamX = (-D_8015BD7C->state.input[0].cur.right_stick_x * 10.0f - (mouseX * 40.0f)) * (CVarGetFloat("gThirdPersonCameraSensitivityX", 1.0f));
+    f32 newCamY = (+D_8015BD7C->state.input[0].cur.right_stick_y * 10.0f + (mouseY * 40.0f)) * (CVarGetFloat("gThirdPersonCameraSensitivityY", 1.0f));
+
     bool invertXAxis = (CVarGetInteger("gInvertXAxis", 0) && !CVarGetInteger("gMirroredWorld", 0)) || (!CVarGetInteger("gInvertXAxis", 0) && CVarGetInteger("gMirroredWorld", 0));
 
     camera->play->camX += newCamX * (invertXAxis ? -1 : 1);

@@ -681,7 +681,12 @@ typedef struct Player {
     // #region SOH [Enhancements]
     // Upstream TODO: Rename this to make it more obvious it is apart of an enhancement
     /*        */ u8         boomerangQuickRecall; // Has the player pressed the boomerang button while it's in the air still?
+
+    /* 0x???? */ f32        mouseQuickspinX[5];
+    /* 0x???? */ f32        mouseQuickspinY[5];
+    /* 0x???? */ u8         quickspinCount;
     // #endregion
+
     u8 ivanFloating;
     u8 ivanDamageMultiplier;
 } Player; // size = 0xA94

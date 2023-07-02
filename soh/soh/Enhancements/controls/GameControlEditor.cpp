@@ -311,6 +311,9 @@ namespace GameControlEditor {
             UIWidgets::Spacer(5);
             window->BeginGroupPanelPublic("Walk Modifier", ImGui::GetContentRegionAvail());
             UIWidgets::PaddedEnhancementCheckbox("Toggle modifier instead of holding", "gWalkSpeedToggle", true, false);
+            UIWidgets::PaddedEnhancementCheckbox("Apply walk speed modifier to raw player inputs if less than 100%", "gWalkModifierToInputs", true, false);
+            DrawHelpIcon("If selected, the walk speed modifier will be taken into account for all player controls that relies on stick magnitude.\n"
+                         "This allows, for example, to put away your sword while moving, easily achieving ESS position, or a quick adjustment of aim sensitivity.");
             UIWidgets::PaddedEnhancementCheckbox("Don't affect jump distance/velocity", "gWalkModifierDoesntChangeJump", true, false);
             UIWidgets::PaddedEnhancementSliderFloat("Modifier 1: %d %%", "##WalkMod1", "gWalkModifierOne", 0.0f, 5.0f, "", 1.0f, true, true, false, true);
             UIWidgets::PaddedEnhancementSliderFloat("Modifier 2: %d %%", "##WalkMod2", "gWalkModifierTwo", 0.0f, 5.0f, "", 1.0f, true, true, false, true);
@@ -320,6 +323,7 @@ namespace GameControlEditor {
         UIWidgets::Spacer(0);
         UIWidgets::PaddedEnhancementCheckbox("Answer Navi Prompt with L Button", "gNaviOnL");
         DrawHelpIcon("Speak to Navi with L but enter first-person camera with C-Up");
+        UIWidgets::PaddedEnhancementCheckbox("Mouse/Touch Enabled", "gMouseTouchEnabled");
         window->EndGroupPanelPublic(0);
     }
 
