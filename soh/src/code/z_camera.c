@@ -8,6 +8,8 @@
 
 #include "soh/frame_interpolation.h"
 
+#include <SDL2/SDL.h> //TODO (RR): don't import SDL in game code
+
 s16 Camera_ChangeSettingFlags(Camera* camera, s16 setting, s16 flags);
 s32 Camera_ChangeModeFlags(Camera* camera, s16 mode, u8 flags);
 s32 Camera_QRegInit(void);
