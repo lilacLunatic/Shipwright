@@ -15,6 +15,7 @@
 #include "Enhancements/crowd-control/CrowdControl.h"
 #include "Enhancements/game-interactor/GameInteractor_BuiltIn.h"
 #include "Enhancements/game-interactor/GameInteractor_Anchor.h"
+#include "util.h"
 #endif
 
 
@@ -1466,9 +1467,14 @@ void DrawRemoteControlMenu() {
 
         if (GameInteractor::Instance->isRemoteInteractorConnected && CVarGetInteger("gRemote.Scheme", GI_SCHEME_BUILT_IN) == GI_SCHEME_ANCHOR) {
             ImGui::Text("Players in Room:");
-            ImGui::Text("%s", CVarGetString("gRemote.AnchorName", ""));
+            std::string scene = "File Select";
+            if (gPlayState != NULL) {
+                scene = SohUtils::GetSceneName(gPlayState->sceneNum);
+            }
+            ImGui::Text("%s - %s", CVarGetString("gRemote.AnchorName", ""), scene.c_str());
             for (auto& [clientId, client] : GameInteractorAnchor::AnchorClients) {
-                ImGui::Text("%s", client.name.c_str());
+                scene = SohUtils::GetSceneName(client.scene);
+                ImGui::Text("%s - %s", client.name.c_str(), scene.c_str());
                 if (client.clientVersion != GameInteractorAnchor::clientVersion) {
                     ImGui::SameLine();
                     ImGui::TextColored(ImVec4(1, 1, 0, 1), ICON_FA_EXCLAMATION_TRIANGLE);
