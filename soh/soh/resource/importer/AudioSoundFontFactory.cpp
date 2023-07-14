@@ -2,6 +2,29 @@
 #include "soh/resource/type/AudioSoundFont.h"
 #include "spdlog/spdlog.h"
 #include "libultraship/libultraship.h"
+#include "soh/OTRGlobals.h"
+
+std::string ResourceMgr_BaseName(std::string path) {
+    std::string result = path;
+    if (path.empty()) {
+        return path;
+    }
+    while (path[result.length() - 1] == '/') { //clear trailing slashes
+        result = result.substr(result.length() - 1);
+        if(result.length() <= 0) {
+            return result;
+        }
+    }
+    u32 len = result.length();
+
+    for (u32 i = 0; i < len; i++) {
+        if (path[i] == '/') {
+            result = path.substr(i + 1);
+        }
+    }
+
+    return result;
+}
 
 namespace LUS {
 std::shared_ptr<IResource>
@@ -51,6 +74,10 @@ void LUS::AudioSoundFontFactoryV0::ParseFileBinary(std::shared_ptr<BinaryReader>
     uint32_t soundEffectCount = reader->ReadUInt32();
     audioSoundFont->soundFont.numSfx = soundEffectCount;
 
+    auto customSampleList = *LUS::Context::GetInstance()->GetResourceManager()->GetArchive()->ListFiles("custom/samples/*").get();
+
+    std::string sampleFileNameToLoad;
+
     // 🥁 DRUMS 🥁
     audioSoundFont->drums.reserve(audioSoundFont->soundFont.numDrums);
     audioSoundFont->drumAddresses.reserve(audioSoundFont->soundFont.numDrums);
@@ -67,7 +94,7 @@ void LUS::AudioSoundFontFactoryV0::ParseFileBinary(std::shared_ptr<BinaryReader>
         drumEnvelopes.reserve(audioSoundFont->drumEnvelopeCounts[i]);
         for (uint32_t j = 0; j < audioSoundFont->drumEnvelopeCounts.back(); j++) {
             AdsrEnvelope env;
-            
+
             int16_t delay = reader->ReadInt16();
             int16_t arg = reader->ReadInt16();
 
@@ -81,12 +108,14 @@ void LUS::AudioSoundFontFactoryV0::ParseFileBinary(std::shared_ptr<BinaryReader>
 
         bool hasSample = reader->ReadInt8();
         std::string sampleFileName = reader->ReadString();
+        std::string sampleBaseName = ResourceMgr_BaseName(sampleFileName);
         drum.sound.tuning = reader->ReadFloat();
 
         if (sampleFileName.empty()) {
             drum.sound.sample = nullptr;
         } else {
-            auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
+            auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess("custom/samples/" + sampleBaseName);
+            res = res ? res : LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
             drum.sound.sample = static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
         }
 
@@ -130,7 +159,11 @@ void LUS::AudioSoundFontFactoryV0::ParseFileBinary(std::shared_ptr<BinaryReader>
             bool hasSampleRef = reader->ReadInt8();
             std::string sampleFileName = reader->ReadString();
             instrument.lowNotesSound.tuning = reader->ReadFloat();
-            auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
+
+            std::string sampleBaseName = ResourceMgr_BaseName(sampleFileName);
+
+            auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess("custom/samples/" + sampleBaseName);
+            res = res ? res : LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
             instrument.lowNotesSound.sample = static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
         } else {
             instrument.lowNotesSound.sample = nullptr;
@@ -142,7 +175,11 @@ void LUS::AudioSoundFontFactoryV0::ParseFileBinary(std::shared_ptr<BinaryReader>
             bool hasSampleRef = reader->ReadInt8();
             std::string sampleFileName = reader->ReadString();
             instrument.normalNotesSound.tuning = reader->ReadFloat();
-            auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
+
+            std::string sampleBaseName = ResourceMgr_BaseName(sampleFileName);
+
+            auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess("custom/samples/" + sampleBaseName);
+            res = res ? res : LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
             instrument.normalNotesSound.sample = static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
         } else {
             instrument.normalNotesSound.sample = nullptr;
@@ -154,7 +191,11 @@ void LUS::AudioSoundFontFactoryV0::ParseFileBinary(std::shared_ptr<BinaryReader>
             bool hasSampleRef = reader->ReadInt8();
             std::string sampleFileName = reader->ReadString();
             instrument.highNotesSound.tuning = reader->ReadFloat();
-            auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
+
+            std::string sampleBaseName = ResourceMgr_BaseName(sampleFileName);
+
+            auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess("custom/samples/" + sampleBaseName);
+            res = res ? res : LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
             instrument.highNotesSound.sample = static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
         } else {
             instrument.highNotesSound.sample = nullptr;
@@ -178,8 +219,10 @@ void LUS::AudioSoundFontFactoryV0::ParseFileBinary(std::shared_ptr<BinaryReader>
         if (hasSFEntry) {
             bool hasSampleRef = reader->ReadInt8();
             std::string sampleFileName = reader->ReadString();
+            std::string sampleBaseName = ResourceMgr_BaseName(sampleFileName);
             soundEffect.tuning = reader->ReadFloat();
-            auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
+            auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess("custom/samples/" + sampleBaseName);
+            res = res ? res : LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
             soundEffect.sample = static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
         }
         
