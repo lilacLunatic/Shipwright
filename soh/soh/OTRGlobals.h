@@ -188,4 +188,7 @@ uint64_t GetUnixTimestamp();
 };
 #endif
 
+//MOD (sample overrides)
+#include "z64audio.h"
+SoundFontSample* ReadCustomSample(const char* path);
 #endif

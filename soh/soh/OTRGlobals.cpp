@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <chrono>
+#include <regex>
 
 #include <ResourceManager.h>
 #include <File.h>
@@ -437,6 +438,7 @@ extern "C" int AudioPlayer_GetDesiredBuffered(void);
 extern "C" void ResourceMgr_LoadDirectory(const char* resName);
 extern "C" SequenceData ResourceMgr_LoadSeqByName(const char* path);
 std::unordered_map<std::string, ExtensionEntry> ExtensionCache;
+std::unordered_map<std::string, std::tuple<u32, u32, bool>> CustomSampleLoopMap;
 
 void OTRAudio_Thread() {
     while (audio.running) {
@@ -780,6 +782,24 @@ extern "C" int32_t GetGIID(uint32_t itemID) {
     return -1;
 }
 
+extern "C" char* ResourceMgr_LoadFileFromDisk(const char* filePath, size_t* size) {
+    FILE* file = fopen(filePath, "r");
+    if (file == nullptr) {
+        return nullptr;
+    }
+    fseek(file, 0, SEEK_END);
+    int fSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char* data = (char*)malloc(fSize);
+    fread(data, 1, fSize, file);
+
+    fclose(file);
+    *size = fSize;
+
+    return data;
+}
+
 extern "C" void OTRExtScanner() {
     auto lst = *LUS::Context::GetInstance()->GetResourceManager()->GetArchive()->ListFiles("*").get();
 
@@ -790,6 +810,41 @@ extern "C" void OTRExtScanner() {
         replace(nPath.begin(), nPath.end(), '\\', '/');
 
         ExtensionCache[nPath] = { rPath, ext };
+    }
+
+    std::filesystem::path overridesFilePath = LUS::Context::GetInstance()->GetPathRelativeToAppDirectory("mods/overrides.txt");
+    if (std::filesystem::exists(overridesFilePath)){
+        size_t s;
+        bool regexResult;
+        std::regex regex("^\"(.+)\"\\s+\"(.+\\.(.+))\"(\\s+\\d+)?(\\s+\\d+)?");
+        std::smatch match;
+        std::ifstream input(overridesFilePath.string().c_str());
+        for (std::string line; getline( input, line );) {
+            regexResult = std::regex_search(line, match, regex);
+            if (regexResult) {
+                u32 loopBegin = 0;
+                u32 loopEnd = 0;
+                u32 loopEndSet = 0;
+                std::string st = match[4].str();
+                st.erase(st.begin(), std::find_if(st.begin(), st.end(), [](unsigned char ch) { //trim spaces
+                            return !std::isspace(ch);
+                            }));
+                if(!st.empty()){
+                    loopBegin = std::stoul(st);
+                }
+                st = match[5].str();
+                st.erase(st.begin(), std::find_if(st.begin(), st.end(), [](unsigned char ch) { //trim spaces
+                            return !std::isspace(ch);
+                            }));
+                if(!st.empty()){
+                    loopEndSet = 1;
+                    loopEnd = std::stoul(st);
+                }
+
+                ExtensionCache[match[1].str()] = { match[2].str(), match[3].str()};
+                CustomSampleLoopMap[match[1].str()] = std::tuple<u32, u32, bool>(loopBegin, loopEnd, loopEndSet);
+            }
+        }
     }
 }
 
@@ -1510,20 +1565,6 @@ extern "C" char* GetResourceDataByNameHandlingMQ(const char* path) {
     return (char*)res->GetRawPointer();
 }
 
-extern "C" char* ResourceMgr_LoadFileFromDisk(const char* filePath) {
-    FILE* file = fopen(filePath, "r");
-    fseek(file, 0, SEEK_END);
-    int fSize = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    char* data = (char*)malloc(fSize);
-    fread(data, 1, fSize, file);
-
-    fclose(file);
-
-    return data;
-}
-
 extern "C" uint8_t ResourceMgr_TexIsRaw(const char* texPath) {
     auto res = std::static_pointer_cast<LUS::Texture>(GetResourceByNameHandlingMQ(texPath));
     return res->Flags & TEX_FLAG_LOAD_AS_RAW;
@@ -1753,34 +1794,40 @@ extern "C" SequenceData ResourceMgr_LoadSeqByName(const char* path) {
 
 std::map<std::string, SoundFontSample*> cachedCustomSFs;
 
-extern "C" SoundFontSample* ReadCustomSample(const char* path) {
-    return nullptr;
-/*
+SoundFontSample* ReadCustomSample(const char* path) {
     if (!ExtensionCache.contains(path))
         return nullptr;
 
     ExtensionEntry entry = ExtensionCache[path];
 
-    auto sampleRaw = LUS::Context::GetInstance()->GetResourceManager()->LoadFile(entry.path);
-    uint32_t* strem = (uint32_t*)sampleRaw->Buffer.get();
+    size_t sampleSize;
+    auto sampleRaw = ResourceMgr_LoadFileFromDisk(entry.path.c_str(), &sampleSize); //OTRGlobals::Instance->context->GetResourceManager()->LoadFile(entry.path);
+    if (sampleRaw == nullptr) {
+        return nullptr;
+    }
+    uint32_t* strem = (uint32_t*)sampleRaw;//->Buffer.get();
     uint8_t* strem2 = (uint8_t*)strem;
 
     SoundFontSample* sampleC = new SoundFontSample;
+
+    u32 loopBegin = std::get<0>(CustomSampleLoopMap[path]);
+    u32 loopEnd = std::get<1>(CustomSampleLoopMap[path]);
+    bool loopEndSet = std::get<2>(CustomSampleLoopMap[path]);
 
     if (entry.ext == "wav") {
         drwav_uint32 channels;
         drwav_uint32 sampleRate;
         drwav_uint64 totalPcm;
         drmp3_int16* pcmData =
-            drwav_open_memory_and_read_pcm_frames_s16(strem2, sampleRaw->BufferSize, &channels, &sampleRate, &totalPcm, NULL);
+            drwav_open_memory_and_read_pcm_frames_s16(strem2, sampleSize, &channels, &sampleRate, &totalPcm, NULL);
         sampleC->size = totalPcm;
         sampleC->sampleAddr = (uint8_t*)pcmData;
         sampleC->codec = CODEC_S16;
 
         sampleC->loop = new AdpcmLoop;
-        sampleC->loop->start = 0;
-        sampleC->loop->end = sampleC->size - 1;
-        sampleC->loop->count = 0;
+        sampleC->loop->start = loopBegin;
+        sampleC->loop->end = loopEndSet ? loopEnd : sampleC->size - 1;
+        sampleC->loop->count = (loopBegin == 0 && loopEnd == 0) ? 0 : 0xFFFFFFFF;
         sampleC->sampleRateMagicValue = 'RIFF';
         sampleC->sampleRate = sampleRate;
 
@@ -1790,7 +1837,7 @@ extern "C" SoundFontSample* ReadCustomSample(const char* path) {
         drmp3_config mp3Info;
         drmp3_uint64 totalPcm;
         drmp3_int16* pcmData =
-            drmp3_open_memory_and_read_pcm_frames_s16(strem2, sampleRaw->BufferSize, &mp3Info, &totalPcm, NULL);
+            drmp3_open_memory_and_read_pcm_frames_s16(strem2, sampleSize, &mp3Info, &totalPcm, NULL);
 
         sampleC->size = totalPcm * mp3Info.channels * sizeof(short);
         sampleC->sampleAddr = (uint8_t*)pcmData;
@@ -1808,7 +1855,6 @@ extern "C" SoundFontSample* ReadCustomSample(const char* path) {
     }
 
     return nullptr;
-*/
 }
 
 extern "C" SoundFontSample* ResourceMgr_LoadAudioSample(const char* path) {
