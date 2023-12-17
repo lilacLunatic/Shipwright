@@ -2,6 +2,7 @@
 #include "soh/resource/type/AudioSoundFont.h"
 #include "spdlog/spdlog.h"
 #include "libultraship/libultraship.h"
+#include "soh/OTRGlobals.h"
 
 namespace LUS {
 std::shared_ptr<IResource>
@@ -86,8 +87,9 @@ void LUS::AudioSoundFontFactoryV0::ParseFileBinary(std::shared_ptr<BinaryReader>
         if (sampleFileName.empty()) {
             drum.sound.sample = nullptr;
         } else {
+            Sample* cs = (Sample*) ReadCustomSample(sampleFileName.c_str());
             auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
-            drum.sound.sample = static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
+            drum.sound.sample = (cs != nullptr) ? cs : static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
         }
 
         audioSoundFont->drums.push_back(drum);
@@ -130,8 +132,9 @@ void LUS::AudioSoundFontFactoryV0::ParseFileBinary(std::shared_ptr<BinaryReader>
             bool hasSampleRef = reader->ReadInt8();
             std::string sampleFileName = reader->ReadString();
             instrument.lowNotesSound.tuning = reader->ReadFloat();
+            Sample* cs = (Sample*) ReadCustomSample(sampleFileName.c_str());
             auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
-            instrument.lowNotesSound.sample = static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
+            instrument.lowNotesSound.sample = (cs != nullptr) ? cs : static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
         } else {
             instrument.lowNotesSound.sample = nullptr;
             instrument.lowNotesSound.tuning = 0;
@@ -142,8 +145,9 @@ void LUS::AudioSoundFontFactoryV0::ParseFileBinary(std::shared_ptr<BinaryReader>
             bool hasSampleRef = reader->ReadInt8();
             std::string sampleFileName = reader->ReadString();
             instrument.normalNotesSound.tuning = reader->ReadFloat();
+            Sample* cs = (Sample*) ReadCustomSample(sampleFileName.c_str());
             auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
-            instrument.normalNotesSound.sample = static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
+            instrument.normalNotesSound.sample = (cs != nullptr) ? cs : static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
         } else {
             instrument.normalNotesSound.sample = nullptr;
             instrument.normalNotesSound.tuning = 0;
@@ -154,8 +158,9 @@ void LUS::AudioSoundFontFactoryV0::ParseFileBinary(std::shared_ptr<BinaryReader>
             bool hasSampleRef = reader->ReadInt8();
             std::string sampleFileName = reader->ReadString();
             instrument.highNotesSound.tuning = reader->ReadFloat();
+            Sample* cs = (Sample*) ReadCustomSample(sampleFileName.c_str());
             auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
-            instrument.highNotesSound.sample = static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
+            instrument.highNotesSound.sample = (cs != nullptr) ? cs : static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
         } else {
             instrument.highNotesSound.sample = nullptr;
             instrument.highNotesSound.tuning = 0;
@@ -179,8 +184,9 @@ void LUS::AudioSoundFontFactoryV0::ParseFileBinary(std::shared_ptr<BinaryReader>
             bool hasSampleRef = reader->ReadInt8();
             std::string sampleFileName = reader->ReadString();
             soundEffect.tuning = reader->ReadFloat();
+            Sample* cs = (Sample*) ReadCustomSample(sampleFileName.c_str());
             auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResourceProcess(sampleFileName.c_str());
-            soundEffect.sample = static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
+            soundEffect.sample = (cs != nullptr) ? cs : static_cast<Sample*>(res ? res->GetRawPointer() : nullptr);
         }
         
         audioSoundFont->soundEffects.push_back(soundEffect);
