@@ -1681,6 +1681,10 @@ void DrawRemoteControlMenu() {
             UIWidgets::PaddedSeparator(true, true);
 
             if (ImGui::BeginMenu("Room Settings")) {
+                UIWidgets::EnhancementCheckbox("Broadcast items to all.", "gBroadcastItemsToAll");
+                UIWidgets::Tooltip("Alert everyone when an item is found, including players on opposing teams. If off, "
+                                   "only teammates are alerted when they receive the item.");
+
                 UIWidgets::PaddedEnhancementSliderInt("Teleport Cost: %d Rupees", "##gTeleportRupeeCost",
                                                       "gTeleportRupeeCost", 0, 200, "", 0, true, true, true);
                 UIWidgets::Tooltip("Rupees needed to teleport to another player.");

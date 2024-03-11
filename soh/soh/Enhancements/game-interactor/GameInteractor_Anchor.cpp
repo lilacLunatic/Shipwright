@@ -12,6 +12,7 @@
 #include <soh/Enhancements/randomizer/randomizer_check_tracker.h>
 #include <soh/util.h>
 #include <nlohmann/json.hpp>
+#include <sstream>
 
 extern "C" {
 #include <variables.h>
@@ -325,6 +326,7 @@ void Anchor_PushSettingsToRemote() {
 
     nlohmann::json payload;
     payload["type"] = "PUSH_ANCHOR_SETTINGS";
+    payload["broadcastItemsToAll"] = CVarGetInteger("gBroadcastItemsToAll", 0);
     payload["teleportRupeeCost"] = CVarGetInteger("gTeleportRupeeCost", 0);
 
     GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
@@ -342,6 +344,7 @@ void Anchor_CopySettingsFromRemote(nlohmann::json payload) {
         return;
     }
 
+    CVarSetInteger("gBroadcastItemsToAll", payload["broadcastItemsToAll"].get<int32_t>());
     CVarSetInteger("gTeleportRupeeCost", payload["teleportRupeeCost"].get<int32_t>());
 
     settingsCopied = true;
@@ -429,17 +432,39 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
     }
 
     if (payload["type"] == "GIVE_ITEM") {
+        uint16_t modId = payload["modId"].get<uint16_t>();
+        uint16_t getItemId = payload["getItemId"].get<int16_t>();
+        GetItemEntry getItemEntry = ItemTableManager::Instance->RetrieveItemEntry(modId, getItemId);
+
         if (!from_teammate) {
+            if (CVarGetInteger("gBroadcastItemsToAll", 0) != 0) {
+                // Broadcast that the item was found, but don't receive item.
+                if (getItemEntry.getItemCategory != ITEM_CATEGORY_JUNK) {
+                    if (getItemEntry.modIndex == MOD_NONE) {
+                        Anchor_DisplayMessage({ .itemIcon = SohUtils::GetIconNameFromItemID(getItemEntry.itemId),
+                                                .prefix = SohUtils::GetItemName(getItemEntry.itemId),
+                                                .message = "found by",
+                                                .suffix = anchorClient.name });
+                    } else if (getItemEntry.modIndex == MOD_RANDOMIZER) {
+                        Anchor_DisplayMessage(
+                            { .itemIcon = SohUtils::GetIconNameFromItemID(
+                                  SohUtils::GetItemIdIconFromRandomizerGet(getItemEntry.getItemId)),
+                              .prefix = OTRGlobals::Instance->gRandomizer
+                                            ->EnumToSpoilerfileGetName[(RandomizerGet)getItemEntry.getItemId]
+                                                                      [gSaveContext.language],
+                              .message = "found by",
+                              .suffix = anchorClient.name });
+                    }
+                }
+            }
             return;
         }
         auto effect = new GameInteractionEffect::GiveItem();
-        effect->parameters[0] = payload["modId"].get<uint16_t>();
-        effect->parameters[1] = payload["getItemId"].get<int16_t>();
+        effect->parameters[0] = modId;
+        effect->parameters[1] = getItemId;
         CVarSetInteger("gFromGI", 1);
-        receivedItems.push_back({ payload["modId"].get<uint16_t>(), payload["getItemId"].get<int16_t>() });
+        receivedItems.push_back({ modId, getItemId });
         if (effect->Apply() == Possible) {
-            GetItemEntry getItemEntry = ItemTableManager::Instance->RetrieveItemEntry(effect->parameters[0], effect->parameters[1]);
-
             if (getItemEntry.getItemCategory != ITEM_CATEGORY_JUNK) {
                 if (getItemEntry.modIndex == MOD_NONE) {
                     Anchor_DisplayMessage({
@@ -706,7 +731,9 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         int32_t teleportCost = CVarGetInteger("gTeleportRupeeCost", 0);
         if (gSaveContext.rupees < teleportCost) {
             // Can't teleport.
-            Anchor_DisplayMessage({ .message = std::format("Need {} rupees to teleport.", teleportCost) });
+            std::stringstream msg;
+            msg << "Need " << teleportCost << " rupees to teleport.";
+            Anchor_DisplayMessage({ .message = msg.str() });
             return;
         }
         Rupees_ChangeBy(-1 * teleportCost);
