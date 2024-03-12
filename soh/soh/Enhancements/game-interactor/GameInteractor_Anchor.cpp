@@ -463,6 +463,21 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         GetItemEntry getItemEntry = ItemTableManager::Instance->RetrieveItemEntry(modId, getItemId);
 
         if (!from_teammate) {
+            if (getItemId == 141) {
+                auto effect = new GameInteractionEffect::GiveItem();
+                effect->parameters[0] = modId;
+                effect->parameters[1] = getItemId;
+                CVarSetInteger("gFromGI", 1);
+                receivedItems.push_back({ modId, getItemId });
+                if (effect->Apply() == Possible) {
+                    if (getItemEntry.getItemCategory != ITEM_CATEGORY_JUNK) {
+                        if (getItemEntry.modIndex == MOD_NONE) {
+                        } else if (getItemEntry.modIndex == MOD_RANDOMIZER) {
+                        }
+                    }
+                }
+                CVarClear("gFromGI");
+            }
             if (CVarGetInteger("gBroadcastItemsToAll", 0) != 0) {
                 // Broadcast that the item was found, but don't receive item.
                 if (getItemEntry.getItemCategory != ITEM_CATEGORY_JUNK) {
@@ -483,6 +498,8 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
                     }
                 }
             }
+            return;
+        }  else if (getItemId == 141) {
             return;
         }
         auto effect = new GameInteractionEffect::GiveItem();
