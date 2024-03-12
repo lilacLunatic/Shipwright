@@ -1688,6 +1688,18 @@ void DrawRemoteControlMenu() {
                 UIWidgets::PaddedEnhancementSliderInt("Teleport Cost: %d Rupees", "##gTeleportRupeeCost",
                                                       "gTeleportRupeeCost", 0, 200, "", 0, true, true, true);
                 UIWidgets::Tooltip("Rupees needed to teleport to another player.");
+
+                ImGui::Text("PVP Damage Multiplier");
+                UIWidgets::EnhancementCombobox("gPvpDamageMul", allPowers, 0);
+                UIWidgets::Tooltip("Modifies all sources of damage from other players\n"
+                                   "2x: Can survive all common attacks from the start of the game\n"
+                                   "4x: Dies in 1 hit to any substantial attack from the start of the game\n"
+                                   "8x: Can only survive trivial damage from the start of the game\n"
+                                   "16x: Can survive all common attacks with max health without double defense\n"
+                                   "32x: Can survive all common attacks with max health and double defense\n"
+                                   "64x: Can survive trivial damage with max health without double defense\n"
+                                   "128x: Can survive trivial damage with max health and double defense\n"
+                                   "256x: Cannot survive damage");
                 ImGui::EndMenu();
             }
 

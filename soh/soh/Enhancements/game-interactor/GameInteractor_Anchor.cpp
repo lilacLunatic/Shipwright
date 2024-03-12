@@ -328,6 +328,7 @@ void Anchor_PushSettingsToRemote() {
     payload["type"] = "PUSH_ANCHOR_SETTINGS";
     payload["broadcastItemsToAll"] = CVarGetInteger("gBroadcastItemsToAll", 0);
     payload["teleportRupeeCost"] = CVarGetInteger("gTeleportRupeeCost", 0);
+    payload["pvpDamageMul"] = CVarGetInteger("gPvpDamageMul", 0);
 
     GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
 }
@@ -346,6 +347,7 @@ void Anchor_CopySettingsFromRemote(nlohmann::json payload) {
 
     CVarSetInteger("gBroadcastItemsToAll", payload["broadcastItemsToAll"].get<int32_t>());
     CVarSetInteger("gTeleportRupeeCost", payload["teleportRupeeCost"].get<int32_t>());
+    CVarSetInteger("gPvpDamageMul", payload["pvpDamageMul"].get<int32_t>());
 
     settingsCopied = true;
     Anchor_DisplayMessage({ .message = "Settings copied from remote." });
@@ -405,6 +407,21 @@ void GameInteractorAnchor::TransmitJsonToRemote(nlohmann::json payload) {
 
 void Anchor_ParseSaveStateFromRemote(nlohmann::json payload);
 void Anchor_PushSaveStateToRemote();
+
+int GetPvpDamageMultiplier() {
+    int32_t damageOption = CVarGetInteger("gPvpDamageMul", 0);
+    switch (damageOption) {
+        case 0: return 1;
+        case 1: return 2;
+        case 2: return 4;
+        case 3: return 8;
+        case 4: return 16;
+        case 5: return 32;
+        case 6: return 64;
+        case 7: return 128;
+        case 8: return 256;
+    }
+}
 
 void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
     if (!payload.contains("type")) {
@@ -537,7 +554,7 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
             !Player_InBlockingCsMode(gPlayState, GET_PLAYER(gPlayState))) {
             if (payload["damageEffect"] == PUPPET_DMGEFF_NORMAL) {
                 u8 damage = payload["damageValue"];
-                Player_InflictDamage(gPlayState, damage * -4);
+                Player_InflictDamage(gPlayState, damage * GetPvpDamageMultiplier() * -4);
                 func_80837C0C(gPlayState, GET_PLAYER(gPlayState), 0, 0, 0, 0, 0);
                 GET_PLAYER(gPlayState)->invincibilityTimer = 18;
                 GET_PLAYER(gPlayState)->actor.freezeTimer = 0;
