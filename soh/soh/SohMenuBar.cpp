@@ -101,6 +101,8 @@ static const char* imguiScaleOptions[4] = { "Small", "Normal", "Large", "X-Large
         "OHKO"
     };
     static const char* timeTravelOptions[3] = { "Disabled", "Ocarina of Time", "Any Ocarina" };
+    static const char* locationDisplayOptions[3] = { "On", "Off", "Teammates Only" };
+    static const char* teleportOptions[3] = { "On", "Off", "Teammates Only" };
 
 extern "C" SaveContext gSaveContext;
 
@@ -1684,6 +1686,14 @@ void DrawRemoteControlMenu() {
                 UIWidgets::EnhancementCheckbox("Broadcast items to all.", "gBroadcastItemsToAll");
                 UIWidgets::Tooltip("Alert everyone when an item is found, including players on opposing teams. If off, "
                                    "only teammates are alerted when they receive the item.");
+
+                ImGui::Text("Display Player Location");
+                UIWidgets::EnhancementCombobox("gLocationDisplay", locationDisplayOptions, 0);
+                UIWidgets::Tooltip("Modify which players' locations you can see");
+
+                ImGui::Text("Enable Teleport");
+                UIWidgets::EnhancementCombobox("gTeleportOptions", teleportOptions, 0);
+                UIWidgets::Tooltip("Modify who you can teleport to");
 
                 UIWidgets::PaddedEnhancementSliderInt("Teleport Cost: %d Rupees", "##gTeleportRupeeCost",
                                                       "gTeleportRupeeCost", 0, 200, "", 0, true, true, true);

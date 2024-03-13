@@ -327,6 +327,8 @@ void Anchor_PushSettingsToRemote() {
     nlohmann::json payload;
     payload["type"] = "PUSH_ANCHOR_SETTINGS";
     payload["broadcastItemsToAll"] = CVarGetInteger("gBroadcastItemsToAll", 0);
+    payload["locationDisplay"] = CVarGetInteger("gLocationDisplay", 0);
+    payload["teleportOptions"] = CVarGetInteger("gTeleportOptions", 0);
     payload["teleportRupeeCost"] = CVarGetInteger("gTeleportRupeeCost", 0);
     payload["pvpDamageMul"] = CVarGetInteger("gPvpDamageMul", 0);
 
@@ -346,6 +348,8 @@ void Anchor_CopySettingsFromRemote(nlohmann::json payload) {
     }
 
     CVarSetInteger("gBroadcastItemsToAll", payload["broadcastItemsToAll"].get<int32_t>());
+    CVarSetInteger("gLocationDisplay", payload["locationDisplay"].get<int32_t>());
+    CVarSetInteger("gTeleportOptions", payload["teleportOptions"].get<int32_t>());
     CVarSetInteger("gTeleportRupeeCost", payload["teleportRupeeCost"].get<int32_t>());
     CVarSetInteger("gPvpDamageMul", payload["pvpDamageMul"].get<int32_t>());
 
@@ -408,6 +412,10 @@ void GameInteractorAnchor::TransmitJsonToRemote(nlohmann::json payload) {
 void Anchor_ParseSaveStateFromRemote(nlohmann::json payload);
 void Anchor_PushSaveStateToRemote();
 
+bool IsTeammate(AnchorClient client) {
+    return client.team == CVarGetString("gRemote.AnchorTeam", "");
+}
+
 int GetPvpDamageMultiplier() {
     int32_t damageOption = CVarGetInteger("gPvpDamageMul", 0);
     switch (damageOption) {
@@ -421,6 +429,7 @@ int GetPvpDamageMultiplier() {
         case 7: return 128;
         case 8: return 256;
     }
+    return 1;
 }
 
 void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
@@ -445,7 +454,7 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
     bool from_teammate = true;
     if (payload.contains("clientId")) {
         anchorClient = GameInteractorAnchor::AnchorClients[payload["clientId"].get<uint32_t>()];
-        from_teammate = anchorClient.team == CVarGetString("gRemote.AnchorTeam", "");
+        from_teammate = IsTeammate(anchorClient);
     }
 
     if (payload["type"] == "GIVE_ITEM") {
@@ -1478,15 +1487,24 @@ void AnchorPlayerLocationWindow::DrawElement() {
             }
         }
         if (client.sceneNum < SCENE_ID_MAX && client.fileNum != 0xFF) {
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4(0.5, 0.5, 0.5, 1), "%s", SohUtils::GetSceneName(client.sceneNum).c_str());
-            if (GameInteractor::Instance->IsSaveLoaded() && client.sceneNum != SCENE_GROTTOS && client.sceneNum != SCENE_ID_MAX) {
+            // Display location only if gLocationDisplay is on, or if it's teammates only and this client is a teammate
+            if (CVarGetInteger("gLocationDisplay", 0) == 0 ||
+                (CVarGetInteger("gLocationDisplay", 0) == 2 && IsTeammate(client))) {
                 ImGui::SameLine();
-                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-                if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
-                    Anchor_RequestTeleport(clientId);
+                ImGui::TextColored(ImVec4(0.5, 0.5, 0.5, 1), "%s", SohUtils::GetSceneName(client.sceneNum).c_str());
+            }
+            // Display teleport button only if gTeleportOptions is on, or if it's teammates only and this client is a teammate
+            if (CVarGetInteger("gTeleportOptions", 0) == 0 ||
+                (CVarGetInteger("gTeleportOptions", 0) == 2 && IsTeammate(client))) {
+                if (GameInteractor::Instance->IsSaveLoaded() && client.sceneNum != SCENE_GROTTOS &&
+                    client.sceneNum != SCENE_ID_MAX) {
+                    ImGui::SameLine();
+                    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+                    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+                        Anchor_RequestTeleport(clientId);
+                    }
+                    ImGui::PopStyleVar();
                 }
-                ImGui::PopStyleVar();
             }
             if (IsValidSave() && CVarGetInteger("gAnchorPlayerHealth", 0) != 0) {
                 DisplayLifeMeter(client);
