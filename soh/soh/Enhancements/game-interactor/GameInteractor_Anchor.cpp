@@ -331,6 +331,7 @@ void Anchor_PushSettingsToRemote() {
     payload["teleportOptions"] = CVarGetInteger("gTeleportOptions", 0);
     payload["teleportRupeeCost"] = CVarGetInteger("gTeleportRupeeCost", 0);
     payload["pvpDamageMul"] = CVarGetInteger("gPvpDamageMul", 0);
+    payload["gIceTrapTargets"] = CVarGetInteger("gIceTrapTargets", 0);
 
     GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
 }
@@ -352,6 +353,12 @@ void Anchor_CopySettingsFromRemote(nlohmann::json payload) {
     CVarSetInteger("gTeleportOptions", payload["teleportOptions"].get<int32_t>());
     CVarSetInteger("gTeleportRupeeCost", payload["teleportRupeeCost"].get<int32_t>());
     CVarSetInteger("gPvpDamageMul", payload["pvpDamageMul"].get<int32_t>());
+    CVarSetInteger("gIceTrapTargets", payload["gIceTrapTargets"].get<int32_t>());
+
+    if (CVarGetInteger("gIceTrapTargets", ICE_TRAP_TARGETS_TEAM_ONLY) == ICE_TRAP_TARGETS_ENEMIES_ONLY) {
+        // Enable additional traps to allow ice traps to turn off for yourself.
+        CVarSetInteger("gAddTraps.enabled", 1);
+    }
 
     settingsCopied = true;
     Anchor_DisplayMessage({ .message = "Settings copied from remote." });
@@ -432,6 +439,26 @@ int GetPvpDamageMultiplier() {
     return 1;
 }
 
+void ApplyIceTrap(bool fromTeammate) {
+    switch (CVarGetInteger("gIceTrapTargets", ICE_TRAP_TARGETS_TEAM_ONLY)) {
+        case ICE_TRAP_TARGETS_TEAM_ONLY:
+            if (fromTeammate) {
+                GameInteractor::RawAction::FreezePlayer();
+            }
+            break;
+        case ICE_TRAP_TARGETS_SELF_ONLY:
+            break;
+        case ICE_TRAP_TARGETS_ENEMIES_ONLY:
+            if (!fromTeammate) {
+                GameInteractor::RawAction::FreezePlayer();
+            }
+            break;
+        case ICE_TRAP_TARGETS_ALL:
+            GameInteractor::RawAction::FreezePlayer();
+            break;
+    }
+}
+
 void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
     if (!payload.contains("type")) {
         return;
@@ -462,22 +489,12 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         uint16_t getItemId = payload["getItemId"].get<int16_t>();
         GetItemEntry getItemEntry = ItemTableManager::Instance->RetrieveItemEntry(modId, getItemId);
 
+        if (getItemId == RG_ICE_TRAP) {
+            ApplyIceTrap(from_teammate);
+            return;
+        }
+
         if (!from_teammate) {
-            if (getItemId == 141) {
-                auto effect = new GameInteractionEffect::GiveItem();
-                effect->parameters[0] = modId;
-                effect->parameters[1] = getItemId;
-                CVarSetInteger("gFromGI", 1);
-                receivedItems.push_back({ modId, getItemId });
-                if (effect->Apply() == Possible) {
-                    if (getItemEntry.getItemCategory != ITEM_CATEGORY_JUNK) {
-                        if (getItemEntry.modIndex == MOD_NONE) {
-                        } else if (getItemEntry.modIndex == MOD_RANDOMIZER) {
-                        }
-                    }
-                }
-                CVarClear("gFromGI");
-            }
             if (CVarGetInteger("gBroadcastItemsToAll", 0) != 0) {
                 // Broadcast that the item was found, but don't receive item.
                 if (getItemEntry.getItemCategory != ITEM_CATEGORY_JUNK) {
@@ -498,8 +515,6 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
                     }
                 }
             }
-            return;
-        }  else if (getItemId == 141) {
             return;
         }
         auto effect = new GameInteractionEffect::GiveItem();

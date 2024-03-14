@@ -103,6 +103,7 @@ static const char* imguiScaleOptions[4] = { "Small", "Normal", "Large", "X-Large
     static const char* timeTravelOptions[3] = { "Disabled", "Ocarina of Time", "Any Ocarina" };
     static const char* locationDisplayOptions[3] = { "On", "Off", "Teammates Only" };
     static const char* teleportOptions[3] = { "On", "Off", "Teammates Only" };
+    static const char* iceTrapTargets[4] = { "Team Only", "Self Only", "Enemies Only", "All" };
 
 extern "C" SaveContext gSaveContext;
 
@@ -1710,6 +1711,14 @@ void DrawRemoteControlMenu() {
                                    "64x: Can survive trivial damage with max health without double defense\n"
                                    "128x: Can survive trivial damage with max health and double defense\n"
                                    "256x: Cannot survive damage");
+
+                ImGui::Text("Ice Trap Targets");
+                UIWidgets::EnhancementCombobox("gIceTrapTargets", iceTrapTargets, ICE_TRAP_TARGETS_TEAM_ONLY);
+                UIWidgets::Tooltip("Choose who gets affected when an ice trap is picked up.\n"
+                                   "\n"
+                                   "If Enemies Only is picked, Enhancements > Extra Modes > Additional Traps will "
+                                   "also be turned on to allow ice traps to be ignored for yourself.");
+
                 ImGui::EndMenu();
             }
 
@@ -1793,6 +1802,10 @@ void DrawRemoteControlMenu() {
                         }
                         if (!CVarGetInteger("gRemote.AnchorPlayerLocationWindow", 0) && mAnchorPlayerLocationWindow) {
                             mAnchorPlayerLocationWindow->ToggleVisibility();
+                        }
+                        if (CVarGetInteger("gIceTrapTargets", ICE_TRAP_TARGETS_TEAM_ONLY) == ICE_TRAP_TARGETS_ENEMIES_ONLY) {
+                            // Enable additional traps to allow ice traps to turn off for yourself.
+                            CVarSetInteger("gAddTraps.enabled", 1);
                         }
                         GameInteractorAnchor::Instance->Enable();
                         break;

@@ -78,4 +78,11 @@ typedef enum {
     DEKU_STICK_UNBREAKABLE_AND_ALWAYS_ON_FIRE,
 } DekuStickType;
 
+typedef enum {
+    ICE_TRAP_TARGETS_TEAM_ONLY,
+    ICE_TRAP_TARGETS_SELF_ONLY,
+    ICE_TRAP_TARGETS_ENEMIES_ONLY,
+    ICE_TRAP_TARGETS_ALL,
+} IceTrapTargets;
+
 #endif

@@ -898,7 +898,11 @@ std::vector<AltTrapType> getEnabledAddTraps () {
         }
     }
     if (enabledAddTraps.size() == 0) {
-        enabledAddTraps.push_back(ADD_ICE_TRAP);
+        if (CVarGetInteger("gIceTrapTargets", ICE_TRAP_TARGETS_SELF_ONLY) == ICE_TRAP_TARGETS_ENEMIES_ONLY) {
+            // We don't target ourselves, so leave enabledAddTraps empty.
+        } else {
+            enabledAddTraps.push_back(ADD_ICE_TRAP);
+        }
     }
     return enabledAddTraps;
 };
@@ -910,6 +914,10 @@ void RegisterAltTrapTypes() {
 
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnItemReceive>([](GetItemEntry itemEntry) {
         if (!CVarGetInteger("gAddTraps.enabled", 0) || itemEntry.modIndex != MOD_RANDOMIZER || itemEntry.getItemId != RG_ICE_TRAP) {
+            return;
+        }
+        if (getEnabledAddTraps().empty()) {
+            Audio_PlaySoundGeneral(NA_SE_PL_ICE_BROKEN, &D_801333D4, 4, &D_801333E0, &D_801333E0, &D_801333E8);
             return;
         }
         roll = RandomElement(getEnabledAddTraps());
