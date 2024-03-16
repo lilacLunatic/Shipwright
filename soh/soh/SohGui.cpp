@@ -131,6 +131,7 @@ namespace SohGui {
 #ifdef ENABLE_REMOTE_CONTROL
     std::shared_ptr<AnchorPlayerLocationWindow> mAnchorPlayerLocationWindow;
     std::shared_ptr<AnchorLogWindow> mAnchorLogWindow;
+    std::shared_ptr<AnchorTrapWindow> mAnchorTrapWindow;
 #endif
 
     void SetupGuiElements() {
@@ -197,6 +198,8 @@ namespace SohGui {
         gui->AddGuiWindow(mAnchorPlayerLocationWindow);
         mAnchorLogWindow = std::make_shared<AnchorLogWindow>("gRemote.AnchorLogWindow", "Anchor Log");
         gui->AddGuiWindow(mAnchorLogWindow);
+        mAnchorTrapWindow = std::make_shared<AnchorTrapWindow>("gRemote.AnchorTrapWindow", "Anchor Trap Window");
+        gui->AddGuiWindow(mAnchorTrapWindow);
 #endif
     }
 
@@ -223,6 +226,7 @@ namespace SohGui {
 #ifdef ENABLE_REMOTE_CONTROL
         mAnchorPlayerLocationWindow = nullptr;
         mAnchorLogWindow = nullptr;
+        mAnchorTrapWindow = nullptr;
 #endif
     }
 }

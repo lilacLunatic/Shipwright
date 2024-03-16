@@ -285,6 +285,12 @@ std::vector<uint16_t> discoveredEntrances = {};
 std::vector<AnchorMessage> anchorMessages = {};
 uint32_t notificationId = 0;
 bool settingsCopied = false;
+bool randomWindOn = false;
+uint16_t randomWindTimer = 0;
+bool slipperyOn = false;
+uint16_t slipperyTimer = 0;
+bool invertedOn = false;
+uint16_t invertedTimer = 0;
 
 void Anchor_DisplayMessage(AnchorMessage message = {}) {
     message.id = notificationId++;
@@ -333,6 +339,18 @@ void Anchor_PushSettingsToRemote() {
     payload["pvpDamageMul"] = CVarGetInteger("gPvpDamageMul", 0);
     payload["gIceTrapTargets"] = CVarGetInteger("gIceTrapTargets", 0);
 
+    // Trap menu costs.
+    payload["gTrapMenuCuccoCost"] = CVarGetInteger("gTrapMenuCuccoCost", 50);
+    payload["gTrapMenuHandsCost"] = CVarGetInteger("gTrapMenuHandsCost", 20);
+    payload["gTrapMenuGibdoCost"] = CVarGetInteger("gTrapMenuGibdoCost", 99);
+    payload["gTrapMenuLikeLikeCost"] = CVarGetInteger("gTrapMenuLikeLikeCost", 50);
+    payload["gTrapMenuKnockback2Cost"] = CVarGetInteger("gTrapMenuKnockback2Cost", 50);
+    payload["gTrapMenuKnockback4Cost"] = CVarGetInteger("gTrapMenuKnockback4Cost", 100);
+    payload["gTrapMenuRandWindCost"] = CVarGetInteger("gTrapMenuRandWindCost", 100);
+    payload["gTrapMenuSlipperyCost"] = CVarGetInteger("gTrapMenuSlipperyCost", 50);
+    payload["gTrapMenuInvertedCost"] = CVarGetInteger("gTrapMenuInvertedCost", 150);
+    payload["gTrapMenuTelehomeCost"] = CVarGetInteger("gTrapMenuTelehomeCost", 200);
+
     GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
 }
 
@@ -354,6 +372,18 @@ void Anchor_CopySettingsFromRemote(nlohmann::json payload) {
     CVarSetInteger("gTeleportRupeeCost", payload["teleportRupeeCost"].get<int32_t>());
     CVarSetInteger("gPvpDamageMul", payload["pvpDamageMul"].get<int32_t>());
     CVarSetInteger("gIceTrapTargets", payload["gIceTrapTargets"].get<int32_t>());
+
+    // Trap menu costs
+    CVarSetInteger("gTrapMenuCuccoCost", payload["gTrapMenuCuccoCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuHandsCost", payload["gTrapMenuHandsCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuGibdoCost", payload["gTrapMenuGibdoCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuLikeLikeCost", payload["gTrapMenuLikeLikeCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuKnockback2Cost", payload["gTrapMenuKnockback2Cost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuKnockback4Cost", payload["gTrapMenuKnockback4Cost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuRandWindCost", payload["gTrapMenuRandWindCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuSlipperyCost", payload["gTrapMenuSlipperyCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuInvertedCost", payload["gTrapMenuInvertedCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuTelehomeCost", payload["gTrapMenuTelehomeCost"].get<int32_t>());
 
     if (CVarGetInteger("gIceTrapTargets", ICE_TRAP_TARGETS_TEAM_ONLY) == ICE_TRAP_TARGETS_ENEMIES_ONLY) {
         // Enable additional traps to allow ice traps to turn off for yourself.
@@ -803,6 +833,61 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         Play_SetRespawnData(gPlayState, RESPAWN_MODE_DOWN, entranceIndex, roomIndex, 0xDFF, &posRot.pos, posRot.rot.y);
         Play_TriggerVoidOut(gPlayState);
     }
+    if (payload["type"] == "SEND_TRAP") {
+        Anchor_DisplayMessage(
+            { .prefix = anchorClient.name,
+              .message = "sent trap",
+              .suffix = payload["trapType"] });
+        if (from_teammate) {
+            return;
+        }
+
+        if (payload["trapType"] == "cuccostorm") {
+            GameInteractor::RawAction::SpawnActor(ACTOR_EN_NIW, 0);
+        }
+        if (payload["trapType"] == "hands") {
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_DHA, 0);
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_DHA, 0);
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_DHA, 0);
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_DHA, 0);
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_DHA, 0);
+        }
+        if (payload["trapType"] == "gibdos") {
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RD, 32766);
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RD, 32766);
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RD, 32766);
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RD, 32766);
+        }
+        if (payload["trapType"] == "likelike") {
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RR, 0);
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RR, 0);
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RR, 0);
+            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RR, 0);
+        }
+        if (payload["trapType"] == "knockback2") {
+            GameInteractor::RawAction::KnockbackPlayer(2);
+        }
+        if (payload["trapType"] == "knockback4") {
+            GameInteractor::RawAction::KnockbackPlayer(4);
+        }
+        if (payload["trapType"] == "randwind") {
+            randomWindTimer = 0;
+            randomWindOn = true;
+        }
+        if (payload["trapType"] == "slippery") {
+            slipperyTimer = 0;
+            slipperyOn = true;
+            GameInteractor::State::SlipperyFloorActive = 1;
+        }
+        if (payload["trapType"] == "inverted") {
+            invertedTimer = 0;
+            invertedOn = true;
+            GameInteractor::State::ReverseControlsActive = 1;
+        }
+        if (payload["trapType"] == "telehome") {
+            GameInteractor::RawAction::TeleportPlayer(GI_TP_DEST_LINKSHOUSE);
+        }
+    }
     if (payload["type"] == "SERVER_MESSAGE") {
         Anchor_DisplayMessage({
             .prefix = "Server:",
@@ -1197,6 +1282,58 @@ void Anchor_RegisterHooks() {
         gSaveContext.playerData.damageValue = 0;
         gSaveContext.playerData.playerSound = 0;
     });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (!randomWindOn) {
+            return;
+        }
+
+        const static uint16_t windEndTime = 60 * 20;  // 60 seconds
+
+        if (randomWindTimer >= windEndTime) {
+            randomWindOn = false;
+            randomWindTimer = 0;
+            GameInteractor::RawAction::SetRandomWind(false);
+        } else {
+            // Every second (20 frames) call SetRandomWind.
+            if (randomWindTimer % 20 == 0) {
+                GameInteractor::RawAction::SetRandomWind(true);
+            }
+            randomWindTimer++;
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (!slipperyOn) {
+            return;
+        }
+
+        const static uint16_t slipperyEndTime = 60 * 20;  // 60 seconds
+
+        if (slipperyTimer >= slipperyEndTime) {
+            slipperyOn = false;
+            slipperyTimer = 0;
+            GameInteractor::State::SlipperyFloorActive = 0;
+        } else {
+            slipperyTimer++;
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (!invertedOn) {
+            return;
+        }
+
+        const static uint16_t invertedEndTime = 30 * 20;  // 30 seconds
+
+        if (invertedTimer >= invertedEndTime) {
+            invertedOn = false;
+            invertedTimer = 0;
+            GameInteractor::State::ReverseControlsActive = 0;
+        } else {
+            invertedTimer++;
+        }
+    });
 }
 
 void Anchor_EntranceDiscovered(uint16_t entranceIndex) {
@@ -1344,6 +1481,7 @@ void Anchor_TeleportToPlayer(uint32_t clientId) {
 const ImVec4 GRAY = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 const ImVec4 WHITE = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 const ImVec4 GREEN = ImVec4(0.5f, 1.0f, 0.5f, 1.0f);
+const ImVec4 RED = ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
 
 bool heartTexturesLoaded = false;
 
@@ -1644,6 +1782,210 @@ void AnchorLogWindow::UpdateElement() {
             --index;
         }
     }
+}
+
+bool PayTrapCost(int32_t cost) {
+    // Check if we have enough rupees.
+    if (gSaveContext.rupees < cost) {
+        // Can't teleport.
+        std::stringstream msg;
+        msg << "Need " << cost << " rupees to send this trap.";
+        Anchor_DisplayMessage({ .message = msg.str() });
+        return false;
+    }
+    Rupees_ChangeBy(-1 * cost);
+    return true;
+}
+
+void AnchorTrapWindow::DrawElement() {
+    ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.5f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 4.0f);
+    ImGui::Begin("AnchorTrapWindow", &mIsVisible,
+        ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoNav |
+        ImGuiWindowFlags_NoFocusOnAppearing |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoDocking |
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoScrollWithMouse |
+        ImGuiWindowFlags_NoScrollbar
+    );
+
+    ImGui::PushID("cuccostorm");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuCuccoCost", 50);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "cuccostorm";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    ImGui::TextColored(RED, "(%d) Summon Cucco Storm", CVarGetInteger("gTrapMenuCuccoCost", 50));
+    ImGui::PopID();
+
+    ImGui::PushID("hands");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuHandsCost", 20);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "hands";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    ImGui::TextColored(RED, "(%d) Spawn Hand x5", CVarGetInteger("gTrapMenuHandsCost", 20));
+    ImGui::PopID();
+
+    ImGui::PushID("gibdo");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuGibdoCost", 99);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "gibdos";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    ImGui::TextColored(RED, "(%d) Spawn Gibdo x4", CVarGetInteger("gTrapMenuGibdoCost", 99));
+    ImGui::PopID();
+
+    ImGui::PushID("likelike");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuLikeLikeCost", 50);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "likelike";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    ImGui::TextColored(RED, "(%d) Spawn Like Like x4", CVarGetInteger("gTrapMenuLikeLikeCost", 50));
+    ImGui::PopID();
+
+    ImGui::PushID("knockback2");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuKnockback2Cost", 50);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "knockback2";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    ImGui::TextColored(GREEN, "(%d) Small knockback", CVarGetInteger("gTrapMenuKnockback2Cost", 50));
+    ImGui::PopID();
+
+    ImGui::PushID("knockback4");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuKnockback4Cost",100);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "knockback4";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    ImGui::TextColored(GREEN, "(%d) Large Knockback", CVarGetInteger("gTrapMenuKnockback4Cost", 100));
+    ImGui::PopID();
+
+    ImGui::PushID("randwind");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuRandWindCost", 100);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "randwind";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    ImGui::TextColored(GREEN, "(%d) Summon Random Wind", CVarGetInteger("gTrapMenuRandWindCost", 100));
+    ImGui::PopID();
+
+    ImGui::PushID("slippery");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuSlipperyCost", 50);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "slippery";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    ImGui::TextColored(GREEN, "(%d) Slippery Surface", CVarGetInteger("gTrapMenuSlipperyCost", 50));
+    ImGui::PopID();
+
+    ImGui::PushID("inverted");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuInvertedCost", 150);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "inverted";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    ImGui::TextColored(GREEN, "(%d) Invert Controls", CVarGetInteger("gTrapMenuInvertedCost", 150));
+    ImGui::PopID();
+
+    ImGui::PushID("telehome");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuTelehomeCost", 200);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "telehome";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    ImGui::TextColored(GREEN, "(%d) Teleport Home", CVarGetInteger("gTrapMenuTelehomeCost", 200));
+    ImGui::PopID();
+
+    ImGui::End();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(2);
 }
 
 #endif

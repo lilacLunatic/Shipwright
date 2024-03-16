@@ -1429,6 +1429,7 @@ extern std::shared_ptr<ValueViewerWindow> mValueViewerWindow;
 #ifdef ENABLE_REMOTE_CONTROL
 extern std::shared_ptr<AnchorPlayerLocationWindow> mAnchorPlayerLocationWindow;
 extern std::shared_ptr<AnchorLogWindow> mAnchorLogWindow;
+extern std::shared_ptr<AnchorTrapWindow> mAnchorTrapWindow;
 #endif
 
 void DrawDeveloperToolsMenu() {
@@ -1700,6 +1701,34 @@ void DrawRemoteControlMenu() {
                                                       "gTeleportRupeeCost", 0, 200, "", 0, true, true, true);
                 UIWidgets::Tooltip("Rupees needed to teleport to another player.");
 
+                UIWidgets::PaddedSeparator(true, true);
+                if (ImGui::BeginMenu("Trap Menu Options")) {
+                    UIWidgets::PaddedEnhancementSliderInt("Cucco Cost: %d Rupees", "##gTrapMenuCuccoCost",
+                                                          "gTrapMenuCuccoCost", 0, 200, "", 50, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Hands Cost: %d Rupees", "##gTrapMenuHandsCost",
+                                                          "gTrapMenuHandsCost", 0, 200, "", 20, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Gibdo Cost: %d Rupees", "##gTrapMenuGibdoCost",
+                                                          "gTrapMenuGibdoCost", 0, 200, "", 99, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Like Like Cost: %d Rupees", "##gTrapMenuLikeLikeCost",
+                                                          "gTrapMenuLikeLikeCost", 0, 200, "", 50, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Small Knockback Cost: %d Rupees",
+                                                          "##gTrapMenuKnockback2Cost", "gTrapMenuKnockback2Cost", 0,
+                                                          200, "", 50, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Large Knockback Cost: %d Rupees",
+                                                          "##gTrapMenuKnockback4Cost", "gTrapMenuKnockback4Cost", 0,
+                                                          200, "", 100, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Random Wind Cost: %d Rupees", "##gTrapMenuRandWindCost",
+                                                          "gTrapMenuRandWindCost", 0, 200, "", 100, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Slippery Cost: %d Rupees", "##gTrapMenuSlipperyCost",
+                                                          "gTrapMenuSlipperyCost", 0, 200, "", 50, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Inverted Controls Cost: %d Rupees", "##gTrapMenuInvertedCost",
+                                                          "gTrapMenuInvertedCost", 0, 200, "", 150, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Teleport Home Cost: %d Rupees", "##gTrapMenuTelehomeCost",
+                                                          "gTrapMenuTelehomeCost", 0, 200, "", 200, true, true, true);
+                    ImGui::EndMenu();
+                }
+                UIWidgets::PaddedSeparator(true, true);
+
                 ImGui::Text("PVP Damage Multiplier");
                 UIWidgets::EnhancementCombobox("gPvpDamageMul", allPowers, 0);
                 UIWidgets::Tooltip("Modifies all sources of damage from other players\n"
@@ -1756,6 +1785,17 @@ void DrawRemoteControlMenu() {
                     "buttons to change the direction the messages stack towards."
                 );
             }
+            if (mAnchorTrapWindow) {
+                if (ImGui::Button(
+                        GetWindowButtonText("Traps Menu", CVarGetInteger("gRemote.AnchorTrapWindow", 0)).c_str(),
+                        ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, 0.0f))) {
+                    mAnchorTrapWindow->ToggleVisibility();
+                }
+                UIWidgets::InsertHelpHoverText("This window shows various traps you can send to your opponents.\n"
+                                               "\n"
+                                               "You can move this window around, and press the options "
+                                               "to send traps to players on opposing teams.");
+            }
             ImGui::PopStyleVar(3);
         }
 
@@ -1783,6 +1823,9 @@ void DrawRemoteControlMenu() {
                         if (CVarGetInteger("gRemote.AnchorPlayerLocationWindow", 0) && mAnchorPlayerLocationWindow) {
                             mAnchorPlayerLocationWindow->ToggleVisibility();
                         }
+                        if (CVarGetInteger("gRemote.AnchorTrapWindow", 0) && mAnchorTrapWindow) {
+                            mAnchorTrapWindow->ToggleVisibility();
+                        }
                         GameInteractorAnchor::Instance->Disable();
                         break;
                 }
@@ -1802,6 +1845,9 @@ void DrawRemoteControlMenu() {
                         }
                         if (!CVarGetInteger("gRemote.AnchorPlayerLocationWindow", 0) && mAnchorPlayerLocationWindow) {
                             mAnchorPlayerLocationWindow->ToggleVisibility();
+                        }
+                        if (!CVarGetInteger("gRemote.AnchorTrapWindow", 0) && mAnchorTrapWindow) {
+                            mAnchorTrapWindow->ToggleVisibility();
                         }
                         if (CVarGetInteger("gIceTrapTargets", ICE_TRAP_TARGETS_TEAM_ONLY) == ICE_TRAP_TARGETS_ENEMIES_ONLY) {
                             // Enable additional traps to allow ice traps to turn off for yourself.
