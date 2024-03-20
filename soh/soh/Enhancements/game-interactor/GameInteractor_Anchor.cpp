@@ -12,7 +12,9 @@
 #include <soh/Enhancements/randomizer/randomizer_check_tracker.h>
 #include <soh/util.h>
 #include <nlohmann/json.hpp>
+#include <cstring>
 #include <sstream>
+#include <queue>
 
 extern "C" {
 #include <variables.h>
@@ -285,6 +287,7 @@ std::vector<uint16_t> discoveredEntrances = {};
 std::vector<AnchorMessage> anchorMessages = {};
 uint32_t notificationId = 0;
 bool settingsCopied = false;
+std::queue<std::string> queuedTraps;
 bool randomWindOn = false;
 uint16_t randomWindTimer = 0;
 bool slipperyOn = false;
@@ -842,51 +845,31 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
             return;
         }
 
-        if (payload["trapType"] == "cuccostorm") {
-            GameInteractor::RawAction::SpawnActor(ACTOR_EN_NIW, 0);
+        std::string trap = payload["trapType"];
+        // Certain traps like spawning certain enemies will be added multiple times.
+        uint8_t n = 1;
+        if (trap == "hands") {
+            n = 5;
+        } else if (trap == "gibdos") {
+            n = 4;
+        } else if (trap == "likelike") {
+            n = 4;
         }
-        if (payload["trapType"] == "hands") {
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_DHA, 0);
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_DHA, 0);
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_DHA, 0);
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_DHA, 0);
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_DHA, 0);
+
+        for (int i = 0; i < n; i++) {
+            queuedTraps.push(trap);
         }
-        if (payload["trapType"] == "gibdos") {
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RD, 32766);
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RD, 32766);
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RD, 32766);
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RD, 32766);
+    }
+    if (payload["type"] == "PLAYER_MESSAGE") {
+        uint32_t teamOnly = payload["teamOnly"].get<uint32_t>();
+        if (teamOnly && !from_teammate) {
+            return;
         }
-        if (payload["trapType"] == "likelike") {
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RR, 0);
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RR, 0);
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RR, 0);
-            GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RR, 0);
-        }
-        if (payload["trapType"] == "knockback2") {
-            GameInteractor::RawAction::KnockbackPlayer(2);
-        }
-        if (payload["trapType"] == "knockback4") {
-            GameInteractor::RawAction::KnockbackPlayer(4);
-        }
-        if (payload["trapType"] == "randwind") {
-            randomWindTimer = 0;
-            randomWindOn = true;
-        }
-        if (payload["trapType"] == "slippery") {
-            slipperyTimer = 0;
-            slipperyOn = true;
-            GameInteractor::State::SlipperyFloorActive = 1;
-        }
-        if (payload["trapType"] == "inverted") {
-            invertedTimer = 0;
-            invertedOn = true;
-            GameInteractor::State::ReverseControlsActive = 1;
-        }
-        if (payload["trapType"] == "telehome") {
-            GameInteractor::RawAction::TeleportPlayer(GI_TP_DEST_LINKSHOUSE);
-        }
+        // Green name for team chat, red for all chat.
+        ImVec4 preCol = teamOnly ? ImVec4(0.5f, 1.0f, 0.5f, 1.0f) : ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
+        Anchor_DisplayMessage({ .prefix = anchorClient.name,
+                                .prefixColor = preCol,
+                                .message = payload["msg"] });
     }
     if (payload["type"] == "SERVER_MESSAGE") {
         Anchor_DisplayMessage({
@@ -1281,6 +1264,60 @@ void Anchor_RegisterHooks() {
         gSaveContext.playerData.damageEffect = 0;
         gSaveContext.playerData.damageValue = 0;
         gSaveContext.playerData.playerSound = 0;
+    });
+
+    // Process anything in the trap queue.
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (queuedTraps.empty()) {
+            return;
+        }
+
+        const std::string& trap = queuedTraps.front();
+
+        // Store result if the action returns GameInteractionEffectQueryResult.
+        GameInteractionEffectQueryResult result = GameInteractionEffectQueryResult::Possible;
+
+        if (trap == "cuccostorm") {
+            result = GameInteractor::RawAction::SpawnActor(ACTOR_EN_NIW, 0);
+        } else if (trap == "hands") {
+            result = GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_DHA, 0);
+        } else if (trap == "gibdos") {
+            result = GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RD, 32766);
+        } else if (trap == "likelike") {
+            result = GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RR, 0);
+        } else if (trap == "knockback2" || trap == "knockback4") {
+            Player* player = GET_PLAYER(gPlayState);
+            if (!GameInteractor::IsSaveLoaded() || GameInteractor::IsGameplayPaused() ||
+                player->stateFlags2 & PLAYER_STATE2_CRAWLING) {
+                result = GameInteractionEffectQueryResult::TemporarilyNotPossible;
+            } else if (trap == "knockback2") {
+                GameInteractor::RawAction::KnockbackPlayer(2);
+            } else if (trap == "knockback4") {
+                GameInteractor::RawAction::KnockbackPlayer(4);
+            }
+        } else if (trap == "randwind") {
+            randomWindTimer = 0;
+            randomWindOn = true;
+        } else if (trap == "slippery") {
+            slipperyTimer = 0;
+            slipperyOn = true;
+            GameInteractor::State::SlipperyFloorActive = 1;
+        } else if (trap == "inverted") {
+            invertedTimer = 0;
+            invertedOn = true;
+            GameInteractor::State::ReverseControlsActive = 1;
+        } else if (trap == "telehome") {
+            if (!GameInteractor::IsSaveLoaded() || GameInteractor::IsGameplayPaused()) {
+                result = GameInteractionEffectQueryResult::TemporarilyNotPossible;
+            } else {
+                GameInteractor::RawAction::TeleportPlayer(GI_TP_DEST_LINKSHOUSE);
+            }
+        }
+
+        // If we got TemporarilyNotPossible, just leave it in the queue and try again.
+        if (result != GameInteractionEffectQueryResult::TemporarilyNotPossible) {
+            queuedTraps.pop();
+        }
     });
 
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
@@ -1703,6 +1740,41 @@ void AnchorLogWindow::DrawElement() {
         ImGuiWindowFlags_NoScrollWithMouse |
         ImGuiWindowFlags_NoScrollbar
     );
+
+    // Text box for sending messages.
+    static int teamOnly = 0;
+    ImGui::RadioButton("All", &teamOnly, 0);
+    ImGui::SameLine();
+    ImGui::RadioButton("Team", &teamOnly, 1);
+    ImGui::SameLine();
+
+    char msg[256] = "";
+    bool reclaim_focus = false;
+    ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+    if (ImGui::InputText("##", msg, IM_ARRAYSIZE(msg), input_text_flags)) {
+        // Green name for team chat, red for all chat.
+        ImVec4 preCol = teamOnly ? ImVec4(0.5f, 1.0f, 0.5f, 1.0f) : ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
+        Anchor_DisplayMessage({ .prefix = CVarGetString("gRemote.AnchorName", ""), 
+                                .prefixColor = preCol,
+                                .message = msg });
+            
+        nlohmann::json payload;
+
+        payload["type"] = "PLAYER_MESSAGE";
+        payload["msg"] = msg;
+        payload["teamOnly"] = teamOnly;
+
+        GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+
+        std::strcpy(msg, "");
+        reclaim_focus = true;
+    }
+
+    // Auto-focus on window apparition
+    ImGui::SetItemDefaultFocus();
+    if (reclaim_focus) {
+        ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+    }
 
     // Options to stack notifications on top or bottom, and left or right
     if (ImGui::Button(CVarGetInteger("gRemote.AnchorLogWindowX", 1) ? ICON_FA_CHEVRON_RIGHT : ICON_FA_CHEVRON_LEFT, ImVec2(20, 20))) {
