@@ -13,6 +13,7 @@
 #include <soh/util.h>
 #include <nlohmann/json.hpp>
 #include <sstream>
+#include <cstring>
 
 extern "C" {
 #include <variables.h>
@@ -888,6 +889,17 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
             GameInteractor::RawAction::TeleportPlayer(GI_TP_DEST_LINKSHOUSE);
         }
     }
+    if (payload["type"] == "PLAYER_MESSAGE") {
+        uint32_t teamOnly = payload["teamOnly"].get<uint32_t>();
+        if (teamOnly && !from_teammate) {
+            return;
+        }
+        // Green name for team chat, red for all chat.
+        ImVec4 preCol = teamOnly ? ImVec4(0.5f, 1.0f, 0.5f, 1.0f) : ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
+        Anchor_DisplayMessage({ .prefix = anchorClient.name,
+                                .prefixColor = preCol,
+                                .message = payload["msg"] });
+    }
     if (payload["type"] == "SERVER_MESSAGE") {
         Anchor_DisplayMessage({
             .prefix = "Server:",
@@ -1703,6 +1715,41 @@ void AnchorLogWindow::DrawElement() {
         ImGuiWindowFlags_NoScrollWithMouse |
         ImGuiWindowFlags_NoScrollbar
     );
+
+    // Text box for sending messages.
+    static int teamOnly = 0;
+    ImGui::RadioButton("All", &teamOnly, 0);
+    ImGui::SameLine();
+    ImGui::RadioButton("Team", &teamOnly, 1);
+    ImGui::SameLine();
+
+    char msg[256] = "";
+    bool reclaim_focus = false;
+    ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+    if (ImGui::InputText("##", msg, IM_ARRAYSIZE(msg), input_text_flags)) {
+        // Green name for team chat, red for all chat.
+        ImVec4 preCol = teamOnly ? ImVec4(0.5f, 1.0f, 0.5f, 1.0f) : ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
+        Anchor_DisplayMessage({ .prefix = CVarGetString("gRemote.AnchorName", ""), 
+                                .prefixColor = preCol,
+                                .message = msg });
+            
+        nlohmann::json payload;
+
+        payload["type"] = "PLAYER_MESSAGE";
+        payload["msg"] = msg;
+        payload["teamOnly"] = teamOnly;
+
+        GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+
+        std::strcpy(msg, "");
+        reclaim_focus = true;
+    }
+
+    // Auto-focus on window apparition
+    ImGui::SetItemDefaultFocus();
+    if (reclaim_focus) {
+        ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+    }
 
     // Options to stack notifications on top or bottom, and left or right
     if (ImGui::Button(CVarGetInteger("gRemote.AnchorLogWindowX", 1) ? ICON_FA_CHEVRON_RIGHT : ICON_FA_CHEVRON_LEFT, ImVec2(20, 20))) {
