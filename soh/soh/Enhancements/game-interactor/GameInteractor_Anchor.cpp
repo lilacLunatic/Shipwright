@@ -1859,7 +1859,6 @@ void AnchorLogWindow::UpdateElement() {
 bool PayTrapCost(int32_t cost) {
     // Check if we have enough rupees.
     if (gSaveContext.rupees < cost) {
-        // Can't teleport.
         std::stringstream msg;
         msg << "Need " << cost << " rupees to send this trap.";
         Anchor_DisplayMessage({ .message = msg.str() });
@@ -1885,6 +1884,8 @@ void AnchorTrapWindow::DrawElement() {
         ImGuiWindowFlags_NoScrollbar
     );
 
+    ImVec4 trapColor = RED;
+    
     ImGui::PushID("cuccostorm");
     if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
         int32_t cost = CVarGetInteger("gTrapMenuCuccoCost", 50);
@@ -1899,7 +1900,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    ImGui::TextColored(RED, "(%d) Summon Cucco Storm", CVarGetInteger("gTrapMenuCuccoCost", 50));
+    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuCuccoCost", 50) ? RED : GREEN;
+    ImGui::TextColored(trapColor, "(%d) Summon Cucco Storm", CVarGetInteger("gTrapMenuCuccoCost", 50));
     ImGui::PopID();
 
     ImGui::PushID("hands");
@@ -1916,7 +1918,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    ImGui::TextColored(RED, "(%d) Spawn Hand x5", CVarGetInteger("gTrapMenuHandsCost", 20));
+    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuHandsCost", 20) ? RED : GREEN;
+    ImGui::TextColored(trapColor, "(%d) Spawn Hand x5", CVarGetInteger("gTrapMenuHandsCost", 20));
     ImGui::PopID();
 
     ImGui::PushID("gibdo");
@@ -1933,7 +1936,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    ImGui::TextColored(RED, "(%d) Spawn Gibdo x4", CVarGetInteger("gTrapMenuGibdoCost", 99));
+    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuGibdoCost", 99) ? RED : GREEN;
+    ImGui::TextColored(trapColor, "(%d) Spawn Gibdo x4", CVarGetInteger("gTrapMenuGibdoCost", 99));
     ImGui::PopID();
 
     ImGui::PushID("likelike");
@@ -1950,7 +1954,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    ImGui::TextColored(RED, "(%d) Spawn Like Like x4", CVarGetInteger("gTrapMenuLikeLikeCost", 50));
+    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuLikeLikeCost", 50) ? RED : GREEN;
+    ImGui::TextColored(trapColor, "(%d) Spawn Like Like x4", CVarGetInteger("gTrapMenuLikeLikeCost", 50));
     ImGui::PopID();
 
     ImGui::PushID("knockback2");
@@ -1967,7 +1972,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    ImGui::TextColored(GREEN, "(%d) Small knockback", CVarGetInteger("gTrapMenuKnockback2Cost", 50));
+    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuKnockback2Cost", 50) ? RED : GREEN;
+    ImGui::TextColored(trapColor, "(%d) Small knockback", CVarGetInteger("gTrapMenuKnockback2Cost", 50));
     ImGui::PopID();
 
     ImGui::PushID("knockback4");
@@ -1984,7 +1990,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    ImGui::TextColored(GREEN, "(%d) Large Knockback", CVarGetInteger("gTrapMenuKnockback4Cost", 100));
+    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuKnockback4Cost", 100) ? RED : GREEN;
+    ImGui::TextColored(trapColor, "(%d) Large Knockback", CVarGetInteger("gTrapMenuKnockback4Cost", 100));
     ImGui::PopID();
 
     ImGui::PushID("randwind");
@@ -2001,7 +2008,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    ImGui::TextColored(GREEN, "(%d) Summon Random Wind", CVarGetInteger("gTrapMenuRandWindCost", 100));
+    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuRandWindCost", 100) ? RED : GREEN;
+    ImGui::TextColored(trapColor, "(%d) Summon Random Wind", CVarGetInteger("gTrapMenuRandWindCost", 100));
     ImGui::PopID();
 
     ImGui::PushID("slippery");
@@ -2018,7 +2026,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    ImGui::TextColored(GREEN, "(%d) Slippery Surface", CVarGetInteger("gTrapMenuSlipperyCost", 50));
+    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuSlipperyCost", 50) ? RED : GREEN;
+    ImGui::TextColored(trapColor, "(%d) Slippery Surface", CVarGetInteger("gTrapMenuSlipperyCost", 50));
     ImGui::PopID();
 
     ImGui::PushID("inverted");
@@ -2035,7 +2044,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    ImGui::TextColored(GREEN, "(%d) Invert Controls", CVarGetInteger("gTrapMenuInvertedCost", 150));
+    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuInvertedCost", 150) ? RED : GREEN;
+    ImGui::TextColored(trapColor, "(%d) Invert Controls", CVarGetInteger("gTrapMenuInvertedCost", 150));
     ImGui::PopID();
 
     ImGui::PushID("telehome");
@@ -2052,7 +2062,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    ImGui::TextColored(GREEN, "(%d) Teleport Home", CVarGetInteger("gTrapMenuTelehomeCost", 200));
+    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuTelehomeCost", 200) ? RED : GREEN;
+    ImGui::TextColored(trapColor, "(%d) Teleport Home", CVarGetInteger("gTrapMenuTelehomeCost", 200));
     ImGui::PopID();
 
     ImGui::End();
