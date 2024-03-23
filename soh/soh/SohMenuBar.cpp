@@ -1727,6 +1727,16 @@ void DrawRemoteControlMenu() {
                                                           "gTrapMenuTelehomeCost", 0, 200, "", 200, true, true, true);
                     ImGui::EndMenu();
                 }
+                if (ImGui::BeginMenu("PvP Buffs")) {
+                    UIWidgets::InsertHelpHoverText(
+                        "Possible buffs that you can get when dealing the final blow to another player.\n"
+                        "\n"
+                        "If everything is unchecked, no buff will be applied. If multiple are checked, a buff is "
+                        "selected at random with equal probability.");
+                    UIWidgets::EnhancementCheckbox("Refill Wallet", "gPvpBuffRefillWallet");
+                    UIWidgets::EnhancementCheckbox("Refill Consumables", "gPvpBuffRefillConsumables");
+                    ImGui::EndMenu();
+                }
                 UIWidgets::PaddedSeparator(true, true);
 
                 ImGui::Text("PVP Damage Multiplier");

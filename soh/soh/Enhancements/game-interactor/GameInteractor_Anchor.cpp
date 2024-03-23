@@ -294,6 +294,8 @@ bool slipperyOn = false;
 uint16_t slipperyTimer = 0;
 bool invertedOn = false;
 uint16_t invertedTimer = 0;
+uint32_t lastAttackerClientId = 0;
+uint8_t pvpVulnerableTimer = 0;
 
 void Anchor_DisplayMessage(AnchorMessage message = {}) {
     message.id = notificationId++;
@@ -354,6 +356,10 @@ void Anchor_PushSettingsToRemote() {
     payload["gTrapMenuInvertedCost"] = CVarGetInteger("gTrapMenuInvertedCost", 150);
     payload["gTrapMenuTelehomeCost"] = CVarGetInteger("gTrapMenuTelehomeCost", 200);
 
+    // PvP buffs.
+    payload["gPvpBuffRefillWallet"] = CVarGetInteger("gPvpBuffRefillWallet", 0);
+    payload["gPvpBuffRefillConsumables"] = CVarGetInteger("gPvpBuffRefillConsumables", 0);
+
     GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
 }
 
@@ -392,6 +398,10 @@ void Anchor_CopySettingsFromRemote(nlohmann::json payload) {
         // Enable additional traps to allow ice traps to turn off for yourself.
         CVarSetInteger("gAddTraps.enabled", 1);
     }
+
+    // PvP buffs.
+    CVarSetInteger("gPvpBuffRefillWallet", payload["gPvpBuffRefillWallet"].get<int32_t>());
+    CVarSetInteger("gPvpBuffRefillConsumables", payload["gPvpBuffRefillConsumables"].get<int32_t>());
 
     settingsCopied = true;
     Anchor_DisplayMessage({ .message = "Settings copied from remote." });
@@ -490,6 +500,48 @@ void ApplyIceTrap(bool fromTeammate) {
             GameInteractor::RawAction::FreezePlayer();
             break;
     }
+}
+
+void ApplyPvpBuff() {
+    // Populate possible buffs.
+    std::vector<PvpBuff> possibleBuffs = {};
+    if (CVarGetInteger("gPvpBuffRefillWallet", 0)) {
+        possibleBuffs.push_back(REFILL_WALLET);
+    }
+    if (CVarGetInteger("gPvpBuffRefillConsumables", 0)) {
+        possibleBuffs.push_back(REFILL_CONSUMABLES);
+    }
+
+    if (possibleBuffs.empty()) {
+        return;
+    }
+
+    // Pick buff at random and apply buff.
+    PvpBuff buff = possibleBuffs[rand() % possibleBuffs.size()];
+    std::string buffName = "none";
+
+    switch (buff) {
+        case REFILL_WALLET:
+            Rupees_ChangeBy(1000);
+            buffName = "Rupee Refill";
+            break;
+        case REFILL_CONSUMABLES:
+            GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_STICK);
+            GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_NUT);
+            GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_BOMB);
+            GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_BOW);
+            GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_SEEDS);
+            // Only add chus if chus are in logic and we have found chus before.
+            if (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_BOMBCHUS_IN_LOGIC) &&
+                INV_CONTENT(ITEM_BOMBCHU) == ITEM_BOMBCHU) {
+                GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_BOMBCHU);
+            }
+            buffName = "Consumables Refill";
+            break;
+    }
+
+    Anchor_DisplayMessage({ .message = "Received buff:",
+                            .suffix = buffName });
 }
 
 void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
@@ -626,6 +678,11 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
     if (payload["type"] == "DAMAGE_PLAYER") {
         if (payload["damageEffect"] > 0 && GET_PLAYER(gPlayState)->invincibilityTimer <= 0 &&
             !Player_InBlockingCsMode(gPlayState, GET_PLAYER(gPlayState))) {
+            // Save id of last person to hit, and also set vulnerability timer.
+            // This helps send a buff to the last hitter if game over is triggered while vulnerable.
+            lastAttackerClientId = payload["clientId"].get<uint32_t>();
+            pvpVulnerableTimer = 100;
+
             if (payload["damageEffect"] == PUPPET_DMGEFF_NORMAL) {
                 u8 damage = payload["damageValue"];
                 Player_InflictDamage(gPlayState, damage * GetPvpDamageMultiplier() * -4);
@@ -657,6 +714,15 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
                 GET_PLAYER(gPlayState)->actor.freezeTimer = 20;
                 Actor_SetColorFilter(&GET_PLAYER(gPlayState)->actor, 0, 0xFF, 0, 10);
             }
+        }
+    }
+    if (payload["type"] == "GOT_PLAYER_KILL") {
+        if (from_teammate) {
+            Anchor_DisplayMessage(
+                { .message = "That was your teammate, you monster." });
+        } else {
+            Anchor_DisplayMessage({ .message = "You killed", .suffix = anchorClient.name });
+            ApplyPvpBuff();
         }
     }
     if (payload["type"] == "CLIENT_UPDATE") {
@@ -1369,6 +1435,27 @@ void Anchor_RegisterHooks() {
             GameInteractor::State::ReverseControlsActive = 0;
         } else {
             invertedTimer++;
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (pvpVulnerableTimer > 0) {
+            pvpVulnerableTimer--;
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameOver>([]() {
+        if (pvpVulnerableTimer > 0) {
+            AnchorClient lastAttackerClient = GameInteractorAnchor::AnchorClients[lastAttackerClientId];
+            Anchor_DisplayMessage({ .message = "Died to", .suffix = lastAttackerClient.name });
+
+            // Send payload to last attacker letting them know they got a kill.
+            nlohmann::json payload;
+
+            payload["type"] = "GOT_PLAYER_KILL";
+            payload["targetClientId"] = lastAttackerClientId;
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
         }
     });
 }

@@ -85,4 +85,9 @@ typedef enum {
     ICE_TRAP_TARGETS_ALL,
 } IceTrapTargets;
 
+typedef enum {
+    REFILL_WALLET,
+    REFILL_CONSUMABLES,
+} PvpBuff;
+
 #endif
