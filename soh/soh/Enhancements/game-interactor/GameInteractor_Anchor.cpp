@@ -361,10 +361,10 @@ void Anchor_PushSettingsToRemote() {
     payload["gTrapMenuTelehomeCost"] = CVarGetInteger("gTrapMenuTelehomeCost", 200);
 
     // PvP buffs.
-    payload["gPvpBuffEnableRefillWallet"] = CVarGetInteger("gPvpBuffEnableRefillWallet", 0);
-    payload["gPvpBuffEnableRefillConsumables"] = CVarGetInteger("gPvpBuffEnableRefillConsumables", 0);
-    payload["gPvpBuffEnableSpeedBoost"] = CVarGetInteger("gPvpBuffEnableSpeedBoost", 0);
-    payload["gPvpBuffEnableInvincibility"] = CVarGetInteger("gPvpBuffEnableInvincibility", 0);
+    payload["gPvpBuffEnableRefillWallet"] = CVarGetInteger("gPvpBuffEnableRefillWallet", 1);
+    payload["gPvpBuffEnableRefillConsumables"] = CVarGetInteger("gPvpBuffEnableRefillConsumables", 1);
+    payload["gPvpBuffEnableSpeedBoost"] = CVarGetInteger("gPvpBuffEnableSpeedBoost", 1);
+    payload["gPvpBuffEnableInvincibility"] = CVarGetInteger("gPvpBuffEnableInvincibility", 1);
 
     GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
 }
