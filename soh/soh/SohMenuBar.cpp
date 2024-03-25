@@ -1702,7 +1702,28 @@ void DrawRemoteControlMenu() {
                 UIWidgets::Tooltip("Rupees needed to teleport to another player.");
 
                 UIWidgets::PaddedSeparator(true, true);
-                if (ImGui::BeginMenu("Trap Menu Options")) {
+
+                if (ImGui::BeginMenu("PvP Buff Options")) {
+                    UIWidgets::InsertHelpHoverText(
+                        "PvP credits can be obtained when dealing the final blow to a player "
+                        "on an opposing team. Enabling a buff will add it to the PvP menu as "
+                        "an option to spend PvP credits on.");
+                    UIWidgets::EnhancementCheckbox("Refill Wallet", "gPvpBuffEnableRefillWallet", false, "",
+                                                   UIWidgets::CheckboxGraphics::Cross, true);
+                    UIWidgets::EnhancementCheckbox("Refill Consumables", "gPvpBuffEnableRefillConsumables", false, "",
+                                                   UIWidgets::CheckboxGraphics::Cross, true);
+                    UIWidgets::Tooltip("Refills sticks, nuts, bombs, arrows, and deku seeds.\n"
+                    "\n"
+                    "If chus are in logic and have been discovered, then chus will be maxed out as well.");
+                    UIWidgets::EnhancementCheckbox("Speed Boost", "gPvpBuffEnableSpeedBoost", false, "",
+                                                   UIWidgets::CheckboxGraphics::Cross, true);
+                    UIWidgets::Tooltip("Run speed boost for 1 minute.");
+                    UIWidgets::EnhancementCheckbox("Invincibility", "gPvpBuffEnableInvincibility", false, "",
+                                                   UIWidgets::CheckboxGraphics::Cross, true);
+                    UIWidgets::Tooltip("Invincibility for 1 minute.");
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("PvP Trap Options")) {
                     UIWidgets::PaddedEnhancementSliderInt("Cucco Cost: %d Rupees", "##gTrapMenuCuccoCost",
                                                           "gTrapMenuCuccoCost", 0, 200, "", 50, true, true, true);
                     UIWidgets::PaddedEnhancementSliderInt("Hands Cost: %d Rupees", "##gTrapMenuHandsCost",
@@ -1787,11 +1808,12 @@ void DrawRemoteControlMenu() {
             }
             if (mAnchorTrapWindow) {
                 if (ImGui::Button(
-                        GetWindowButtonText("Traps Menu", CVarGetInteger("gRemote.AnchorTrapWindow", 0)).c_str(),
+                        GetWindowButtonText("PvP Menu", CVarGetInteger("gRemote.AnchorTrapWindow", 0)).c_str(),
                         ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, 0.0f))) {
                     mAnchorTrapWindow->ToggleVisibility();
                 }
-                UIWidgets::InsertHelpHoverText("This window shows various traps you can send to your opponents.\n"
+                UIWidgets::InsertHelpHoverText("This window shows various buffs you can give yourself "
+                                               "and traps you can send to your opponents.\n"
                                                "\n"
                                                "You can move this window around, and press the options "
                                                "to send traps to players on opposing teams.");

@@ -10,6 +10,7 @@
 #include <soh/Enhancements/nametag.h>
 #include <soh/Enhancements/presets.h>
 #include <soh/Enhancements/randomizer/randomizer_check_tracker.h>
+#include <soh/UIWidgets.hpp>
 #include <soh/util.h>
 #include <nlohmann/json.hpp>
 #include <cstring>
@@ -287,6 +288,7 @@ std::vector<uint16_t> discoveredEntrances = {};
 std::vector<AnchorMessage> anchorMessages = {};
 uint32_t notificationId = 0;
 bool settingsCopied = false;
+uint16_t pvpCredits = 0;
 std::queue<std::string> queuedTraps;
 bool randomWindOn = false;
 uint16_t randomWindTimer = 0;
@@ -294,6 +296,10 @@ bool slipperyOn = false;
 uint16_t slipperyTimer = 0;
 bool invertedOn = false;
 uint16_t invertedTimer = 0;
+uint32_t lastAttackerClientId = 0;
+uint8_t pvpVulnerableTimer = 0;
+uint16_t speedBuffTimer = 0;
+uint16_t invincibilityTimer = 0;
 
 void Anchor_DisplayMessage(AnchorMessage message = {}) {
     message.id = notificationId++;
@@ -354,6 +360,12 @@ void Anchor_PushSettingsToRemote() {
     payload["gTrapMenuInvertedCost"] = CVarGetInteger("gTrapMenuInvertedCost", 150);
     payload["gTrapMenuTelehomeCost"] = CVarGetInteger("gTrapMenuTelehomeCost", 200);
 
+    // PvP buffs.
+    payload["gPvpBuffEnableRefillWallet"] = CVarGetInteger("gPvpBuffEnableRefillWallet", 0);
+    payload["gPvpBuffEnableRefillConsumables"] = CVarGetInteger("gPvpBuffEnableRefillConsumables", 0);
+    payload["gPvpBuffEnableSpeedBoost"] = CVarGetInteger("gPvpBuffEnableSpeedBoost", 0);
+    payload["gPvpBuffEnableInvincibility"] = CVarGetInteger("gPvpBuffEnableInvincibility", 0);
+
     GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
 }
 
@@ -392,6 +404,12 @@ void Anchor_CopySettingsFromRemote(nlohmann::json payload) {
         // Enable additional traps to allow ice traps to turn off for yourself.
         CVarSetInteger("gAddTraps.enabled", 1);
     }
+
+    // PvP buffs.
+    CVarSetInteger("gPvpBuffEnableRefillWallet", payload["gPvpBuffEnableRefillWallet"].get<int32_t>());
+    CVarSetInteger("gPvpBuffEnableRefillConsumables", payload["gPvpBuffEnableRefillConsumables"].get<int32_t>());
+    CVarSetInteger("gPvpBuffEnableSpeedBoost", payload["gPvpBuffEnableSpeedBoost"].get<int32_t>());
+    CVarSetInteger("gPvpBuffEnableInvincibility", payload["gPvpBuffEnableInvincibility"].get<int32_t>());
 
     settingsCopied = true;
     Anchor_DisplayMessage({ .message = "Settings copied from remote." });
@@ -626,6 +644,11 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
     if (payload["type"] == "DAMAGE_PLAYER") {
         if (payload["damageEffect"] > 0 && GET_PLAYER(gPlayState)->invincibilityTimer <= 0 &&
             !Player_InBlockingCsMode(gPlayState, GET_PLAYER(gPlayState))) {
+            // Save id of last person to hit, and also set vulnerability timer.
+            // This helps send a buff to the last hitter if game over is triggered while vulnerable.
+            lastAttackerClientId = payload["clientId"].get<uint32_t>();
+            pvpVulnerableTimer = 100;
+
             if (payload["damageEffect"] == PUPPET_DMGEFF_NORMAL) {
                 u8 damage = payload["damageValue"];
                 Player_InflictDamage(gPlayState, damage * GetPvpDamageMultiplier() * -4);
@@ -657,6 +680,15 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
                 GET_PLAYER(gPlayState)->actor.freezeTimer = 20;
                 Actor_SetColorFilter(&GET_PLAYER(gPlayState)->actor, 0, 0xFF, 0, 10);
             }
+        }
+    }
+    if (payload["type"] == "GOT_PLAYER_KILL") {
+        if (from_teammate) {
+            Anchor_DisplayMessage(
+                { .message = "That was your teammate, you monster." });
+        } else {
+            Anchor_DisplayMessage({ .message = "You killed", .suffix = anchorClient.name });
+            pvpCredits++;
         }
     }
     if (payload["type"] == "CLIENT_UPDATE") {
@@ -1371,6 +1403,50 @@ void Anchor_RegisterHooks() {
             invertedTimer++;
         }
     });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (pvpVulnerableTimer > 0) {
+            pvpVulnerableTimer--;
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (speedBuffTimer > 0) {
+            speedBuffTimer--;
+            if (speedBuffTimer <= 0) {
+                Anchor_DisplayMessage({ .message = "Speed boost removed." });
+                GameInteractor::State::RunSpeedModifier = 0;
+            }
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (invincibilityTimer > 0) {
+            // Reset player->invincibilityTimer to a small positive number to retain invincibility.
+            Player* player = GET_PLAYER(gPlayState);
+            player->invincibilityTimer = 10;
+            invincibilityTimer--;
+            if (invincibilityTimer <= 0) {
+                // Just let the player->invincibilityTimer expire.
+                Anchor_DisplayMessage({ .message = "Invincibility removed." });
+            }
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameOver>([]() {
+        if (pvpVulnerableTimer > 0) {
+            AnchorClient lastAttackerClient = GameInteractorAnchor::AnchorClients[lastAttackerClientId];
+            Anchor_DisplayMessage({ .message = "Died to", .suffix = lastAttackerClient.name });
+
+            // Send payload to last attacker letting them know they got a kill.
+            nlohmann::json payload;
+
+            payload["type"] = "GOT_PLAYER_KILL";
+            payload["targetClientId"] = lastAttackerClientId;
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    });
 }
 
 void Anchor_EntranceDiscovered(uint16_t entranceIndex) {
@@ -1884,8 +1960,99 @@ void AnchorTrapWindow::DrawElement() {
         ImGuiWindowFlags_NoScrollbar
     );
 
-    ImVec4 trapColor = RED;
+    ImVec4 menuItemColor = RED;
+    std::string buffName = "";
+    ImGui::Text("PvP Buffs (%d credits)", pvpCredits);
+    UIWidgets::InsertHelpHoverText(
+        "Acquire credits by dealing the final blow to players on opposing teams. These can then be spent on buffs.");
     
+    if (CVarGetInteger("gPvpBuffEnableRefillWallet", 1)) {
+        ImGui::PushID("refillwallet");
+        if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+            buffName = "Rupee Refill";
+            if (pvpCredits >= 1) {
+                pvpCredits--;
+                Rupees_ChangeBy(1000);
+                Anchor_DisplayMessage({ .message = "Received buff:", .suffix = buffName });
+            } else {
+                Anchor_DisplayMessage({ .prefix = buffName, .message = "requires 1 credit." });
+            }
+        }
+        ImGui::SameLine();
+        menuItemColor = pvpCredits < 1 ? RED : GREEN;
+        ImGui::TextColored(menuItemColor, "(1 cred) Refill Wallet");
+        ImGui::PopID();
+    }
+
+    if (CVarGetInteger("gPvpBuffEnableRefillConsumables", 1)) {
+        ImGui::PushID("refillconsumables");
+        if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+            buffName = "Consumables Refill";
+            if (pvpCredits >= 1) {
+                pvpCredits--;
+                GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_STICK);
+                GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_NUT);
+                GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_BOMB);
+                GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_BOW);
+                GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_SEEDS);
+                // Only add chus if chus are in logic and we have found chus before.
+                if (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_BOMBCHUS_IN_LOGIC) &&
+                    INV_CONTENT(ITEM_BOMBCHU) == ITEM_BOMBCHU) {
+                    GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_BOMBCHU);
+                }
+                Anchor_DisplayMessage({ .message = "Received buff:", .suffix = buffName });
+            } else {
+                Anchor_DisplayMessage({ .prefix = buffName, .message = "requires 1 credit." });
+            }
+        }
+        ImGui::SameLine();
+        menuItemColor = pvpCredits < 1 ? RED : GREEN;
+        ImGui::TextColored(menuItemColor, "(1 cred) Refill Consumables");
+        ImGui::PopID();
+    }
+
+    if (CVarGetInteger("gPvpBuffEnableSpeedBoost", 1)) {
+        ImGui::PushID("speedboost");
+        if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+            buffName = "Speed Boost (1min)";
+            if (pvpCredits >= 1) {
+                pvpCredits--;
+                GameInteractor::State::RunSpeedModifier = 2;
+                speedBuffTimer = 60 * 20; // 1 minute
+                Anchor_DisplayMessage({ .message = "Received buff:", .suffix = buffName });
+            } else {
+                Anchor_DisplayMessage({ .prefix = buffName, .message = "requires 1 credit." });
+            }
+        }
+        ImGui::SameLine();
+        menuItemColor = pvpCredits < 1 ? RED : GREEN;
+        ImGui::TextColored(menuItemColor, "(1 cred) Speed Boost (1min)");
+        ImGui::PopID();
+    }
+
+    if (CVarGetInteger("gPvpBuffEnableInvincibility", 1)) {
+        ImGui::PushID("invincibility");
+        if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+            buffName = "Invincibility (1min)";
+            if (pvpCredits >= 2) {
+                pvpCredits -= 2;
+                // Set player->invincibilityTimer (signed 8bit int) to a small positive int.
+                // We use local invincibilityTimer var instead to count more than 128 frames.
+                Player* player = GET_PLAYER(gPlayState);
+                player->invincibilityTimer = 10;
+                invincibilityTimer = 60 * 20; // 1 minute
+                Anchor_DisplayMessage({ .message = "Received buff:", .suffix = buffName });
+            } else {
+                Anchor_DisplayMessage({ .prefix = buffName, .message = "requires 2 credits." });
+            }
+        }
+        ImGui::SameLine();
+        menuItemColor = pvpCredits < 2 ? RED : GREEN;
+        ImGui::TextColored(menuItemColor, "(2 cred) Invincibility (1min)");
+        ImGui::PopID();
+    }
+
+    ImGui::Text("\nPvP Traps");
     ImGui::PushID("cuccostorm");
     if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
         int32_t cost = CVarGetInteger("gTrapMenuCuccoCost", 50);
@@ -1900,8 +2067,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuCuccoCost", 50) ? RED : GREEN;
-    ImGui::TextColored(trapColor, "(%d) Summon Cucco Storm", CVarGetInteger("gTrapMenuCuccoCost", 50));
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuCuccoCost", 50) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Summon Cucco Storm", CVarGetInteger("gTrapMenuCuccoCost", 50));
     ImGui::PopID();
 
     ImGui::PushID("hands");
@@ -1918,8 +2085,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuHandsCost", 20) ? RED : GREEN;
-    ImGui::TextColored(trapColor, "(%d) Spawn Hand x5", CVarGetInteger("gTrapMenuHandsCost", 20));
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuHandsCost", 20) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Spawn Hand x5", CVarGetInteger("gTrapMenuHandsCost", 20));
     ImGui::PopID();
 
     ImGui::PushID("gibdo");
@@ -1936,8 +2103,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuGibdoCost", 99) ? RED : GREEN;
-    ImGui::TextColored(trapColor, "(%d) Spawn Gibdo x4", CVarGetInteger("gTrapMenuGibdoCost", 99));
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuGibdoCost", 99) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Spawn Gibdo x4", CVarGetInteger("gTrapMenuGibdoCost", 99));
     ImGui::PopID();
 
     ImGui::PushID("likelike");
@@ -1954,8 +2121,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuLikeLikeCost", 50) ? RED : GREEN;
-    ImGui::TextColored(trapColor, "(%d) Spawn Like Like x4", CVarGetInteger("gTrapMenuLikeLikeCost", 50));
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuLikeLikeCost", 50) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Spawn Like Like x4", CVarGetInteger("gTrapMenuLikeLikeCost", 50));
     ImGui::PopID();
 
     ImGui::PushID("knockback2");
@@ -1972,8 +2139,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuKnockback2Cost", 50) ? RED : GREEN;
-    ImGui::TextColored(trapColor, "(%d) Small knockback", CVarGetInteger("gTrapMenuKnockback2Cost", 50));
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuKnockback2Cost", 50) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Small knockback", CVarGetInteger("gTrapMenuKnockback2Cost", 50));
     ImGui::PopID();
 
     ImGui::PushID("knockback4");
@@ -1990,8 +2157,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuKnockback4Cost", 100) ? RED : GREEN;
-    ImGui::TextColored(trapColor, "(%d) Large Knockback", CVarGetInteger("gTrapMenuKnockback4Cost", 100));
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuKnockback4Cost", 100) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Large Knockback", CVarGetInteger("gTrapMenuKnockback4Cost", 100));
     ImGui::PopID();
 
     ImGui::PushID("randwind");
@@ -2008,8 +2175,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuRandWindCost", 100) ? RED : GREEN;
-    ImGui::TextColored(trapColor, "(%d) Summon Random Wind", CVarGetInteger("gTrapMenuRandWindCost", 100));
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuRandWindCost", 100) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Summon Random Wind", CVarGetInteger("gTrapMenuRandWindCost", 100));
     ImGui::PopID();
 
     ImGui::PushID("slippery");
@@ -2026,8 +2193,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuSlipperyCost", 50) ? RED : GREEN;
-    ImGui::TextColored(trapColor, "(%d) Slippery Surface", CVarGetInteger("gTrapMenuSlipperyCost", 50));
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuSlipperyCost", 50) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Slippery Surface", CVarGetInteger("gTrapMenuSlipperyCost", 50));
     ImGui::PopID();
 
     ImGui::PushID("inverted");
@@ -2044,8 +2211,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuInvertedCost", 150) ? RED : GREEN;
-    ImGui::TextColored(trapColor, "(%d) Invert Controls", CVarGetInteger("gTrapMenuInvertedCost", 150));
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuInvertedCost", 150) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Invert Controls", CVarGetInteger("gTrapMenuInvertedCost", 150));
     ImGui::PopID();
 
     ImGui::PushID("telehome");
@@ -2062,8 +2229,8 @@ void AnchorTrapWindow::DrawElement() {
         }
     }
     ImGui::SameLine();
-    trapColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuTelehomeCost", 200) ? RED : GREEN;
-    ImGui::TextColored(trapColor, "(%d) Teleport Home", CVarGetInteger("gTrapMenuTelehomeCost", 200));
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuTelehomeCost", 200) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Teleport Home", CVarGetInteger("gTrapMenuTelehomeCost", 200));
     ImGui::PopID();
 
     ImGui::End();

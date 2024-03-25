@@ -191,6 +191,7 @@ public:
     DEFINE_HOOK(OnActorKill, void(void* actor));
     DEFINE_HOOK(OnEnemyDefeat, void(void* actor));
     DEFINE_HOOK(OnPlayerBonk, void());
+    DEFINE_HOOK(OnGameOver, void());
     DEFINE_HOOK(OnPlayDestroy, void());
     DEFINE_HOOK(OnPlayDrawEnd, void());
 

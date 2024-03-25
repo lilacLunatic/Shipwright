@@ -1,4 +1,5 @@
 #include "global.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 void GameOver_Init(PlayState* play) {
     play->gameOverCtx.state = GAMEOVER_INACTIVE;
@@ -31,6 +32,8 @@ void GameOver_Update(PlayState* play) {
             gSaveContext.timer1State = 0;
             gSaveContext.timer2State = 0;
             gSaveContext.eventInf[1] &= ~1;
+
+            GameInteractor_ExecuteOnGameOverHooks();
 
             // search inventory for spoiling items and revert if necessary
             if (!(IS_RANDO && Randomizer_GetSettingValue(RSK_SHUFFLE_ADULT_TRADE))) {

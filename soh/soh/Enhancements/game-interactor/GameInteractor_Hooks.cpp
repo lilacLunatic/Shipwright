@@ -82,6 +82,10 @@ void GameInteractor_ExecuteOnPlayerBonk() {
     GameInteractor::Instance->ExecuteHooks<GameInteractor::OnPlayerBonk>();
 }
 
+void GameInteractor_ExecuteOnGameOverHooks() {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnGameOver>();
+}
+
 void GameInteractor_ExecuteOnPlayDestroy() {
     GameInteractor::Instance->ExecuteHooks<GameInteractor::OnPlayDestroy>();
 }
