@@ -1,4 +1,4 @@
-#ifdef ENABLE_REMOTE_CONTROL 
+#ifdef ENABLE_REMOTE_CONTROL
 
 #include "GameInteractor_Anchor.h"
 #include <libultraship/libultraship.h>
