@@ -12104,11 +12104,12 @@ s16 func_8084ABD8(PlayState* play, Player* this, s32 arg2, s16 arg3) {
         if (fabsf(sControlInput->cur.mouse_move_x) > 0) {
             //printf("x:%d\n", sControlInput->cur.mouse_move_x);
             this->actor.focus.rot.y -= (sControlInput->cur.mouse_move_x) * 12.0f * (CVarGetFloat("gFirstPersonCameraSensitivity", 1.0f)) *\
-                                       (gInvertAimingXAxis ? -1 : 1);
+                                       invertXAxisMulti;
         }
         if (fabsf(sControlInput->cur.mouse_move_y) > 0) {
             //printf("y:%d\n", sControlInput->cur.mouse_move_y);
-            this->actor.focus.rot.x += (sControlInput->cur.mouse_move_y) * 12.0f * (CVarGetFloat("gFirstPersonCameraSensitivity", 1.0f));
+            this->actor.focus.rot.x += (sControlInput->cur.mouse_move_y) * 12.0f * (CVarGetFloat("gFirstPersonCameraSensitivity", 1.0f)) *\
+                                       invertYAxisMulti;
         }
     }
     /* ********************************************************** */
