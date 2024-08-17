@@ -33,6 +33,7 @@ extern "C" {
 #include "src/overlays/actors/ovl_Obj_Comb/z_obj_comb.h"
 #include "src/overlays/actors/ovl_En_Bom_Bowl_Pit/z_en_bom_bowl_pit.h"
 #include "src/overlays/actors/ovl_En_Ge1/z_en_ge1.h"
+#include "src/overlays/actors/ovl_En_Wonder_Item/z_en_wonder_item.h"
 #include "adult_trade_shuffle.h"
 #include "draw.h"
 
@@ -76,7 +77,8 @@ RandomizerCheck GetRandomizerCheckFromSceneFlag(int16_t sceneNum, int16_t flagTy
         if (loc.GetCollectionCheck().scene == sceneNum && loc.GetCollectionCheck().flag == flag && (
             (flagType == FLAG_SCENE_TREASURE && loc.GetCollectionCheck().type == SPOILER_CHK_CHEST) ||
             (flagType == FLAG_SCENE_COLLECTIBLE && loc.GetCollectionCheck().type == SPOILER_CHK_COLLECTABLE) ||
-            (flagType == FLAG_GS_TOKEN && loc.GetCollectionCheck().type == SPOILER_CHK_GOLD_SKULLTULA)
+            (flagType == FLAG_GS_TOKEN && loc.GetCollectionCheck().type == SPOILER_CHK_GOLD_SKULLTULA) ||
+            (flagType == FLAG_SCENE_SWITCH && loc.GetCollectionCheck().type == SPOILER_CHK_SWITCH)
         ) && LocMatchesQuest(loc)) {
             return loc.GetRandomizerCheck();
         }
@@ -692,13 +694,14 @@ void RandomizerOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void
             EnWonderItem* wonderItem = static_cast<EnWonderItem*>(optionalArg);
             auto pos = wonderItem->actor.world.pos;
             uint32_t params = (wonderItem->switchFlag > 0) ? wonderItem->actor.params : TWO_ACTOR_PARAMS((int32_t)pos.x, (int32_t)pos.z);
-            Rando::Location* loc = OTRGlobals::Instance->gRandomizer->GetCheckObjectFromActor(item00->actor.id, gPlayState->sceneNum, params);
+            Rando::Location* loc = OTRGlobals::Instance->gRandomizer->GetCheckObjectFromActor(wonderItem->actor.id, gPlayState->sceneNum, params);
             if (loc && loc->GetRandomizerCheck() != RC_UNKNOWN_CHECK) {
                 *should = Rando::Context::GetInstance()->GetItemLocation(loc->GetRandomizerCheck())->HasObtained();
-                if (loc->GetCollectionCheck().type == SPOILER_CHK_RANDOMIZER_INF && !*should) {
+                if (loc->GetCollectionCheck().type == SPOILER_CHK_RANDOMIZER_INF) {
                     Flags_SetRandomizerInf(loc->GetCollectionCheck().flag);
                 }
             }
+            break;
         }
         case VB_MALON_ALREADY_TAUGHT_EPONAS_SONG: {
             *should = Flags_GetRandomizerInf(RAND_INF_LEARNED_EPONA_SONG);

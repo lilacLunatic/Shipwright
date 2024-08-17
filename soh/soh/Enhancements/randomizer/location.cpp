@@ -371,6 +371,27 @@ Rando::Location Rando::Location::Reward(RandomizerCheck rc, RandomizerCheckQuest
                     isVanillaCompletion_, collectionCheck, collectionCheckGroup};
 }
 
+Rando::Location Rando::Location::WonderItem(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckArea area_,
+           uint8_t scene_, int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+           RandomizerHintTextKey hintKey, RandomizerGet vanillaItem, std::vector<Category>&& categories,
+           SpoilerCollectionCheckGroup collectionCheckGroup, bool isVanillaCompletion_) {
+    return {rc, quest_, RCTYPE_WONDER_ITEM, area_, LocationType::Base, ACTOR_EN_WONDER_ITEM, scene_, actorParams_, flag_,
+                    std::move(shortName_), hintKey, vanillaItem, std::move(categories),
+                    isVanillaCompletion_, SpoilerCollectionCheck(SPOILER_CHK_SWITCH, scene_, flag_), collectionCheckGroup};
+}
+
+Rando::Location Rando::Location::WonderItem(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckArea area_,
+           uint8_t scene_, int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+           RandomizerHintTextKey hintKey, RandomizerGet vanillaItem,
+           std::vector<Category>&& categories, SpoilerCollectionCheck collectionCheck,
+           SpoilerCollectionCheckGroup collectionCheckGroup, bool isVanillaCompletion_) {
+    return {rc, quest_, RCTYPE_WONDER_ITEM, area_, LocationType::Base, ACTOR_EN_WONDER_ITEM, scene_, actorParams_, flag_,
+                    std::move(shortName_), hintKey, vanillaItem, std::move(categories),
+                    isVanillaCompletion_, collectionCheck, collectionCheckGroup};
+}
+
+
+
 Rando::Location Rando::Location::OtherHint(RandomizerCheck rc, RandomizerCheckQuest quest_,
                                            RandomizerCheckType checkType_, RandomizerCheckArea area_, ActorID actorId_,
                                            uint8_t scene_,
