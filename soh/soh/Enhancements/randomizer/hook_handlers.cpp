@@ -688,6 +688,18 @@ void RandomizerOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void
             }
             break;
         }
+        case VB_WONDER_ITEM_DROP_COLLECTIBLE: {
+            EnWonderItem* wonderItem = static_cast<EnWonderItem*>(optionalArg);
+            auto pos = wonderItem->actor.world.pos;
+            uint32_t params = (wonderItem->switchFlag > 0) ? wonderItem->actor.params : TWO_ACTOR_PARAMS((int32_t)pos.x, (int32_t)pos.z);
+            Rando::Location* loc = OTRGlobals::Instance->gRandomizer->GetCheckObjectFromActor(item00->actor.id, gPlayState->sceneNum, params);
+            if (loc && loc->GetRandomizerCheck() != RC_UNKNOWN_CHECK) {
+                *should = Rando::Context::GetInstance()->GetItemLocation(loc->GetRandomizerCheck())->HasObtained();
+                if (loc->GetCollectionCheck().type == SPOILER_CHK_RANDOMIZER_INF && !*should) {
+                    Flags_SetRandomizerInf(loc->GetCollectionCheck().flag);
+                }
+            }
+        }
         case VB_MALON_ALREADY_TAUGHT_EPONAS_SONG: {
             *should = Flags_GetRandomizerInf(RAND_INF_LEARNED_EPONA_SONG);
             break;

@@ -412,6 +412,9 @@ typedef enum {
     // Vanilla condition: true
     VB_PHANTOM_GANON_DEATH_SCENE,
     VB_NABOORU_KNUCKLE_DEATH_SCENE,
+
+    // Opt: *EnWonderItem
+    VB_WONDER_ITEM_DROP_COLLECTIBLE,
 } GIVanillaBehavior;
 
 #ifdef __cplusplus
