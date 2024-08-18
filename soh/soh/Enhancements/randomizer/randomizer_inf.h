@@ -581,6 +581,10 @@ typedef enum {
     RAND_INF_DMC_UNDER_BRIDGE_RUPEE,
     RAND_INF_LLR_EAST_HURDLE,
     RAND_INF_LLR_WEST_HURDLE,
+    RAND_INF_DEKU_TREE_MQ_SOUTHEAST_GRAVE,
+    RAND_INF_DEKU_TREE_MQ_WEST_GRAVE,
+    RAND_INF_DEKU_TREE_MQ_NORTHEAST_GRAVE,
+    RAND_INF_DEKU_TREE_MQ_NORTHWEST_GRAVE,
     // If you add anything to this list, you need to update the size of randomizerInf in z64save.h to be ceil(RAND_INF_MAX / 16)
 
     RAND_INF_MAX,

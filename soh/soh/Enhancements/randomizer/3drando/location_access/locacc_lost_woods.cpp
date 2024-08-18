@@ -35,7 +35,7 @@ void AreaTable_Init_LostWoods() {
                   LOCATION(RC_KF_SARIAS_ROOF_NORTH_HEART,         logic->IsChild),
                   LOCATION(RC_KF_BOULDER_HIDDEN_RUPEE_1,          logic->IsChild),
                   LOCATION(RC_KF_BOULDER_HIDDEN_RUPEE_2,          logic->IsChild),
-                  LOCATION(RC_KF_FENCE_MAZE_SIGN,                 logic->IsChild && logic->CanUse(RG_KOKIRI_SWORD)),
+                  LOCATION(RC_KF_FENCE_MAZE_SIGN,                 logic->IsChild && logic->CanJumpslash),
                   LOCATION(RC_KF_SMALL_ISLANDS,                   logic->IsChild),
                   LOCATION(RC_KF_STEPPING_STONES,                 logic->IsChild),
                   LOCATION(RC_KF_FENCE_MAZE_SOUTH_HIDDEN_RUPEE,   logic->IsChild),

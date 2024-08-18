@@ -202,6 +202,10 @@ Dungeons::Dungeons() {
                         RC_DEKU_TREE_MQ_BEFORE_BOSS_LEFT_HEART,
                         RC_DEKU_TREE_MQ_BEFORE_BOSS_MIDDLE_HEART,
                         RC_DEKU_TREE_MQ_BEFORE_BOSS_RIGHT_HEART,
+                        RC_DEKU_TREE_MQ_SOUTHEAST_GRAVE,
+                        RC_DEKU_TREE_MQ_WEST_GRAVE,
+                        RC_DEKU_TREE_MQ_NORTHEAST_GRAVE,
+                        RC_DEKU_TREE_MQ_NORTHWEST_GRAVE,
                     },
                     {},
                     {
@@ -251,6 +255,8 @@ Dungeons::Dungeons() {
                                                    RC_DODONGOS_CAVERN_MQ_GS_BACK_AREA,
                                                    RC_DODONGOS_CAVERN_MQ_LIZALFOS_ROOM_HEART,
                                                    RC_DODONGOS_CAVERN_MQ_TORCH_PUZZLE_ROOM_HEART,
+                                                   RC_DODONGOS_CAVERN_MQ_NORTH_BOMB_GRAVE,
+                                                   RC_DODONGOS_CAVERN_MQ_SOUTH_BOMB_GRAVE,
                                                },
                                                {},
                                                {
