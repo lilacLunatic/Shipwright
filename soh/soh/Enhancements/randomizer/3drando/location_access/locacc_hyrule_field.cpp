@@ -240,6 +240,8 @@ void AreaTable_Init_HyruleField() {
                   LOCATION(RC_LLR_GS_RAIN_SHED,    logic->IsChild && logic->AtNight && logic->CanGetNightTimeGS),
                   LOCATION(RC_LLR_GS_HOUSE_WINDOW, logic->IsChild && logic->HookshotOrBoomerang && logic->AtNight && logic->CanGetNightTimeGS),
                   LOCATION(RC_LLR_GS_BACK_WALL,    logic->IsChild && logic->HookshotOrBoomerang && logic->AtNight && logic->CanGetNightTimeGS),
+                  LOCATION(RC_LLR_EAST_HURDLE,     logic->Epona),
+                  LOCATION(RC_LLR_WEST_HURDLE,     logic->Epona),
                 }, {
                   //Exits
                   Entrance(RR_HYRULE_FIELD,     {[]{return true;}}),

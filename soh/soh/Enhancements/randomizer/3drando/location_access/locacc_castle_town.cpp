@@ -99,6 +99,18 @@ void AreaTable_Init_CastleTown() {
                   LOCATION(RC_HC_MALON_EGG,              true),
                   LOCATION(RC_HC_GS_TREE,                logic->CanChildAttack),
                   LOCATION(RC_HC_MALON_GOSSIP_STONE,     true),
+                  LOCATION(RC_HC_MOAT_RUPEE_1,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_2,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_3,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_4,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_5,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_6,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_7,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_8,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_9,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_FINAL,       logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_DRAWBRIDGE_EAST_TORCH,  logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_HC_DRAWBRIDGE_WEST_TORCH,  logic->CanUse(RG_FAIRY_SLINGSHOT)),
                   LOCATION(RC_HC_ROCK_WALL_GOSSIP_STONE, true),
                 }, {
                   //Exits

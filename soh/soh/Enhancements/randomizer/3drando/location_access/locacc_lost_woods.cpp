@@ -176,6 +176,9 @@ void AreaTable_Init_LostWoods() {
                   LOCATION(RC_LW_SHORTCUT_RUPEE_6,          logic->IsChild && logic->HasItem(RG_SILVER_SCALE)),
                   LOCATION(RC_LW_SHORTCUT_RUPEE_7,          logic->IsChild && logic->HasItem(RG_SILVER_SCALE)),
                   LOCATION(RC_LW_SHORTCUT_RUPEE_8,          logic->IsChild && logic->HasItem(RG_SILVER_SCALE)),
+                  LOCATION(RC_LW_OCARINA_GAME_NORTH_BUSH,   logic->IsChild),
+                  LOCATION(RC_LW_OCARINA_GAME_WEST_BUSH,    logic->IsChild),
+                  LOCATION(RC_LW_OCARINA_GAME_EAST_BUSH,    logic->IsChild),
                   LOCATION(RC_LW_GOSSIP_STONE,              true),
                 }, {
                   //Exits

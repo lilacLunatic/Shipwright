@@ -28,6 +28,8 @@ void AreaTable_Init_GerudoValley() {
                   LOCATION(RC_GV_WATERFALL_FREESTANDING_POH, logic->IsChild || logic->Swim),//can use cucco as child
                   LOCATION(RC_GV_GS_BEAN_PATCH,              logic->CanPlantBugs && logic->CanChildAttack),
                   LOCATION(RC_GV_COW,                        logic->IsChild && logic->CanUse(RG_EPONAS_SONG)),
+                  LOCATION(RC_GV_LADDER_RUPEE,               logic->IsAdult && logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_GV_WATERFALL_RUPEE,            logic->IsAdult && logic->HasItem(RG_BRONZE_SCALE)),
                   LOCATION(RC_GV_GOSSIP_STONE,               true),
                 }, {
                   //Exits
@@ -120,6 +122,8 @@ void AreaTable_Init_GerudoValley() {
                   LOCATION(RC_GF_GERUDO_MEMBERSHIP_CARD,       logic->CanFinishGerudoFortress),
                   LOCATION(RC_GF_GS_ARCHERY_RANGE,   logic->IsAdult && logic->HookshotOrBoomerang && logic->GerudoToken && logic->AtNight && logic->CanGetNightTimeGS),
                   LOCATION(RC_GF_GS_TOP_FLOOR,       logic->IsAdult && logic->AtNight && (logic->CanJumpslash || logic->CanUse(RG_FAIRY_SLINGSHOT) || logic->CanUse(RG_BOOMERANG) || logic->HasExplosives || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_HOOKSHOT) || logic->CanUse(RG_DINS_FIRE)) && (logic->GerudoToken || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_HOOKSHOT) || logic->CanUse(RG_HOVER_BOOTS) || randoCtx->GetTrickOption(RT_GF_KITCHEN) || randoCtx->GetTrickOption(RT_GF_JUMP)) && logic->CanGetNightTimeGS),
+                  LOCATION(RC_GF_WELCOME_SIGN,       logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_GF_TO_ARCHERY_SIGN,    logic->CanUse(RG_HOOKSHOT) && (logic->IsChild || logic->GerudoToken)),
                 }, {
                   //Exits
                   Entrance(RR_GV_FORTRESS_SIDE,                 {[]{return true;}}),
@@ -182,6 +186,13 @@ void AreaTable_Init_GerudoValley() {
                   LOCATION(RC_COLOSSUS_GS_BEAN_PATCH,    logic->CanPlantBugs && logic->CanChildAttack),
                   LOCATION(RC_COLOSSUS_GS_TREE,          logic->IsAdult && logic->HookshotOrBoomerang && logic->AtNight && logic->CanGetNightTimeGS),
                   LOCATION(RC_COLOSSUS_GS_HILL,          logic->IsAdult && logic->AtNight && ((CanPlantBean(RR_DESERT_COLOSSUS) && logic->CanAdultAttack) || logic->CanUse(RG_LONGSHOT) || (randoCtx->GetTrickOption(RT_COLOSSUS_GS) && logic->CanUse(RG_HOOKSHOT))) && logic->CanGetNightTimeGS),
+                  LOCATION(RC_COLOSSUS_FAIRY_EAST_PALM_TREE,            (logic->IsChild && logic->CanUse(RG_FAIRY_SLINGSHOT)) || (logic->IsAdult && logic->CanUse(RG_FAIRY_BOW))),
+                  LOCATION(RC_COLOSSUS_FAIRY_WEST_PALM_TREE,            (logic->IsChild && logic->CanUse(RG_FAIRY_SLINGSHOT)) || (logic->IsAdult && logic->CanUse(RG_FAIRY_BOW))),
+                  LOCATION(RC_COLOSSUS_CHILD_OASIS_WEST_PALM_TREE,      logic->IsChild && logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_COLOSSUS_CHILD_OASIS_EAST_PALM_TREE,      logic->IsChild && logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_COLOSSUS_CHILD_OASIS_SOUTHEAST_PALM_TREE, logic->IsChild && logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_COLOSSUS_ADULT_OASIS_EAST_PALM_TREE,      logic->IsAdult && logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_COLOSSUS_ADULT_OASIS_SOUTHEAST_PALM_TREE, logic->IsAdult && logic->CanUse(RG_FAIRY_BOW)),
                   LOCATION(RC_COLOSSUS_GOSSIP_STONE,     true),
                 }, {
                   //Exits
