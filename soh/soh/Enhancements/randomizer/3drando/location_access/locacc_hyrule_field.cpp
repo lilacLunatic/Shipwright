@@ -11,6 +11,9 @@ void AreaTable_Init_HyruleField() {
                   //Locations
                   LOCATION(RC_HF_OCARINA_OF_TIME_ITEM,   logic->IsChild && logic->HasAllStones),
                   LOCATION(RC_SONG_FROM_OCARINA_OF_TIME, logic->IsChild && logic->HasAllStones),
+                  LOCATION(RC_HF_DRAWBRIDGE_RIGHT,       logic->IsChild),
+                  LOCATION(RC_HF_DRAWBRIDGE_MIDDLE,      logic->IsChild),
+                  LOCATION(RC_HF_DRAWBRIDGE_LEFT,        logic->IsChild),
                 }, {
                   //Exits
                   Entrance(RR_LW_BRIDGE,              {[]{return true;}}),

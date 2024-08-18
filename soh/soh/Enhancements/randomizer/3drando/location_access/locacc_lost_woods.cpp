@@ -35,7 +35,7 @@ void AreaTable_Init_LostWoods() {
                   LOCATION(RC_KF_SARIAS_ROOF_NORTH_HEART,         logic->IsChild),
                   LOCATION(RC_KF_BOULDER_HIDDEN_RUPEE_1,          logic->IsChild),
                   LOCATION(RC_KF_BOULDER_HIDDEN_RUPEE_2,          logic->IsChild),
-                  LOCATION(RC_KF_FENCE_MAZE_SIGN,                 logic->IsChild),
+                  LOCATION(RC_KF_FENCE_MAZE_SIGN,                 logic->IsChild && logic->CanUse(RG_KOKIRI_SWORD)),
                   LOCATION(RC_KF_SMALL_ISLANDS,                   logic->IsChild),
                   LOCATION(RC_KF_STEPPING_STONES,                 logic->IsChild),
                   LOCATION(RC_KF_FENCE_MAZE_SOUTH_HIDDEN_RUPEE,   logic->IsChild),
@@ -237,7 +237,10 @@ void AreaTable_Init_LostWoods() {
                   Entrance(RR_LW_BEYOND_MIDO, {[]{return true;}}),
   });
 
-  areaTable[RR_SFM_ENTRYWAY] = Area("SFM Entryway", "Sacred Forest Meadow", RA_SACRED_FOREST_MEADOW, NO_DAY_NIGHT_CYCLE, {}, {}, {
+  areaTable[RR_SFM_ENTRYWAY] = Area("SFM Entryway", "Sacred Forest Meadow", RA_SACRED_FOREST_MEADOW, NO_DAY_NIGHT_CYCLE, {}, {
+                  //Locations
+                  LOCATION(RC_SFM_ENTRANCE_BUSH, true),
+                }, {
                   //Exits
                   Entrance(RR_LW_BEYOND_MIDO,       {[]{return true;}}),
                   Entrance(RR_SACRED_FOREST_MEADOW, {[]{return logic->CanJumpslash || logic->CanUse(RG_FAIRY_SLINGSHOT) || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_DINS_FIRE) || logic->CanUse(RG_MEGATON_HAMMER);}}),
@@ -252,6 +255,11 @@ void AreaTable_Init_LostWoods() {
                   LOCATION(RC_SONG_FROM_SARIA,             logic->IsChild && logic->ZeldasLetter),
                   LOCATION(RC_SHEIK_IN_FOREST,             logic->IsAdult),
                   LOCATION(RC_SFM_GS,                      logic->IsAdult && logic->HookshotOrBoomerang && logic->AtNight && logic->CanGetNightTimeGS),
+                  LOCATION(RC_SFM_SOUTH_MAZE_BUSH_1,       true),
+                  LOCATION(RC_SFM_SOUTH_MAZE_BUSH_2,       true),
+                  LOCATION(RC_SFM_SOUTH_MAZE_BUSH_3,       true),
+                  LOCATION(RC_SFM_NORTH_MAZE_WEST_BUSH,    true),
+                  LOCATION(RC_SFM_NORTH_MAZE_EAST_BUSH,    true),
                   LOCATION(RC_SFM_MAZE_LOWER_GOSSIP_STONE, true),
                   LOCATION(RC_SFM_MAZE_UPPER_GOSSIP_STONE, true),
                   LOCATION(RC_SFM_SARIA_GOSSIP_STONE,      true),
