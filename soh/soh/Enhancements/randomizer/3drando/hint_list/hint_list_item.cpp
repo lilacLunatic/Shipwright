@@ -1912,6 +1912,26 @@ void StaticData::HintTable_Init_Item() {
                                                CustomMessage("a breakable branch", /*german*/"ein brüchiger Zweig", /*french*/"un bout de bois")});
                                                 // /*spanish*/un pequeño báculo
 
+    hintTextTable[RHT_MAGIC_REFILL_SMALL] = HintText(CustomMessage("Magic Refill (Small)", /*german*/"!!!", /*french*/"!!!"),
+                                               // /*spanish*/
+                                               {
+                                               CustomMessage("a magic refill", /*german*/"!!!", /*french*/"!!!"),
+                                               CustomMessage("a jar of magic", /*german*/"!!!", /*french*/"!!!"),
+                                                // /*spanish*/
+                                               }, {
+                                               CustomMessage("a small jar of magic", /*german*/"!!!", /*french*/"!!!")});
+                                                // /*spanish*/
+
+    hintTextTable[RHT_MAGIC_REFILL_LARGE] = HintText(CustomMessage("Magic Refill (Large)", /*german*/"!!!", /*french*/"!!!"),
+                                               // /*spanish*/
+                                               {
+                                               CustomMessage("a magic refill", /*german*/"!!!", /*french*/"!!!"),
+                                               CustomMessage("a jar of magic", /*german*/"!!!", /*french*/"!!!"),
+                                                // /*spanish*/
+                                               }, {
+                                               CustomMessage("a big jar of magic", /*german*/"!!!", /*french*/"!!!")});
+                                                // /*spanish*/
+
     hintTextTable[RHT_TREASURE_GAME_HEART] = HintText(CustomMessage("a Piece of Heart", /*german*/"ein Herzteil", /*french*/"un Quart de Coeur"),
                                                       // /*spanish*/el amor de la victoria
                                                       {
