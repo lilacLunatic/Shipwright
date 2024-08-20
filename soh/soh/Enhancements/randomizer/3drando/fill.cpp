@@ -9,7 +9,6 @@
 #include "spoiler_log.hpp"
 #include "starting_inventory.hpp"
 #include "hints.hpp"
-#include "hint_list.hpp"
 #include "../entrance.h"
 #include "shops.hpp"
 #include "pool_functions.hpp"
@@ -246,7 +245,7 @@ std::vector<RandomizerCheck> GetAccessibleLocations(const std::vector<Randomizer
   int gsCount = 0;
   const int maxGsCount = mode == SearchMode::GeneratePlaythrough ? GetMaxGSCount() : 0; //If generating playthrough want the max that's possibly useful, else doesn't matter
   bool bombchusFound = false;
-  std::vector<std::variant<bool*, uint8_t*>> buyIgnores;
+  std::vector<LogicVal> buyIgnores;
 
   //Variables for search
   std::vector<Rando::ItemLocation*> newItemLocations;
@@ -324,7 +323,12 @@ std::vector<RandomizerCheck> GetAccessibleLocations(const std::vector<Randomizer
         }
 
         // Add shuffled entrances to the entrance playthrough
-        if (mode == SearchMode::GeneratePlaythrough && exit.IsShuffled() && !exit.IsAddedToPool() && !ctx->GetEntranceShuffler()->HasNoRandomEntrances()) {
+        // Include bluewarps when unshuffled but dungeon or boss shuffle is on
+        if (mode == SearchMode::GeneratePlaythrough &&
+            (exit.IsShuffled() ||
+             (exit.GetType() == Rando::EntranceType::BlueWarp &&
+              (ctx->GetOption(RSK_SHUFFLE_DUNGEON_ENTRANCES) || ctx->GetOption(RSK_SHUFFLE_BOSS_ENTRANCES)))) &&
+            !exit.IsAddedToPool() && !ctx->GetEntranceShuffler()->HasNoRandomEntrances()) {
           entranceSphere.push_back(&exit);
           exit.AddToPool();
           // Don't list a two-way coupled entrance from both directions
@@ -361,9 +365,9 @@ std::vector<RandomizerCheck> GetAccessibleLocations(const std::vector<Randomizer
                 else if (IsBombchus(ignore) && IsBombchus(locItem, true)) {
                   newItemLocations.push_back(location);
                 }
-                //We want to ignore a specific Buy item. Buy items with different RandomizerGets are recognised by a shared GetLogicVar
+                //We want to ignore a specific Buy item. Buy items with different RandomizerGets are recognised by a shared GetLogicVal
                 else if (ignore != RG_GOLD_SKULLTULA_TOKEN && IsBombchus(ignore)) {
-                  if ((type == ITEMTYPE_SHOP && Rando::StaticData::GetItemTable()[ignore].GetLogicVar() != location->GetPlacedItem().GetLogicVar()) || type != ITEMTYPE_SHOP) {
+                  if ((type == ITEMTYPE_SHOP && Rando::StaticData::GetItemTable()[ignore].GetLogicVal() != location->GetPlacedItem().GetLogicVal()) || type != ITEMTYPE_SHOP) {
                     newItemLocations.push_back(location);
                   }
                 }
@@ -404,7 +408,7 @@ std::vector<RandomizerCheck> GetAccessibleLocations(const std::vector<Randomizer
                 // TODO: Reimplement Ammo Drops setting
                 else if (/*AmmoDrops.IsNot(AMMODROPS_NONE) &&*/ !(bombchus && bombchusFound) && type == ITEMTYPE_SHOP) {
                   //Only check each buy item once
-                  auto buyItem = location->GetPlacedItem().GetLogicVar();
+                  auto buyItem = location->GetPlacedItem().GetLogicVal();
                   //Buy item not in list to ignore, add it to list and write to playthrough
                   if (std::find(buyIgnores.begin(), buyIgnores.end(), buyItem) == buyIgnores.end()) {
                     exclude = false;
@@ -481,18 +485,19 @@ static void GeneratePlaythrough() {
     GetAccessibleLocations(ctx->allLocations, SearchMode::GeneratePlaythrough);
 }
 
-RandomizerArea LookForExternalArea(Area* curRegion, std::vector<RandomizerRegion> alreadyChecked){//RANDOTODO curREGION
-  for (auto& entrance : curRegion->entrances) {
+RandomizerArea LookForExternalArea(const Area* const currentRegion, std::vector<RandomizerRegion> &alreadyChecked){
+  for (const auto& entrance : currentRegion->entrances) {
     RandomizerArea otherArea = entrance->GetParentRegion()->GetArea();
-    if(otherArea != RA_NONE){
-      return otherArea;
-      //if the area hasn't already been checked, check it
-    } else if (std::find(alreadyChecked.begin(), alreadyChecked.end(), entrance->GetParentRegionKey()) == alreadyChecked.end()) {
+    const bool isAreaUnchecked = std::find(alreadyChecked.begin(), alreadyChecked.end(), entrance->GetParentRegionKey()) == alreadyChecked.end();
+    if (otherArea == RA_NONE && isAreaUnchecked) {
+      //if the region is in RA_NONE and hasn't already been checked, check it
       alreadyChecked.push_back(entrance->GetParentRegionKey());
-      RandomizerArea passdown = LookForExternalArea(entrance->GetParentRegion(), alreadyChecked);
+      const RandomizerArea passdown = LookForExternalArea(entrance->GetParentRegion(), alreadyChecked);
       if(passdown != RA_NONE){
         return passdown;
       }
+    } else if (otherArea != RA_LINKS_POCKET){ //if it's links pocket, do not propogate this, Link's Pocket is not a real Area
+      return otherArea;
     }
   }
   return RA_NONE;
@@ -501,16 +506,17 @@ RandomizerArea LookForExternalArea(Area* curRegion, std::vector<RandomizerRegion
 void SetAreas(){
   auto ctx = Rando::Context::GetInstance();
 //RANDOTODO give entrances an enum like RandomizerCheck, the give them all areas here, the use those areas to not need to recursivly find ItemLocation areas
-  for (int c = 0; c < RR_MARKER_AREAS_END; c++) {
-    Area region = areaTable[c];
+  for (int regionType = 0; regionType < RR_MARKER_AREAS_END; regionType++) {
+    Area region = areaTable[regionType];
     RandomizerArea area = region.GetArea();
     if (area == RA_NONE) {
-      std::vector<RandomizerRegion> alreadyChecked = {(RandomizerRegion)c};
+      std::vector<RandomizerRegion> alreadyChecked = {static_cast<RandomizerRegion>(regionType)};
       area = LookForExternalArea(&region, alreadyChecked);
     }
     for (auto& loc : region.locations){
       ctx->GetItemLocation(loc.GetLocation())->SetArea(area);
     }
+    areaTable[regionType].SetArea(area);
   }
 }
 
@@ -630,7 +636,7 @@ static void AssumedFill(const std::vector<RandomizerGet>& items, const std::vect
                         bool setLocationsAsHintable = false) {
     auto ctx = Rando::Context::GetInstance();
     if (items.size() > allowedLocations.size()) {
-        printf("\x1b[2;2HERROR: MORE ITEMS THAN LOCATIONS IN GIVEN LISTS");
+        SPDLOG_ERROR("ERROR: MORE ITEMS THAN LOCATIONS IN GIVEN LISTS");
         SPDLOG_DEBUG("Items:\n");
         // NOLINTNEXTLINE(clang-diagnostic-unused-variable)
         for (const RandomizerGet item : items) {
@@ -888,7 +894,7 @@ static void RandomizeDungeonItems() {
   std::vector<RandomizerGet> overworldItems;
 
   for (auto dungeon : ctx->GetDungeons()->GetDungeonList()) {
-    if (ctx->GetOption(RSK_KEYSANITY).Is(RO_DUNGEON_ITEM_LOC_OWN_DUNGEON)) {
+    if (ctx->GetOption(RSK_KEYSANITY).Is(RO_DUNGEON_ITEM_LOC_ANY_DUNGEON)) {
       auto dungeonKeys = FilterAndEraseFromPool(ItemPool, [dungeon](const RandomizerGet i){return (i == dungeon->GetSmallKey()) || (i == dungeon->GetKeyRing());});
       AddElementsToPool(anyDungeonItems, dungeonKeys);
     } else if (ctx->GetOption(RSK_KEYSANITY).Is(RO_DUNGEON_ITEM_LOC_OVERWORLD)) {
@@ -914,10 +920,10 @@ static void RandomizeDungeonItems() {
   }
 
   if (ctx->GetOption(RSK_GERUDO_KEYS).Is(RO_GERUDO_KEYS_ANY_DUNGEON)) {
-      auto gerudoKeys = FilterAndEraseFromPool(ItemPool, [](const auto i) { return i == RG_GERUDO_FORTRESS_SMALL_KEY; });
+      auto gerudoKeys = FilterAndEraseFromPool(ItemPool, [](const auto i) { return i == RG_GERUDO_FORTRESS_SMALL_KEY || i == RG_GERUDO_FORTRESS_KEY_RING; });
     AddElementsToPool(anyDungeonItems, gerudoKeys);
   } else if (ctx->GetOption(RSK_GERUDO_KEYS).Is(RO_GERUDO_KEYS_OVERWORLD)) {
-      auto gerudoKeys = FilterAndEraseFromPool(ItemPool, [](const auto i) { return i == RG_GERUDO_FORTRESS_SMALL_KEY; });
+      auto gerudoKeys = FilterAndEraseFromPool(ItemPool, [](const auto i) { return i == RG_GERUDO_FORTRESS_SMALL_KEY || i == RG_GERUDO_FORTRESS_KEY_RING; });
     AddElementsToPool(overworldItems, gerudoKeys);
   }
 
@@ -979,9 +985,9 @@ void VanillaFill() {
   }
   //If necessary, handle ER stuff
   if (ctx->GetOption(RSK_SHUFFLE_ENTRANCES)) {
-    printf("\x1b[7;10HShuffling Entrances...");
+    SPDLOG_INFO("Shuffling Entrances...");
     ctx->GetEntranceShuffler()->ShuffleAllEntrances();
-    printf("\x1b[7;32HDone");
+    SPDLOG_INFO("Shuffling Entrances Done");
   }
   // Populate the playthrough for entrances so they are placed in the spoiler log
   GeneratePlaythrough();
@@ -992,17 +998,14 @@ void VanillaFill() {
 }
 
 void ClearProgress() {
-  printf("\x1b[7;32H    "); // Done
-  printf("\x1b[8;10H                    "); // Placing Items...Done
-  printf("\x1b[9;10H                              "); // Calculating Playthrough...Done
-  printf("\x1b[10;10H                     "); // Creating Hints...Done
-  printf("\x1b[11;10H                                  "); // Writing Spoiler Log...Done
 }
 
 int Fill() {
   auto ctx = Rando::Context::GetInstance();
   int retries = 0;
+  SPDLOG_INFO("Starting seed generation...");
   while(retries < 5) {
+    SPDLOG_INFO("Attempt {}...", retries + 1);
     placementFailure = false;
     //showItemProgress = false;
     ctx->playthroughLocations.clear();
@@ -1019,13 +1022,13 @@ int Fill() {
     //can validate the world using deku/hylian shields
     AddElementsToPool(ItemPool, GetMinVanillaShopItems(32)); //assume worst case shopsanity 4
     if (ctx->GetOption(RSK_SHUFFLE_ENTRANCES)) {
-      printf("\x1b[7;10HShuffling Entrances");
+      SPDLOG_INFO("Shuffling Entrances...");
       if (ctx->GetEntranceShuffler()->ShuffleAllEntrances() == ENTRANCE_SHUFFLE_FAILURE) {
         retries++;
         ClearProgress();
         continue;
       }
-      printf("\x1b[7;32HDone");
+      SPDLOG_INFO("Shuffling Entrances Done");
     }
     SetAreas();
     //erase temporary shop items
@@ -1035,8 +1038,10 @@ int Fill() {
     //Place shop items first, since a buy shield is needed to place a dungeon reward on Gohma due to access
     NonShopItems = {};
     if (ctx->GetOption(RSK_SHOPSANITY).Is(RO_SHOPSANITY_OFF)) {
+      SPDLOG_INFO("Placing Vanilla Shop Items...");
       PlaceVanillaShopItems(); //Place vanilla shop items in vanilla location
     } else {
+      SPDLOG_INFO("Shuffling Shop Items");
       int total_replaced = 0;
       if (ctx->GetOption(RSK_SHOPSANITY).IsNot(RO_SHOPSANITY_ZERO_ITEMS)) { //Shopsanity 1-4, random
         //Initialize NonShopItems
@@ -1079,6 +1084,7 @@ int Fill() {
     }
 
     //Place dungeon rewards
+    SPDLOG_INFO("Shuffling and Placing Dungeon Items...");
     RandomizeDungeonRewards();
 
     //Place dungeon items restricted to their Own Dungeon
@@ -1110,19 +1116,34 @@ int Fill() {
 
     //Then place dungeon items that are assigned to restrictive location pools
     RandomizeDungeonItems();
+    SPDLOG_INFO("Dungeon Items Done");
 
     //Then place Link's Pocket Item if it has to be an advancement item
     RandomizeLinksPocket();
+    SPDLOG_INFO("Shuffling Advancement Items");
     //Then place the rest of the advancement items
     std::vector<RandomizerGet> remainingAdvancementItems =
         FilterAndEraseFromPool(ItemPool, [](const auto i) { return Rando::StaticData::RetrieveItem(i).IsAdvancement(); });
     AssumedFill(remainingAdvancementItems, ctx->allLocations, true);
 
     //Fast fill for the rest of the pool
+    SPDLOG_INFO("Shuffling Remaining Items");
     std::vector<RandomizerGet> remainingPool = FilterAndEraseFromPool(ItemPool, [](const auto i) { return true; });
     FastFill(remainingPool, GetAllEmptyLocations(), false);
 
-    //Add prices for scrubsanity, this is unique to SoH because we write/read scrub prices to/from the spoilerfile.
+    //Add default prices to scrubs
+    for (size_t i = 0; i < Rando::StaticData::scrubLocations.size(); i++) {
+      if (Rando::StaticData::scrubLocations[i] == RC_LW_DEKU_SCRUB_NEAR_BRIDGE || Rando::StaticData::scrubLocations[i] == RC_LW_DEKU_SCRUB_GROTTO_FRONT) {
+        ctx->GetItemLocation(Rando::StaticData::scrubLocations[i])->SetCustomPrice(40);
+      } else if (Rando::StaticData::scrubLocations[i] == RC_HF_DEKU_SCRUB_GROTTO) {
+        ctx->GetItemLocation(Rando::StaticData::scrubLocations[i])->SetCustomPrice(10);
+      } else {
+        auto loc = Rando::StaticData::GetLocation(Rando::StaticData::scrubLocations[i]);
+        auto item = Rando::StaticData::RetrieveItem(loc->GetVanillaItem());
+        ctx->GetItemLocation(Rando::StaticData::scrubLocations[i])->SetCustomPrice(item.GetPrice());
+      }
+    }
+
     if (ctx->GetOption(RSK_SHUFFLE_SCRUBS).Is(RO_SCRUBS_AFFORDABLE)) {
       for (size_t i = 0; i < Rando::StaticData::scrubLocations.size(); i++) {
         ctx->GetItemLocation(Rando::StaticData::scrubLocations[i])->SetCustomPrice(10);
@@ -1137,19 +1158,13 @@ int Fill() {
     GeneratePlaythrough();
     //Successful placement, produced beatable result
     if(ctx->playthroughBeatable && !placementFailure) {
-      printf("Done");
-      printf("\x1b[9;10HCalculating Playthrough...");
+      SPDLOG_INFO("Calculating Playthrough...");
       PareDownPlaythrough();
       CalculateWotH();
       CalculateBarren(); 
-      printf("Done");
+      SPDLOG_INFO("Calculating Playthrough Done");
       ctx->CreateItemOverrides();
       ctx->GetEntranceShuffler()->CreateEntranceOverrides();
-      
-      //funny ganon line
-      Text ganonText = RandomElement(GetHintCategory(HintCategory::GanonLine)).GetText();
-      CreateMessageFromTextObject(0x70CB, 0, 2, 3, AddColorsAndFormat(ganonText));
-      SetGanonText(ganonText);
       
       CreateAllHints();
       CreateWarpSongTexts();
@@ -1157,7 +1172,7 @@ int Fill() {
     }
     //Unsuccessful placement
     if(retries < 4) {
-      SPDLOG_DEBUG("\nGOT STUCK. RETRYING...\n");
+      SPDLOG_DEBUG("Failed to generate a beatable seed. Retrying...");
       Areas::ResetAllLocations();
       logic->Reset();
       ClearProgress();

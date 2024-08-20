@@ -162,7 +162,7 @@ Rando::Entrance* Area::GetExit(RandomizerRegion exitToReturn) {
 }
 
 bool Area::CanPlantBeanCheck() const {
-  return (logic->MagicBean || logic->MagicBeanPack) && BothAgesCheck();
+    return Rando::Context::GetInstance()->GetAmmo(ITEM_BEAN) > 0 && BothAgesCheck();
 }
 
 bool Area::AllAccountedFor() const {
@@ -240,12 +240,12 @@ bool HasAccessTo(const RandomizerRegion area) {
   return areaTable[area].HasAccess();
 }
 
-std::shared_ptr<Rando::Context> randoCtx;
+Rando::Context* randoCtx;
 std::shared_ptr<Rando::Logic> logic;
 
 void AreaTable_Init() {
   using namespace Rando;
-  randoCtx = Context::GetInstance();
+  randoCtx = Context::GetInstance().get();
   logic = randoCtx->GetLogic();
   grottoEvents = {
       EventAccess(&logic->GossipStoneFairy, { [] { return logic->GossipStoneFairy || logic->CanSummonGossipFairy; } }),
@@ -260,9 +260,9 @@ void AreaTable_Init() {
                        //name, scene, hint text,                       events, locations, exits
   areaTable[RR_ROOT] = Area("Root", "", RA_LINKS_POCKET, NO_DAY_NIGHT_CYCLE, {}, {
                   //Locations
-                  LocationAccess(RC_LINKS_POCKET,       {[]{return true;}}),
-                  LocationAccess(RC_TRIFORCE_COMPLETED, {[]{return logic->CanCompleteTriforce;}}),
-                  LocationAccess(RC_SARIA_SONG_HINT,    {[]{return logic->CanUse(RG_SARIAS_SONG);}}),
+                  LOCATION(RC_LINKS_POCKET,       true),
+                  LOCATION(RC_TRIFORCE_COMPLETED, logic->CanCompleteTriforce),
+                  LOCATION(RC_SARIA_SONG_HINT,    logic->CanUse(RG_SARIAS_SONG)),
                 }, {
                   //Exits
                   Entrance(RR_ROOT_EXITS, {[]{return true;}})
@@ -361,6 +361,42 @@ void AreaTable_Init() {
 }, {
   //Exits
 */
+}
+
+void ReplaceFirstInString(std::string& s, std::string const& toReplace, std::string const& replaceWith) {
+    size_t pos = s.find(toReplace);
+    if (pos == std::string::npos) {
+        return;
+    }
+    s.replace(pos, toReplace.length(), replaceWith);
+}
+
+void ReplaceAllInString(std::string& s, std::string const& toReplace, std::string const& replaceWith) {
+    std::string buf;
+    size_t pos = 0;
+    size_t prevPos;
+
+    buf.reserve(s.size());
+
+    while (true) {
+        prevPos = pos;
+        pos = s.find(toReplace, pos);
+        if (pos == std::string::npos) {
+            break;
+        }
+        buf.append(s, prevPos, pos - prevPos);
+        buf += replaceWith;
+        pos += toReplace.size();
+    }
+
+    buf.append(s, prevPos, s.size() - prevPos);
+    s.swap(buf);
+}
+
+std::string CleanCheckConditionString(std::string condition) {
+    ReplaceAllInString(condition, "logic->", "");
+    ReplaceAllInString(condition, "randoCtx->", "");
+    return condition;
 }
 
 namespace Areas {
@@ -501,12 +537,25 @@ Area* AreaTable(const RandomizerRegion areaKey) {
 //Retrieve all the shuffable entrances of a specific type
 std::vector<Rando::Entrance*> GetShuffleableEntrances(Rando::EntranceType type, bool onlyPrimary /*= true*/) {
   std::vector<Rando::Entrance*> entrancesToShuffle = {};
-    for (RandomizerRegion area : Areas::GetAllAreas()) {
-    for (auto& exit: AreaTable(area)->exits) {
+  for (RandomizerRegion area : Areas::GetAllAreas()) {
+    for (auto& exit : AreaTable(area)->exits) {
       if ((exit.GetType() == type || type == Rando::EntranceType::All) && (exit.IsPrimary() || !onlyPrimary) && exit.GetType() != Rando::EntranceType::None) {
         entrancesToShuffle.push_back(&exit);
       }
     }
   }
   return entrancesToShuffle;
+}
+
+// Get the specific entrance by name
+Rando::Entrance* GetEntrance(const std::string name) {
+  for (RandomizerRegion area : Areas::GetAllAreas()) {
+    for (auto& exit : AreaTable(area)->exits) {
+      if (exit.GetName() == name) {
+        return &exit;
+      }
+    }
+  }
+
+  return nullptr;
 }

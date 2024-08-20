@@ -359,7 +359,7 @@ void func_809CEA24(EnBw* this, PlayState* play) {
                 Math_SmoothStepToS(&this->actor.world.rot.y, this->unk_236 + this->unk_238, 1,
                                    this->actor.speedXZ * 1000.0f, 0);
             }
-            if ((this->unk_224 == 0) || (ABS(this->actor.yDistToPlayer) > 60.0f) || (player2->stateFlags1 & 0x6000)) {
+            if ((this->unk_224 == 0) || (ABS(this->actor.yDistToPlayer) > 60.0f) || (player2->stateFlags1 & (PLAYER_STATE1_HANGING_OFF_LEDGE | PLAYER_STATE1_CLIMBING_LEDGE))) {
                 this->unk_221 = 3;
                 this->unk_224 = 150;
                 this->unk_250 = 0.0f;
@@ -856,7 +856,7 @@ void EnBw_Draw(Actor* thisx, PlayState* play2) {
         Gfx_SetupDL_25Opa(play->state.gfxCtx);
         gDPSetEnvColor(POLY_OPA_DISP++, this->color1.r, this->color1.g, this->color1.b, this->color1.a);
         gSPSegment(POLY_OPA_DISP++, 0x08, &D_80116280[2]);
-        POLY_OPA_DISP = SkelAnime_Draw(play, this->skelAnime.skeleton, this->skelAnime.jointTable,
+        POLY_OPA_DISP = SkelAnime_DrawSkeleton2(play, &this->skelAnime,
                                        EnBw_OverrideLimbDraw, NULL, this, POLY_OPA_DISP);
     } else {
         Gfx_SetupDL_25Xlu(play->state.gfxCtx);
@@ -864,7 +864,7 @@ void EnBw_Draw(Actor* thisx, PlayState* play2) {
         gDPSetPrimColor(POLY_XLU_DISP++, 0x80, 0x80, 0, 0, 0, this->color1.a);
         gDPSetEnvColor(POLY_XLU_DISP++, this->color1.r, this->color1.g, this->color1.b, this->color1.a);
         gSPSegment(POLY_XLU_DISP++, 0x08, &D_80116280[0]);
-        POLY_XLU_DISP = SkelAnime_Draw(play, this->skelAnime.skeleton, this->skelAnime.jointTable,
+        POLY_XLU_DISP = SkelAnime_DrawSkeleton2(play, &this->skelAnime,
                                        EnBw_OverrideLimbDraw, NULL, this, POLY_XLU_DISP);
     }
 

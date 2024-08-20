@@ -5,22 +5,28 @@ set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard to use")
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 
-project(Ship VERSION 8.0.4 LANGUAGES C CXX)
-set(PROJECT_BUILD_NAME "MacReady Echo" CACHE STRING "")
-set(PROJECT_TEAM "github.com/harbourmasters" CACHE STRING "")
+project(Ship VERSION 8.0.6 LANGUAGES C CXX)
+include(CMake/soh-cvars.cmake)
+include(CMake/lus-cvars.cmake)
+set(PROJECT_BUILD_NAME "MacReady Golf" CACHE STRING "" FORCE)
+set(PROJECT_TEAM "github.com/harbourmasters" CACHE STRING "" FORCE)
 
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT soh)
 add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
 add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-include(CMake/automate-vcpkg.cmake)
+    include(CMake/automate-vcpkg.cmake)
 
-set(VCPKG_TRIPLET x64-windows-static)
-set(VCPKG_TARGET_TRIPLET x64-windows-static)
+    set(VCPKG_TRIPLET x64-windows-static)
+    set(VCPKG_TARGET_TRIPLET x64-windows-static)
 
-vcpkg_bootstrap()
-vcpkg_install_packages(zlib bzip2 libpng sdl2 sdl2-net glew glfw3)
+    vcpkg_bootstrap()
+    vcpkg_install_packages(zlib bzip2 libzip libpng sdl2 sdl2-net glew glfw3 nlohmann-json tinyxml2 spdlog)
+
+    if (CMAKE_C_COMPILER_LAUNCHER MATCHES "ccache|sccache")
+        set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT Embedded)
+    endif()
 endif()
 
 ################################################################################
@@ -77,6 +83,12 @@ include(CMake/GlobalSettingsInclude.cmake OPTIONAL)
 # Use solution folders feature
 ################################################################################
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+################################################################################
+# Set GBI version
+################################################################################
+
+set(GBI_UCODE F3DEX_GBI_2)
 
 ################################################################################
 # Sub-projects

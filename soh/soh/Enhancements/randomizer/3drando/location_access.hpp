@@ -4,7 +4,6 @@
 #include <vector>
 #include <list>
 
-#include "hint_list.hpp"
 #include "fill.hpp"
 #include "../randomizerTypes.h"
 #include "../context.h"
@@ -13,7 +12,7 @@
 typedef bool (*ConditionFn)();
 
 // I hate this but every alternative I can think of right now is worse
-extern std::shared_ptr<Rando::Context> randoCtx;
+extern Rando::Context* randoCtx;
 extern std::shared_ptr<Rando::Logic> logic;
 
 class EventAccess {
@@ -71,12 +70,24 @@ private:
     std::vector<ConditionFn> conditions_met;
 };
 
+std::string CleanCheckConditionString(std::string condition);
+
+#define LOCATION(check, condition) LocationAccess(check, {[]{return condition;}}, CleanCheckConditionString(#condition))
+
 //this class is meant to hold an item location with a boolean function to determine its accessibility from a specific area
 class LocationAccess {
 public:
 
     explicit LocationAccess(RandomizerCheck location_, std::vector<ConditionFn> conditions_met_)
-        : location(location_) {
+        : location(location_), condition_str("") {
+        conditions_met.resize(2);
+        for (size_t i = 0; i < conditions_met_.size(); i++) {
+            conditions_met[i] = conditions_met_[i];
+        }
+    }
+
+    explicit LocationAccess(RandomizerCheck location_, std::vector<ConditionFn> conditions_met_, std::string condition_str_)
+        : location(location_), condition_str(condition_str_) {
         conditions_met.resize(2);
         for (size_t i = 0; i < conditions_met_.size(); i++) {
             conditions_met[i] = conditions_met_[i];
@@ -107,9 +118,14 @@ public:
         return location;
     }
 
+    std::string GetConditionStr() const {
+        return condition_str;
+    }
+
 protected:
     RandomizerCheck location;
     std::vector<ConditionFn> conditions_met;
+    std::string condition_str;
 
     //Makes sure shop locations are buyable
     bool CanBuy() const;
@@ -187,6 +203,10 @@ public:
         return area;
     }
 
+    void SetArea(RandomizerArea newArea) {
+        area = newArea;
+    }
+
     //Here checks conditional access based on whether or not both ages have
     //access to this area. For example: if there are rocks that block a path
     //which both child and adult can access, adult having hammer can give
@@ -223,7 +243,6 @@ public:
                      "Child Night: " + std::to_string(childNight) + "\t"
                      "Adult Day:   " + std::to_string(adultDay)   + "\t"
                      "Adult Night: " + std::to_string(adultNight);
-      //CitraPrint(message);
     }
 };
 
@@ -251,6 +270,7 @@ namespace Areas {
 void  AreaTable_Init();
 Area* AreaTable(const RandomizerRegion areaKey);
 std::vector<Rando::Entrance*> GetShuffleableEntrances(Rando::EntranceType type, bool onlyPrimary = true);
+Rando::Entrance* GetEntrance(const std::string name);
 
 // Overworld
 void AreaTable_Init_LostWoods();

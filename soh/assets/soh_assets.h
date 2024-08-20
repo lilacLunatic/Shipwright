@@ -80,6 +80,9 @@ static const ALIGN_ASSET(2) char gRandoPotDL[] = dgRandoPotDL;
 #define dgFishingPoleGiDL "__OTR__objects/object_gi_fishing_pole/gFishingPoleGiDL"
 static const ALIGN_ASSET(2) char gFishingPoleGiDL[] = dgFishingPoleGiDL;
 
+#define dgMysteryItemDL "__OTR__objects/object_mystery_item/gMysteryItemDL"
+static const ALIGN_ASSET(2) char gMysteryItemDL[] = dgMysteryItemDL;
+
 // overlays
 #define dgOptionsDividerChangeLangVtx "__OTR__overlays/ovl_file_choose/gOptionsDividerChangeLangVtx"
 static const ALIGN_ASSET(2) char gOptionsDividerChangeLangVtx[] = dgOptionsDividerChangeLangVtx;

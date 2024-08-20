@@ -94,6 +94,7 @@ extern "C"
 	extern u16 gEquipMasks[4];
 	extern u16 gEquipNegMasks[4];
 	extern u32 gUpgradeMasks[8];
+	extern u32 gUpgradeNegMasks[8];
 	extern u8 gEquipShifts[4];
 	extern u8 gUpgradeShifts[8];
 	extern u16 gUpgradeCapacities[8][4];
@@ -172,7 +173,8 @@ extern "C"
 	extern u8 gWalkSpeedToggle2;
 	extern f32 iceTrapScale;
 	extern f32 triforcePieceScale;
-
+	extern f32 mysteryItemScale;
+	
 	extern const s16 D_8014A6C0[];
 #define gTatumsPerBeat (D_8014A6C0[1])
 	extern const AudioContextInitSizes D_8014A6C4;

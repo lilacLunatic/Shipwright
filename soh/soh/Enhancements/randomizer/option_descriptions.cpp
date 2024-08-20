@@ -98,7 +98,8 @@ void Settings::CreateOptionDescriptions() {
         "\n"
         "Random Number - A Random number and set of dungeons will be their Master Quest varieties.\n"
         "\n"
-        "Selection Only - Specify which dungeons are Vanilla or Master Quest.";
+        "Selection Only - Specify which dungeons are Vanilla, Master Quest or a 50/50 between the two.\n"
+        "Differs from Random Number in that they are rolled individually, making the exact total a bell curve.";
     mOptionDescriptions[RSK_MQ_DUNGEON_SET] =
                 "Choose specific Dungeons to be Master Quest or Vanilla.\n"
                 "\n"
@@ -170,12 +171,14 @@ void Settings::CreateOptionDescriptions() {
         "This also adds the one-way entrance from Gerudo Valley to Lake Hylia in the pool of "
         "overworld entrances when they are shuffled.";
     mOptionDescriptions[RSK_MIXED_ENTRANCE_POOLS] =
-        "Shuffle entrances into a mixed pool instead of separate ones.\n"
+        "Shuffle entrances into a mixed pool instead of separate ones. Has no affect on pools whose "
+        "entrances aren't shuffled, and \"Shuffle Boss Entrances\" must be set to \"Full\" to include them.\n"
         "\n"
         "For example, enabling the settings to shuffle grotto, dungeon, and overworld entrances and "
         "selecting grotto and dungeon entrances here will allow a dungeon to be inside a grotto or "
         "vice versa, while overworld entrances are shuffled in their own separate pool and indoors stay vanilla.";
     mOptionDescriptions[RSK_MIX_DUNGEON_ENTRANCES] = "Dungeon entrances will be part of the mixed pool";
+    mOptionDescriptions[RSK_MIX_BOSS_ENTRANCES] = "Boss entrances will be part of the mixed pool";
     mOptionDescriptions[RSK_MIX_OVERWORLD_ENTRANCES] = "Overworld entrances will be part of the mixed pool";
     mOptionDescriptions[RSK_MIX_INTERIOR_ENTRANCES] = "Interior entrances will be part of the mixed pool";
     mOptionDescriptions[RSK_MIX_GROTTO_ENTRANCES] = "Grotto entrances will be part of the mixed pool";
@@ -259,6 +262,17 @@ void Settings::CreateOptionDescriptions() {
     mOptionDescriptions[RSK_SHUFFLE_FISHING_POLE] = "Shuffles the fishing pole into the item pool.\n"
         "\n"
         "The fishing pole is required to play the fishing pond minigame.";
+    mOptionDescriptions[RSK_INFINITE_UPGRADES] = "Adds upgrades that hold infinite quanities of items (bombs, arrows, etc.)\n"
+        "\n"
+        "Progressive - The infinite upgrades are obtained after getting the last normal capacity upgrade\n"
+        "\n"
+        "Condensed Progressive - The infinite upgrades are obtained as the first capacity upgrade (doesn't apply to the infinite wallet or to infinite magic)";
+    mOptionDescriptions[RSK_SHUFFLE_DEKU_STICK_BAG] = "Shuffles the deku stick bag into the item pool.\n"
+        "\n"
+        "The deku stick bag is required to hold deku sticks.";
+    mOptionDescriptions[RSK_SHUFFLE_DEKU_NUT_BAG] = "Shuffles the deku nut bag into the item pool.\n"
+        "\n"
+        "The deku nut bag is required to hold deku nuts.";
     mOptionDescriptions[RSK_SHOPSANITY] = "Off - All shop items will be the same as vanilla.\n"
                                           "\n"
                                           "0 Items - Vanilla shop items will be shuffled among different shops.\n"
@@ -277,6 +291,7 @@ void Settings::CreateOptionDescriptions() {
         "Affordable prices per tier: starter = 10, adult = 105, giant = 205, tycoon = 505\n\n"
         "Use this to enable wallet tier locking, but make shop items not as expensive as they could be.";
     mOptionDescriptions[RSK_FISHSANITY] = "Off - Fish will not be shuffled. No changes will be made to fishing behavior.\n\n"
+        "Shuffle only Hyrule Loach - Allows you to earn an item by catching the hyrule loach at the fishing pond and giving it to the owner.\n\n"
         "Shuffle Fishing Pond - The fishing pond's fish will be shuffled. Catching a fish in the fishing pond will grant a reward.\n\n"
         "Shuffle Overworld Fish - Fish in generic grottos and Zora's Domain will be shuffled. Catching a fish in a bottle will give a reward.\n\n"
         "Shuffle Both - Both overworld fish and fish in the fishing pond will be shuffled.";
@@ -380,7 +395,8 @@ void Settings::CreateOptionDescriptions() {
         "\n"
         "Count - A specified amount of randomly selected dungeons will have their keys replaced with keyrings.\n"
         "\n"
-        "Selection - Hand select which dungeons will have their keys replaced with keyrings.\n"
+        "Selection - Hand select which dungeons will have their keys replaced with keyrings\n"
+        "(can also be left as random, in which case each one will have a 50% chance of being a keyring).\n"
         "\n"
         "Selecting key ring for dungeons will have no effect if Small Keys are set to Start With or Vanilla.\n"
         "\n"
@@ -448,8 +464,6 @@ void Settings::CreateOptionDescriptions() {
         "Start with Zelda's Letter and the item Impa would normally give you and skip the sequence up "
         "until after meeting Zelda. Disables the ability to shuffle Weird Egg.";
     mOptionDescriptions[RSK_SKIP_EPONA_RACE] = "Epona can be summoned with Epona's Song without needing to race Ingo.";
-    mOptionDescriptions[RSK_SKIP_TOWER_ESCAPE] =
-        "The tower escape sequence between Ganondorf and Ganon will be skipped.";
     mOptionDescriptions[RSK_COMPLETE_MASK_QUEST] =
         "Once the happy mask shop is opened, all masks will be available to be borrowed.";
     mOptionDescriptions[RSK_SKIP_SCARECROWS_SONG] =
@@ -513,22 +527,28 @@ void Settings::CreateOptionDescriptions() {
         "Reading the Temple of Time altar as child will tell you the locations of the Spiritual Stones.\n"
         "Reading the Temple of Time altar as adult will tell you the locations of the Medallions, as well as the "
         "conditions for building the Rainbow Bridge and getting the Boss Key for Ganon's Castle.";
-    mOptionDescriptions[RSK_LIGHT_ARROWS_HINT] =
-        "Talking to Ganondorf in his boss room or Sheik inside Ganon's Castle (when trials are enabled) will tell you "
-        "the location of the Light Arrows."
-        "If this option is enabled and Ganondorf is reachable without Light Arrows, Gossip Stones will never hint the "
+    mOptionDescriptions[RSK_GANONDORF_HINT] =
+        "Talking to Ganondorf in his boss room will tell you the location of the Light Arrows and Master Sword."
+        "If this option is enabled and Ganondorf is reachable without these items, Gossip Stones will never hint the "
+        "appropriote items.";//RANDOTODO make this hint text about no dupe hints a global hint for static hints. Add to navi?
+    mOptionDescriptions[RSK_SHEIK_LA_HINT] =
+        "Talking to Sheik inside Ganon's Castle will tell you the location of the Light Arrows."
+        "If this option is enabled and Sheik is reachable without Light Arrows, Gossip Stones will never hint the "
         "Light Arrows.";
     mOptionDescriptions[RSK_DAMPES_DIARY_HINT] =
         "Reading the diary of Dampé the gravekeeper as adult will tell you the location of one of the Hookshots.";
     mOptionDescriptions[RSK_GREG_HINT] =
         "Talking to the chest game owner after buying a key will tell you the location of Greg the Green Rupee.";
+    mOptionDescriptions[RSK_LOACH_HINT] =
+        "Talking to the fishing pond owner and asking to talk about something will tell you what's the reward for the Hyrule Loach.";
     mOptionDescriptions[RSK_SARIA_HINT] = "Talking to Saria either in person or through Saria's Song will tell you the "
                                           "location of a progressive magic meter.";
     mOptionDescriptions[RSK_FISHING_POLE_HINT] = "Talking to the fishing pond owner without the fishing pole will tell you its location.";
+    mOptionDescriptions[RSK_OOT_HINT] = "Sheik in the Temple of Time will tell you the item and song on the Ocarina of Time.";
     mOptionDescriptions[RSK_FROGS_HINT] = "Standing near the pedestal for the frogs in Zora's River will tell you the "
                                           "reward for the frogs' ocarina game.";
     mOptionDescriptions[RSK_BIGGORON_HINT] = "Talking to Biggoron will tell you the item he will give you in exchange for the Claim Check.";
-    mOptionDescriptions[RSK_BIG_POES_HINT] = "Talking to the Poe Collector in the Market Guardhouse while adult will tell you what you recieve for handing in Big Poes.";
+    mOptionDescriptions[RSK_BIG_POES_HINT] = "Talking to the Poe Collector in the Market Guardhouse while adult will tell you what you receive for handing in Big Poes.";
     mOptionDescriptions[RSK_CHICKENS_HINT] = "Talking to Anju as a child will tell you the item she will give you for delivering her Cuccos to the pen";
     mOptionDescriptions[RSK_MALON_HINT] = "Talking to Malon as adult will tell you the item on \"Link's cow\", the cow you win from beating her time on the Lon Lon Obsticle Course.";
     mOptionDescriptions[RSK_HBA_HINT] = "Talking to the Horseback Archery gerudo in Gerudo Fortress, or the nearby sign, will tell you what you win for scoring 1000 and 1500 points on Horseback Archery.";
@@ -541,7 +561,7 @@ void Settings::CreateOptionDescriptions() {
     mOptionDescriptions[RSK_KAK_40_SKULLS_HINT] = "Talking to the Cursed Resident in the Skultulla House who is saved after 40 tokens will tell you the reward";
     mOptionDescriptions[RSK_KAK_50_SKULLS_HINT] = "Talking to the Cursed Resident in the Skultulla House who is saved after 50 tokens will tell you the reward";
     mOptionDescriptions[RSK_KAK_100_SKULLS_HINT] = "Talking to the Cursed Resident in the Skultulla House who is saved after 100 tokens will tell you the reward";
-    
+    mOptionDescriptions[RSK_MASK_SHOP_HINT] = "Reading the mask shop sign will tell you rewards from showing masks at the Deku Theatre.";
     mOptionDescriptions[RSK_FULL_WALLETS] = "Start with a full wallet. All wallet upgrades come filled with rupees.";
     mOptionDescriptions[RSK_BOMBCHUS_IN_LOGIC] =
         "Bombchus are properly considered in logic.\n"
@@ -556,7 +576,8 @@ void Settings::CreateOptionDescriptions() {
     mOptionDescriptions[RSK_BLUE_FIRE_ARROWS] =
         "Ice Arrows act like Blue Fire, making them able to melt red ice. "
         "Item placement logic will respect this option, so it might be required to use this to progress.";
-    mOptionDescriptions[RSK_LIGHT_ARROWS_HINT] =
+    mOptionDescriptions[RSK_SKELETON_KEY] = "Adds a new item called the \"Skeleton Key\", it unlocks every dungeon door locked by a small key.";
+    mOptionDescriptions[RSK_SUNLIGHT_ARROWS] =
         "Light Arrows can be used to light up the sun switches instead of using the Mirror Shield. "
         "Item placement logic will respect this option, so it might be required to use this to progress.";
     mOptionDescriptions[RSK_LOGIC_RULES] =

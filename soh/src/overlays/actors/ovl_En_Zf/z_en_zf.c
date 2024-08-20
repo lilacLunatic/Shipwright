@@ -532,7 +532,7 @@ s32 EnZf_CanAttack(PlayState* play, EnZf* this) {
     Player* player = GET_PLAYER(play);
 
     if (this->actor.params >= ENZF_TYPE_LIZALFOS_MINIBOSS_A) { // miniboss
-        if (player->stateFlags1 & 0x6000) {                    // Hanging or climbing
+        if (player->stateFlags1 & (PLAYER_STATE1_HANGING_OFF_LEDGE | PLAYER_STATE1_CLIMBING_LEDGE)) { // Hanging or climbing
             return false;
         } else {
             return true;
@@ -1208,7 +1208,7 @@ void EnZf_Slash(EnZf* this, PlayState* play) {
                     if (yawDiff > 16000) {
                         this->actor.world.rot.y = this->actor.yawTowardsPlayer;
                         func_80B483E4(this, play);
-                    } else if (player->stateFlags1 & 0x6010) {
+                    } else if (player->stateFlags1 & (PLAYER_STATE1_ENEMY_TARGET | PLAYER_STATE1_HANGING_OFF_LEDGE | PLAYER_STATE1_CLIMBING_LEDGE)) {
                         if (this->actor.isTargeted) {
                             EnZf_SetupSlash(this);
                         } else {
@@ -2252,7 +2252,7 @@ void EnZf_Draw(Actor* thisx, PlayState* play) {
         gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, this->alpha);
         gSPSegment(POLY_OPA_DISP++, 0x09, &D_80116280[2]);
 
-        POLY_OPA_DISP = SkelAnime_Draw(play, this->skelAnime.skeleton, this->skelAnime.jointTable,
+        POLY_OPA_DISP = SkelAnime_DrawSkeleton2(play, &this->skelAnime,
                                        EnZf_OverrideLimbDraw, EnZf_PostLimbDraw, this, POLY_OPA_DISP);
 
         if (this->iceTimer != 0) {
@@ -2271,7 +2271,7 @@ void EnZf_Draw(Actor* thisx, PlayState* play) {
         gDPPipeSync(POLY_XLU_DISP++);
         gDPSetEnvColor(POLY_XLU_DISP++, 0, 0, 0, this->alpha);
         gSPSegment(POLY_XLU_DISP++, 0x09, &D_80116280[0]);
-        POLY_XLU_DISP = SkelAnime_Draw(play, this->skelAnime.skeleton, this->skelAnime.jointTable,
+        POLY_XLU_DISP = SkelAnime_DrawSkeleton2(play, &this->skelAnime,
                                        EnZf_OverrideLimbDraw, EnZf_PostLimbDraw, this, POLY_XLU_DISP);
     }
     CLOSE_DISPS(play->state.gfxCtx);

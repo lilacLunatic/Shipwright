@@ -468,7 +468,7 @@ void PlaceJunkInExcludedLocation(const RandomizerCheck il) {
       return;
     }
   }
-  printf("ERROR: No Junk to Place!!!\n");
+  SPDLOG_ERROR("ERROR: No Junk to Place!!!");
 }
 
 static void PlaceVanillaDekuScrubItems() {
@@ -782,6 +782,10 @@ void GenerateItemPool() {
     ctx->possibleIceTrapModels.push_back(RG_OCARINA_C_RIGHT_BUTTON);
   }
 
+  if (ctx->GetOption(RSK_SKELETON_KEY)) {
+    AddItemToMainPool(RG_SKELETON_KEY);
+  }
+
   if (ctx->GetOption(RSK_SHUFFLE_SWIM)) {
     AddItemToMainPool(RG_PROGRESSIVE_SCALE);
   }
@@ -859,6 +863,12 @@ void GenerateItemPool() {
     } else {
       PlaceVanillaOverworldFish();
     }
+
+    if (fsMode.Is(RO_FISHSANITY_HYRULE_LOACH)) {
+      AddItemToMainPool(RG_PURPLE_RUPEE);
+    } else {
+      ctx->PlaceItemInLocation(RC_LH_HYRULE_LOACH, RG_PURPLE_RUPEE, false, true);
+    }
   } else {
     PlaceVanillaOverworldFish();
   }
@@ -866,6 +876,16 @@ void GenerateItemPool() {
   if (ctx->GetOption(RSK_SHUFFLE_FISHING_POLE)) {
     AddItemToMainPool(RG_FISHING_POLE);
     ctx->possibleIceTrapModels.push_back(RG_FISHING_POLE);
+  }
+
+  if (ctx->GetOption(RSK_INFINITE_UPGRADES).Is(RO_INF_UPGRADES_PROGRESSIVE)) {
+    AddItemToMainPool(RG_PROGRESSIVE_BOMB_BAG);
+    AddItemToMainPool(RG_PROGRESSIVE_BOW);
+    AddItemToMainPool(RG_PROGRESSIVE_NUT_UPGRADE);
+    AddItemToMainPool(RG_PROGRESSIVE_SLINGSHOT);
+    AddItemToMainPool(RG_PROGRESSIVE_STICK_UPGRADE);
+    AddItemToMainPool(RG_PROGRESSIVE_MAGIC_METER);
+    AddItemToMainPool(RG_PROGRESSIVE_WALLET);
   }
 
   if (ctx->GetOption(RSK_SHUFFLE_MAGIC_BEANS)) {
@@ -931,11 +951,16 @@ void GenerateItemPool() {
   } else if (ctx->GetOption(RSK_SHUFFLE_CHEST_MINIGAME).Is(RO_CHEST_GAME_PACK)) {
     AddItemToMainPool(RG_TREASURE_GAME_SMALL_KEY); // 1 key which will behave as a pack of 6
   } else {
-    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_ITEM_1, RG_TREASURE_GAME_SMALL_KEY, false, true);
-    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_ITEM_2, RG_TREASURE_GAME_SMALL_KEY, false, true);
-    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_ITEM_3, RG_TREASURE_GAME_SMALL_KEY, false, true);
-    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_ITEM_4, RG_TREASURE_GAME_SMALL_KEY, false, true);
-    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_ITEM_5, RG_TREASURE_GAME_SMALL_KEY, false, true);
+    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_ITEM_1, RG_GREEN_RUPEE, false, true);
+    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_ITEM_2, RG_GREEN_RUPEE, false, true);
+    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_ITEM_3, RG_BLUE_RUPEE, false, true);
+    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_ITEM_4, RG_BLUE_RUPEE, false, true);
+    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_ITEM_5, RG_RED_RUPEE, false, true);
+    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_KEY_1, RG_TREASURE_GAME_SMALL_KEY, false, true);
+    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_KEY_2, RG_TREASURE_GAME_SMALL_KEY, false, true);
+    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_KEY_3, RG_TREASURE_GAME_SMALL_KEY, false, true);
+    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_KEY_4, RG_TREASURE_GAME_SMALL_KEY, false, true);
+    ctx->PlaceItemInLocation(RC_MARKET_TREASURE_CHEST_GAME_KEY_5, RG_TREASURE_GAME_SMALL_KEY, false, true);
   };
 
   if (ctx->GetOption(RSK_SHUFFLE_TOKENS).Is(RO_TOKENSANITY_OFF)) {
@@ -999,6 +1024,13 @@ void GenerateItemPool() {
     AddItemToMainPool(RG_PROGRESSIVE_WALLET);
   }
 
+  if (ctx->GetOption(RSK_SHUFFLE_DEKU_STICK_BAG)) {
+    AddItemToMainPool(RG_PROGRESSIVE_STICK_UPGRADE);
+  }
+
+  if (ctx->GetOption(RSK_SHUFFLE_DEKU_NUT_BAG)) {
+    AddItemToMainPool(RG_PROGRESSIVE_NUT_UPGRADE);
+  }
 
   if (ctx->GetOption(RSK_BOMBCHUS_IN_LOGIC)) {
     AddItemToMainPool(RG_PROGRESSIVE_BOMBCHUS, 5);
