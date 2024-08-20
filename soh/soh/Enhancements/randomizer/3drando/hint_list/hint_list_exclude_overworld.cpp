@@ -1488,69 +1488,56 @@ void StaticData::HintTable_Init_Exclude_Overworld() {
                                                               /*french*/ "Selon moi,  #[[1]]#.", {QM_RED, QM_GREEN}));
                                                            // /*spanish*/ Según dicen, una #colmena detrás del rey de los zoras# esconde #[[1]]#.
 
-    hintTable[RHT_POT_KOKIRI_FOREST] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Kokiri Forest# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_KOKIRI_FOREST] = HintText(CustomMessage("They say that a #pot in Kokiri Forest# contains #[[1]]#.",
+                                                       /*german*/ "",
+                                                       /*french*/ "", {QM_RED, QM_GREEN}));
 
-    hintTable[RHT_POT_GERUDO_FORTRESS] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Gerudo Fortress# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_GERUDO_FORTRESS] = HintText(CustomMessage("They say that a #pot in Gerudo Fortress# contains #[[1]]#.",
+                                                         /*german*/ "",
+                                                         /*french*/ "", {QM_RED, QM_GREEN}));
 
-    hintTable[RHT_POT_WASTELAND] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Haunted Wasteland# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_WASTELAND] = HintText(CustomMessage("They say that a #pot in Haunted Wasteland# contains #[[1]]#.",
+                                                   /*german*/ "",
+                                                   /*french*/ "", {QM_RED, QM_GREEN}));
 
-    hintTable[RHT_POT_MARKET] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Market# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_MARKET] = HintText(CustomMessage("They say that a #pot in Market# contains #[[1]]#.",
+                                                /*german*/ "",
+                                                /*french*/ "", {QM_RED, QM_GREEN}));
 
-    hintTable[RHT_POT_KAKARIKO] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Kakariko Village# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_KAKARIKO] = HintText(CustomMessage("They say that a #pot in Kakariko Village# contains #[[1]]#.",
+                                                  /*german*/ "",
+                                                  /*french*/ "", {QM_RED, QM_GREEN}));
 
-    hintTable[RHT_POT_GRAVEYARD] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Graveyard# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_GRAVEYARD] = HintText(CustomMessage("They say that a #pot in Graveyard# contains #[[1]]#.",
+                                                   /*german*/ "",
+                                                   /*french*/ "", {QM_RED, QM_GREEN}));
 
-    hintTable[RHT_POT_GORON_CITY] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Goron City# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_GORON_CITY] = HintText(CustomMessage("They say that a #pot in Goron City# contains #[[1]]#.",
+                                                    /*german*/ "",
+                                                    /*french*/ "", {QM_RED, QM_GREEN}));
 
-    hintTable[RHT_POT_DEATH_MOUNTAIN_CRATER] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Death Mountain Crater# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_DEATH_MOUNTAIN_CRATER] = HintText(CustomMessage("They say that a #pot in Death Mountain Crater# contains #[[1]]#.",
+                                                               /*german*/ "",
+                                                               /*french*/ "", {QM_RED, QM_GREEN}));
 
-    hintTable[RHT_POT_ZORAS_DOMAIN] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Zora's Domain# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_ZORAS_DOMAIN] = HintText(CustomMessage("They say that a #pot in Zora's Domain# contains #[[1]]#.",
+                                                      /*german*/ "",
+                                                      /*french*/ "", {QM_RED, QM_GREEN}));
 
-    hintTable[RHT_POT_ZORAS_FOUNTAIN] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Zora's Fountain# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_ZORAS_FOUNTAIN] = HintText(CustomMessage("They say that a #pot in Zora's Fountain# contains #[[1]]#.",
+                                                        /*german*/ "",
+                                                        /*french*/ "", {QM_RED, QM_GREEN}));
 
-    hintTable[RHT_POT_LON_LON_RANCH] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Lon Lon Ranch# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_LON_LON_RANCH] = HintText(CustomMessage("They say that a #pot in Lon Lon Ranch# contains #[[1]]#.",
+                                                       /*german*/ "",
+                                                       /*french*/ "", {QM_RED, QM_GREEN}));
 
-    hintTable[RHT_POT_HYRULE_FIELD] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Hyrule Field# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_HYRULE_FIELD] = HintText(CustomMessage("They say that a #pot in Hyrule Field# contains #[[1]]#.",
+                                                      /*german*/ "",
+                                                      /*french*/ "", {QM_RED, QM_GREEN}));
 
-    hintTable[RHT_POT_HYRULE_CASTLE] = HintText::Exclude({
-                       // obscure text
-                       Text{ "a #pot in Hyrule Castle# contains", /*french*/ "TRANSLATION NEEDED", /*spanish*/ "" },
-    });
+    hintTextTable[RHT_POT_HYRULE_CASTLE] = HintText(CustomMessage("They say that a #pot in Hyrule Castle# contains #[[1]]#.",
+                                                       /*german*/ "",
+                                                       /*french*/ "", {QM_RED, QM_GREEN}));
 }
 }
