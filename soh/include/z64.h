@@ -1486,6 +1486,7 @@ typedef struct PlayState {
     /* 0x12430 */ char unk_12430[0xE8];
     // SOH [Custom Models] MTX tracker for flex based skeletons
     Mtx** flexLimbOverrideMTX;
+                  u8 stairsCount;
 } PlayState; // size = 0x12518
 
 typedef struct {

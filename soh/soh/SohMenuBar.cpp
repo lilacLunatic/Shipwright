@@ -714,6 +714,11 @@ void DrawEnhancementsMenu() {
                     }
                 }
                 UIWidgets::Tooltip("Allows strength to be toggled on and off by pressing A on the strength upgrade in the equipment subscreen of the pause menu (This allows performing some glitches that require the player to not have strength).");
+                UIWidgets::PaddedEnhancementCheckbox("Turn Nayru's Love into Roc's Feather", "gRocsFeather", true, false);
+                UIWidgets::Tooltip(
+                    "Nayru's Love acts like Roc's Feather from the Indigo romhack instead. Grants a jump that can even be used in the air, "
+                    "but needs to recharge by touching the ground afterwards. Does not require magic to use."
+                );
                 ImGui::EndMenu();
             }
 

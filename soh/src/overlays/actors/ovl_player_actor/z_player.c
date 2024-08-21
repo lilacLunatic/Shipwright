@@ -6,6 +6,7 @@
 
 #include <libultraship/libultra.h>
 #include "global.h"
+#include <SDL2/SDL.h> //TODO (RR): don't import SDL in game code
 
 #include "overlays/actors/ovl_Bg_Heavy_Block/z_bg_heavy_block.h"
 #include "overlays/actors/ovl_Door_Shutter/z_door_shutter.h"
@@ -357,6 +358,8 @@ void Player_Action_80850AEC(Player* this, PlayState* play);
 void Player_Action_80850C68(Player* this, PlayState* play);
 void Player_Action_80850E84(Player* this, PlayState* play);
 void Player_Action_CsAction(Player* this, PlayState* play);
+
+void func_80838940(Player* this, LinkAnimationHeader* anim, f32 arg2, PlayState* play, u16 sfxId);
 
 // .bss part 1
 static s32 D_80858AA0;
@@ -1873,6 +1876,7 @@ void Player_ProcessControlStick(PlayState* play, Player* this) {
 
     D_808535DC = Camera_GetInputDirYaw(GET_ACTIVE_CAM(play)) + sControlStickAngle;
 
+    this->quickspinCount = (this->quickspinCount + 1) % 5;
     this->unk_846 = (this->unk_846 + 1) % 4;
 
     if (sControlStickMagnitude < 55.0f) {
@@ -1883,6 +1887,12 @@ void Player_ProcessControlStick(PlayState* play, Player* this) {
         phi_v0 = (u16)((s16)(D_808535DC - this->actor.shape.rot.y) + 0x2000) >> 14;
     }
 
+    if(CVarGetInteger("gMouseTouchEnabled", 0)){
+        f32 x = sControlInput->cur.touch_x;
+        f32 y = sControlInput->cur.touch_y;
+        this->mouseQuickspinX[this->quickspinCount] = x;
+        this->mouseQuickspinY[this->quickspinCount] = y;
+    }
     this->unk_847[this->unk_846] = phi_v1;
     this->unk_84B[this->unk_846] = phi_v0;
 }
@@ -2250,6 +2260,10 @@ void Player_ProcessItemButtons(Player* this, PlayState* play) {
     s32 item;
     s32 i;
 
+    if (this->actor.bgCheckFlags & 1) {
+        this->rocUseCount = 0;
+    }
+
     if (this->currentMask != PLAYER_MASK_NONE) {
         if (CVarGetInteger(CVAR_ENHANCEMENT("MMBunnyHood"), BUNNY_HOOD_VANILLA) != BUNNY_HOOD_VANILLA) {
             s32 maskItem = this->currentMask - PLAYER_MASK_KEATON + ITEM_MASK_KEATON;
@@ -2318,9 +2332,29 @@ void Player_ProcessItemButtons(Player* this, PlayState* play) {
             if ((item < ITEM_NONE_FE) && (Player_ItemToItemAction(item) == this->heldItemAction)) {
                 sHeldItemButtonIsHeldDown = true;
             }
-        } else {
+        } else if (item != ITEM_NAYRUS_LOVE || !CVarGetInteger("gRocsFeather", 0)) {
             this->heldItemButton = i;
             Player_UseItem(play, this, item);
+        } else if (this->rocUseCount == 0) {
+            this->rocUseCount++;
+            this->linearVelocity = 5.0f;
+            this->actor.velocity.y = 8.0f;
+            this->actor.world.rot.y = this->yaw = this->actor.shape.rot.y;
+
+            func_80838940(this, D_80853D4C[2][0], !(2 & 1) ? 5.8f : 3.5f, play, /* NA_SE_VO_LI_SWORD_N*/ 0);
+
+            Vec3f effectsPos = this->actor.home.pos;
+            effectsPos.y += 3;
+            f32 effectsScale = 1;
+            if (!gSaveContext.linkAge) {
+                effectsScale = 1.5f;
+            }
+            EffectSsGRipple_Spawn(play, &effectsPos, 200 * effectsScale, 300 * effectsScale, 1);
+            EffectSsGSplash_Spawn(play, &effectsPos, NULL, NULL, 0, 150 * effectsScale);
+
+            this->stateFlags2 &= ~(PLAYER_STATE2_HOPPING);
+
+            Player_PlaySfx(&this->actor, NA_SE_PL_SKIP);
         }
     }
 }
@@ -3844,6 +3878,7 @@ void func_80837530(PlayState* play, Player* this, s32 arg2) {
 s32 func_808375D8(Player* this) {
     s8 sp3C[4];
     s8* iter;
+    s8 iterMouse;
     s8* iter2;
     s8 temp1;
     s8 temp2;
@@ -3853,6 +3888,40 @@ s32 func_808375D8(Player* this) {
         return 0;
     }
 
+    if(CVarGetInteger("gMouseTouchEnabled", 0)){ //mouse quickspin
+        iter2 = &sp3C[0];
+        u32 willSpin = 1;
+        for (i = 0; i < 4; i++, iter2++){
+            f32 relY = this->mouseQuickspinY[i + 1] - this->mouseQuickspinY[i];
+            f32 relX = this->mouseQuickspinX[i + 1] - this->mouseQuickspinX[i];
+            s16 aTan = Math_Atan2S(relY, -relX);
+            iterMouse = (u16)(aTan + 0x2000) >> 9;
+            if ((*iter2 = iterMouse) < 0) {
+                willSpin = 0;
+                break;
+            }
+            *iter2 *= 2;
+        }
+        temp1 = sp3C[0] - sp3C[1];
+        if (ABS(temp1) < 10) {
+            willSpin = 0;
+        }
+        iter2 = &sp3C[1];
+        for (i = 1; i < 3; i++, iter2++) {
+            temp2 = *iter2 - *(iter2 + 1);
+            if ((ABS(temp2) < 10) || (temp2 * temp1 < 0)) {
+                willSpin = 0;
+                break;
+            }
+        }
+        if (willSpin){
+            return 1;
+        }
+    }
+    sp3C[0] = 0;
+    sp3C[1] = 0;
+    sp3C[2] = 0;
+    sp3C[3] = 0;
     iter = &this->unk_847[0];
     iter2 = &sp3C[0];
     for (i = 0; i < 4; i++, iter++, iter2++) {
@@ -5907,6 +5976,14 @@ s32 Player_ActionChange_11(Player* this, PlayState* play) {
         Player_DetachHeldActor(play, this);
 
         if (Player_SetupAction(play, this, Player_Action_80843188, 0)) {
+            /* MOD: move cursor to the middle on shield pull (RR) */
+            if (CVarGetInteger("gMouseTouchEnabled", 0)) {
+                u32 width = OTRGetCurrentWidth();
+                u32 height = OTRGetCurrentHeight();
+                OTRMoveCursor(width/2, height/2);
+            }
+            /* */
+
             this->stateFlags1 |= PLAYER_STATE1_SHIELDING;
 
             if (!Player_IsChildWithHylianShield(this)) {
@@ -6551,21 +6628,30 @@ void func_8083DFE0(Player* this, f32* arg1, s16* arg2) {
             maxSpeed *= 1.5f;
         } 
         
-        if (CVarGetInteger(CVAR_SETTING("WalkModifier.Enabled"), 0) && !CVarGetInteger(CVAR_SETTING("WalkModifier.DoesntChangeJump"), 0)) {
-            if (CVarGetInteger(CVAR_SETTING("WalkModifier.SpeedToggle"), 0)) {
-                if (gWalkSpeedToggle1) {
-                    maxSpeed *= CVarGetFloat(CVAR_SETTING("WalkModifier.Mapping1"), 1.0f);
-                } else if (gWalkSpeedToggle2) {
-                    maxSpeed *= CVarGetFloat(CVAR_SETTING("WalkModifier.Mapping2"), 1.0f);
-                }
-            } else {
-                if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_MODIFIER1)) {
-                    maxSpeed *= CVarGetFloat(CVAR_SETTING("WalkModifier.Mapping1"), 1.0f);
-                } else if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_MODIFIER2)) {
-                    maxSpeed *= CVarGetFloat(CVAR_SETTING("WalkModifier.Mapping2"), 1.0f);
-                }
-            }
-        }
+        if (CVarGetInteger("gEnableWalkModify", 0) && !CVarGetInteger("gWalkModifierDoesntChangeJump", 0)) {
+             f32 modifierValue = 1.0;
+             if (CVarGetInteger("gWalkSpeedToggle", 0)) {
+                 if (gWalkSpeedToggle1) {
+                     maxSpeed *= CVarGetFloat("gWalkModifierOne", 1.0f);
+                     modifierValue = CVarGetFloat("gWalkModifierOne", 1.0f);
+                 } else if (gWalkSpeedToggle2) {
+                     maxSpeed *= CVarGetFloat("gWalkModifierTwo", 1.0f);
+                     modifierValue = CVarGetFloat("gWalkModifierTwo", 1.0f);
+                 }
+             } else {
+                 if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_MODIFIER1)) {
+                     maxSpeed *= CVarGetFloat("gWalkModifierOne", 1.0f);
+                     modifierValue = CVarGetFloat("gWalkModifierOne", 1.0f);
+                 } else if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_MODIFIER2)) {
+                     maxSpeed *= CVarGetFloat("gWalkModifierTwo", 1.0f);
+                     modifierValue = CVarGetFloat("gWalkModifierTwo", 1.0f);
+                 }
+             }
+ 
+             if (modifierValue > 1.0 || !CVarGetInteger("gWalkModifierToInputs", 0)) {
+                 maxSpeed *= modifierValue;
+             }
+         }
 
         this->linearVelocity = CLAMP(this->linearVelocity, -maxSpeed, maxSpeed);
     }
@@ -8697,6 +8783,19 @@ void Player_Action_80843188(Player* this, PlayState* play) {
         sp54 = sControlInput->rel.stick_y * 100 * (CVarGetInteger(CVAR_SETTING("Controls.InvertShieldAimingYAxis"), 1) ? 1 : -1);
         sp50 = sControlInput->rel.stick_x * (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0) ? 120 : -120) * (CVarGetInteger(CVAR_SETTING("Controls.InvertShieldAimingYAxis"), 0) ? -1 : 1);
         sp4E = this->actor.shape.rot.y - Camera_GetInputDirYaw(GET_ACTIVE_CAM(play));
+
+        if (CVarGetInteger("gMouseTouchEnabled", 0)) {
+            u32 width = OTRGetCurrentWidth();
+            u32 height = OTRGetCurrentHeight();
+            /*
+             * Y: -12800 ~ +12700
+             * X: -15360 ~ +15240
+             */
+            f32 xBound = 15360 / ((f32)width / 2);
+            f32 yBound = 12800 / ((f32)height / 2);
+            sp54 += +(sControlInput->cur.touch_y - (height) / 2) * yBound;
+            sp50 += +(sControlInput->cur.touch_x - (width) / 2) * xBound * (CVarGetInteger("gMirroredWorld", 0) ? 1 : -1);
+        }
 
         sp40 = Math_CosS(sp4E);
         sp4C = (Math_SinS(sp4E) * sp50) + (sp54 * sp40);
@@ -11221,6 +11320,30 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
 
     sControlInput = input;
 
+    if (CVarGetInteger("gEnableWalkModify", 0)) {
+        f32 modifierValue = 1.0;
+        if (CVarGetInteger("gWalkSpeedToggle", 0)) {
+            if (gWalkSpeedToggle1 || sControlInput->cur.middle_click) {
+                modifierValue = CVarGetFloat("gWalkModifierOne", 1.0f);
+            } else if (gWalkSpeedToggle2) {
+                modifierValue = CVarGetFloat("gWalkModifierTwo", 1.0f);
+            }
+        } else {
+            if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_MODIFIER1) || sControlInput->cur.middle_click) {
+                modifierValue = CVarGetFloat("gWalkModifierOne", 1.0f);
+            } else if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_MODIFIER2)) {
+                modifierValue = CVarGetFloat("gWalkModifierTwo", 1.0f);
+            }
+        }
+
+        if (modifierValue < 1.0 && CVarGetInteger("gWalkModifierToInputs", 0)) {
+            s32 old_stick_x = input->rel.stick_x;
+            s32 old_stick_y = input->rel.stick_y;
+            input->rel.stick_x *= modifierValue * ABS(cosf(Math_Atan2F(old_stick_x, old_stick_y)));
+            input->rel.stick_y *= modifierValue * ABS(sinf(Math_Atan2F(old_stick_x, old_stick_y)));
+        }
+    }
+
     if (this->unk_A86 < 0) {
         this->unk_A86++;
         if (this->unk_A86 == 0) {
@@ -11997,6 +12120,25 @@ s16 func_8084ABD8(PlayState* play, Player* this, s32 arg2, s16 arg3) {
     s8 invertYAxisMulti = CVarGetInteger(CVAR_SETTING("Controls.InvertAimingYAxis"), 1) ? 1 : -1;
     f32 xAxisMulti = CVarGetFloat(CVAR_SETTING("FirstPersonCameraSensitivity.X"), 1.0f);
     f32 yAxisMulti = CVarGetFloat(CVAR_SETTING("FirstPersonCameraSensitivity.Y"), 1.0f);
+    /* TODO: Move all this mouse stuff somewhere more appropriate */
+    if(CVarGetInteger("gMouseTouchEnabled", 0)) {
+        int mouseX, mouseY;
+        SDL_GetRelativeMouseState(&mouseX, &mouseY);
+
+        sControlInput->cur.mouse_move_x = mouseX;
+        sControlInput->cur.mouse_move_y = mouseY;
+        if (fabsf(sControlInput->cur.mouse_move_x) > 0) {
+            //printf("x:%d\n", sControlInput->cur.mouse_move_x);
+            this->actor.focus.rot.y -= (sControlInput->cur.mouse_move_x) * 12.0f * (CVarGetFloat("gFirstPersonCameraSensitivity", 1.0f)) *\
+                                       invertXAxisMulti;
+        }
+        if (fabsf(sControlInput->cur.mouse_move_y) > 0) {
+            //printf("y:%d\n", sControlInput->cur.mouse_move_y);
+            this->actor.focus.rot.x += (sControlInput->cur.mouse_move_y) * 12.0f * (CVarGetFloat("gFirstPersonCameraSensitivity", 1.0f)) *\
+                                       invertYAxisMulti;
+        }
+    }
+    /* ********************************************************** */
 
     if (!func_8002DD78(this) && !func_808334B4(this) && (arg2 == 0)) { // First person without weapon
         // Y Axis
@@ -13929,7 +14071,11 @@ void Player_Action_8084EAC0(Player* this, PlayState* play) {
         if ((gSaveContext.healthAccumulator == 0) && (gSaveContext.magicState != MAGIC_STATE_FILL)) {
             Player_AnimChangeOnceMorphAdjusted(play, this, &gPlayerAnim_link_bottle_drink_demo_end);
             this->av2.actionVar2 = 2;
-            Player_UpdateBottleHeld(play, this, ITEM_BOTTLE, PLAYER_IA_BOTTLE);
+            s32 item = ITEM_BOTTLE;
+            if (this->itemAction == PLAYER_IA_BOTTLE_MILK_FULL) {
+                item = ITEM_MILK_HALF;
+            }
+            Player_UpdateBottleHeld(play, this, item, PLAYER_IA_BOTTLE);
         }
         func_80832698(this, NA_SE_VO_LI_DRINK - SFX_FLAG);
     } else if ((this->av2.actionVar2 == 2) && LinkAnimation_OnFrame(&this->skelAnime, 29.0f)) {
