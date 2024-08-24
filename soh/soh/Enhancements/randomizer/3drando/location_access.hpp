@@ -4,12 +4,16 @@
 #include <vector>
 #include <list>
 
-#include "logic.hpp"
-#include "hint_list.hpp"
-#include "keys.hpp"
 #include "fill.hpp"
+#include "../randomizerTypes.h"
+#include "../context.h"
+#include "../logic.h"
 
 typedef bool (*ConditionFn)();
+
+// I hate this but every alternative I can think of right now is worse
+extern Rando::Context* randoCtx;
+extern std::shared_ptr<Rando::Logic> logic;
 
 class EventAccess {
 public:
@@ -24,11 +28,12 @@ public:
     }
 
     bool ConditionsMet() const {
-        if (Settings::Logic.Is(LOGIC_NONE) || Settings::Logic.Is(LOGIC_VANILLA)) {
+        auto ctx = Rando::Context::GetInstance();
+        if (ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_NO_LOGIC) || ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_VANILLA)) {
             return true;
-        } else if (Settings::Logic.Is(LOGIC_GLITCHLESS)) {
+        } else if (ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_GLITCHLESS)) {
             return conditions_met[0]();
-        } else if (Settings::Logic.Is(LOGIC_GLITCHED)) {
+        } else if (ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_GLITCHED)) {
             if (conditions_met[0]()) {
                 return true;
             } else if (conditions_met[1] != NULL) {
@@ -40,15 +45,15 @@ public:
 
     bool CheckConditionAtAgeTime(bool& age, bool& time) {
 
-      Logic::IsChild = false;
-      Logic::IsAdult = false;
-      Logic::AtDay   = false;
-      Logic::AtNight = false;
+      logic->IsChild = false;
+      logic->IsAdult = false;
+      logic->AtDay   = false;
+      logic->AtNight = false;
 
       time = true;
       age = true;
 
-      Logic::UpdateHelpers();
+      logic->UpdateHelpers();
       return ConditionsMet();
     }
 
@@ -65,12 +70,24 @@ private:
     std::vector<ConditionFn> conditions_met;
 };
 
+std::string CleanCheckConditionString(std::string condition);
+
+#define LOCATION(check, condition) LocationAccess(check, {[]{return condition;}}, CleanCheckConditionString(#condition))
+
 //this class is meant to hold an item location with a boolean function to determine its accessibility from a specific area
 class LocationAccess {
 public:
 
-    explicit LocationAccess(uint32_t location_, std::vector<ConditionFn> conditions_met_)
-        : location(location_) {
+    explicit LocationAccess(RandomizerCheck location_, std::vector<ConditionFn> conditions_met_)
+        : location(location_), condition_str("") {
+        conditions_met.resize(2);
+        for (size_t i = 0; i < conditions_met_.size(); i++) {
+            conditions_met[i] = conditions_met_[i];
+        }
+    }
+
+    explicit LocationAccess(RandomizerCheck location_, std::vector<ConditionFn> conditions_met_, std::string condition_str_)
+        : location(location_), condition_str(condition_str_) {
         conditions_met.resize(2);
         for (size_t i = 0; i < conditions_met_.size(); i++) {
             conditions_met[i] = conditions_met_[i];
@@ -78,11 +95,12 @@ public:
     }
 
     bool GetConditionsMet() const {
-        if (Settings::Logic.Is(LOGIC_NONE) || Settings::Logic.Is(LOGIC_VANILLA)) {
+        auto ctx = Rando::Context::GetInstance();
+        if (ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_NO_LOGIC) || ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_VANILLA)) {
             return true;
-        } else if (Settings::Logic.Is(LOGIC_GLITCHLESS)) {
+        } else if (ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_GLITCHLESS)) {
             return conditions_met[0]();
-        } else if (Settings::Logic.Is(LOGIC_GLITCHED)) {
+        } else if (ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_GLITCHED)) {
             if (conditions_met[0]()) {
                 return true;
             } else if (conditions_met[1] != NULL) {
@@ -96,39 +114,46 @@ public:
 
     bool ConditionsMet() const;
 
-    uint32_t GetLocation() const {
+    RandomizerCheck GetLocation() const {
         return location;
     }
 
-private:
-    uint32_t location;
+    std::string GetConditionStr() const {
+        return condition_str;
+    }
+
+protected:
+    RandomizerCheck location;
     std::vector<ConditionFn> conditions_met;
+    std::string condition_str;
 
     //Makes sure shop locations are buyable
     bool CanBuy() const;
 };
 
-class Entrance;
-enum class EntranceType;
+namespace Rando {
+    class Entrance;
+    enum class EntranceType;
+}
 
 class Area {
 public:
     Area();
-    Area(std::string regionName_, std::string scene_, uint32_t hintKey_,
+    Area(std::string regionName_, std::string scene_, RandomizerArea area,
          bool timePass_,
          std::vector<EventAccess> events_,
          std::vector<LocationAccess> locations_,
-         std::list<Entrance> exits_);
+         std::list<Rando::Entrance> exits_);
     ~Area();
 
     std::string regionName;
     std::string scene;
-    uint32_t     hintKey;
-    bool        timePass;
+    RandomizerArea area;
+    bool timePass;
     std::vector<EventAccess> events;
     std::vector<LocationAccess> locations;
-    std::list<Entrance> exits;
-    std::list<Entrance*> entrances;
+    std::list<Rando::Entrance> exits;
+    std::list<Rando::Entrance*> entrances;
     //^ The above exits are now stored in a list instead of a vector because
     //the entrance randomization algorithm plays around with pointers to these
     //entrances a lot. By putting the entrances in a list, we don't have to
@@ -143,13 +168,13 @@ public:
 
     bool UpdateEvents(SearchMode mode);
 
-    void AddExit(uint32_t parentKey, uint32_t newExitKey, ConditionFn condition);
+    void AddExit(RandomizerRegion parentKey, RandomizerRegion newExitKey, ConditionFn condition);
 
-    void RemoveExit(Entrance* exitToRemove);
+    void RemoveExit(Rando::Entrance* exitToRemove);
 
-    void SetAsPrimary(uint32_t exitToBePrimary);
+    void SetAsPrimary(RandomizerRegion exitToBePrimary);
 
-    Entrance* GetExit(uint32_t exit);
+    Rando::Entrance* GetExit(RandomizerRegion exit);
 
     bool Child() const {
       return childDay || childNight;
@@ -172,10 +197,14 @@ public:
     }
 
     //Check to see if an exit can be access as both ages at both times of day
-    bool CheckAllAccess(uint32_t exitKey);
+    bool CheckAllAccess(RandomizerRegion exitKey);
 
-    const HintText& GetHint() const {
-      return Hint(hintKey);
+    RandomizerArea GetArea() const{
+        return area;
+    }
+
+    void SetArea(RandomizerArea newArea) {
+        area = newArea;
     }
 
     //Here checks conditional access based on whether or not both ages have
@@ -185,21 +214,21 @@ public:
     bool HereCheck(ConditionFn condition) {
 
       //store current age variables
-      bool pastAdult = Logic::IsAdult;
-      bool pastChild = Logic::IsChild;
+      bool pastAdult = logic->IsAdult;
+      bool pastChild = logic->IsChild;
 
       //set age access as this areas ages
-      Logic::IsChild = Child();
-      Logic::IsAdult = Adult();
+      logic->IsChild = Child();
+      logic->IsAdult = Adult();
 
       //update helpers and check condition as well as having at least child or adult access
-      Logic::UpdateHelpers();
-      bool hereVal = condition() && (Logic::IsAdult || Logic::IsChild);
+      logic->UpdateHelpers();
+      bool hereVal = condition() && (logic->IsAdult || logic->IsChild);
 
       //set back age variables
-      Logic::IsChild = pastChild;
-      Logic::IsAdult = pastAdult;
-      Logic::UpdateHelpers();
+      logic->IsChild = pastChild;
+      logic->IsAdult = pastAdult;
+      logic->UpdateHelpers();
 
       return hereVal;
     }
@@ -214,19 +243,18 @@ public:
                      "Child Night: " + std::to_string(childNight) + "\t"
                      "Adult Day:   " + std::to_string(adultDay)   + "\t"
                      "Adult Night: " + std::to_string(adultNight);
-      //CitraPrint(message);
     }
 };
 
-extern std::array<Area, KEY_ENUM_MAX> areaTable;
+extern std::array<Area, RR_MAX> areaTable;
 extern std::vector<EventAccess> grottoEvents;
 
-bool Here(const AreaKey area, ConditionFn condition);
-bool CanPlantBean(const AreaKey area);
-bool BothAges(const AreaKey area);
-bool ChildCanAccess(const AreaKey area);
-bool AdultCanAccess(const AreaKey area);
-bool HasAccessTo(const AreaKey area);
+bool Here(const RandomizerRegion area, ConditionFn condition);
+bool CanPlantBean(const RandomizerRegion area);
+bool BothAges(const RandomizerRegion area);
+bool ChildCanAccess(const RandomizerRegion area);
+bool AdultCanAccess(const RandomizerRegion area);
+bool HasAccessTo(const RandomizerRegion area);
 
 #define DAY_NIGHT_CYCLE true
 #define NO_DAY_NIGHT_CYCLE false
@@ -240,9 +268,9 @@ namespace Areas {
 } //namespace Exits
 
 void  AreaTable_Init();
-Area* AreaTable(const uint32_t areaKey);
-std::vector<Entrance*> GetShuffleableEntrances(EntranceType type, bool onlyPrimary = true);
-Entrance* GetEntrance(const std::string name);
+Area* AreaTable(const RandomizerRegion areaKey);
+std::vector<Rando::Entrance*> GetShuffleableEntrances(Rando::EntranceType type, bool onlyPrimary = true);
+Rando::Entrance* GetEntrance(const std::string name);
 
 // Overworld
 void AreaTable_Init_LostWoods();

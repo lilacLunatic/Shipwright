@@ -30,7 +30,9 @@
 #include "soh/Enhancements/enhancementTypes.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/Enhancements/randomizer/randomizer_grotto.h"
+#include "soh/Enhancements/randomizer/fishsanity.h"
 #include "soh/frame_interpolation.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -6885,7 +6887,14 @@ s32 Player_ActionChange_2(Player* this, PlayState* play) {
                 uint8_t showItemCutscene = play->sceneNum == SCENE_BOMBCHU_BOWLING_ALLEY || Item_CheckObtainability(giEntry.itemId) == ITEM_NONE || IS_RANDO;
 
                 // Only skip cutscenes for drops when they're items/consumables from bushes/rocks/enemies.
-                uint8_t isDropToSkip = (interactedActor->id == ACTOR_EN_ITEM00 && interactedActor->params != 6 && interactedActor->params != 17) || 
+                uint8_t isDropToSkip = 
+                                        (
+                                            interactedActor->id == ACTOR_EN_ITEM00 &&
+                                            interactedActor->params != ITEM00_HEART_PIECE &&
+                                            interactedActor->params != ITEM00_SMALL_KEY &&
+                                            interactedActor->params != ITEM00_SOH_GIVE_ITEM_ENTRY &&
+                                            interactedActor->params != ITEM00_SOH_GIVE_ITEM_ENTRY_GI
+                                        ) ||
                                         interactedActor->id == ACTOR_EN_KAREBABA || 
                                         interactedActor->id == ACTOR_EN_DEKUBABA;
 
@@ -6930,10 +6939,6 @@ s32 Player_ActionChange_2(Player* this, PlayState* play) {
                     giEntry = this->getItemEntry;
                 }
                 EnBox* chest = (EnBox*)interactedActor;
-                if (CVarGetInteger(CVAR_ENHANCEMENT("FastChests"), 0) != 0) {
-                    giEntry.gi = -1 * abs(giEntry.gi);
-                }
-
                 if (giEntry.itemId != ITEM_NONE) {
                     if (((Item_CheckObtainability(giEntry.itemId) == ITEM_NONE) && (giEntry.field & 0x40)) ||
                         ((Item_CheckObtainability(giEntry.itemId) != ITEM_NONE) && (giEntry.field & 0x20))) {
@@ -6942,9 +6947,12 @@ s32 Player_ActionChange_2(Player* this, PlayState* play) {
                     }
                 }
 
-                func_80836898(play, this, func_8083A434);
+                if (GameInteractor_Should(VB_GIVE_ITEM_FROM_CHEST, true, chest)) {
+                    func_80836898(play, this, func_8083A434);
+                }
                 this->stateFlags1 |= PLAYER_STATE1_GETTING_ITEM | PLAYER_STATE1_ITEM_OVER_HEAD | PLAYER_STATE1_IN_CUTSCENE;
                 func_8083AE40(this, giEntry.objectId);
+
                 this->actor.world.pos.x =
                     chest->dyna.actor.world.pos.x - (Math_SinS(chest->dyna.actor.shape.rot.y) * 29.4343f);
                 this->actor.world.pos.z =
@@ -6952,8 +6960,10 @@ s32 Player_ActionChange_2(Player* this, PlayState* play) {
                 this->yaw = this->actor.shape.rot.y = chest->dyna.actor.shape.rot.y;
                 func_80832224(this);
 
-                if ((giEntry.itemId != ITEM_NONE) && (giEntry.gi >= 0) &&
-                    (Item_CheckObtainability(giEntry.itemId) == ITEM_NONE)) {
+                bool vanillaPlaySlowChestCS = (giEntry.itemId != ITEM_NONE) && (giEntry.gi >= 0) &&
+                    (Item_CheckObtainability(giEntry.itemId) == ITEM_NONE);
+
+                if (GameInteractor_Should(VB_PLAY_SLOW_CHEST_CS, vanillaPlaySlowChestCS, chest)) {
                     Player_AnimPlayOnceAdjusted(play, this, this->ageProperties->unk_98);
                     Player_AnimReplaceApplyFlags(play, this, 0x28F);
                     chest->unk_1F4 = 1;
@@ -8590,15 +8600,14 @@ void func_80842A28(PlayState* play, Player* this) {
 }
 
 void func_80842A88(PlayState* play, Player* this) {
-    if (CVarGetInteger(CVAR_CHEAT("DekuStick"), DEKU_STICK_NORMAL) == DEKU_STICK_NORMAL) {
-        Inventory_ChangeAmmo(ITEM_STICK, -1);
-        Player_UseItem(play, this, ITEM_NONE);
-    }
+    Inventory_ChangeAmmo(ITEM_STICK, -1);
+    Player_UseItem(play, this, ITEM_NONE);
 }
 
 s32 func_80842AC4(PlayState* play, Player* this) {
     if ((this->heldItemAction == PLAYER_IA_DEKU_STICK) && (this->unk_85C > 0.5f)) {
-        if (AMMO(ITEM_STICK) != 0 && CVarGetInteger(CVAR_CHEAT("DekuStick"), DEKU_STICK_NORMAL) == DEKU_STICK_NORMAL) {
+
+        if (GameInteractor_Should(VB_DEKU_STICK_BREAK, AMMO(ITEM_STICK) != 0, NULL)) {
             EffectSsStick_Spawn(play, &this->bodyPartsPos[PLAYER_BODYPART_R_HAND],
                                 this->actor.shape.rot.y + 0x8000);
             this->unk_85C = 0.5f;
@@ -10327,7 +10336,7 @@ void Player_Init(Actor* thisx, PlayState* play2) {
 
     if ((sp50 == 0) || (sp50 < -1)) {
         titleFileSize = scene->titleFile.vromEnd - scene->titleFile.vromStart;
-        if (gSaveContext.showTitleCard) {
+        if (GameInteractor_Should(VB_SHOW_TITLE_CARD, gSaveContext.showTitleCard, NULL)) {
             if ((gSaveContext.sceneSetupIndex < 4) &&
                 (gEntranceTable[((void)0, gSaveContext.entranceIndex) + ((void)0, gSaveContext.sceneSetupIndex)].field &
                  ENTRANCE_INFO_DISPLAY_TITLE_CARD_FLAG) &&
@@ -11030,37 +11039,30 @@ static Vec3f D_808547B0 = { 0.0f, 0.5f, 0.0f };
 static Color_RGBA8 D_808547BC = { 255, 255, 100, 255 };
 static Color_RGBA8 D_808547C0 = { 255, 50, 0, 0 };
 
-void func_80848A04(PlayState* play, Player* this) {
+void Player_UpdateBurningDekuStick(PlayState* play, Player* this) {
     f32 temp;
 
-    if (CVarGetInteger(CVAR_CHEAT("DekuStick"), DEKU_STICK_NORMAL) == DEKU_STICK_UNBREAKABLE_AND_ALWAYS_ON_FIRE) {
-        f32 temp2 = 1.0f;       // Secondary temporary variable to use with the alleged draw flame function
-        this->unk_860 = 200;    // Keeps the stick's flame lit
-        this->unk_85C = 1.0f;   // Ensures the stick is the proper length
-        func_8002836C(play, &this->meleeWeaponInfo[0].tip, &D_808547A4, &D_808547B0, &D_808547BC, &D_808547C0, temp2 * 200.0f,
-                      0, 8);      // I believe this draws the flame effect
-    }
-
-    if (this->unk_85C == 0.0f && CVarGetInteger(CVAR_CHEAT("DekuStick"), DEKU_STICK_NORMAL) == DEKU_STICK_NORMAL) {
-        Player_UseItem(play, this, 0xFF);
+    if (GameInteractor_Should(VB_DEKU_STICK_BURN_OUT, this->unk_85C == 0.0f, NULL)) {
+        Player_UseItem(play, this, ITEM_NONE);
         return;
     }
 
     temp = 1.0f;
-    if (DECR(this->unk_860) == 0 && CVarGetInteger(CVAR_CHEAT("DekuStick"), DEKU_STICK_NORMAL) == DEKU_STICK_NORMAL) {
+    uint8_t vanillaShouldBurnOutCondition = DECR(this->unk_860) == 0;
+    if (GameInteractor_Should(VB_DEKU_STICK_BURN_OUT, vanillaShouldBurnOutCondition, NULL)) {
         Inventory_ChangeAmmo(ITEM_STICK, -1);
         this->unk_860 = 1;
         temp = 0.0f;
         this->unk_85C = temp;
     } else if (this->unk_860 > 200) {
         temp = (210 - this->unk_860) / 10.0f;
-    } else if (this->unk_860 < 20 && CVarGetInteger(CVAR_CHEAT("DekuStick"), DEKU_STICK_NORMAL) == DEKU_STICK_NORMAL) {
+    } else if (GameInteractor_Should(VB_DEKU_STICK_BURN_DOWN, this->unk_860 < 20, NULL)) {
         temp = this->unk_860 / 20.0f;
         this->unk_85C = temp;
     }
 
-    func_8002836C(play, &this->meleeWeaponInfo[0].tip, &D_808547A4, &D_808547B0, &D_808547BC, &D_808547C0, temp * 200.0f,
-                  0, 8);
+    func_8002836C(play, &this->meleeWeaponInfo[0].tip, &D_808547A4, &D_808547B0, &D_808547BC, &D_808547C0,
+                  temp * 200.0f, 0, 8);
 }
 
 void Player_UpdateBodyShock(PlayState* play, Player* this) {
@@ -11379,8 +11381,9 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
     func_808473D4(play, this);
     func_80836BEC(this, play);
 
-    if ((this->heldItemAction == PLAYER_IA_DEKU_STICK) && ((this->unk_860 != 0) || CVarGetInteger(CVAR_CHEAT("DekuStick"), DEKU_STICK_NORMAL) == DEKU_STICK_UNBREAKABLE_AND_ALWAYS_ON_FIRE)) {
-        func_80848A04(play, this);
+    if (this->heldItemAction == PLAYER_IA_DEKU_STICK &&
+        GameInteractor_Should(VB_DEKU_STICK_BE_ON_FIRE, this->unk_860 != 0, NULL)) {
+        Player_UpdateBurningDekuStick(play, this);
     } else if ((this->heldItemAction == PLAYER_IA_FISHING_POLE) && (this->unk_860 < 0)) {
         this->unk_860++;
     }
@@ -11589,11 +11592,11 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
             CsCmdActorAction* linkActionCsCmd = play->csCtx.linkAction;
 
             if ((linkActionCsCmd != NULL) && (D_808547C4[linkActionCsCmd->action] != 0)) {
-                func_8002DF54(play, NULL, 6);
+                Player_SetCsActionWithHaltedActors(play, NULL, 6);
                 Player_ZeroSpeedXZ(this);
             } else if ((this->csAction == 0) && !(this->stateFlags2 & PLAYER_STATE2_UNDERWATER) &&
                        (play->csCtx.state != CS_STATE_UNSKIPPABLE_INIT)) {
-                func_8002DF54(play, NULL, 0x31);
+                Player_SetCsActionWithHaltedActors(play, NULL, 0x31);
                 Player_ZeroSpeedXZ(this);
             }
         }
@@ -13680,7 +13683,7 @@ s32 func_8084DFF4(PlayState* play, Player* this) {
         play->msgCtx.msgMode = MSGMODE_TEXT_DONE;
     } else {
         if (Message_GetState(&play->msgCtx) == TEXT_STATE_CLOSING) {
-            if (this->getItemId == GI_GAUNTLETS_SILVER && !IS_RANDO) {
+            if (GameInteractor_Should(VB_PLAY_NABOORU_CAPTURED_CS, this->getItemId == GI_GAUNTLETS_SILVER, NULL)) {
                 play->nextEntranceIndex = ENTR_DESERT_COLOSSUS_0;
                 play->transitionTrigger = TRANS_TRIGGER_START;
                 gSaveContext.nextCutsceneIndex = 0xFFF1;
@@ -13696,11 +13699,13 @@ s32 func_8084DFF4(PlayState* play, Player* this) {
                 this->unk_862 = 0;
             }
 
+            // #region SOH [Randomizer] TODO Better Ice trap handling?
             if (this->getItemEntry.itemId == RG_ICE_TRAP && this->getItemEntry.modIndex == MOD_RANDOMIZER) {
                 this->unk_862 = 0;
                 gSaveContext.pendingIceTrapCount++;
                 Player_SetPendingFlag(this, play);
             }
+            // #endregion
 
             this->getItemId = GI_NONE;
             this->getItemEntry = (GetItemEntry)GET_ITEM_NONE;
@@ -14094,14 +14099,41 @@ void Player_Action_8084ECA4(Player* this, PlayState* play) {
     struct_80854554* sp24;
     BottleCatchInfo* catchInfo;
     s32 temp;
-    s32 i;
+    s32 i, j;
+    FishIdentity fish;
+    GetItemEntry gi = GET_ITEM_NONE;
+    RandomizerCheck rc = RC_UNKNOWN_CHECK;
+    u8 catchId;
 
-    sp24 = &D_80854554[this->av2.actionVar2];
     func_8083721C(this);
 
+    // TODO: Rework the bottle rando code in vanilla behavior overhaul
     if (LinkAnimation_Update(play, &this->skelAnime)) {
         if (this->av1.actionVar1 != 0) {
-            if (this->av2.actionVar2 == 0) {
+            if (IS_RANDO && this->av1.actionVar1 < 0) {
+                rc = this->av2.actionVar2;
+                // Award rando item; this should only give us GI_NONE if something went wrong during the catch setup
+                gi = Randomizer_GetItemFromKnownCheck(rc, GI_NONE);
+                temp = Randomizer_GetRandomizerInfFromCheck(rc);
+                // Either we can't give an item, we can't tell if we've gotten the check, or we have definitely gotten the check
+                if (gi.getItemId == GI_NONE || temp == RAND_INF_MAX || Flags_GetRandomizerInf(temp)) {
+                    this->av1.actionVar1 = 0;
+                    if (this->interactRangeActor != NULL)
+                        this->interactRangeActor->parent = NULL;
+                }
+                // Item get cutscene hasn't played yet
+                else if((this->interactRangeActor == NULL && !(this->stateFlags1 & PLAYER_STATE1_ITEM_OVER_HEAD)) || !Actor_HasParent(this->interactRangeActor, play)) {
+                    // Can't guarantee that whatever we "caught" is actually going to still exist
+                    if (GiveItemEntryWithoutActor(play, gi)) {
+                        // have to set this flag manually to prevent interactRangeActor from being wiped out
+                        this->stateFlags1 |= PLAYER_STATE1_ITEM_OVER_HEAD;
+                        this->pendingFlag.flagID = temp;
+                        this->pendingFlag.flagType = FLAG_RANDOMIZER_INF;
+                        Flags_SetRandomizerInf(temp);
+                    }
+
+                }
+            } else if (this->av2.actionVar2 == 0) {
                 if (CVarGetInteger(CVAR_ENHANCEMENT("FastDrops"), 0)) {
                     this->av1.actionVar1 = 0;
                 } else {
@@ -14118,6 +14150,7 @@ void Player_Action_8084ECA4(Player* this, PlayState* play) {
         }
     } else {
         if (this->av1.actionVar1 == 0) {
+            sp24 = &D_80854554[this->av2.actionVar2];
             temp = this->skelAnime.curFrame - sp24->unk_08;
 
             if (temp >= 0) {
@@ -14140,11 +14173,38 @@ void Player_Action_8084ECA4(Player* this, PlayState* play) {
                             this->av1.actionVar1 = i + 1;
                             this->av2.actionVar2 = 0;
                             this->interactRangeActor->parent = &this->actor;
-                            Player_UpdateBottleHeld(play, this, catchInfo->itemId, ABS(catchInfo->itemAction));
-                            if (!CVarGetInteger(CVAR_ENHANCEMENT("FastDrops"), 0)) {
-                                this->stateFlags1 |= PLAYER_STATE1_IN_ITEM_CS | PLAYER_STATE1_IN_CUTSCENE;
-                                Player_AnimPlayOnceAdjusted(play, this, sp24->unk_04);
-                                func_80835EA4(play, 4);
+                            // TODO: this should probably be refactored a bit, maybe rehome some of this to rando instead
+                            if (IS_RANDO) {
+                                // Check if fishsanity applies for this actor
+                                if (Randomizer_GetOverworldFishShuffled()) {
+                                    fish = Randomizer_IdentifyFish(play->sceneNum, this->interactRangeActor->params);
+                                    if (fish.randomizerCheck != RC_UNKNOWN_CHECK && !Flags_GetRandomizerInf(fish.randomizerInf)) {
+                                        gi = Randomizer_GetItemFromKnownCheck(fish.randomizerCheck, GI_FISH);
+                                        rc = fish.randomizerCheck;
+                                        // check if the item is a bottle item anyway
+                                        catchInfo = NULL;
+                                        for (j = 0; j < 4; j++) {
+                                            if (D_80854A04[j].itemId == gi.itemId) {
+                                                catchInfo = &D_80854A04[j];
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Vanilla behavior/rando gave a bottle item
+                            if (!IS_RANDO || catchInfo != NULL) {
+                                Player_UpdateBottleHeld(play, this, catchInfo->itemId, ABS(catchInfo->itemAction));
+                                if (!CVarGetInteger(CVAR_ENHANCEMENT("FastDrops"), 0)) {
+                                    this->stateFlags1 |= PLAYER_STATE1_IN_ITEM_CS | PLAYER_STATE1_IN_CUTSCENE;
+                                    Player_AnimPlayOnceAdjusted(play, this, sp24->unk_04);
+                                    func_80835EA4(play, 4);
+                                }
+                            } else if (IS_RANDO && gi.itemId != ITEM_NONE) {
+                                // Non-bottle item found from rando, flag for special behavior
+                                this->av1.actionVar1 = -1;
+                                this->av2.actionVar2 = rc;
                             }
                         }
                     }
@@ -15417,7 +15477,7 @@ void func_808515A4(PlayState* play, Player* this, CsCmdActorAction* arg2) {
 void func_80851688(PlayState* play, Player* this, CsCmdActorAction* arg2) {
     if (func_8084B3CC(play, this) == 0) {
         if ((this->csAction == 0x31) && (play->csCtx.state == CS_STATE_IDLE)) {
-            func_8002DF54(play, NULL, 7);
+            Player_SetCsActionWithHaltedActors(play, NULL, 7);
             return;
         }
 
@@ -15914,6 +15974,7 @@ void func_808526EC(PlayState* play, Player* this, CsCmdActorAction* arg2) {
 void func_8085283C(PlayState* play, Player* this, CsCmdActorAction* arg2) {
     if (LinkAnimation_Update(play, &this->skelAnime)) {
         func_80852944(play, this, arg2);
+    // This is when link picks up the sword in the Ganon fight
     } else if (this->av2.actionVar2 == 0) {
         Item_Give(play, ITEM_SWORD_MASTER);
         func_80846720(play, this, 0);
@@ -15997,7 +16058,7 @@ void func_80852C50(PlayState* play, Player* this, CsCmdActorAction* arg2) {
     s32 sp24;
 
     if (play->csCtx.state == CS_STATE_UNSKIPPABLE_INIT) {
-        func_8002DF54(play, NULL, 7);
+        Player_SetCsActionWithHaltedActors(play, NULL, 7);
         this->cueId = 0;
         Player_ZeroSpeedXZ(this);
         return;
@@ -16139,7 +16200,7 @@ void Player_StartTalking(PlayState* play, Actor* actor) {
     this->exchangeItemId = EXCH_ITEM_NONE;
 
     if (actor->textId == 0xFFFF) {
-        func_8002DF54(play, actor, 1);
+        Player_SetCsActionWithHaltedActors(play, actor, 1);
         actor->flags |= ACTOR_FLAG_PLAYER_TALKED_TO;
         func_80832528(play, this);
     } else {

@@ -46,11 +46,13 @@ class CheckTrackerWindow : public Ship::GuiWindow {
 void DefaultCheckData(RandomizerCheck rc);
 void Teardown();
 void UpdateAllOrdering();
-bool IsVisibleInCheckTracker(RandomizerCheckObject rcObj);
-bool IsCheckShuffled(RandomizerCheckObject check);
+bool IsVisibleInCheckTracker(RandomizerCheck rc);
+bool IsCheckShuffled(RandomizerCheck rc);
 void InitTrackerData(bool isDebug);
 RandomizerCheckArea GetCheckArea();
 void UpdateCheck(uint32_t, RandomizerCheckTrackerData);
+uint16_t GetTotalChecks();
+uint16_t GetTotalChecksGotten();
 bool IsAreaSpoiled(RandomizerCheckArea rcArea);
 void SetAreaSpoiled(RandomizerCheckArea rcArea);
 } // namespace CheckTracker

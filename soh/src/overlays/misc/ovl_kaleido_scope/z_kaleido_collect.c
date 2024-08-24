@@ -12,6 +12,9 @@ void KaleidoScope_DrawQuestStatus(PlayState* play, GraphicsContext* gfxCtx) {
     } else if (CVarGetInteger(CVAR_COSMETIC("DefaultColorScheme"), COLORSCHEME_N64) == COLORSCHEME_GAMECUBE) {
         aButtonColor = (Color_RGB8){ 80, 255, 150 };
     }
+    if (IS_RANDO && !Flags_GetRandomizerInf(RAND_INF_HAS_OCARINA_A)) {
+        aButtonColor = (Color_RGB8){ 191, 191, 191 };
+    }
 
     Color_RGB8 cButtonsColor = {255, 255, 50};
     if (CVarGetInteger(CVAR_COSMETIC("HUD.CButtons.Changed"), 0)) {
@@ -21,17 +24,32 @@ void KaleidoScope_DrawQuestStatus(PlayState* play, GraphicsContext* gfxCtx) {
     if (CVarGetInteger(CVAR_COSMETIC("HUD.CUpButton.Changed"), 0)) {
         cUpButtonColor = CVarGetColor24(CVAR_COSMETIC("HUD.CUpButton.Value"), cUpButtonColor);
     }
+    if (IS_RANDO && !Flags_GetRandomizerInf(RAND_INF_HAS_OCARINA_C_UP)) {
+        cUpButtonColor = (Color_RGB8){ 191, 191, 191 };
+    }
+
     Color_RGB8 cDownButtonColor = cButtonsColor;
     if (CVarGetInteger(CVAR_COSMETIC("HUD.CDownButton.Changed"), 0)) {
         cDownButtonColor = CVarGetColor24(CVAR_COSMETIC("HUD.CDownButton.Value"), cDownButtonColor);
     }
+    if (IS_RANDO && !Flags_GetRandomizerInf(RAND_INF_HAS_OCARINA_C_DOWN)) {
+        cDownButtonColor = (Color_RGB8){ 191, 191, 191 };
+    }
+
     Color_RGB8 cLeftButtonColor = cButtonsColor;
     if (CVarGetInteger(CVAR_COSMETIC("HUD.CLeftButton.Changed"), 0)) {
         cLeftButtonColor = CVarGetColor24(CVAR_COSMETIC("HUD.CLeftButton.Value"), cLeftButtonColor);
     }
+    if (IS_RANDO && !Flags_GetRandomizerInf(RAND_INF_HAS_OCARINA_C_LEFT)) {
+        cLeftButtonColor = (Color_RGB8){ 191, 191, 191 };
+    }
+
     Color_RGB8 cRightButtonColor = cButtonsColor;
     if (CVarGetInteger(CVAR_COSMETIC("HUD.CRightButton.Changed"), 0)) {
         cRightButtonColor = CVarGetColor24(CVAR_COSMETIC("HUD.CRightButton.Value"), cRightButtonColor);
+    }
+    if (IS_RANDO && !Flags_GetRandomizerInf(RAND_INF_HAS_OCARINA_C_RIGHT)) {
+        cRightButtonColor = (Color_RGB8){ 191, 191, 191 };
     }
 
     static s16 D_8082A070[][4] = {

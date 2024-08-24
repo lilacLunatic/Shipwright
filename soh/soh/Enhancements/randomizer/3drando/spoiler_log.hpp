@@ -4,6 +4,7 @@
 #include <string>
 #include <string_view>
 #include <cstdint>
+#include "../randomizerTypes.h"
 
 using RandomizerHash = std::array<std::string, 5>;
 
@@ -17,20 +18,16 @@ typedef enum {
     SPOILER_CHK_ITEM_GET_INF,
     SPOILER_CHK_EVENT_CHK_INF,
     SPOILER_CHK_INF_TABLE,
-    SPOILER_CHK_COW,
+    SPOILER_CHK_FISH,
     SPOILER_CHK_MINIGAME,
-    SPOILER_CHK_SCRUB,
-    SPOILER_CHK_GERUDO_MEMBERSHIP_CARD,
     SPOILER_CHK_POE_POINTS,
     SPOILER_CHK_SHOP_ITEM,
-    SPOILER_CHK_MAGIC_BEANS,
     SPOILER_CHK_MASTER_SWORD,
-    SPOILER_CHK_MERCHANT,
     SPOILER_CHK_GRAVEDIGGER,
     SPOILER_CHK_RANDOMIZER_INF,
 } SpoilerCollectionCheckType;
 
-// Location groups for checks, used to group the checks by logical location
+// GetLocation groups for checks, used to group the checks by logical location
 typedef enum {
     GROUP_NO_GROUP,
     GROUP_KOKIRI_FOREST,              // 0x55, 0x28
@@ -74,7 +71,7 @@ typedef enum {
 } SpoilerItemRevealType;
 
 #define SPOILER_SPHERES_MAX 50
-#define SPOILER_ITEMS_MAX 512
+#define SPOILER_ITEMS_MAX RC_MAX
 #define SPOILER_STRING_DATA_SIZE 16384
 
 typedef struct {
@@ -111,5 +108,5 @@ const RandomizerHash& GetRandomizerHash();
 
 void WriteIngameSpoilerLog();
 
-const char* SpoilerLog_Write(int language);
+const char* SpoilerLog_Write();
 const SpoilerData& GetSpoilerData();

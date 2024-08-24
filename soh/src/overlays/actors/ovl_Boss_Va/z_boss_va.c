@@ -652,9 +652,12 @@ void BossVa_Init(Actor* thisx, PlayState* play2) {
                 this->actor.colChkInfo.damageTable = sDamageTable;
                 sPhase2Timer = 0xFFFF;
                 if (Flags_GetEventChkInf(EVENTCHKINF_BEGAN_BARINA_BATTLE)) {
+                    if (Randomizer_GetSettingValue(RSK_SHUFFLE_BOSS_SOULS) && !Flags_GetRandomizerInf(RAND_INF_BARINADE_SOUL)) {
+                        sCsState = BOSSVA_BATTLE;
+                    } else {
                     sCsState = INTRO_CALL_BARI;
                     sDoorState = 100;
-                    func_8002DF54(play, &this->actor, 1);
+                    Player_SetCsActionWithHaltedActors(play, &this->actor, 1);
                     play->envCtx.screenFillColor[0] = 0xDC;
                     play->envCtx.screenFillColor[1] = 0xDC;
                     play->envCtx.screenFillColor[2] = 0xBE;
@@ -682,6 +685,7 @@ void BossVa_Init(Actor* thisx, PlayState* play2) {
                     }
 
                     sCameraAtMaxVel = sCameraEyeMaxVel = sZeroVec;
+                    }
 
                 } else {
                     sCsState = INTRO_START;
@@ -795,7 +799,7 @@ void BossVa_BodyIntro(BossVa* this, PlayState* play) {
             play->envCtx.screenFillColor[1] = 0xDC;
             play->envCtx.screenFillColor[2] = 0xBE;
             play->envCtx.screenFillColor[3] = 0xD2;
-            func_8002DF54(play, &this->actor, 8);
+            Player_SetCsActionWithHaltedActors(play, &this->actor, 8);
             player->actor.world.rot.y = player->actor.shape.rot.y = 0x7FFF;
             sCsState++;
             break;
@@ -823,7 +827,7 @@ void BossVa_BodyIntro(BossVa* this, PlayState* play) {
         case INTRO_CLOSE_DOOR:
             this->timer--;
             if (this->timer == 0) {
-                func_8002DF54(play, &this->actor, 2);
+                Player_SetCsActionWithHaltedActors(play, &this->actor, 2);
                 sCsState++;
                 this->timer = 30;
             }
@@ -838,7 +842,7 @@ void BossVa_BodyIntro(BossVa* this, PlayState* play) {
             }
             break;
         case INTRO_CRACKLE:
-            func_8002DF54(play, &this->actor, 1);
+            Player_SetCsActionWithHaltedActors(play, &this->actor, 1);
             sCsState++;
             break;
         case INTRO_SPAWN_BARI:
@@ -969,7 +973,7 @@ void BossVa_BodyIntro(BossVa* this, PlayState* play) {
             sCameraAtMaxVel = sCameraEyeMaxVel;
             if (this->timer >= 45000) {
                 play->envCtx.unk_BF = 1;
-                func_8002DF54(play, &this->actor, 8);
+                Player_SetCsActionWithHaltedActors(play, &this->actor, 8);
             } else if (this->timer >= 35000) {
                 Audio_QueueSeqCmd(SEQ_PLAYER_BGM_MAIN << 24 | NA_BGM_BOSS);
             }
@@ -1026,7 +1030,7 @@ void BossVa_BodyIntro(BossVa* this, PlayState* play) {
                 sCsCamera = 0;
                 func_80064534(play, &play->csCtx);
                 Play_ChangeCameraStatus(play, MAIN_CAM, CAM_STAT_ACTIVE);
-                func_8002DF54(play, &this->actor, 7);
+                Player_SetCsActionWithHaltedActors(play, &this->actor, 7);
                 sCsState++;
                 Flags_SetEventChkInf(EVENTCHKINF_BEGAN_BARINA_BATTLE);
                 player->actor.shape.rot.y = player->actor.world.rot.y = this->actor.yawTowardsPlayer + 0x8000;
@@ -1546,7 +1550,7 @@ void BossVa_BodyDeath(BossVa* this, PlayState* play) {
 
     switch (sCsState) {
         case DEATH_START:
-            func_8002DF54(play, &this->actor, 1);
+            Player_SetCsActionWithHaltedActors(play, &this->actor, 1);
             func_80064520(play, &play->csCtx);
             sCsCamera = Play_CreateSubCamera(play);
             Play_ChangeCameraStatus(play, MAIN_CAM, CAM_STAT_WAIT);
@@ -1609,7 +1613,7 @@ void BossVa_BodyDeath(BossVa* this, PlayState* play) {
                                                   0x28);
                 this->onCeiling = 2; // Not used by body
                 BossVa_SetDeathEnv(play);
-                func_8002DF54(play, &this->actor, 8);
+                Player_SetCsActionWithHaltedActors(play, &this->actor, 8);
             }
             break;
         case DEATH_CORE_BURST:
@@ -1650,7 +1654,7 @@ void BossVa_BodyDeath(BossVa* this, PlayState* play) {
 
                 camera->at = sCameraAt;
 
-                func_8002DF54(play, &this->actor, 7);
+                Player_SetCsActionWithHaltedActors(play, &this->actor, 7);
                 sCsState++;
 
                 if (!IS_BOSS_RUSH) {
@@ -2440,7 +2444,7 @@ void BossVa_BariIntro(BossVa* this, PlayState* play) {
     switch (sCsState) {
         case INTRO_LOOK_BARI:
             if (this->actor.params == BOSSVA_BARI_UPPER_1) {
-                func_8002DF54(play, &this->actor, 1);
+                Player_SetCsActionWithHaltedActors(play, &this->actor, 1);
                 if (Math_SmoothStepToF(&this->actor.world.pos.y, 60.0f, 0.3f, 1.0f, 0.15f) == 0.0f) {
                     this->timer--;
                     if (this->timer == 0) {

@@ -8,7 +8,6 @@
 #include "menu.hpp"
 #include "playthrough.hpp"
 #include "randomizer.hpp"
-#include "settings.hpp"
 #include "spoiler_log.hpp"
 #include "location_access.hpp"
 #include <spdlog/spdlog.h>
@@ -19,68 +18,52 @@ namespace {
 bool seedChanged;
 uint16_t pastSeedLength;
 std::vector<std::string> presetEntries;
-Option* currentSetting;
+Rando::Option* currentSetting;
 } // namespace
 
-static void RestoreOverrides() {
-    if (Settings::Logic.Is(LOGIC_VANILLA)) {
-        for (auto overridePair : Settings::vanillaLogicOverrides) {
-            overridePair.first->RestoreDelayedOption();
-        }
-    }
-}
-
-std::string GenerateRandomizer(std::unordered_map<RandomizerSettingKey, uint8_t> cvarSettings, std::set<RandomizerCheck> excludedLocations, std::set<RandomizerTrick> enabledTricks,
-    std::string seedString) {
+bool GenerateRandomizer(std::set<RandomizerCheck> excludedLocations, std::set<RandomizerTrick> enabledTricks,
+    std::string seedInput) {
+    const auto ctx = Rando::Context::GetInstance();
 
     srand(time(NULL));
     // if a blank seed was entered, make a random one
-    if (seedString.empty()) {
-        seedString = std::to_string(rand() % 0xFFFFFFFF);
-    } else if (seedString.rfind("seed_testing_count", 0) == 0 && seedString.length() > 18) {
+    if (seedInput.empty()) {
+        seedInput = std::to_string(rand() % 0xFFFFFFFF);
+    } else if (seedInput.rfind("seed_testing_count", 0) == 0 && seedInput.length() > 18) {
         int count;
         try {
-            count = std::stoi(seedString.substr(18), nullptr);
+            count = std::stoi(seedInput.substr(18), nullptr);
         } catch (std::invalid_argument &e) {
             count = 1;
         } catch (std::out_of_range &e) {
             count = 1;
         }
-        Playthrough::Playthrough_Repeat(cvarSettings, excludedLocations, enabledTricks, count);
-        return "";
+        Playthrough::Playthrough_Repeat(excludedLocations, enabledTricks, count);
+        return false; // TODO: Not sure if this is correct but I don't think we support this functionality yet anyway.
     }
 
-    Settings::seedString = seedString;
-    uint32_t seedHash = boost::hash_32<std::string>{}(Settings::seedString);
-    Settings::seed = seedHash & 0xFFFFFFFF;
+    ctx->GetSettings()->SetSeedString(seedInput);
+    uint32_t seedHash = boost::hash_32<std::string>{}(ctx->GetSettings()->GetSeedString());
+    ctx->GetSettings()->SetSeed(seedHash & 0xFFFFFFFF);
 
-    int ret = Playthrough::Playthrough_Init(Settings::seed, cvarSettings, excludedLocations, enabledTricks);
+    ctx->ClearItemLocations();
+    int ret = Playthrough::Playthrough_Init(ctx->GetSettings()->GetSeed(), excludedLocations, enabledTricks);
     if (ret < 0) {
         if (ret == -1) { // Failed to generate after 5 tries
-            printf("\n\nFailed to generate after 5 tries.\nPress B to go back to the menu.\nA different seed might be "
-                   "successful.");
-            SPDLOG_DEBUG("\nRANDOMIZATION FAILED COMPLETELY. PLZ FIX\n");
-            RestoreOverrides();
-            return "";
+            SPDLOG_ERROR("Failed to generate after 5 tries.");
+            return false;
         } else {
-            printf("\n\nError %d with fill.\nPress Select to exit or B to go back to the menu.\n", ret);
-            RestoreOverrides();
-            return "";
+            SPDLOG_ERROR("Error {} with fill.", ret);
+            return false;
         }
     }
 
-    RestoreOverrides();
-
-    std::ostringstream fileNameStream;
-    for (int i = 0; i < Settings::hashIconIndexes.size(); i++) {
-        if (i) {
-            fileNameStream << '-';
+    // Restore settings that were set to a specific value for vanilla logic
+    if (ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_VANILLA)) {
+        for (Rando::Option* setting : ctx->GetSettings()->VanillaLogicDefaults) {
+            setting->RestoreDelayedOption();
         }
-        if (Settings::hashIconIndexes[i] < 10) {
-            fileNameStream << '0';
-        }
-        fileNameStream << std::to_string(Settings::hashIconIndexes[i]);
+        ctx->GetOption(RSK_KEYSANITY).RestoreDelayedOption();
     }
-    std::string fileName = fileNameStream.str();
-    return "./Randomizer/" + fileName + ".json";
+    return true;
 }

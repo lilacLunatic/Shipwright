@@ -6,9 +6,15 @@
 #include "soh/Enhancements/boss-rush/BossRushTypes.h"
 #include "soh/Enhancements/enhancementTypes.h"
 #include "soh/Enhancements/randomizer/3drando/random.hpp"
+#include "soh/Enhancements/randomizer/fishsanity.h"
 #include "soh/Enhancements/cosmetics/authenticGfxPatches.h"
 #include <soh/Enhancements/item-tables/ItemTableManager.h>
 #include "soh/Enhancements/nametag.h"
+#include "soh/Enhancements/timesaver_hook_handlers.h"
+#include "soh/Enhancements/TimeSavers/TimeSavers.h"
+#include "soh/Enhancements/cheat_hook_handlers.h"
+#include "soh/Enhancements/randomizer/hook_handlers.h"
+#include "objects/object_gi_compass/object_gi_compass.h"
 
 #include "src/overlays/actors/ovl_En_Bb/z_en_bb.h"
 #include "src/overlays/actors/ovl_En_Dekubaba/z_en_dekubaba.h"
@@ -23,7 +29,11 @@
 #include "src/overlays/actors/ovl_En_Tp/z_en_tp.h"
 #include "src/overlays/actors/ovl_En_Firefly/z_en_firefly.h"
 #include "src/overlays/actors/ovl_En_Xc/z_en_xc.h"
+#include "src/overlays/actors/ovl_Fishing/z_fishing.h"
 #include "src/overlays/actors/ovl_Obj_Switch/z_obj_switch.h"
+#include "src/overlays/actors/ovl_Door_Shutter/z_door_shutter.h"
+#include "src/overlays/actors/ovl_Door_Gerudo/z_door_gerudo.h"
+#include "src/overlays/actors/ovl_En_Door/z_en_door.h"
 #include "objects/object_link_boy/object_link_boy.h"
 #include "objects/object_link_child/object_link_child.h"
 
@@ -66,7 +76,7 @@ void ReloadSceneTogglingLinkAge() {
 void RegisterInfiniteMoney() {
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameFrameUpdate>([]() {
         if (!GameInteractor::IsSaveLoaded(true)) return;
-        if (CVarGetInteger(CVAR_CHEAT("InfiniteMoney"), 0) != 0) {
+        if (CVarGetInteger(CVAR_CHEAT("InfiniteMoney"), 0) != 0 && (!IS_RANDO || Flags_GetRandomizerInf(RAND_INF_HAS_WALLET))) {
             if (gSaveContext.rupees < CUR_CAPACITY(UPG_WALLET)) {
                 gSaveContext.rupees = CUR_CAPACITY(UPG_WALLET);
             }
@@ -335,7 +345,7 @@ void AutoSave(GetItemEntry itemEntry) {
                     case ITEM_BOMBCHU:
                     case ITEM_BOMBCHUS_5:
                     case ITEM_BOMBCHUS_20:
-                        if (!CVarGetInteger(CVAR_ENHANCEMENT("BombchuDrops"), 0)) {
+                        if (!CVarGetInteger(CVAR_ENHANCEMENT("EnableBombchuDrops"), 0)) {
                             performSave = true;
                         }
                         break;
@@ -428,7 +438,7 @@ void UpdatePermanentHeartLossState() {
     if (!CVarGetInteger(CVAR_ENHANCEMENT("PermanentHeartLoss"), 0) && hasAffectedHealth) {
         uint8_t heartContainers = gSaveContext.sohStats.heartContainers; // each worth 16 health
         uint8_t heartPieces = gSaveContext.sohStats.heartPieces; // each worth 4 health, but only in groups of 4
-        uint8_t startingHealth = 16 * 3;
+        uint8_t startingHealth = 16 * (IS_RANDO ? (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_STARTING_HEARTS) + 1) : 3);
 
 
         uint8_t newCapacity = startingHealth + (heartContainers * 16) + ((heartPieces - (heartPieces % 4)) * 4);
@@ -683,7 +693,8 @@ void UpdateMirrorModeState(int32_t sceneNum) {
                         (sceneNum == SCENE_GANON_BOSS);
 
     if (mirroredMode == MIRRORED_WORLD_RANDOM_SEEDED || mirroredMode == MIRRORED_WORLD_DUNGEONS_RANDOM_SEEDED) {
-        uint32_t seed = sceneNum + (IS_RANDO ? gSaveContext.finalSeed : gSaveContext.sohStats.fileCreatedAt);
+        uint32_t seed = sceneNum + (IS_RANDO ? Rando::Context::GetInstance()->GetSettings()->GetSeed()
+                                             : gSaveContext.sohStats.fileCreatedAt);
         Random_Init(seed);
     }
 
@@ -1157,9 +1168,7 @@ void RegisterAltTrapTypes() {
 void RegisterRandomizerSheikSpawn() {
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneSpawnActors>([]() {
         if (!gPlayState) return;
-        bool canSheik = (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_TRIAL_COUNT) != RO_GANONS_TRIALS_SKIP && 
-          OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_LIGHT_ARROWS_HINT));
-        if (!IS_RANDO || !LINK_IS_ADULT || !canSheik) return;
+        if (!IS_RANDO || !LINK_IS_ADULT || !OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHEIK_LA_HINT)) return;
         switch (gPlayState->sceneNum) {
             case SCENE_TEMPLE_OF_TIME:
                 if (gPlayState->roomCtx.curRoom.num == 1) {
@@ -1172,6 +1181,63 @@ void RegisterRandomizerSheikSpawn() {
                     }
                 break;
             default: break;
+        }
+    });
+}
+
+//Boss souls require an additional item (represented by a RAND_INF) to spawn a boss in a particular lair
+void RegisterBossSouls() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnActorInit>([](void* actor) {
+        if (!gPlayState) return;
+        if (!IS_RANDO || !(OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_BOSS_SOULS))) return;
+        RandomizerInf rand_inf = RAND_INF_MAX;
+        Actor* actual = (Actor*)actor;
+        switch (gPlayState->sceneNum){
+            case SCENE_DEKU_TREE_BOSS:
+                rand_inf = RAND_INF_GOHMA_SOUL;
+                break;
+            case SCENE_DODONGOS_CAVERN_BOSS:
+                rand_inf = RAND_INF_KING_DODONGO_SOUL;
+                break;
+            case SCENE_JABU_JABU_BOSS:
+                rand_inf = RAND_INF_BARINADE_SOUL;
+                break;
+            case SCENE_FOREST_TEMPLE_BOSS:
+                rand_inf = RAND_INF_PHANTOM_GANON_SOUL;
+                break;
+            case SCENE_FIRE_TEMPLE_BOSS:
+                rand_inf = RAND_INF_VOLVAGIA_SOUL;
+                break;
+            case SCENE_WATER_TEMPLE_BOSS:
+                rand_inf = RAND_INF_MORPHA_SOUL;
+                break;
+            case SCENE_SHADOW_TEMPLE_BOSS:
+                rand_inf = RAND_INF_BONGO_BONGO_SOUL;
+                break;
+            case SCENE_SPIRIT_TEMPLE_BOSS:
+                rand_inf = RAND_INF_TWINROVA_SOUL;
+                break;
+            case SCENE_GANONDORF_BOSS:
+            case SCENE_GANON_BOSS:
+                if (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_BOSS_SOULS) == RO_BOSS_SOULS_ON_PLUS_GANON) {
+                    rand_inf = RAND_INF_GANON_SOUL;
+                }
+                break;
+            default: break;
+        }
+
+        //Deletes all actors in the boss category if the soul isn't found.
+        //Some actors, like Dark Link, Arwings, and Zora's Sapphire...?, are in this category despite not being actual bosses,
+        //so ignore any "boss" if `rand_inf` doesn't change from RAND_INF_MAX.
+        if (rand_inf != RAND_INF_MAX) {
+            if (!Flags_GetRandomizerInf(rand_inf) && actual->category == ACTORCAT_BOSS) {
+                Actor_Delete(&gPlayState->actorCtx, actual, gPlayState);
+            }
+            //Special case for Phantom Ganon's horse (and fake), as they're considered "background actors",
+            //but still control the boss fight flow.
+            if (!Flags_GetRandomizerInf(RAND_INF_PHANTOM_GANON_SOUL) && actual->id == ACTOR_EN_FHG) {
+                Actor_Delete(&gPlayState->actorCtx, actual, gPlayState);
+            }
         }
     });
 }
@@ -1394,7 +1460,329 @@ void RegisterPauseMenuHooks() {
     });
 }
 
+//from z_player.c
+typedef struct {
+    /* 0x00 */ Vec3f pos;
+    /* 0x0C */ s16 yaw;
+} SpecialRespawnInfo; // size = 0x10
+
+//special respawns used when voided out without swim to prevent infinite loops
+std::map<s32, SpecialRespawnInfo> swimSpecialRespawnInfo = {
+    {
+        ENTR_ZORAS_RIVER_3,//hf to zr in water
+        { { -1455.443, -20, 1384.826 }, 28761 }
+    },
+    {
+        ENTR_HYRULE_FIELD_14,//zr to hf in water
+        { { 5830.209, -92.16, 3925.911 }, -20025 }
+    },
+    {
+        ENTR_LOST_WOODS_7,//zr to lw
+        { { 1978.718, -36.908, -855 }, -16384 }
+    },
+    {
+        ENTR_ZORAS_RIVER_4,//lw to zr
+        { { 4082.366, 860.442, -1018.949 }, -32768 }
+    },
+    {
+        ENTR_LAKE_HYLIA_1,//gv to lh
+        { { -3276.416, -1033, 2908.421 }, 11228 }
+    },
+    {
+        ENTR_WATER_TEMPLE_0,//lh to water temple
+        { { -182, 780, 759.5 }, -32768 }
+    },
+    {
+        ENTR_LAKE_HYLIA_2,//water temple to lh
+        { { -955.028, -1306.9, 6768.954 }, -32768 }
+    },
+    {
+        ENTR_ZORAS_DOMAIN_4,//lh to zd
+        { { -109.86, 11.396, -9.933 }, -29131 }
+    },
+    {
+        ENTR_LAKE_HYLIA_7,//zd to lh
+        { { -912, -1326.967, 3391 }, 0 }
+    },
+    {
+        ENTR_GERUDO_VALLEY_1,//caught by gerudos as child
+        { { -424, -2051, -74 }, 16384 }
+    }
+};
+
+void RegisterNoSwim() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (
+            IS_RANDO &&
+            (GET_PLAYER(gPlayState)->stateFlags1 & PLAYER_STATE1_IN_WATER) &&
+            !Flags_GetRandomizerInf(RAND_INF_CAN_SWIM) &&
+            CUR_EQUIP_VALUE(EQUIP_TYPE_BOOTS) != EQUIP_VALUE_BOOTS_IRON
+        ) {
+            //if you void out in water temple without swim you get instantly kicked out to prevent softlocks
+            if (gPlayState->sceneNum == SCENE_WATER_TEMPLE) {
+                GameInteractor::RawAction::TeleportPlayer(Entrance_OverrideNextIndex(ENTR_LAKE_HYLIA_2));//lake hylia from water temple
+                return;
+            }
+
+            if (swimSpecialRespawnInfo.find(gSaveContext.entranceIndex) != swimSpecialRespawnInfo.end()) {
+                SpecialRespawnInfo* respawnInfo = &swimSpecialRespawnInfo.at(gSaveContext.entranceIndex);
+
+                Play_SetupRespawnPoint(gPlayState, RESPAWN_MODE_DOWN, 0xDFF);
+                gSaveContext.respawn[RESPAWN_MODE_DOWN].pos = respawnInfo->pos;
+                gSaveContext.respawn[RESPAWN_MODE_DOWN].yaw = respawnInfo->yaw;
+            }
+
+            Play_TriggerVoidOut(gPlayState);
+        }
+    });
+}
+
+void RegisterNoWallet() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameFrameUpdate>([]() {
+        if (IS_RANDO && !Flags_GetRandomizerInf(RAND_INF_HAS_WALLET)) {
+            gSaveContext.rupees = 0;
+        }
+    });
+}
+
+void RegisterFishsanity() {
+    static s16 fishGroupCounter = 0;
+
+    // Initialization on load
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnLoadGame>([](int32_t fileNum) {
+        if (!IS_RANDO) {
+            return;
+        }
+        OTRGlobals::Instance->gRandoContext->GetFishsanity()->InitializeFromSave();
+    });
+
+    // Initialize actors for fishsanity
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnActorInit>([](void* refActor) {
+        if (!IS_RANDO) {
+            return;
+        }
+
+        Actor* actor = static_cast<Actor*>(refActor);
+        auto fs = OTRGlobals::Instance->gRandoContext->GetFishsanity();
+        FishIdentity fish;
+
+        if (actor->id == ACTOR_EN_FISH && fs->GetOverworldFishShuffled()) {
+            // Set fish ID for ZD fish
+            if (gPlayState->sceneNum == SCENE_ZORAS_DOMAIN && actor->params == -1) {
+                actor->params ^= fishGroupCounter++;
+            }
+
+            fish = OTRGlobals::Instance->gRandomizer->IdentifyFish(gPlayState->sceneNum, actor->params);
+            // Create effect for uncaught fish
+            if (Rando::Fishsanity::IsFish(&fish) && !Flags_GetRandomizerInf(fish.randomizerInf)) {
+                actor->shape.shadowDraw = Fishsanity_DrawEffShadow;
+            }
+            return;
+        }
+
+        if (actor->id == ACTOR_FISHING && gPlayState->sceneNum == SCENE_FISHING_POND && actor->params >= 100 &&
+            actor->params <= 117 && fs->GetPondFishShuffled()) {
+            // Initialize pond fish for fishsanity
+            // Initialize fishsanity metadata on this actor
+            Fishing* fishActor = static_cast<Fishing*>(refActor);
+            fishActor->fishsanityParams = actor->params;
+            fish = OTRGlobals::Instance->gRandomizer->IdentifyFish(gPlayState->sceneNum, actor->params);
+
+            // With every pond fish shuffled, caught fish will not spawn unless all fish have been caught.
+            if (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_FISHSANITY_POND_COUNT) > 16 &&
+                !fs->GetPondCleared()) {
+                // Create effect for uncaught fish
+                if (!Flags_GetRandomizerInf(fish.randomizerInf)) {
+                    actor->shape.shadowDraw = Fishsanity_DrawEffShadow;
+                }
+            }
+        }
+
+    });
+
+    // Update fishsanity when a fish is caught
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnFlagSet>([](int16_t flagType, int16_t flag) {
+        if (!IS_RANDO || flagType != FLAG_RANDOMIZER_INF) {
+            return;
+        }
+        RandomizerCheck rc = OTRGlobals::Instance->gRandomizer->GetCheckFromRandomizerInf((RandomizerInf)flag);
+        FishsanityCheckType fsType = Rando::Fishsanity::GetCheckType(rc);
+        if (fsType == FSC_NONE) {
+            return;
+        }
+
+        // When a pond fish is caught, advance the pond.
+        if (fsType == FSC_POND) {
+            OTRGlobals::Instance->gRandoContext->GetFishsanity()->AdvancePond();
+        }
+    });
+
+    // Award fishing pond checks
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (!IS_RANDO || GameInteractor::IsGameplayPaused() || !gPlayState) {
+            return;
+        }
+
+        Player* player = GET_PLAYER(gPlayState);
+        if (Player_InBlockingCsMode(gPlayState, player)) {
+            return;
+        }
+
+        auto fs = OTRGlobals::Instance->gRandoContext->GetFishsanity();
+        if (!fs->GetPondFishShuffled()) {
+            return;
+        }
+
+        FishIdentity pending = fs->GetPendingFish();
+        if (!Rando::Fishsanity::IsFish(&pending)) { // No fish currently pending
+            return;
+        }
+
+        // Award fish
+        GetItemEntry gi = OTRGlobals::Instance->gRandomizer->GetItemFromKnownCheck(pending.randomizerCheck, GI_NONE);
+        Flags_SetRandomizerInf(pending.randomizerInf);
+        GiveItemEntryWithoutActor(gPlayState, gi);
+        fs->SetPendingFish(NULL);
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnActorUpdate>([](void* refActor) {
+        if (!IS_RANDO || (gPlayState->sceneNum != SCENE_GROTTOS && gPlayState->sceneNum != SCENE_ZORAS_DOMAIN && gPlayState->sceneNum != SCENE_FISHING_POND)) {
+            return;
+        }
+
+        Actor* actor = static_cast<Actor*>(refActor);
+        auto fs = OTRGlobals::Instance->gRandoContext->GetFishsanity();
+
+        // Detect fish catch
+        if (actor->id == ACTOR_FISHING && fs->GetPondFishShuffled()) {
+            Fishing* fish = static_cast<Fishing*>(refActor);
+
+            // State 6 -> Fish caught and hoisted
+            FishIdentity pending = fs->GetPendingFish();
+            if (fish->fishState == 6 && !Rando::Fishsanity::IsFish(&pending)) {
+                pending = OTRGlobals::Instance->gRandomizer->IdentifyFish(gPlayState->sceneNum, fish->fishsanityParams);
+                if (!Flags_GetRandomizerInf(pending.randomizerInf)) {
+                    fs->SetPendingFish(&pending);
+                    // Remove uncaught effect
+                    if (actor->shape.shadowDraw != NULL) {
+                        actor->shape.shadowDraw = NULL;
+                    }
+                }
+            }
+        }
+
+        if (actor->id == ACTOR_EN_FISH && fs->GetOverworldFishShuffled()) {
+            FishIdentity fish = OTRGlobals::Instance->gRandomizer->IdentifyFish(gPlayState->sceneNum, actor->params);
+            if (Rando::Fishsanity::IsFish(&fish) && Flags_GetRandomizerInf(fish.randomizerInf)) {
+                // Remove uncaught effect
+                if (actor->shape.shadowDraw != NULL) {
+                    actor->shape.shadowDraw = NULL;
+                }
+            }
+        }
+
+        // Reset fish group counter when the group gets culled
+        if (actor->id == ACTOR_OBJ_MURE && gPlayState->sceneNum == SCENE_ZORAS_DOMAIN && fishGroupCounter > 0 &&
+            !(actor->flags & ACTOR_FLAG_UPDATE_WHILE_CULLED) && fs->GetOverworldFishShuffled()) {
+            fishGroupCounter = 0;
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneInit>([](int16_t sceneNum) {
+        if (!IS_RANDO || sceneNum != SCENE_ZORAS_DOMAIN)
+            return;
+        fishGroupCounter = 0;
+    });
+}
+
+void RegisterInfiniteUpgrades() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameFrameUpdate>([]() {
+        if (!IS_RANDO) {
+            return;
+        }
+
+        if (Flags_GetRandomizerInf(RAND_INF_HAS_INFINITE_QUIVER)) {
+            AMMO(ITEM_BOW) = CUR_CAPACITY(UPG_QUIVER);
+        }
+
+        if (Flags_GetRandomizerInf(RAND_INF_HAS_INFINITE_BOMB_BAG)) {
+            AMMO(ITEM_BOMB) = CUR_CAPACITY(UPG_BOMB_BAG);
+        }
+
+        if (Flags_GetRandomizerInf(RAND_INF_HAS_INFINITE_BULLET_BAG)) {
+            AMMO(ITEM_SLINGSHOT) = CUR_CAPACITY(UPG_BULLET_BAG);
+        }
+
+        if (Flags_GetRandomizerInf(RAND_INF_HAS_INFINITE_STICK_UPGRADE)) {
+            AMMO(ITEM_STICK) = CUR_CAPACITY(UPG_STICKS);
+        }
+
+        if (Flags_GetRandomizerInf(RAND_INF_HAS_INFINITE_NUT_UPGRADE)) {
+            AMMO(ITEM_NUT) = CUR_CAPACITY(UPG_NUTS);
+        }
+
+        if (Flags_GetRandomizerInf(RAND_INF_HAS_INFINITE_MAGIC_METER)) {
+            gSaveContext.magic = gSaveContext.magicCapacity;
+        }
+
+        if (Flags_GetRandomizerInf(RAND_INF_HAS_INFINITE_BOMBCHUS)) {
+            AMMO(ITEM_BOMBCHU) = 50;
+        }
+
+        if (Flags_GetRandomizerInf(RAND_INF_HAS_INFINITE_MONEY)) {
+            gSaveContext.rupees = CUR_CAPACITY(UPG_WALLET);
+        }
+    });
+}
+
+extern "C" u8 Randomizer_GetSettingValue(RandomizerSettingKey randoSettingKey);
+
+void PatchCompasses() {
+    s8 compassesCanBeOutsideDungeon = IS_RANDO && DUNGEON_ITEMS_CAN_BE_OUTSIDE_DUNGEON(RSK_SHUFFLE_MAPANDCOMPASS);
+    s8 isColoredCompassesEnabled = compassesCanBeOutsideDungeon && CVarGetInteger(CVAR_RANDOMIZER_ENHANCEMENT("MatchCompassColors"), 1);
+    if (isColoredCompassesEnabled) {
+        ResourceMgr_PatchGfxByName(gGiCompassDL, "Compass_PrimColor", 5, gsDPNoOp());
+        ResourceMgr_PatchGfxByName(gGiCompassDL, "Compass_EnvColor", 6, gsDPNoOp());
+    } else {
+        ResourceMgr_UnpatchGfxByName(gGiCompassDL, "Compass_PrimColor");
+        ResourceMgr_UnpatchGfxByName(gGiCompassDL, "Compass_EnvColor");
+    }
+}
+
+void RegisterRandomizerCompasses() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnLoadFile>([](int32_t _unused) {
+        PatchCompasses();
+    });
+}
+
+extern "C" void func_8099485C(DoorGerudo* gerudoDoor, PlayState* play);
+
+void RegisterSkeletonKey() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnActorUpdate>([](void* refActor) {
+        if (Flags_GetRandomizerInf(RAND_INF_HAS_SKELETON_KEY)) {
+            Actor* actor = static_cast<Actor*>(refActor);
+            if (actor->id == ACTOR_EN_DOOR) {
+                EnDoor* door = (EnDoor*)actor;
+                door->lockTimer = 0;
+            } else if (actor->id == ACTOR_DOOR_SHUTTER) {
+                DoorShutter* shutterDoor = (DoorShutter*)actor;
+                if (shutterDoor->doorType == SHUTTER_KEY_LOCKED) {
+                    shutterDoor->unk_16E = 0;
+                }
+            } else if (actor->id == ACTOR_DOOR_GERUDO) {
+                DoorGerudo* gerudoDoor = (DoorGerudo*)actor;
+                gerudoDoor->actionFunc = func_8099485C;
+                gerudoDoor->dyna.actor.world.pos.y = gerudoDoor->dyna.actor.home.pos.y + 200.0f;
+            }
+        }
+    });
+}
+
 void InitMods() {
+    RandomizerRegisterHooks();
+    TimeSaverRegisterHooks();
+    CheatsRegisterHooks();
+    TimeSavers_Register();
     RegisterTTS();
     RegisterInfiniteMoney();
     RegisterInfiniteHealth();
@@ -1425,12 +1813,19 @@ void InitMods() {
     RegisterEnemyDefeatCounts();
     RegisterAltTrapTypes();
     RegisterRandomizerSheikSpawn();
+    RegisterBossSouls();
     RegisterRandomizedEnemySizes();
     RegisterOpenAllHours();
     RegisterToTMedallions();
+    RegisterNoSwim();
+    RegisterNoWallet();
+    RegisterFishsanity();
+    RegisterInfiniteUpgrades();
+    RegisterRandomizerCompasses();
     NameTag_RegisterHooks();
     RegisterFloorSwitchesHook();
     RegisterPatchHandHandler();
     RegisterHurtContainerModeHandler();
     RegisterPauseMenuHooks();
+    RegisterSkeletonKey();
 }

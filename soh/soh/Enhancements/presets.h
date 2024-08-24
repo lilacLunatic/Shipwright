@@ -99,7 +99,7 @@ const std::vector<const char*> enhancementsCvars = {
     CVAR_ENHANCEMENT("BonkDamageMult"),
     CVAR_ENHANCEMENT("NoRandomDrops"),
     CVAR_ENHANCEMENT("NoHeartDrops"),
-    CVAR_ENHANCEMENT("BombchuDrops"),
+    CVAR_ENHANCEMENT("EnableBombchuDrops"),
     CVAR_ENHANCEMENT("GoronPot"),
     CVAR_ENHANCEMENT("FullHealthSpawn"),
     CVAR_ENHANCEMENT("DampeWin"),
@@ -218,6 +218,7 @@ const std::vector<const char*> enhancementsCvars = {
     CVAR_ENHANCEMENT("BowSlingshotAmmoFix"),
     CVAR_ENHANCEMENT("BetterFarore"),
     CVAR_ENHANCEMENT("DisableFirstPersonChus"),
+    CVAR_ENHANCEMENT("BetterBombchuShopping"),
     CVAR_ENHANCEMENT("HyperBosses"),
     CVAR_ENHANCEMENT("RupeeDash"),
     CVAR_ENHANCEMENT("RupeeDashInterval"),
@@ -284,6 +285,20 @@ const std::vector<const char*> enhancementsCvars = {
     CVAR_ENHANCEMENT("PermanentHeartLoss"),
     CVAR_ENHANCEMENT("RemoveExplosiveLimit"),
     CVAR_ENHANCEMENT("ToggleStrength"),
+    CVAR_ENHANCEMENT("TimeSavers.SkipCutscene.Intro"),
+    CVAR_ENHANCEMENT("TimeSavers.SkipCutscene.Entrances"),
+    CVAR_ENHANCEMENT("TimeSavers.SkipCutscene.Story"),
+    CVAR_ENHANCEMENT("TimeSavers.SkipCutscene.LearnSong"),
+    CVAR_ENHANCEMENT("TimeSavers.SkipCutscene.BossIntro"),
+    CVAR_ENHANCEMENT("TimeSavers.SkipCutscene.GlitchAiding"),
+    CVAR_ENHANCEMENT("TimeSavers.SkipCutscene.OnePoint"),
+    CVAR_ENHANCEMENT("TimeSavers.NoForcedDialog"),
+    CVAR_ENHANCEMENT("TimeSavers.SkipOwlInteractions"),
+    CVAR_ENHANCEMENT("TimeSavers.SkipMiscInteractions"),
+    CVAR_ENHANCEMENT("TimeSavers.DisableTitleCard"),
+    CVAR_ENHANCEMENT("TimeSavers.SkipGetItemAnimation"),
+    CVAR_ENHANCEMENT("TimeSavers.SkipChildStealth"),
+    CVAR_ENHANCEMENT("TimeSavers.SkipTowerEscape"),
 };
 
 const std::vector<const char*> cheatCvars = {
@@ -383,6 +398,10 @@ const std::vector<const char*> randomizerCvars = {
     CVAR_RANDOMIZER_SETTING("ExcludedLocations"),
     CVAR_RANDOMIZER_SETTING("Forest"),
     CVAR_RANDOMIZER_SETTING("FullWallets"),
+    CVAR_RANDOMIZER_SETTING("FishingPoleHint"),
+    CVAR_RANDOMIZER_SETTING("Fishsanity"),
+    CVAR_RANDOMIZER_SETTING("FishsanityPondCount"),
+    CVAR_RANDOMIZER_SETTING("FishsanityAgeSplit"),
     CVAR_RANDOMIZER_SETTING("GanonTrial"),
     CVAR_RANDOMIZER_SETTING("GanonTrialCount"),
     CVAR_RANDOMIZER_SETTING("GerudoFortress"),
@@ -401,6 +420,7 @@ const std::vector<const char*> randomizerCvars = {
     CVAR_RANDOMIZER_SETTING("LacsRewardOptions"),
     CVAR_RANDOMIZER_SETTING("LacsStoneCount"),
     CVAR_RANDOMIZER_SETTING("LacsTokenCount"),
+    CVAR_RANDOMIZER_SETTING("GanondorfHint"),
     CVAR_RANDOMIZER_SETTING("LAHint"),
     CVAR_RANDOMIZER_SETTING("LinksPocket"),
     CVAR_RANDOMIZER_SETTING("LogicRules"),
@@ -424,6 +444,7 @@ const std::vector<const char*> randomizerCvars = {
     CVAR_RANDOMIZER_SETTING("ShuffleCows"),
     CVAR_RANDOMIZER_SETTING("ShuffleDungeonReward"),
     CVAR_RANDOMIZER_SETTING("ShuffleDungeonsEntrances"),
+    CVAR_RANDOMIZER_SETTING("ShuffleFishingPole"),
     CVAR_RANDOMIZER_SETTING("ShuffleFrogSongRupees"),
     CVAR_RANDOMIZER_SETTING("ShuffleGanonBossKey"),
     CVAR_RANDOMIZER_SETTING("ShuffleGerudoToken"),
@@ -490,6 +511,7 @@ const std::vector<const char*> randomizerCvars = {
     CVAR_RANDOMIZER_SETTING("SariaHint"),
     CVAR_RANDOMIZER_ENHANCEMENT("RandomizeRupeeNames"),
     CVAR_RANDOMIZER_SETTING("FrogsHint"),
+    CVAR_RANDOMIZER_SETTING("OoTHint"),
     CVAR_RANDOMIZER_ENHANCEMENT("RandoRelevantNavi"),
     CVAR_RANDOMIZER_ENHANCEMENT("QuestItemFanfares"),
 };
@@ -692,6 +714,9 @@ const std::vector<PresetEntry> enhancedPresetEntries = {
 
     // Autosave
     PRESET_ENTRY_S32(CVAR_ENHANCEMENT("Autosave"), AUTOSAVE_LOCATION_AND_MAJOR_ITEMS),
+
+    // Bombchu shop doesn't sell out, and 10 bombchus cost 99 instead of 100
+    PRESET_ENTRY_S32(CVAR_ENHANCEMENT("BetterBombchuShopping"), 1),
 };
 
 const std::vector<PresetEntry> randomizerPresetEntries = {

@@ -6,6 +6,7 @@
 
 #include "z_en_js.h"
 #include "objects/object_js/object_js.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
 
@@ -127,23 +128,16 @@ void func_80A8910C(EnJs* this, PlayState* play) {
 }
 
 void func_80A89160(EnJs* this, PlayState* play) {
-    if (Actor_HasParent(&this->actor, play)) {
+    if (Actor_HasParent(&this->actor, play) || !GameInteractor_Should(VB_GIVE_ITEM_FROM_CARPET_SALESMAN, true, this)) {
         this->actor.parent = NULL;
         En_Js_SetupAction(this, func_80A8910C);
+        // Moved into the text handling to patch a text bug, not a great solution though
+        // Flags_SetRandomizerInf(RAND_INF_MERCHANTS_CARPET_SALESMAN);
     } else {
-        if (IS_RANDO && Randomizer_GetSettingValue(RSK_SHUFFLE_MERCHANTS) != RO_SHUFFLE_MERCHANTS_OFF && 
-            !Flags_GetRandomizerInf(RAND_INF_MERCHANTS_CARPET_SALESMAN)) {
-            GetItemEntry itemEntry = Randomizer_GetItemFromKnownCheck(RC_WASTELAND_BOMBCHU_SALESMAN, GI_BOMBCHUS_10);
-            gSaveContext.pendingSale = itemEntry.itemId;
-            gSaveContext.pendingSaleMod = itemEntry.modIndex;
-            GiveItemEntryFromActor(&this->actor, play, itemEntry, 10000.0f, 50.0f);
-            Flags_SetRandomizerInf(RAND_INF_MERCHANTS_CARPET_SALESMAN);
-        } else {
-            GetItemEntry itemEntry = ItemTable_Retrieve(GI_BOMBCHUS_10);
-            gSaveContext.pendingSale = itemEntry.itemId;
-            gSaveContext.pendingSaleMod = itemEntry.modIndex;
-            func_8002F434(&this->actor, play, GI_BOMBCHUS_10, 10000.0f, 50.0f);
-        }
+        GetItemEntry itemEntry = ItemTable_Retrieve(GI_BOMBCHUS_10);
+        gSaveContext.pendingSale = itemEntry.itemId;
+        gSaveContext.pendingSaleMod = itemEntry.modIndex;
+        Actor_OfferGetItem(&this->actor, play, GI_BOMBCHUS_10, 10000.0f, 50.0f);
     }
 }
 
@@ -155,8 +149,14 @@ void func_80A891C4(EnJs* this, PlayState* play) {
                     Message_ContinueTextbox(play, 0x6075);
                     func_80A89008(this);
                 } else {
-                    Rupees_ChangeBy(-200);
-                    En_Js_SetupAction(this, func_80A89160);
+                    if (GameInteractor_Should(VB_GIVE_BOMBCHUS_FROM_CARPET_SALESMAN, true, this) || 
+                       (Actor_HasParent(&this->actor, play) || !GameInteractor_Should(VB_GIVE_ITEM_FROM_CARPET_SALESMAN, true, this))){
+                        Rupees_ChangeBy(-200);
+                        En_Js_SetupAction(this, func_80A89160);
+                    } else{
+                        Message_ContinueTextbox(play, 0x6073);
+                        func_80A89008(this);
+                    }
                 }
                 break;
             case 1: // no
