@@ -1814,12 +1814,70 @@ void RandomizerSettingsWindow::DrawElement() {
         randoThread.join();
     }
 
-    ImGui::SetNextWindowSize(ImVec2(920, 600), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Randomizer Editor", &mIsVisible, ImGuiWindowFlags_NoFocusOnAppearing)) {
-        ImGui::End();
-        return;
-    }
+    // Randomizer settings
+    // Logic Settings
+    static const char* randoLogicRules[3] = { "Glitchless", "No logic", "Vanilla" };
 
+    // Open Settings
+    static const char* randoForest[3] = { "Closed", "Closed Deku", "Open" };
+    static const char* randoKakarikoGate[2] = { "Closed", "Open" };
+    static const char* randoDoorOfTime[3] = { "Closed", "Song only", "Open" };
+    static const char* randoZorasFountain[3] = { "Closed", "Closed as child", "Open" };
+    static const char* randoGerudoFortress[3] = { "Normal", "Fast", "Open" };
+    static const char* randoRainbowBridge[8] = { "Vanilla", "Always open", "Stones", "Medallions",
+                                          "Dungeon rewards", "Dungeons", "Tokens", "Greg" };
+    static const char* randoBridgeRewardOptions[3] = { "Standard Rewards", "Greg as Reward", "Greg as Wildcard" };
+    static const char* randoGanonsTrial[3] = { "Skip", "Set Number", "Random Number" };
+    static const char* randoMqDungeons[4] = { "None", "Set Number", "Random Number", "Selection" };
+
+    // World Settings
+    static const char* randoStartingAge[3] = { "Child", "Adult", "Random" };
+    static const char* randoShuffleDungeonsEntrances[3] = { "Off", "On", "On + Ganon" };
+    static const char* randoShuffleBossEntrances[3] = { "Off", "Age Restricted", "Full" };
+    static const char* randoShuffleInteriorsEntrances[3] = { "Off", "Simple", "All" };
+    static const char* randoBombchusInLogic[2] = { "Off", "On" };
+    static const char* randoAmmoDrops[3] = { "On + Bombchu", "Off", "On" };
+    static const char* randoHeartDropsAndRefills[4] = { "On", "No Drop", "No Refill", "Off" };
+
+    // Shuffle Settings
+    static const char* randoShuffleDungeonRewards[4] = { "End of dungeons", "Any dungeon", "Overworld", "Anywhere" };
+    static const char* randoLinksPocket[4] = { "Dungeon Reward", "Advancement", "Anything", "Nothing" };
+    static const char* randoShuffleSongs[3] = { "Song Locations", "Dungeon Rewards", "Anywhere" };
+    static const char* randoShopsanity[7] = { "Off", "0 Items", "1 Item", "2 Items", "3 Items", "4 Items", "Random" };
+    static const char* randoShopsanityPrices[5] = { "Balanced", "Starter Wallet", "Adult Wallet", "Giant's Wallet", "Tycoon's Wallet" };
+    static const char* randoTokensanity[4] = { "Off", "Dungeons", "Overworld", "All Tokens" };
+    static const char* randoShuffleScrubs[4] = { "Off", "Affordable", "Expensive", "Random Prices" };
+    static const char* randoShuffleMerchants[3] = { "Off", "On (no hints)", "On (with hints)" };
+
+    // Shuffle Dungeon Items Settings
+    static const char* randoShuffleMapsAndCompasses[6] = { "Start With",  "Vanilla",   "Own Dungeon",
+                                                    "Any Dungeon", "Overworld", "Anywhere" };
+    static const char* randoShuffleSmallKeys[6] = { "Start With",  "Vanilla",   "Own Dungeon",
+                                             "Any Dungeon", "Overworld", "Anywhere" };
+    static const char* randoShuffleGerudoFortressKeys[4] = { "Vanilla", "Any Dungeon", "Overworld", "Anywhere" };
+    static const char* randoShuffleBossKeys[6] = { "Start With",  "Vanilla",   "Own Dungeon",
+                                            "Any Dungeon", "Overworld", "Anywhere" };
+    static const char* randoShuffleGanonsBossKey[13] = {"Vanilla", "Own dungeon", "Start with", 
+                                                "Any Dungeon", "Overworld", "Anywhere", 
+                                                "LACS-Vanilla", "LACS-Stones", "LACS-Medallions", 
+                                                "LACS-Rewards", "LACS-Dungeons", "LACS-Tokens",
+                                                "100 GS Reward"};
+    static const char* randoLACSRewardOptions[3] = { "Standard Reward", "Greg as Reward", "Greg as Wildcard" };
+    static const char* randoShuffleKeyRings[4] = { "Off", "Random", "Count", "Selection" };
+
+    // Misc Settings
+    static const char* randoGossipStoneHints[4] = { "No Hints", "Need Nothing", "Mask of Truth", "Stone of Agony" };
+    static const char* randoHintClarity[3] = { "Obscure", "Ambiguous", "Clear" };
+    static const char* randoHintDistribution[4] = { "Useless", "Balanced", "Strong", "Very Strong" };
+    static const char* randoStartingTime[2] = { "Day", "Night" };
+    static const char* randoRandomTrapDamage[3] = { "Basic", "Advanced", "Off" };
+
+    // Item Pool Settings
+    static const char* randoItemPool[4] = { "Plentiful", "Balanced", "Scarce", "Minimal" };
+    static const char* randoIceTraps[5] = { "Off", "Normal", "Extra", "Mayhem", "Onslaught" };
+
+    static int maxKeyringCount;
+    static bool disableGFKeyring = false;
     bool disableEditingRandoSettings = CVarGetInteger(CVAR_GENERAL("RandoGenerating"), 0) || CVarGetInteger(CVAR_GENERAL("OnFileSelectNameEntry"), 0);
     if (disableEditingRandoSettings) {
         UIWidgets::DisableComponent(ImGui::GetStyle().Alpha * 0.5f);
@@ -2440,7 +2498,6 @@ void RandomizerSettingsWindow::DrawElement() {
     if (disableEditingRandoSettings) {
         UIWidgets::ReEnableComponent("");
     }
-    ImGui::End();
 }
 
 void RandomizerSettingsWindow::UpdateElement() {
