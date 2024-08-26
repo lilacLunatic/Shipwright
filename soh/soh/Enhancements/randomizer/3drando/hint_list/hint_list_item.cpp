@@ -1890,6 +1890,19 @@ void StaticData::HintTable_Init_Item() {
                                                CustomMessage("plenty of scrub spit", /*german*/"einige Buschspucke", /*french*/"un paquet de crachats Mojo")});
                                                 // /*spanish*/unos cuantos escupitajos deku
 
+    hintTextTable[RHT_DEKU_SEEDS_5] = HintText(CustomMessage("Deku Seeds (5 pieces)", /*german*/"Deku-Samen (5 Stück)", /*french*/"!!!"),
+                                              // /*spanish*/
+                                              {
+                                              CustomMessage("a projectile", /*german*/"ein Projektil", /*french*/"un projectile"),
+                                               // /*spanish*/
+                                              CustomMessage("some Deku munitions", /*german*/"viel Deku-Munition", /*french*/"un paquet de munitions Mojo")
+                                               // /*spanish*/
+                                              }, {
+                                              CustomMessage("a little catapult ammo", /*german*/"", /*french*/""),
+                                               // /*spanish*/
+                                              CustomMessage("a few seeds", /*german*/"", /*french*/"")});
+                                               // /*spanish*/
+
     hintTextTable[RHT_DEKU_SEEDS_30] = HintText(CustomMessage("Deku Seeds (30 pieces)", /*german*/"Deku-Samen (30 Stück)", /*french*/"une trentaine de graines Mojo"),
                                                 // /*spanish*/unas (30) semillas deku
                                                 {
