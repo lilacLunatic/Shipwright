@@ -364,6 +364,7 @@ void AreaTable_Init_FireTemple() {
                   LOCATION(RC_FIRE_TEMPLE_MQ_FIRE_PILLAR_LEFT_HEART,           logic->CanUse(RG_GORON_TUNIC) && logic->SmallKeys(RR_FIRE_TEMPLE, 1)),
                   LOCATION(RC_FIRE_TEMPLE_MQ_FIRE_PILLAR_RIGHT_HEART,          logic->CanUse(RG_GORON_TUNIC) && logic->SmallKeys(RR_FIRE_TEMPLE, 1)),
                   LOCATION(RC_FIRE_TEMPLE_MQ_FIRE_PILLAR_LOWER_HEART,          logic->CanUse(RG_GORON_TUNIC) && logic->SmallKeys(RR_FIRE_TEMPLE, 1)),
+                  LOCATION(RC_FIRE_TEMPLE_MQ_BOSS_KEY_ROOM_FACE,               logic->HasFireSource && (logic->Bow || (randoCtx->GetTrickOption(RT_FIRE_MQ_BK_CHEST) && logic->CanUse(RG_HOOKSHOT))) && logic->IsAdult),
   }, {
                   //Exits
                   Entrance(RR_FIRE_TEMPLE_MQ_LOWER_MAZE, {[]{return logic->IsAdult && logic->CanUse(RG_GORON_TUNIC) && logic->SmallKeys(RR_FIRE_TEMPLE, 2) && (logic->HasFireSource || (randoCtx->GetTrickOption(RT_FIRE_MQ_CLIMB) && logic->HoverBoots));}}),
@@ -375,6 +376,7 @@ void AreaTable_Init_FireTemple() {
                   LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_LOWER_CHEST,     logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_BIGGORON_SWORD)),
                   LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_SIDE_ROOM_CHEST, logic->HasExplosives && (randoCtx->GetTrickOption(RT_FIRE_MQ_MAZE_SIDE_ROOM) || HasAccessTo(RR_FIRE_TEMPLE_MQ_UPPER_MAZE))),
                     //Trick: logic->HasExplosives && (LogicFireMQMazeSideRoom || FIRE_TEMPLE_MQ_UPPER_MAZE.Adult())
+                  LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_FACE,            logic->CanUse(RG_HOOKSHOT)),
    }, {
                   //Exits
                   Entrance(RR_FIRE_TEMPLE_MQ_UPPER_MAZE, {[]{return (logic->IsAdult && ((logic->HasExplosives && logic->CanUse(RG_HOOKSHOT)) || (randoCtx->GetTrickOption(RT_FIRE_MQ_MAZE_HOVERS) && logic->CanUse(RG_HOVER_BOOTS)))) || randoCtx->GetTrickOption(RT_FIRE_MQ_MAZE_JUMP);}}),
@@ -390,6 +392,9 @@ void AreaTable_Init_FireTemple() {
                   LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_UPPER_CHEST, true),
                   LOCATION(RC_FIRE_TEMPLE_MQ_COMPASS_CHEST,             logic->HasExplosives),
                   LOCATION(RC_FIRE_TEMPLE_MQ_GS_SKULL_ON_FIRE,          logic->IsAdult && ((logic->CanUse(RG_SONG_OF_TIME) && logic->CanUse(RG_HOOKSHOT) && logic->HasExplosives) || logic->CanUse(RG_LONGSHOT))),
+                  LOCATION(RC_FIRE_TEMPLE_MQ_SUSPENDED_PLATFORMS_FACE,  logic->CanUse(RG_MEGATON_HAMMER) && logic->HasExplosives && logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_FIRE_TEMPLE_MQ_EAST_TOWER_LARGE_FACE,     logic->CanUse(RG_MEGATON_HAMMER) && logic->HasExplosives && logic->CanUse(RG_HOOKSHOT) && (logic->CanUse(RG_SONG_OF_TIME) || logic->CanUse(RG_LONGSHOT))),
+                  LOCATION(RC_FIRE_TEMPLE_MQ_EAST_TOWER_SMALL_FACE,     logic->CanUse(RG_MEGATON_HAMMER) && logic->HasExplosives && logic->CanUse(RG_HOOKSHOT) && (logic->CanUse(RG_SONG_OF_TIME) || logic->CanUse(RG_LONGSHOT))),
   }, {
                   //Exits
                   Entrance(RR_FIRE_TEMPLE_MQ_UPPER, {[]{return logic->SmallKeys(RR_FIRE_TEMPLE, 3) && logic->IsAdult && ((logic->CanUse(RG_FAIRY_BOW) && logic->CanUse(RG_HOOKSHOT)) || logic->CanUse(RG_FIRE_ARROWS));}}),
@@ -406,6 +411,9 @@ void AreaTable_Init_FireTemple() {
                   LOCATION(RC_FIRE_TEMPLE_MQ_GS_FIRE_WALL_MAZE_CENTER,    logic->HasExplosives),
                   LOCATION(RC_FIRE_TEMPLE_MQ_GS_ABOVE_FIRE_WALL_MAZE,     (logic->IsAdult && logic->CanUse(RG_HOOKSHOT) && logic->SmallKeys(RR_FIRE_TEMPLE, 5)) || (randoCtx->GetTrickOption(RT_FIRE_MQ_ABOVE_MAZE_GS) && logic->IsAdult && logic->CanUse(RG_LONGSHOT))),
                     //Trick: (logic->IsAdult && logic->CanUse(RG_HOOKSHOT) && logic->SmallKeys(RR_FIRE_TEMPLE, 5)) || (LogicFireMQAboveMazeGS && logic->IsAdult && logic->CanUse(RG_LONGSHOT))
+                  LOCATION(RC_FIRE_TEMPLE_MQ_FIRE_WALL_MAZE_FACE,         logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_FIRE_TEMPLE_MQ_WEST_TOWER_FACE,             logic->CanUse(RG_HOOKSHOT) && logic->CanJumpslash),
+                  LOCATION(RC_FIRE_TEMPLE_MQ_STAIRCASE_FACE,              logic->CanUse(RG_HOOKSHOT) && logic->CanJumpslash && logic->SmallKeys(RR_FIRE_TEMPLE, 5))
   }, {});
   }
 
