@@ -667,7 +667,6 @@ void Settings::CreateOptions() {
         &mOptions[RSK_SHUFFLE_SWIM],
         &mOptions[RSK_SHUFFLE_WEIRD_EGG],
         &mOptions[RSK_SHUFFLE_GERUDO_MEMBERSHIP_CARD],
-        &mOptions[RSK_SHUFFLE_POTS],
         &mOptions[RSK_SHUFFLE_FISHING_POLE],
         &mOptions[RSK_SHUFFLE_DEKU_STICK_BAG],
         &mOptions[RSK_SHUFFLE_DEKU_NUT_BAG],
@@ -680,6 +679,7 @@ void Settings::CreateOptions() {
         &mOptions[RSK_FISHSANITY_POND_COUNT],
         &mOptions[RSK_FISHSANITY_AGE_SPLIT],
         &mOptions[RSK_SHUFFLE_SCRUBS],
+        &mOptions[RSK_SHUFFLE_POTS],
         &mOptions[RSK_SHUFFLE_BEEHIVES],
         &mOptions[RSK_SHUFFLE_COWS],
         &mOptions[RSK_SHUFFLE_MAGIC_BEANS],
@@ -886,6 +886,7 @@ void Settings::CreateOptions() {
         &mOptions[RSK_SHUFFLE_FISHING_POLE],
         &mOptions[RSK_SHUFFLE_TOKENS],
         &mOptions[RSK_SHUFFLE_SCRUBS],
+        &mOptions[RSK_SHUFFLE_POTS],
         &mOptions[RSK_SHUFFLE_BEEHIVES],
         &mOptions[RSK_SHUFFLE_COWS],
         &mOptions[RSK_SHUFFLE_KOKIRI_SWORD],
@@ -894,7 +895,6 @@ void Settings::CreateOptions() {
         &mOptions[RSK_SHUFFLE_SWIM],
         &mOptions[RSK_SHUFFLE_WEIRD_EGG],
         &mOptions[RSK_SHUFFLE_GERUDO_MEMBERSHIP_CARD],
-        &mOptions[RSK_SHUFFLE_POTS],
         &mOptions[RSK_SHUFFLE_MAGIC_BEANS],
         &mOptions[RSK_SHUFFLE_MERCHANTS],
         &mOptions[RSK_SHUFFLE_FROG_SONG_RUPEES],
@@ -1077,6 +1077,7 @@ void Settings::CreateOptions() {
         &mOptions[RSK_FISHSANITY_POND_COUNT],
         &mOptions[RSK_FISHSANITY_AGE_SPLIT],
         &mOptions[RSK_SHUFFLE_SCRUBS],
+        &mOptions[RSK_SHUFFLE_POTS],
         &mOptions[RSK_SHUFFLE_BEEHIVES],
         &mOptions[RSK_SHUFFLE_COWS],
         &mOptions[RSK_SHUFFLE_MAGIC_BEANS],
@@ -2353,7 +2354,6 @@ void Settings::ParseJson(nlohmann::json spoilerFileJson) {
                 case RSK_FISHSANITY_AGE_SPLIT:
                 case RSK_FISHING_POLE_HINT:
                 case RSK_SHUFFLE_GERUDO_MEMBERSHIP_CARD:
-                case RSK_SHUFFLE_POTS:
                 case RSK_SHUFFLE_BEEHIVES:
                 case RSK_SHUFFLE_COWS:
                 case RSK_SHUFFLE_ADULT_TRADE:
@@ -2680,6 +2680,17 @@ void Settings::ParseJson(nlohmann::json spoilerFileJson) {
                         mOptions[index].SetSelectedIndex(RO_TOKENSANITY_OVERWORLD);
                     } else if (it.value() == "All Tokens") {
                         mOptions[index].SetSelectedIndex(RO_TOKENSANITY_ALL);
+                    }
+                    break;
+                case RSK_SHUFFLE_POTS:
+                    if (it.value() == "Off") {
+                        mOptions[index].SetSelectedIndex(RO_SHUFFLE_POTS_OFF);
+                    } else if (it.value() == "Dungeons") {
+                        mOptions[index].SetSelectedIndex(RO_SHUFFLE_POTS_DUNGEONS);
+                    } else if (it.value() == "Overworld") {
+                        mOptions[index].SetSelectedIndex(RO_SHUFFLE_POTS_OVERWORLD);
+                    } else if (it.value() == "All Pots") {
+                        mOptions[index].SetSelectedIndex(RO_SHUFFLE_POTS_ALL);
                     }
                     break;
                 case RSK_LINKS_POCKET:

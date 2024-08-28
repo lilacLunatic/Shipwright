@@ -5,8 +5,9 @@
 #include "soh/OTRGlobals.h"
 
 extern "C" {
-#include "overlays/actors/ovl_Obj_Tsubo/z_obj_tsubo.h"
+#include "z64.h"
 #include "variables.h"
+#include "overlays/actors/ovl_Obj_Tsubo/z_obj_tsubo.h"
 
 u8 Randomizer_GetSettingValue(RandomizerSettingKey randoSettingKey);
 GetItemEntry Randomizer_GetItemFromKnownCheck(RandomizerCheck randomizerCheck, GetItemID ogId);
@@ -43,14 +44,6 @@ uint8_t ObjTsubo_RandomizerHoldsItem(ObjTsubo* potActor, PlayState* play) {
     } else {
         return true;
     }
-}
-
-uint8_t ObjTsubo_RandomizerSkipItemCutscene(ObjTsubo* potActor) {
-    /*return 
-        potActor->actor.params == ITEM00_SMALL_KEY && giEntry.modIndex == MOD_NONE &&
-        ((giEntry.itemId >= ITEM_RUPEE_GREEN && giEntry.itemId <= ITEM_RUPEE_RED) || giEntry.itemId == ITEM_HEART ||
-         (giEntry.itemId >= ITEM_NUTS_5 && giEntry.itemId <= ITEM_SEEDS_30) || giEntry.itemId == ITEM_MAGIC_SMALL ||
-         giEntry.itemId == ITEM_MAGIC_LARGE);*/
 }
 
 void ObjTsubo_RandomizerSpawnCollectible(ObjTsubo* potActor) {
