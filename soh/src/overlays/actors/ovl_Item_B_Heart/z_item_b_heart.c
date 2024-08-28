@@ -53,13 +53,20 @@ void ItemBHeart_Destroy(Actor* thisx, PlayState* play) {
 void ItemBHeart_Update(Actor* thisx, PlayState* play) {
     ItemBHeart* this = (ItemBHeart*)thisx;
 
+    // #region SOH [Co-op]
+    if (Flags_GetCollectible(play, 0x1F)) {
+        Actor_Kill(&this->actor);
+        return;
+    }
+    // #endregion
+
     func_80B85264(this, play);
     Actor_UpdateBgCheckInfo(play, &this->actor, 0.0f, 0.0f, 0.0f, 4);
     if (Actor_HasParent(&this->actor, play)) {
         Flags_SetCollectible(play, 0x1F);
         Actor_Kill(&this->actor);
     } else {
-        if (!gSaveContext.n64ddFlag) {
+        if (!IS_RANDO) {
             func_8002F434(&this->actor, play, GI_HEART_CONTAINER_2, 30.0f, 40.0f);
         } else {
             GetItemEntry getItemEntry = Randomizer_GetItemFromActor(this->actor.id, play->sceneNum, this->actor.params, GI_HEART_CONTAINER_2);
@@ -98,7 +105,7 @@ void ItemBHeart_Draw(Actor* thisx, PlayState* play) {
         actorIt = actorIt->next;
     }
 
-    if (gSaveContext.n64ddFlag) {
+    if (IS_RANDO) {
         GetItemEntry_Draw(play, Randomizer_GetItemFromActor(this->actor.id, 
             play->sceneNum,this->actor.params, GI_HEART_CONTAINER_2));
     } else {

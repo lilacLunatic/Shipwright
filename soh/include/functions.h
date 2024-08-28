@@ -472,7 +472,7 @@ void func_8002F6D4(PlayState* play, Actor* actor, f32 arg2, s16 arg3, f32 arg4, 
 void func_8002F71C(PlayState* play, Actor* actor, f32 arg2, s16 arg3, f32 arg4);
 void func_8002F758(PlayState* play, Actor* actor, f32 arg2, s16 arg3, f32 arg4, u32 arg5);
 void func_8002F7A0(PlayState* play, Actor* actor, f32 arg2, s16 arg3, f32 arg4);
-void func_8002F7DC(Actor* actor, u16 sfxId);
+void Player_PlaySfx(Actor* actor, u16 sfxId);
 void Audio_PlayActorSound2(Actor* actor, u16 sfxId);
 void func_8002F850(PlayState* play, Actor* actor);
 void func_8002F8F0(Actor* actor, u16 sfxId);
@@ -1090,8 +1090,8 @@ s32 Health_ChangeBy(PlayState* play, s16 healthChange);
 void Rupees_ChangeBy(s16 rupeeChange);
 void Inventory_ChangeAmmo(s16 item, s16 ammoChange);
 void Magic_Fill(PlayState* play);
-void func_800876C8(PlayState* play);
-s32 func_80087708(PlayState* play, s16 arg1, s16 arg2);
+void Magic_Reset(PlayState* play);
+s32 Magic_RequestChange(PlayState* play, s16 amount, s16 type);
 void func_80088AA0(s16 seconds);
 void func_80088AF0(PlayState* play);
 void func_80088B34(s16 arg0);
@@ -1124,6 +1124,7 @@ s32 func_8008EF44(PlayState* play, s32 ammo);
 s32 Player_IsBurningStickInRange(PlayState* play, Vec3f* pos, f32 radius, f32 arg3);
 s32 Player_GetStrength(void);
 u8 Player_GetMask(PlayState* play);
+s32 Player_InflictDamage(PlayState* play, s32 damage);
 Player* Player_UnsetMask(PlayState* play);
 s32 Player_HasMirrorShieldEquipped(PlayState* play);
 s32 Player_HasMirrorShieldSetToDraw(PlayState* play);
@@ -1132,8 +1133,8 @@ s32 Player_HoldsHookshot(Player* player);
 s32 Player_HoldsBow(Player* player);
 s32 Player_HoldsSlingshot(Player* player);
 s32 func_8008F128(Player* player);
-s32 Player_ActionToSword(s32 actionParam);
-s32 Player_GetSwordHeld(Player* player);
+s32 Player_ActionToMeleeWeapon(s32 actionParam);
+s32 Player_GetMeleeWeaponHeld(Player* player);
 s32 Player_HoldsTwoHandedWeapon(Player* player);
 s32 Player_HoldsBrokenKnife(Player* player);
 s32 Player_ActionToBottle(Player* player, s32 actionParam);
@@ -1141,19 +1142,23 @@ s32 Player_GetBottleHeld(Player* player);
 s32 Player_ActionToExplosive(Player* player, s32 actionParam);
 s32 Player_GetExplosiveHeld(Player* player);
 s32 func_8008F2BC(Player* player, s32 actionParam);
-s32 func_8008F2F8(PlayState* play);
-void func_8008F470(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount, s32 lod, s32 tunic,
+s32 Player_GetEnvironmentalHazard(PlayState* play);
+void Player_DrawImpl(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount, s32 lod, s32 tunic,
                    s32 boots, s32 face, OverrideLimbDrawOpa overrideLimbDraw, PostLimbDrawOpa postLimbDraw, void* this);
-s32 func_8008FCC8(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* data);
-s32 func_80090014(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* data);
-s32 func_800902F0(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* data);
-s32 func_80090440(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* data);
+s32 Player_OverrideLimbDrawGameplayCommon(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* data);
+s32 Player_OverrideLimbDrawGameplayDefault(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* data);
+s32 Player_OverrideLimbDrawGameplayFirstPerson(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* data);
+s32 Player_OverrideLimbDrawGameplayCrawling(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* data);
+void DrawAnchorPuppet(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount, s32 lod, s32 tunic,
+                      s32 boots, s32 face, OverrideLimbDrawOpa overrideLimbDraw, PostLimbDrawOpa postLimbDraw,
+                      void* this, PlayerData playerData, s32 anchorActorIndex);
+s32 PuppetOverrideDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* data);
 u8 func_80090480(PlayState* play, ColliderQuad* collider, WeaponInfo* weaponDim, Vec3f* newTip,
                  Vec3f* newBase);
 void Player_DrawGetItem(PlayState* play, Player* player);
-void func_80090D20(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, void* data);
+void Player_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, void* data);
 u32 func_80091738(PlayState* play, u8* segment, SkelAnime* skelAnime);
-void func_8009214C(PlayState* play, u8* segment, SkelAnime* skelAnime, Vec3f* pos, Vec3s* rot, f32 scale,
+void Player_DrawPause(PlayState* play, u8* segment, SkelAnime* skelAnime, Vec3f* pos, Vec3s* rot, f32 scale,
                    s32 sword, s32 tunic, s32 shield, s32 boots);
 void PreNMI_Init(GameState* thisx);
 Vec3f* Quake_AddVec(Vec3f* dst, Vec3f* arg1, VecSph* arg2);
@@ -1250,13 +1255,15 @@ s32 Object_IsLoaded(ObjectContext* objectCtx, s32 bankIndex);
 void func_800981B8(ObjectContext* objectCtx);
 s32 Scene_ExecuteCommands(PlayState* play, SceneCmd* sceneCmd);
 void TransitionActor_InitContext(GameState* state, TransitionActorContext* transiActorCtx);
-void func_800994A0(PlayState* play);
+void Scene_SetTransitionForNextEntrance(PlayState* play);
 void Scene_Draw(PlayState* play);
 void SkelAnime_DrawLod(PlayState* play, void** skeleton, Vec3s* jointTable,
                        OverrideLimbDrawOpa overrideLimbDraw, PostLimbDrawOpa postLimbDraw, void* arg, s32 dListIndex);
 void SkelAnime_DrawFlexLod(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount,
                            OverrideLimbDrawOpa overrideLimbDraw, PostLimbDrawOpa postLimbDraw, void* arg,
                            s32 dListIndex);
+void SkelAnime_DrawSkeletonOpa(PlayState* play, SkelAnime* skelAnime, OverrideLimbDrawOpa overrideLimbDraw,
+                               PostLimbDrawOpa postLimbDraw, void* arg);
 void SkelAnime_DrawOpa(PlayState* play, void** skeleton, Vec3s* jointTable,
                        OverrideLimbDrawOpa overrideLimbDraw, PostLimbDrawOpa postLimbDraw, void* arg);
 void SkelAnime_DrawFlexOpa(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount,
@@ -1535,7 +1542,7 @@ void KaleidoScopeCall_Draw(PlayState* play);
 void func_800BC490(PlayState* play, s16 point);
 s32 func_800BC56C(PlayState* play, s16 arg1);
 void func_800BC590(PlayState* play);
-void func_800BC5E0(PlayState* play, s32 arg1);
+void Gameplay_SetupTransition(PlayState* play, s32 arg1);
 Gfx* Play_SetFog(PlayState* play, Gfx* gfx);
 void Play_Destroy(GameState* thisx);
 void Play_Init(GameState* thisx);
@@ -1565,6 +1572,7 @@ s32 func_800C0808(PlayState* play, s16 camId, Player* player, s16 arg3);
 s32 Play_CameraChangeSetting(PlayState* play, s16 camId, s16 arg2);
 void func_800C08AC(PlayState* play, s16 camId, s16 arg2);
 void Play_SaveSceneFlags(PlayState* play);
+void Play_SetRespawnData(PlayState* play, s32 respawnMode, s16 entranceIndex, s32 roomIndex, s32 playerParams, Vec3f* pos, s16 yaw);
 void Play_SetupRespawnPoint(PlayState* play, s32 respawnMode, s32 playerParams);
 void Play_TriggerVoidOut(PlayState* play);
 void Play_TriggerRespawn(PlayState* play);
@@ -2451,6 +2459,13 @@ CollisionHeader* BgCheck_GetCollisionHeader(CollisionContext* colCtx, s32 bgId);
 void Message_OpenText(PlayState* play, u16 textId);
 void Message_Decode(PlayState* play);
 void Message_DrawText(PlayState* play, Gfx** gfxP);
+
+// #region SOH [General]
+
+void Interface_CreateQuadVertexGroup(Vtx* vtxList, s32 xStart, s32 yStart, s32 width, s32 height, u8 flippedH);
+void Interface_RandoRestoreSwordless(void);
+
+// #endregion
 
 #ifdef __cplusplus
 #undef this

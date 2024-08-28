@@ -439,7 +439,7 @@ static std::unordered_map<u16, const char*> actorDescriptions = {
     { ACTOR_EN_DAIKU_KAKARIKO, "Carpenters (Kakariko)" },
     { ACTOR_BG_BOWL_WALL, "Bombchu Bowling Alley Wall" },
     { ACTOR_EN_WALL_TUBO, "Bombchu Bowling Alley Bullseyes" },
-    { ACTOR_EN_PO_DESERT, "Poe Guide (Desert Wasteland)" },
+    { ACTOR_EN_PO_DESERT, "Poe Guide (Haunted Wasteland)" },
     { ACTOR_EN_CROW, "Guay" },
     { ACTOR_DOOR_KILLER, "Fake Door" },
     { ACTOR_BG_SPOT11_OASIS, "Oasis (Desert Colossus)" },
@@ -604,8 +604,29 @@ static ActorDBInit EnPartnerInit = {
 };
 extern "C" s16 gEnPartnerId;
 
+#ifdef ENABLE_REMOTE_CONTROL
+#include "src/overlays/actors/ovl_Link_Puppet/z_link_puppet.h"
+static ActorDBInit EnLinkPuppetInit = {
+    "En_Link_Puppet",
+    "Puppet",
+    ACTORCAT_ITEMACTION,
+    (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UPDATE_WHILE_CULLED | ACTOR_FLAG_DRAW_WHILE_CULLED),
+    OBJECT_LINK_BOY,
+    sizeof(LinkPuppet),
+    (ActorFunc)LinkPuppet_Init,
+    (ActorFunc)LinkPuppet_Destroy,
+    (ActorFunc)LinkPuppet_Update,
+    (ActorFunc)LinkPuppet_Draw,
+    nullptr,
+};
+#endif
+extern "C" s16 gEnLinkPuppetId;
+
 void ActorDB::AddBuiltInCustomActors() {
     gEnPartnerId = ActorDB::Instance->AddEntry(EnPartnerInit).entry.id;
+#ifdef ENABLE_REMOTE_CONTROL
+    gEnLinkPuppetId = ActorDB::Instance->AddEntry(EnLinkPuppetInit).entry.id;
+#endif
 }
 
 extern "C" ActorDBEntry* ActorDB_Retrieve(const int id) {

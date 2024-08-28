@@ -126,8 +126,10 @@ void BgHidanDalm_Destroy(Actor* thisx, PlayState* play) {
 void BgHidanDalm_Wait(BgHidanDalm* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
-    if ((this->collider.base.acFlags & AC_HIT) && !Player_InCsMode(play) &&
-        (player->meleeWeaponAnimation == 22 || player->meleeWeaponAnimation == 23)) {
+    // #region SOH [Co-op]
+    if (((this->collider.base.acFlags & AC_HIT) && !Player_InCsMode(play) &&
+        (player->meleeWeaponAnimation == 22 || player->meleeWeaponAnimation == 23)) || Flags_GetSwitch(play, this->switchFlag)) {
+    // #endregion
         this->collider.base.acFlags &= ~AC_HIT;
         if ((this->collider.elements[0].info.bumperFlags & BUMP_HIT) ||
             (this->collider.elements[1].info.bumperFlags & BUMP_HIT)) {
@@ -145,7 +147,7 @@ void BgHidanDalm_Wait(BgHidanDalm* this, PlayState* play) {
         this->dyna.actor.bgCheckFlags &= ~8;
         this->dyna.actor.speedXZ = 10.0f;
         Flags_SetSwitch(play, this->switchFlag);
-        func_8002F7DC(&GET_PLAYER(play)->actor, NA_SE_IT_HAMMER_HIT);
+        Player_PlaySfx(&GET_PLAYER(play)->actor, NA_SE_IT_HAMMER_HIT);
         Audio_PlayActorSound2(&this->dyna.actor, NA_SE_EV_DARUMA_VANISH);
     } else {
         CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);

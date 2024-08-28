@@ -10,6 +10,9 @@
 #include "objects/object_hidan_objects/object_hidan_objects.h"
 #include "objects/object_mizu_objects/object_mizu_objects.h"
 #include "objects/object_haka_door/object_haka_door.h"
+#ifdef ENABLE_REMOTE_CONTROL
+#include "soh/Enhancements/game-interactor/GameInteractor_Anchor.h"
+#endif
 
 #define FLAGS ACTOR_FLAG_UPDATE_WHILE_CULLED
 
@@ -49,11 +52,11 @@ const ActorInit En_Door_InitVars = {
  * Controls which object and display lists to use in a given scene
  */
 static EnDoorInfo sDoorInfo[] = {
-    { SCENE_HIDAN, 1, OBJECT_HIDAN_OBJECTS },
-    { SCENE_MIZUSIN, 2, OBJECT_MIZU_OBJECTS },
-    { SCENE_HAKADAN, 3, OBJECT_HAKA_DOOR },
-    { SCENE_HAKADANCH, 3, OBJECT_HAKA_DOOR },
-    { SCENE_BMORI1, 0, OBJECT_GAMEPLAY_KEEP }, // Hacky fix, but behavior same as console.
+    { SCENE_FIRE_TEMPLE, 1, OBJECT_HIDAN_OBJECTS },
+    { SCENE_WATER_TEMPLE, 2, OBJECT_MIZU_OBJECTS },
+    { SCENE_SHADOW_TEMPLE, 3, OBJECT_HAKA_DOOR },
+    { SCENE_BOTTOM_OF_THE_WELL, 3, OBJECT_HAKA_DOOR },
+    { SCENE_FOREST_TEMPLE, 0, OBJECT_GAMEPLAY_KEEP }, // Hacky fix, but behavior same as console.
     // KEEP objects should remain last and in this order
     { -1, 0, OBJECT_GAMEPLAY_KEEP },
     { -1, 4, OBJECT_GAMEPLAY_FIELD_KEEP },
@@ -201,6 +204,9 @@ void EnDoor_Idle(EnDoor* this, PlayState* play) {
                                    (player->stateFlags1 & 0x8000000) ? 0.75f : 1.5f);
         if (this->lockTimer != 0) {
             gSaveContext.inventory.dungeonKeys[gSaveContext.mapIndex]--;
+#ifdef ENABLE_REMOTE_CONTROL
+            Anchor_UpdateKeyCount(gSaveContext.mapIndex, gSaveContext.inventory.dungeonKeys[gSaveContext.mapIndex]);
+#endif
             Flags_SetSwitch(play, this->actor.params & 0x3F);
             Audio_PlayActorSound2(&this->actor, NA_SE_EV_CHAIN_KEY_UNLOCK);
         }
@@ -230,6 +236,12 @@ void EnDoor_Idle(EnDoor* this, PlayState* play) {
             this->actionFunc = EnDoor_AjarOpen;
         }
     }
+
+    // #region SOH [Co-op]
+    if (Flags_GetSwitch(play, this->actor.params & 0x3F)) {
+        DECR(this->lockTimer);
+    }
+    // #endregion
 }
 
 void EnDoor_WaitForCheck(EnDoor* this, PlayState* play) {
@@ -276,8 +288,8 @@ void EnDoor_Open(EnDoor* this, PlayState* play) {
             this->playerIsOpening = 0;
         } else if (Animation_OnFrame(&this->skelAnime, sDoorAnimOpenFrames[this->animStyle])) {
             Audio_PlayActorSound2(&this->actor,
-                                  (play->sceneNum == SCENE_HAKADAN || play->sceneNum == SCENE_HAKADANCH ||
-                                   play->sceneNum == SCENE_HIDAN)
+                                  (play->sceneNum == SCENE_SHADOW_TEMPLE || play->sceneNum == SCENE_BOTTOM_OF_THE_WELL ||
+                                   play->sceneNum == SCENE_FIRE_TEMPLE)
                                       ? NA_SE_EV_IRON_DOOR_OPEN
                                       : NA_SE_OC_DOOR_OPEN);
             if (this->skelAnime.playSpeed < 1.5f) {
@@ -288,8 +300,8 @@ void EnDoor_Open(EnDoor* this, PlayState* play) {
             }
         } else if (Animation_OnFrame(&this->skelAnime, sDoorAnimCloseFrames[this->animStyle])) {
             Audio_PlayActorSound2(&this->actor,
-                                  (play->sceneNum == SCENE_HAKADAN || play->sceneNum == SCENE_HAKADANCH ||
-                                   play->sceneNum == SCENE_HIDAN)
+                                  (play->sceneNum == SCENE_SHADOW_TEMPLE || play->sceneNum == SCENE_BOTTOM_OF_THE_WELL ||
+                                   play->sceneNum == SCENE_FIRE_TEMPLE)
                                       ? NA_SE_EV_IRON_DOOR_CLOSE
                                       : NA_SE_EV_DOOR_CLOSE);
         }
@@ -338,7 +350,8 @@ void EnDoor_Draw(Actor* thisx, PlayState* play) {
         OPEN_DISPS(play->state.gfxCtx);
 
         Gfx_SetupDL_25Opa(play->state.gfxCtx);
-        SkelAnime_DrawOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, EnDoor_OverrideLimbDraw,
+        SkelAnime_DrawSkeletonOpa(play, &this->skelAnime,
+                                                   EnDoor_OverrideLimbDraw,
                           NULL, &this->actor);
         if (this->actor.world.rot.y != 0) {
             if (this->actor.world.rot.y > 0) {
