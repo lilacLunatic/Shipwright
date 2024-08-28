@@ -4899,7 +4899,6 @@ typedef struct CowIdentity {
 typedef struct PotIdentity {
     RandomizerInf randomizerInf;
     RandomizerCheck randomizerCheck;
-    uint8_t isShuffled;
 } PotIdentity;
 
 typedef struct FishIdentity {

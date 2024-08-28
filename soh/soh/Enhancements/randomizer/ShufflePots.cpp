@@ -46,16 +46,14 @@ uint8_t ObjTsubo_RandomizerHoldsItem(ObjTsubo* potActor, PlayState* play) {
     }
 }
 
-void ObjTsubo_RandomizerSpawnCollectible(ObjTsubo* potActor) {
-    EnItem00* item00 =
-        (EnItem00*)Item_DropCollectible2(gPlayState, &potActor->actor.world.pos, ITEM00_SOH_GIVE_ITEM_ENTRY);
+void ObjTsubo_RandomizerSpawnCollectible(ObjTsubo* potActor, PlayState* play) {
+    EnItem00* item00 = (EnItem00*)Item_DropCollectible2(play, &potActor->actor.world.pos, ITEM00_SOH_DUMMY);
     item00->randoInf = potActor->potIdentity.randomizerInf;
     item00->itemEntry =
         OTRGlobals::Instance->gRandomizer->GetItemFromKnownCheck(potActor->potIdentity.randomizerCheck, GI_NONE);
     item00->actor.draw = (ActorFunc)EnItem00_DrawRandomizedItem;
     item00->actor.velocity.y = 8.0f;
     item00->actor.speedXZ = 2.0f;
-    item00->actor.gravity = -0.9f;
     item00->actor.world.rot.y = Rand_CenteredFloat(65536.0f);
 }
 
@@ -68,12 +66,6 @@ void ObjTsubo_RandomizerInit(void* actorRef) {
 
     potActor->potIdentity =
         Randomizer_IdentifyPot(gPlayState->sceneNum, (s16)actor->world.pos.x, (s16)actor->world.pos.z);
-
-    if (ObjTsubo_RandomizerHoldsItem(potActor, gPlayState)) {
-        potActor->potIdentity.isShuffled = true;
-    } else {
-        potActor->potIdentity.isShuffled = false;
-    }
 }
 
 void PotOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void* optionalArg) {
@@ -81,16 +73,16 @@ void PotOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void* optio
 
     switch (id) {
         case VB_POT_DRAW: {
-            if (potActor->potIdentity.isShuffled) {
-                *should = false;
+            if (ObjTsubo_RandomizerHoldsItem(potActor, gPlayState)) {
                 potActor->actor.draw = (ActorFunc)ObjTsubo_RandomizerDraw;
+                *should = false;
             }
             break;
         }
         case VB_POT_DROP_ITEM: {
-            if (potActor->potIdentity.isShuffled) {
+            if (ObjTsubo_RandomizerHoldsItem(potActor, gPlayState)) {
+                ObjTsubo_RandomizerSpawnCollectible(potActor, gPlayState);
                 *should = false;
-                ObjTsubo_RandomizerSpawnCollectible(potActor);
             }
             break;
         }
