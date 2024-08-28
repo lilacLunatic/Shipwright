@@ -2142,6 +2142,14 @@ void DrawRandomizerMenu() {
                 disableKeyColors = false;
             }
 
+            UIWidgets::PaddedEnhancementCheckbox(
+                "Skip Common Item Cutscenes", CVAR_RANDOMIZER_ENHANCEMENT("SkipCommonItemCutscenes"), true, false,
+                                                 false, "", UIWidgets::CheckboxGraphics::Cross, true);
+            UIWidgets::Tooltip(
+                "Skips the animation of Link obtaining common items. \n\n"
+                "Items include: Green Rupee, Blue Rupee, Hearts refills, Ammo refills, Magic refills."
+            );
+
             static const char* disableKeyColorsText =
                 "This setting is disabled because a savefile is loaded without any key\n"
                 "shuffle settings set to \"Any Dungeon\", \"Overworld\" or \"Anywhere\"";

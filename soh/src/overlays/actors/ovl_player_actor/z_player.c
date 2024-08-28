@@ -6812,6 +6812,13 @@ s32 Player_ActionChange_2(Player* this, PlayState* play) {
                                         interactedActor->id == ACTOR_EN_KAREBABA || 
                                         interactedActor->id == ACTOR_EN_DEKUBABA;
 
+                // Automatically skip the pickup messages for very frequent items.
+                uint8_t isCommonItemToSkip = CVarGetInteger(CVAR_RANDOMIZER_ENHANCEMENT("SkipCommonItemCutscenes"), true) && giEntry.modIndex == MOD_NONE &&
+                                          ((giEntry.itemId >= ITEM_RUPEE_GREEN && giEntry.itemId <= ITEM_RUPEE_BLUE) ||
+                                           giEntry.itemId == ITEM_HEART ||
+                                           (giEntry.itemId >= ITEM_NUTS_5 && giEntry.itemId <= ITEM_SEEDS_30) ||
+                                           giEntry.itemId == ITEM_MAGIC_SMALL || giEntry.itemId == ITEM_MAGIC_LARGE);
+
                 // Skip cutscenes from picking up consumables with "Fast Pickup Text" enabled, even when the player never picked it up before.
                 // But only for bushes/rocks/enemies because otherwise it can lead to softlocks in deku mask theatre and potentially other places.
                 uint8_t skipItemCutscene = CVarGetInteger(CVAR_ENHANCEMENT("FastDrops"), 0) && isDropToSkip;
@@ -6822,7 +6829,7 @@ s32 Player_ActionChange_2(Player* this, PlayState* play) {
                 uint8_t skipItemCutsceneRando = IS_RANDO && Item_CheckObtainability(giEntry.itemId) != ITEM_NONE && isDropToSkip;
 
                 // Show cutscene when picking up a item.
-                if (showItemCutscene && !skipItemCutscene && !skipItemCutsceneRando) {
+                if (showItemCutscene && !skipItemCutscene && !skipItemCutsceneRando && !isCommonItemToSkip) {
 
                     Player_DetachHeldActor(play, this);
                     func_8083AE40(this, giEntry.objectId);
