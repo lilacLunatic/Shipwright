@@ -8,7 +8,7 @@
 #include "overlays/effects/ovl_Effect_Ss_Kakera/z_eff_ss_kakera.h"
 #include "objects/gameplay_dangeon_keep/gameplay_dangeon_keep.h"
 #include "objects/object_tsubo/object_tsubo.h"
-#include "soh_assets.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_UPDATE_WHILE_CULLED | ACTOR_FLAG_ALWAYS_THROWN)
 
@@ -84,43 +84,11 @@ static InitChainEntry sInitChain[] = {
     ICHAIN_F32(uncullZoneScale, 100, ICHAIN_CONTINUE),   ICHAIN_F32(uncullZoneDownward, 800, ICHAIN_STOP),
 };
 
-s8 ObjTsubo_HoldsRandomizedItem(ObjTsubo* this, PlayState* play) {
-    uint8_t isDungeon = play->sceneNum < SCENE_GANONS_TOWER_COLLAPSE_INTERIOR ||
-             (play->sceneNum > SCENE_TREASURE_BOX_SHOP && play->sceneNum < SCENE_GANONS_TOWER_COLLAPSE_EXTERIOR);
-    uint8_t potSetting = Randomizer_GetSettingValue(RSK_SHUFFLE_POTS);
-
-    // Don't pull randomized item if pot isn't randomized or is already checked
-    if (!IS_RANDO || !potSetting || 
-        (potSetting == RO_SHUFFLE_POTS_OVERWORLD && isDungeon) ||
-        (potSetting == RO_SHUFFLE_POTS_DUNGEONS && !isDungeon) ||
-        Flags_GetRandomizerInf(this->potIdentity.randomizerInf) ||
-        this->potIdentity.randomizerCheck == RC_UNKNOWN_CHECK) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
 void ObjTsubo_SpawnCollectible(ObjTsubo* this, PlayState* play) {
-
-    if (IS_RANDO && ObjTsubo_HoldsRandomizedItem(this, play)) {
-        GetItemEntry getItemEntry = Randomizer_GetItemFromKnownCheck(this->potIdentity.randomizerCheck, GI_NONE);
-
-        EnItem00* actor = (EnItem00*)Item_DropCollectible2(play, &this->actor.world.pos, ITEM00_SMALL_KEY);
-        actor->randoCheck = this->potIdentity.randomizerCheck;
-        actor->randoGiEntry = getItemEntry;
-        actor->randoGiEntry.getItemFrom = ITEM_FROM_FREESTANDING;
-        actor->randoInf = this->potIdentity.randomizerInf;
-        actor->actor.velocity.y = 8.0f;
-        actor->actor.speedXZ = 2.0f;
-        actor->actor.gravity = -0.9f;
-        actor->actor.world.rot.y = Rand_CenteredFloat(65536.0f);
-        return;
-    }
-
     s16 dropParams = this->actor.params & 0x1F;
 
-    if ((dropParams >= ITEM00_RUPEE_GREEN) && (dropParams <= ITEM00_BOMBS_SPECIAL)) {
+    if ((dropParams >= ITEM00_RUPEE_GREEN) && (dropParams <= ITEM00_BOMBS_SPECIAL) &&
+        GameInteractor_Should(VB_POT_DROP_ITEM, true, this)) {
         Item_DropCollectible(play, &this->actor.world.pos,
                              (dropParams | (((this->actor.params >> 9) & 0x3F) << 8)));
     }
@@ -178,9 +146,6 @@ void ObjTsubo_Init(Actor* thisx, PlayState* play) {
     } else {
         ObjTsubo_SetupWaitForObject(this);
         osSyncPrintf("(dungeon keep 壷)(arg_data 0x%04x)\n", this->actor.params);
-    }
-    if (IS_RANDO && Randomizer_GetSettingValue(RSK_SHUFFLE_POTS)) {
-        this->potIdentity = Randomizer_IdentifyPot(play->sceneNum, (s16)this->actor.world.pos.x, (s16)this->actor.world.pos.z);
     }
 }
 
@@ -268,7 +233,9 @@ void ObjTsubo_SetupWaitForObject(ObjTsubo* this) {
 
 void ObjTsubo_WaitForObject(ObjTsubo* this, PlayState* play) {
     if (Object_IsLoaded(&play->objectCtx, this->objTsuboBankIndex)) {
-        this->actor.draw = ObjTsubo_Draw;
+        if (GameInteractor_Should(VB_POT_DRAW, true, this)) {
+            this->actor.draw = ObjTsubo_Draw;
+        }
         this->actor.objBankIndex = this->objTsuboBankIndex;
         ObjTsubo_SetupIdle(this);
         this->actor.flags &= ~ACTOR_FLAG_UPDATE_WHILE_CULLED;
@@ -381,18 +348,5 @@ void ObjTsubo_Update(Actor* thisx, PlayState* play) {
 void ObjTsubo_Draw(Actor* thisx, PlayState* play) {
     ObjTsubo* this = (ObjTsubo*)thisx;
 
-    if (IS_RANDO && ObjTsubo_HoldsRandomizedItem(this, play)) {
-        float potSize = 1.0f;
-
-        OPEN_DISPS(play->state.gfxCtx);
-        Gfx_SetupDL_25Opa(play->state.gfxCtx);
-        Matrix_Scale(potSize, potSize, potSize, MTXMODE_APPLY);
-        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, (char*)__FILE__, __LINE__),
-                  G_MTX_MODELVIEW | G_MTX_LOAD);
-
-        gSPDisplayList(POLY_OPA_DISP++, (Gfx*)gRandoPotDL);
-        CLOSE_DISPS(play->state.gfxCtx);
-    } else {
-        Gfx_DrawDListOpa(play, D_80BA1B84[(thisx->params >> 8) & 1]);
-    }
+    Gfx_DrawDListOpa(play, D_80BA1B84[(thisx->params >> 8) & 1]);
 }

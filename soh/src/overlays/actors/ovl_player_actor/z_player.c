@@ -6821,16 +6821,8 @@ s32 Player_ActionChange_2(Player* this, PlayState* play) {
                 // this specifically for items coming from bushes/rocks/enemies when the player has already picked that item up.
                 uint8_t skipItemCutsceneRando = IS_RANDO && Item_CheckObtainability(giEntry.itemId) != ITEM_NONE && isDropToSkip;
 
-                // Automatically skip the pickup messages for very frequent items coming from pots with "Shuffle Pots" on.
-                uint8_t isPotItemToSkip = interactedActor->id == ACTOR_EN_ITEM00 &&
-                                          interactedActor->params == ITEM00_SMALL_KEY && giEntry.modIndex == MOD_NONE &&
-                                          ((giEntry.itemId >= ITEM_RUPEE_GREEN && giEntry.itemId <= ITEM_RUPEE_RED) ||
-                                           giEntry.itemId == ITEM_HEART ||
-                                           (giEntry.itemId >= ITEM_NUTS_5 && giEntry.itemId <= ITEM_SEEDS_30) ||
-                                           giEntry.itemId == ITEM_MAGIC_SMALL || giEntry.itemId == ITEM_MAGIC_LARGE);
-
                 // Show cutscene when picking up a item.
-                if (showItemCutscene && !skipItemCutscene && !skipItemCutsceneRando && !isPotItemToSkip) {
+                if (showItemCutscene && !skipItemCutscene && !skipItemCutsceneRando) {
 
                     Player_DetachHeldActor(play, this);
                     func_8083AE40(this, giEntry.objectId);
