@@ -102,6 +102,12 @@ void AreaTable_Init_DeathMountain() {
                   LOCATION(RC_GC_MEDIGORON,              logic->IsAdult && logic->AdultsWallet && (logic->CanBlastOrSmash || logic->GoronBracelet)),
                   LOCATION(RC_GC_MAZE_GOSSIP_STONE,      logic->CanBlastOrSmash || logic->CanUse(RG_SILVER_GAUNTLETS)),
                   LOCATION(RC_GC_MEDIGORON_GOSSIP_STONE, logic->CanBlastOrSmash || logic->GoronBracelet),
+                  LOCATION(RC_GC_LOWER_STAIRCASE_POT_1,  logic->CanBreakPots),
+                  LOCATION(RC_GC_LOWER_STAIRCASE_POT_2,  logic->CanBreakPots),
+                  LOCATION(RC_GC_UPPER_STAIRCASE_POT_1,  logic->CanBreakPots),
+                  LOCATION(RC_GC_UPPER_STAIRCASE_POT_2,  logic->CanBreakPots),
+                  LOCATION(RC_GC_UPPER_STAIRCASE_POT_3,  logic->CanBreakPots),
+                  LOCATION(RC_GC_MEDIGORON_POT_1,        logic->CanBlastOrSmash || logic->GoronBracelet),
                 }, {
                   //Exits
                   Entrance(RR_DEATH_MOUNTAIN_TRAIL, {[]{return true;}}),
@@ -125,7 +131,10 @@ void AreaTable_Init_DeathMountain() {
                   EventAccess(&logic->GoronCityChildFire, {[]{return logic->GoronCityChildFire || (logic->IsChild && logic->CanUse(RG_STICKS));}}),
                 }, {
                   //Locations
-                  LOCATION(RC_GC_DARUNIAS_JOY, logic->IsChild && logic->CanUse(RG_SARIAS_SONG)),
+                  LOCATION(RC_GC_DARUNIAS_JOY,  logic->IsChild && logic->CanUse(RG_SARIAS_SONG)),
+                  LOCATION(RC_GC_DARUNIA_POT_1, logic->CanBreakPots),
+                  LOCATION(RC_GC_DARUNIA_POT_2, logic->CanBreakPots),
+                  LOCATION(RC_GC_DARUNIA_POT_3, logic->CanBreakPots),
                 }, {
                   //Exits
                   Entrance(RR_GORON_CITY,      {[]{return true;}}),
@@ -196,7 +205,13 @@ void AreaTable_Init_DeathMountain() {
                   Entrance(RR_DMC_LOWER_NEARBY, {[]{return logic->Hearts >= 3 && (logic->CanUse(RG_HOVER_BOOTS) || (randoCtx->GetTrickOption(RT_DMC_BOULDER_JS) && logic->IsAdult && logic->CanUse(RG_MEGATON_HAMMER)) || (randoCtx->GetTrickOption(RT_DMC_BOULDER_SKIP) && logic->IsAdult));}}),
   });
 
-  areaTable[RR_DMC_LOWER_NEARBY] = Area("DMC Lower Nearby", "Death Mountain Crater", RA_DEATH_MOUNTAIN_CRATER, NO_DAY_NIGHT_CYCLE, {}, {}, {
+  areaTable[RR_DMC_LOWER_NEARBY] = Area("DMC Lower Nearby", "Death Mountain Crater", RA_DEATH_MOUNTAIN_CRATER, NO_DAY_NIGHT_CYCLE, {}, {
+                  // Locations
+                  LOCATION(RC_DMC_NEAR_GC_POT_1, logic->CanBreakPots),
+                  LOCATION(RC_DMC_NEAR_GC_POT_2, logic->CanBreakPots),
+                  LOCATION(RC_DMC_NEAR_GC_POT_3, logic->CanBreakPots),
+                  LOCATION(RC_DMC_NEAR_GC_POT_4, logic->CanBreakPots),
+                }, {
                   //Exits
                   Entrance(RR_DMC_LOWER_LOCAL,          {[]{return logic->FireTimer >= 48;}}),
                   Entrance(RR_GC_DARUNIAS_CHAMBER,      {[]{return true;}}),
