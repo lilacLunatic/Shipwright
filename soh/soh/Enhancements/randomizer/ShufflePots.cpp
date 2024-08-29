@@ -69,22 +69,21 @@ void ObjTsubo_RandomizerInit(void* actorRef) {
 }
 
 void PotOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void* optionalArg) {
-    ObjTsubo* potActor = static_cast<ObjTsubo*>(optionalArg);
-
-    switch (id) {
-        case VB_POT_DRAW: {
-            if (ObjTsubo_RandomizerHoldsItem(potActor, gPlayState)) {
-                potActor->actor.draw = (ActorFunc)ObjTsubo_RandomizerDraw;
-                *should = false;
-            }
-            break;
+    // Draw custom model for pot to indicate it holding a randomized item.
+    if (id == VB_POT_DRAW) {
+        ObjTsubo* potActor = static_cast<ObjTsubo*>(optionalArg);
+        if (ObjTsubo_RandomizerHoldsItem(potActor, gPlayState)) {
+            potActor->actor.draw = (ActorFunc)ObjTsubo_RandomizerDraw;
+            *should = false;
         }
-        case VB_POT_DROP_ITEM: {
-            if (ObjTsubo_RandomizerHoldsItem(potActor, gPlayState)) {
-                ObjTsubo_RandomizerSpawnCollectible(potActor, gPlayState);
-                *should = false;
-            }
-            break;
+    }
+    
+    // Do not spawn vanilla item from pot, instead spawn the ranomized item.
+    if (id == VB_POT_DROP_ITEM) {
+        ObjTsubo* potActor = static_cast<ObjTsubo*>(optionalArg);
+        if (ObjTsubo_RandomizerHoldsItem(potActor, gPlayState)) {
+            ObjTsubo_RandomizerSpawnCollectible(potActor, gPlayState);
+            *should = false;
         }
     }
 }
