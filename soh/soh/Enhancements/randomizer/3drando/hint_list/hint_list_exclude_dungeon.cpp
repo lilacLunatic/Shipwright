@@ -2057,5 +2057,66 @@ hintTextTable[RHT_SHADOW_TEMPLE_MAP_CHEST] = HintText(CustomMessage("They say th
                                                          /*german*/ "",
                                                          /*french*/ "", {QM_RED, QM_GREEN}));
 
+    hintTextTable[RHT_WATER_TEMPLE_MQ_GEYSER] = HintText(CustomMessage("They say that #jumping across geysers under a lake# rewards #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_GERUDO_TRAINING_GROUND_EYE_STATUE_ITEM] = HintText(CustomMessage("They say that #atop a many-eyed statue# lies #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_DEKU_TREE_MQ_GRAVE_HEART] = HintText(CustomMessage("They say that #slashing a grave within a tree's roots# reveals #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_DODONGOS_CAVERN_MQ_BOMB_GRAVE] = HintText(CustomMessage("They say that #exploding a grave within a deap cavern# reveals #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_JABU_JABUS_BELLY_MQ_WONDER_COW] = HintText(CustomMessage("They say that #shooting a digested cow# knocks down #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_JABU_JABUS_BELLY_MQ_BOMB_GRASS] = HintText(CustomMessage("They say that #exploding a loney blade of digested grass# reveals #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_FIRE_TEMPLE_MQ_WALL_FACE] = HintText(CustomMessage("They say that #grappling a stone face mounted in a volcano# reels in #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_FIRE_TEMPLE_MQ_FLOOR_FACE] = HintText(CustomMessage("They say that #hammering a stone face embedded in the floor# reveals #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_WATER_TEMPLE_MQ_MURAL] = HintText(CustomMessage("They say that #grappling an ornate mural below a lake# reels in #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_WATER_TEMPLE_MQ_DRAGON_EYE] = HintText(CustomMessage("They say that #grappling an aquatic dragon's eye# reels in #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_SHADOW_TEMPLE_POTS_PLAQUE] = HintText(CustomMessage("They say that #shooting a stone face overlooking a trio of jars# knocks down #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_SPIRIT_TEMPLE_MQ_CHEST_SWITCH] = HintText(CustomMessage("They say that #slashing a suspicious chest# reveals #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_BOTTOM_OF_THE_WELL_MQ_FACE] = HintText(CustomMessage("They say that #shooting a stone face within a well# knocks down #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_GERUDO_TRAINING_GROUND_PLAQUE] = HintText(CustomMessage("They say that #shooting a trial emblem-baring plaque# knocks down #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_GANONS_CASTLE_MQ_SHADOW_TRIAL_BOMB_FLOWER] = HintText(CustomMessage("They say that #detonating a volatile plant in a final trial# reveals #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+
 }
 }
