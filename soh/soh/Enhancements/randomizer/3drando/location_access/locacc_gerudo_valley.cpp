@@ -124,6 +124,16 @@ void AreaTable_Init_GerudoValley() {
                   LOCATION(RC_GF_GS_TOP_FLOOR,       logic->IsAdult && logic->AtNight && (logic->CanJumpslash || logic->CanUse(RG_FAIRY_SLINGSHOT) || logic->CanUse(RG_BOOMERANG) || logic->HasExplosives || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_HOOKSHOT) || logic->CanUse(RG_DINS_FIRE)) && (logic->GerudoToken || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_HOOKSHOT) || logic->CanUse(RG_HOVER_BOOTS) || randoCtx->GetTrickOption(RT_GF_KITCHEN) || randoCtx->GetTrickOption(RT_GF_JUMP)) && logic->CanGetNightTimeGS),
                   LOCATION(RC_GF_WELCOME_SIGN,       logic->CanUse(RG_HOOKSHOT)),
                   LOCATION(RC_GF_TO_ARCHERY_SIGN,    logic->CanUse(RG_HOOKSHOT) && (logic->IsChild || logic->GerudoToken)),
+                  LOCATION(RC_GF_NORTH_F1_NORTH_SKULL,      logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_NORTH_F1_SOUTH_SKULL,      logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_OUTSIDE_KITCHEN_SKULL,     logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_KITCHEN_SOUP_POT,          logic->GerudoToken || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_GF_NORTH_F2_NEAR_CELL_SKULL,  logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_NORTH_F2_HALLWAY_SKULL,    logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_ABOVE_CELL_EAST_SKULL,     logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_ABOVE_CELL_WEST_SKULL,     logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_SOUTH_F1_NORTH_SKULL,      logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_SOUTH_F1_SOUTH_SKULL,      logic->CanUse(RG_FAIRY_BOW)),
                 }, {
                   //Exits
                   Entrance(RR_GV_FORTRESS_SIDE,                 {[]{return true;}}),
