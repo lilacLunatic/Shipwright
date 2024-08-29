@@ -157,6 +157,18 @@ void RandomizerCheckObjects::UpdateImGuiVisibility() {
             (location.GetRCType() != RCTYPE_BEEHIVE || CVarGetInteger(CVAR_RANDOMIZER_SETTING("ShuffleBeehives"), RO_GENERIC_NO)) &&
             (location.GetRCType() != RCTYPE_COW || CVarGetInteger(CVAR_RANDOMIZER_SETTING("ShuffleCows"), RO_GENERIC_NO)) &&
             (location.GetRCType() != RCTYPE_FISH || ctx->GetFishsanity()->GetFishLocationIncluded(&location, FSO_SOURCE_CVARS)) &&
+            (location.GetRCType() != RCTYPE_INVISIBLE_ITEM ||
+             (CVarGetInteger(CVAR_RANDOMIZER_SETTING("ShuffleInvisibleItems"), RO_TOKENSANITY_OFF) == RO_TOKENSANITY_ALL) ||
+             ((CVarGetInteger(CVAR_RANDOMIZER_SETTING("ShuffleInvisibleItems"), RO_TOKENSANITY_OFF) == RO_TOKENSANITY_OVERWORLD) &&
+              RandomizerCheckObjects::AreaIsOverworld(location.GetArea())) ||
+             ((CVarGetInteger(CVAR_RANDOMIZER_SETTING("ShuffleInvisibleItems"), RO_TOKENSANITY_OFF) == RO_TOKENSANITY_DUNGEONS) &&
+              RandomizerCheckObjects::AreaIsDungeon(location.GetArea()))) &&
+            (location.GetRCType() != RCTYPE_WONDER_SPOT ||
+             (CVarGetInteger(CVAR_RANDOMIZER_SETTING("ShuffleWonderSpots"), RO_TOKENSANITY_OFF) == RO_TOKENSANITY_ALL) ||
+             ((CVarGetInteger(CVAR_RANDOMIZER_SETTING("ShuffleWonderSpots"), RO_TOKENSANITY_OFF) == RO_TOKENSANITY_OVERWORLD) &&
+              RandomizerCheckObjects::AreaIsOverworld(location.GetArea())) ||
+             ((CVarGetInteger(CVAR_RANDOMIZER_SETTING("ShuffleWonderSpots"), RO_TOKENSANITY_OFF) == RO_TOKENSANITY_DUNGEONS) &&
+              RandomizerCheckObjects::AreaIsDungeon(location.GetArea()))) &&
             (location.GetRCType() != RCTYPE_ADULT_TRADE ||
              CVarGetInteger(CVAR_RANDOMIZER_SETTING("ShuffleAdultTrade"), RO_GENERIC_NO)) &&
             (location.GetRandomizerCheck() != RC_KF_KOKIRI_SWORD_CHEST ||
