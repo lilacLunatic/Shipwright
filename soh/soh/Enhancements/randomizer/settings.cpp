@@ -123,6 +123,8 @@ void Settings::CreateOptions() {
     mOptions[RSK_SHUFFLE_DEKU_STICK_BAG] = Option::Bool("Shuffle Deku Stick Bag", CVAR_RANDOMIZER_SETTING("ShuffleDekuStickBag"), mOptionDescriptions[RSK_SHUFFLE_DEKU_STICK_BAG], IMFLAG_SEPARATOR_BOTTOM, WidgetType::Checkbox, RO_GENERIC_OFF);
     mOptions[RSK_SHUFFLE_DEKU_NUT_BAG] = Option::Bool("Shuffle Deku Nut Bag", CVAR_RANDOMIZER_SETTING("ShuffleDekuNutBag"), mOptionDescriptions[RSK_SHUFFLE_DEKU_NUT_BAG], IMFLAG_SEPARATOR_BOTTOM, WidgetType::Checkbox, RO_GENERIC_OFF);
     mOptions[RSK_SHUFFLE_FREESTANDING] = Option::U8("Shuffle Freestanding Items", {"Off", "Dungeons", "Overworld", "All Items"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ShuffleFreestanding"), mOptionDescriptions[RSK_SHUFFLE_FREESTANDING], WidgetType::Combobox, RO_TOKENSANITY_OFF);
+    mOptions[RSK_SHUFFLE_INVISIBLE_ITEMS] = Option::U8("Shuffle Invisible Items", {"Off", "Dungeons", "Overworld", "All Items"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ShuffleInvisibleItems"), mOptionDescriptions[RSK_SHUFFLE_INVISIBLE_ITEMS], WidgetType::Combobox, RO_TOKENSANITY_OFF);
+    mOptions[RSK_SHUFFLE_WONDER_SPOTS] = Option::U8("Shuffle Wonder Spots", {"Off", "Dungeons", "Overworld", "All Items"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ShuffleWonderSpots"), mOptionDescriptions[RSK_SHUFFLE_WONDER_SPOTS], WidgetType::Combobox, RO_TOKENSANITY_OFF);
     mOptions[RSK_FISHSANITY] = Option::U8("Fishsanity", {"Off", "Shuffle only Hyrule Loach", "Shuffle Fishing Pond", "Shuffle Overworld Fish", "Shuffle Both"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("Fishsanity"), mOptionDescriptions[RSK_FISHSANITY], WidgetType::Combobox, RO_FISHSANITY_OFF);
     mOptions[RSK_FISHSANITY_POND_COUNT] = Option::U8("Pond Fish Count", {NumOpts(0,17,1)}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("FishsanityPondCount"), mOptionDescriptions[RSK_FISHSANITY_POND_COUNT], WidgetType::Slider, 0, true, IMFLAG_NONE);
     mOptions[RSK_FISHSANITY_AGE_SPLIT] = Option::Bool("Pond Age Split", CVAR_RANDOMIZER_SETTING("FishsanityAgeSplit"), mOptionDescriptions[RSK_FISHSANITY_AGE_SPLIT]);
@@ -672,6 +674,8 @@ void Settings::CreateOptions() {
         &mOptions[RSK_SHUFFLE_DEKU_STICK_BAG],
         &mOptions[RSK_SHUFFLE_DEKU_NUT_BAG],
         &mOptions[RSK_SHUFFLE_FREESTANDING],
+        &mOptions[RSK_SHUFFLE_INVISIBLE_ITEMS],
+        &mOptions[RSK_SHUFFLE_WONDER_SPOTS],
     }, false, WidgetContainerType::COLUMN);
     mOptionGroups[RSG_SHUFFLE_NPCS_IMGUI] = OptionGroup::SubGroup("Shuffle NPCs & Merchants", {
         &mOptions[RSK_SHOPSANITY],
@@ -905,6 +909,8 @@ void Settings::CreateOptions() {
         &mOptions[RSK_SHUFFLE_DEKU_STICK_BAG],
         &mOptions[RSK_SHUFFLE_DEKU_NUT_BAG],
         &mOptions[RSK_SHUFFLE_FREESTANDING],
+        &mOptions[RSK_SHUFFLE_INVISIBLE_ITEMS],
+        &mOptions[RSK_SHUFFLE_WONDER_SPOTS],
     });
     mOptionGroups[RSG_SHUFFLE_DUNGEON_ITEMS] = OptionGroup("Shuffle Dungeon Items", {
         &mOptions[RSK_SHUFFLE_MAPANDCOMPASS],
@@ -1086,6 +1092,8 @@ void Settings::CreateOptions() {
         &mOptions[RSK_SHUFFLE_ADULT_TRADE],
         &mOptions[RSK_SHUFFLE_100_GS_REWARD],
         &mOptions[RSK_GOSSIP_STONE_HINTS],
+        &mOptions[RSK_SHUFFLE_INVISIBLE_ITEMS],
+        &mOptions[RSK_SHUFFLE_WONDER_SPOTS],
     };
 
     mSpoilerfileSettingNameToEnum = {
@@ -1123,6 +1131,8 @@ void Settings::CreateOptions() {
         { "Shuffle Settings:Beehive Shuffle", RSK_SHUFFLE_BEEHIVES },
         { "Shuffle Settings:Shuffle Cows", RSK_SHUFFLE_COWS },
         { "Shuffle Settings:Tokensanity", RSK_SHUFFLE_TOKENS },
+        { "Shuffle Settings:Invisible Items", RSK_SHUFFLE_INVISIBLE_ITEMS },
+        { "Shuffle Settings:Wonder Spots", RSK_SHUFFLE_WONDER_SPOTS },
         { "Shuffle Settings:Shuffle Ocarinas", RSK_SHUFFLE_OCARINA },
         { "Shuffle Settings:Shuffle Ocarina Buttons", RSK_SHUFFLE_OCARINA_BUTTONS },
         { "Shuffle Settings:Shuffle Swim", RSK_SHUFFLE_SWIM },
@@ -2491,6 +2501,18 @@ void Settings::ParseJson(nlohmann::json spoilerFileJson) {
                         mOptions[index].SetSelectedIndex(RO_FISHSANITY_OVERWORLD);
                     } else if (it.value() == "Shuffle Both") {
                         mOptions[index].SetSelectedIndex(RO_FISHSANITY_BOTH);
+                    }
+                    break;
+                case RSK_SHUFFLE_INVISIBLE_ITEMS:
+                case RSK_SHUFFLE_WONDER_SPOTS:
+                    if (it.value() == "Off") {
+                        mOptions[index].SetSelectedIndex(RO_TOKENSANITY_OFF);
+                    } else if (it.value() == "Dungeons") {
+                        mOptions[index].SetSelectedIndex(RO_TOKENSANITY_DUNGEONS);
+                    } else if (it.value() == "Overworld") {
+                        mOptions[index].SetSelectedIndex(RO_TOKENSANITY_OVERWORLD);
+                    } else if (it.value() == "All Tokens") {
+                        mOptions[index].SetSelectedIndex(RO_TOKENSANITY_ALL);
                     }
                     break;
                 case RSK_SHUFFLE_BOSS_SOULS:
