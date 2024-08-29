@@ -279,7 +279,8 @@ typedef enum {
     RCTYPE_BEEHIVE,                    // Beehives
     RCTYPE_FISH,
     RCTYPE_FREESTANDING,               // Freestanding rupees and hearts
-    RCTYPE_WONDER_ITEM,                // Hidden rupees revealed by specific actions
+    RCTYPE_INVISIBLE_ITEM,             // Invisible items that can be picked up in the right spots
+    RCTYPE_WONDER_SPOT,                // Hidden items revealed by specific actions
 } RandomizerCheckType;
 
 typedef enum { RCQUEST_VANILLA, RCQUEST_MQ, RCQUEST_BOTH } RandomizerCheckQuest;
