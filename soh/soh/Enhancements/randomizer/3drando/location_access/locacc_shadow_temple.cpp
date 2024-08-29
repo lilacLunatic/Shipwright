@@ -188,6 +188,7 @@ void AreaTable_Init_ShadowTemple() {
                   //below previously returned true
                   LOCATION(RC_SHADOW_TEMPLE_MQ_BOMB_FLOWER_CHEST,      logic->CanUse(RG_LENS_OF_TRUTH) || randoCtx->GetTrickOption(RT_LENS_SHADOW_MQ_DEADHAND)),
                   LOCATION(RC_SHADOW_TEMPLE_MQ_FREESTANDING_KEY,       true),
+                  LOCATION(RC_SHADOW_TEMPLE_MQ_POTS_PLAQUE,            logic->CanUse(RG_FAIRY_BOW)),
   }, {});
   }
 

@@ -181,6 +181,7 @@ void AreaTable_Init_SpiritTemple() {
                   LOCATION(RC_SPIRIT_TEMPLE_MQ_BOSS_KEY_CHEST,              logic->SmallKeys(RR_SPIRIT_TEMPLE, 5) && logic->CanUse(RG_SONG_OF_TIME) && (logic->MirrorShield || (randoCtx->GetOption(RSK_SUNLIGHT_ARROWS) && logic->CanUse(RG_LIGHT_ARROWS)))),
                   LOCATION(RC_SPIRIT_TEMPLE_MQ_GS_NINE_THRONES_ROOM_WEST,   logic->SmallKeys(RR_SPIRIT_TEMPLE, 7)),
                   LOCATION(RC_SPIRIT_TEMPLE_MQ_GS_NINE_THRONES_ROOM_NORTH,  logic->SmallKeys(RR_SPIRIT_TEMPLE, 7)),
+                  LOCATION(RC_SPIRIT_TEMPLE_MQ_CHEST_SWITCH,                logic->SmallKeys(RR_SPIRIT_TEMPLE, 5) && logic->CanUse(RG_SONG_OF_TIME) && (logic->CanJumpslash || logic->CanUse(RG_MEGATON_HAMMER))),
   }, {
                   //Exits
                   Entrance(RR_SPIRIT_TEMPLE_MQ_LOWER_ADULT,        {[]{return logic->MirrorShield && logic->IsAdult && (logic->CanUse(RG_FIRE_ARROWS) || (randoCtx->GetTrickOption(RT_SPIRIT_MQ_LOWER_ADULT) && logic->CanUse(RG_DINS_FIRE) && logic->Bow));}}),
