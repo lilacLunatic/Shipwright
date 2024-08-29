@@ -125,6 +125,7 @@ void Settings::CreateOptions() {
     mOptions[RSK_SHUFFLE_FREESTANDING] = Option::U8("Shuffle Freestanding Items", {"Off", "Dungeons", "Overworld", "All Items"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ShuffleFreestanding"), mOptionDescriptions[RSK_SHUFFLE_FREESTANDING], WidgetType::Combobox, RO_TOKENSANITY_OFF);
     mOptions[RSK_SHUFFLE_INVISIBLE_ITEMS] = Option::U8("Shuffle Invisible Items", {"Off", "Dungeons", "Overworld", "All Items"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ShuffleInvisibleItems"), mOptionDescriptions[RSK_SHUFFLE_INVISIBLE_ITEMS], WidgetType::Combobox, RO_TOKENSANITY_OFF);
     mOptions[RSK_SHUFFLE_WONDER_SPOTS] = Option::U8("Shuffle Wonder Spots", {"Off", "Dungeons", "Overworld", "All Items"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ShuffleWonderSpots"), mOptionDescriptions[RSK_SHUFFLE_WONDER_SPOTS], WidgetType::Combobox, RO_TOKENSANITY_OFF);
+    mOptions[RSK_PATCH_WONDER_SPOT] = Option::Bool("Patch Broken Wonder Spot", CVAR_RANDOMIZER_SETTING("PatchWonderSpot"), mOptionDescriptions[RSK_PATCH_WONDER_SPOT]);
     mOptions[RSK_FISHSANITY] = Option::U8("Fishsanity", {"Off", "Shuffle only Hyrule Loach", "Shuffle Fishing Pond", "Shuffle Overworld Fish", "Shuffle Both"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("Fishsanity"), mOptionDescriptions[RSK_FISHSANITY], WidgetType::Combobox, RO_FISHSANITY_OFF);
     mOptions[RSK_FISHSANITY_POND_COUNT] = Option::U8("Pond Fish Count", {NumOpts(0,17,1)}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("FishsanityPondCount"), mOptionDescriptions[RSK_FISHSANITY_POND_COUNT], WidgetType::Slider, 0, true, IMFLAG_NONE);
     mOptions[RSK_FISHSANITY_AGE_SPLIT] = Option::Bool("Pond Age Split", CVAR_RANDOMIZER_SETTING("FishsanityAgeSplit"), mOptionDescriptions[RSK_FISHSANITY_AGE_SPLIT]);
@@ -676,6 +677,7 @@ void Settings::CreateOptions() {
         &mOptions[RSK_SHUFFLE_FREESTANDING],
         &mOptions[RSK_SHUFFLE_INVISIBLE_ITEMS],
         &mOptions[RSK_SHUFFLE_WONDER_SPOTS],
+        &mOptions[RSK_PATCH_WONDER_SPOT],
     }, false, WidgetContainerType::COLUMN);
     mOptionGroups[RSG_SHUFFLE_NPCS_IMGUI] = OptionGroup::SubGroup("Shuffle NPCs & Merchants", {
         &mOptions[RSK_SHOPSANITY],
@@ -911,6 +913,7 @@ void Settings::CreateOptions() {
         &mOptions[RSK_SHUFFLE_FREESTANDING],
         &mOptions[RSK_SHUFFLE_INVISIBLE_ITEMS],
         &mOptions[RSK_SHUFFLE_WONDER_SPOTS],
+        &mOptions[RSK_PATCH_WONDER_SPOT],
     });
     mOptionGroups[RSG_SHUFFLE_DUNGEON_ITEMS] = OptionGroup("Shuffle Dungeon Items", {
         &mOptions[RSK_SHUFFLE_MAPANDCOMPASS],
@@ -1135,6 +1138,7 @@ void Settings::CreateOptions() {
         { "Shuffle Settings:Freestanding Shuffle", RSK_SHUFFLE_FREESTANDING },
         { "Shuffle Settings:Invisible Items", RSK_SHUFFLE_INVISIBLE_ITEMS },
         { "Shuffle Settings:Wonder Spots", RSK_SHUFFLE_WONDER_SPOTS },
+        { "Shuffle Settings:Patch Wonder Spot", RSK_PATCH_WONDER_SPOT },
         { "Shuffle Settings:Shuffle Ocarinas", RSK_SHUFFLE_OCARINA },
         { "Shuffle Settings:Shuffle Ocarina Buttons", RSK_SHUFFLE_OCARINA_BUTTONS },
         { "Shuffle Settings:Shuffle Swim", RSK_SHUFFLE_SWIM },
@@ -1804,6 +1808,13 @@ void Settings::UpdateOptionProperties() {
     } else {
         mOptions[RSK_CHICKENS_HINT].Enable();
     }
+
+    if (CVarGetInteger(CVAR_RANDOMIZER_SETTING("ShuffleWonderSpots"), RO_TOKENSANITY_OFF) == RO_TOKENSANITY_DUNGEONS ||
+        CVarGetInteger(CVAR_RANDOMIZER_SETTING("ShuffleWonderSpots"), RO_TOKENSANITY_OFF) == RO_TOKENSANITY_ALL) {
+        mOptions[RSK_PATCH_WONDER_SPOT].Unhide();
+    } else {
+        mOptions[RSK_PATCH_WONDER_SPOT].Hide();
+    }
 }
 
 void Settings::FinalizeSettings(const std::set<RandomizerCheck>& excludedLocations, const std::set<RandomizerTrick>& enabledTricks) {
@@ -2158,6 +2169,10 @@ void Settings::FinalizeSettings(const std::set<RandomizerCheck>& excludedLocatio
     if (mOptions[RSK_CUCCO_COUNT].Is(0)) {
         mOptions[RSK_CHICKENS_HINT].SetSelectedIndex(RO_GENERIC_OFF);
     }
+
+    if (mOptions[RSK_SHUFFLE_WONDER_SPOTS].IsNot(RO_TOKENSANITY_DUNGEONS) && mOptions[RSK_SHUFFLE_WONDER_SPOTS].IsNot(RO_TOKENSANITY_ALL)) {
+        mOptions[RSK_PATCH_WONDER_SPOT].SetSelectedIndex(RO_GENERIC_OFF);
+    }
 }
 void Settings::ParseJson(nlohmann::json spoilerFileJson) {
     mSeedString = spoilerFileJson["seed"].get<std::string>();
@@ -2451,6 +2466,7 @@ void Settings::ParseJson(nlohmann::json spoilerFileJson) {
                 case RSK_ALL_LOCATIONS_REACHABLE:
                 case RSK_TRIFORCE_HUNT:
                 case RSK_MQ_DUNGEON_SET:
+                case RSK_PATCH_WONDER_SPOT:
                     if (it.value() == "Off") {
                         mOptions[index].SetSelectedIndex(RO_GENERIC_OFF);
                     } else if (it.value() == "On") {

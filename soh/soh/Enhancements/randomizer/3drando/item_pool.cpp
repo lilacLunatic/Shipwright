@@ -642,7 +642,8 @@ static void PlaceFreestandingItems() {
       RandomizerGet item = loc->GetVanillaItem() ?: GetJunkItem();
       if ((loc->GetRCType() == RCTYPE_FREESTANDING && (freestandingOption.Is(RO_TOKENSANITY_DUNGEONS) || freestandingOption.Is(RO_TOKENSANITY_ALL))) ||
           (loc->GetRCType() == RCTYPE_INVISIBLE_ITEM && (invisibleOption.Is(RO_TOKENSANITY_DUNGEONS) || invisibleOption.Is(RO_TOKENSANITY_ALL))) ||
-          (loc->GetRCType() == RCTYPE_WONDER_SPOT && (wonderOption.Is(RO_TOKENSANITY_DUNGEONS) || wonderOption.Is(RO_TOKENSANITY_ALL)))) {
+          (loc->GetRCType() == RCTYPE_WONDER_SPOT && (wonderOption.Is(RO_TOKENSANITY_DUNGEONS) || wonderOption.Is(RO_TOKENSANITY_ALL)) &&
+            (rc != RC_WATER_TEMPLE_MQ_TRIPLE_WALL_TORCH_MURAL || ctx->GetOption(RSK_PATCH_WONDER_SPOT)))) {
         AddItemToMainPool(item);
       } else {
         ctx->PlaceItemInLocation(rc, item, false, true);

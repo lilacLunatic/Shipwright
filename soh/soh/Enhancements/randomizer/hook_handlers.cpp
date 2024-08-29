@@ -1509,6 +1509,14 @@ void RandomizerOnActorInitHandler(void* actorRef) {
     ) {
         Actor_Kill(actor);
     }
+
+    if (actor->id == ACTOR_EN_WONDER_ITEM && RAND_GET_OPTION(RSK_PATCH_WONDER_SPOT)) {
+        EnWonderItem* item = static_cast<EnWonderItem*>(actorRef);
+        if (item->wonderMode == WONDERITEM_INTERACT_SWITCH && item->actor.world.rot.z == 7) {
+            item->actor.world.rot.z = 6;
+            item->collider.info.bumper.dmgFlags = 0x00000080;
+        }
+    }
 }
 
 void RandomizerRegisterHooks() {

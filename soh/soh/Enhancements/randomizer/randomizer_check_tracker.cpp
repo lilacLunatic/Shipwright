@@ -68,6 +68,7 @@ bool showOverworldInvisibleItems;
 bool showDungeonInvisibleItems;
 bool showOverworldWonderSpots;
 bool showDungeonWonderSpots;
+bool showBrokenWonderSpot;
 bool showAdultTrade;
 bool showKokiriSword;
 bool showMasterSword;
@@ -1346,6 +1347,10 @@ void LoadSettings() {
         showOverworldWonderSpots = false;
         showDungeonWonderSpots = false;
     }
+
+    showBrokenWonderSpot = IS_RANDO ?
+        showDungeonWonderSpots && OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_PATCH_WONDER_SPOT) == RO_GENERIC_YES
+        : false;
 }
 
 bool IsCheckShuffled(RandomizerCheck rc) {
@@ -1390,7 +1395,7 @@ bool IsCheckShuffled(RandomizerCheck rc) {
                 ) &&
             (loc->GetRCType() != RCTYPE_WONDER_SPOT ||
                 (showOverworldWonderSpots && RandomizerCheckObjects::AreaIsOverworld(loc->GetArea())) ||
-                (showDungeonWonderSpots && RandomizerCheckObjects::AreaIsDungeon(loc->GetArea()))
+                (showDungeonWonderSpots && RandomizerCheckObjects::AreaIsDungeon(loc->GetArea()) && (rc != RC_WATER_TEMPLE_MQ_TRIPLE_WALL_TORCH_MURAL || showBrokenWonderSpot))
                 ) &&
             (loc->GetRCType() != RCTYPE_ADULT_TRADE ||
                 showAdultTrade ||

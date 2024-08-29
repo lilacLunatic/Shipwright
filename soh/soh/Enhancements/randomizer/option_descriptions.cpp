@@ -372,6 +372,11 @@ void Settings::CreateOptionDescriptions() {
                                               "Overworld - Only wonder spots that are outside of dungeons.\n"
                                               "\n"
                                               "All Items - Shuffle all wonder spots.";
+    mOptionDescriptions[RSK_PATCH_WONDER_SPOT] = "The Water Temple in Master Quest has a wonder spot set to "
+                                                 "respond to an invalid damage type. Enabling this patches "
+                                                 "the spot in question to respond to the Hookshot as was probably "
+                                                 "intended and adds it as a check when wonder spots are enabled in "
+                                                 "dungeons.";
     mOptionDescriptions[RSK_SHUFFLE_DUNGEON_REWARDS] =
         "Shuffles the location of spiritual stones and medallions.\n"
         "\n"
