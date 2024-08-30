@@ -68,6 +68,8 @@ bool showMasterSword;
 bool showHyruleLoach;
 bool showWeirdEgg;
 bool showGerudoCard;
+bool showOverworldPots;
+bool showDungeonPots;
 bool showFrogSongRupees;
 bool showStartingMapsCompasses;
 bool showKeysanity;
@@ -472,6 +474,7 @@ bool HasItemBeenCollected(RandomizerCheck rc) {
     case SpoilerCollectionCheckType::SPOILER_CHK_FISH:
     case SpoilerCollectionCheckType::SPOILER_CHK_RANDOMIZER_INF:
     case SpoilerCollectionCheckType::SPOILER_CHK_MASTER_SWORD:
+    case SpoilerCollectionCheckType::SPOILER_CHK_POT:
         return Flags_GetRandomizerInf(OTRGlobals::Instance->gRandomizer->GetRandomizerInfFromCheck(rc));
     case SpoilerCollectionCheckType::SPOILER_CHK_EVENT_CHK_INF:
         return gSaveContext.eventChkInf[flag / 16] & (0x01 << flag % 16);
@@ -805,6 +808,7 @@ void CheckTrackerFlagSet(int16_t flagType, int32_t flag) {
         if (checkMatchType == SpoilerCollectionCheckType::SPOILER_CHK_RANDOMIZER_INF &&
                (scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_SHOP_ITEM ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_FISH ||
+               scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_POT ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_MASTER_SWORD ||
                scCheckType == SpoilerCollectionCheckType::SPOILER_CHK_RANDOMIZER_INF)) {
             if (flag == OTRGlobals::Instance->gRandomizer->GetRandomizerInfFromCheck(loc.GetRandomizerCheck())) {
@@ -1280,9 +1284,30 @@ void LoadSettings() {
                 showDungeonTokens = false;
                 break;
         }
+
+        switch (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_POTS)) {
+            case RO_SHUFFLE_POTS_ALL:
+                showOverworldPots = true;
+                showDungeonPots = true;
+                break;
+            case RO_SHUFFLE_POTS_OVERWORLD:
+                showOverworldPots = true;
+                showDungeonPots = false;
+                break;
+            case RO_SHUFFLE_POTS_DUNGEONS:
+                showOverworldPots = false;
+                showDungeonPots = true;
+                break;
+            default:
+                showOverworldPots = false;
+                showDungeonPots = false;
+                break;
+        }
     } else { // Vanilla
         showOverworldTokens = true;
         showDungeonTokens = true;
+        showOverworldPots = false;
+        showDungeonPots = false;
     }
 
     fortressFast = false;
@@ -1335,6 +1360,9 @@ bool IsCheckShuffled(RandomizerCheck rc) {
                 (showOverworldTokens && RandomizerCheckObjects::AreaIsOverworld(loc->GetArea())) ||
                 (showDungeonTokens && RandomizerCheckObjects::AreaIsDungeon(loc->GetArea()))
                 ) &&
+            (loc->GetRCType() != RCTYPE_POT ||
+                (showOverworldPots && RandomizerCheckObjects::AreaIsOverworld(loc->GetArea())) ||
+                (showDungeonPots && RandomizerCheckObjects::AreaIsDungeon(loc->GetArea()))) &&
             (loc->GetRCType() != RCTYPE_COW || showCows) &&
             (loc->GetRCType() != RCTYPE_FISH || OTRGlobals::Instance->gRandoContext->GetFishsanity()->GetFishLocationIncluded(loc)) &&
             (loc->GetRCType() != RCTYPE_ADULT_TRADE ||

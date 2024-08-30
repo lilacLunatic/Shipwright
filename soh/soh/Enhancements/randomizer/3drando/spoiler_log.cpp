@@ -123,6 +123,10 @@ void WriteIngameSpoilerLog() {
         else if (!ctx->GetOption(RSK_SHUFFLE_COWS) && loc->IsCategory(Category::cCow)) {
             continue;
         }
+        // Shuffle Pots
+        else if (ctx->GetOption(RSK_SHUFFLE_POTS).Is(RO_SHUFFLE_POTS_OFF) && loc->IsCategory(Category::cPot)) {
+            continue;
+        }
         // Merchants
         else if (ctx->GetOption(RSK_SHUFFLE_MERCHANTS).Is(RO_SHUFFLE_MERCHANTS_OFF) && loc->IsCategory(Category::cMerchant)) {
             continue;

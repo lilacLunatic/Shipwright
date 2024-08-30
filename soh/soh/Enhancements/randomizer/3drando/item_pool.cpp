@@ -810,6 +810,33 @@ void GenerateItemPool() {
     PlaceVanillaCowMilk();
   }
 
+  // Shuffle Pots
+  if (ctx->GetOption(RSK_SHUFFLE_POTS).Is(RO_SHUFFLE_POTS_OFF)) {
+    for (RandomizerCheck loc : ctx->GetLocations(ctx->allLocations, Category::cPot)) {
+      ctx->PlaceItemInLocation(loc, Rando::StaticData::GetLocation(loc)->GetVanillaItem(), false, true);
+    }
+  } else if (ctx->GetOption(RSK_SHUFFLE_POTS).Is(RO_SHUFFLE_POTS_DUNGEONS)) {
+    for (RandomizerCheck loc : ctx->GetLocations(ctx->allLocations, Category::cPot)) {
+      if (Rando::StaticData::GetLocation(loc)->IsOverworld()) {
+        ctx->PlaceItemInLocation(loc, Rando::StaticData::GetLocation(loc)->GetVanillaItem(), false, true);
+      } else {
+        AddItemToMainPool(Rando::StaticData::GetLocation(loc)->GetVanillaItem());
+      }
+    }
+  } else if (ctx->GetOption(RSK_SHUFFLE_POTS).Is(RO_SHUFFLE_POTS_OVERWORLD)) {
+    for (RandomizerCheck loc : ctx->GetLocations(ctx->allLocations, Category::cPot)) {
+      if (Rando::StaticData::GetLocation(loc)->IsDungeon()) {
+        ctx->PlaceItemInLocation(loc, Rando::StaticData::GetLocation(loc)->GetVanillaItem(), false, true);
+      } else {
+        AddItemToMainPool(Rando::StaticData::GetLocation(loc)->GetVanillaItem());
+      }
+    }
+  } else {
+    for (RandomizerCheck loc : ctx->GetLocations(ctx->allLocations, Category::cPot)) {
+      AddItemToMainPool(Rando::StaticData::GetLocation(loc)->GetVanillaItem());
+    }
+  }
+  
   auto fsMode = ctx->GetOption(RSK_FISHSANITY);
   if (fsMode.IsNot(RO_FISHSANITY_OFF)) {
     if (fsMode.Is(RO_FISHSANITY_POND) || fsMode.Is(RO_FISHSANITY_BOTH)) {

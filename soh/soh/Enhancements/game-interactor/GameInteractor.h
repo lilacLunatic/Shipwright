@@ -242,6 +242,9 @@ typedef enum {
     ```
     */
     VB_DRAW_AMMO_COUNT,
+    // Opt: *ObjTsubo
+    VB_POT_DRAW,
+    VB_POT_DROP_ITEM,
 
     /*** Play Cutscenes ***/
 

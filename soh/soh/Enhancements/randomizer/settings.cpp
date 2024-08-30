@@ -112,6 +112,7 @@ void Settings::CreateOptions() {
     mOptions[RSK_SHUFFLE_SWIM] = Option::Bool("Shuffle Swim", CVAR_RANDOMIZER_SETTING("ShuffleSwim"), mOptionDescriptions[RSK_SHUFFLE_SWIM]);
     mOptions[RSK_SHUFFLE_WEIRD_EGG] = Option::Bool("Shuffle Weird Egg", CVAR_RANDOMIZER_SETTING("ShuffleWeirdEgg"), mOptionDescriptions[RSK_SHUFFLE_WEIRD_EGG]);
     mOptions[RSK_SHUFFLE_GERUDO_MEMBERSHIP_CARD] = Option::Bool("Shuffle Gerudo Membership Card", CVAR_RANDOMIZER_SETTING("ShuffleGerudoToken"), mOptionDescriptions[RSK_SHUFFLE_GERUDO_MEMBERSHIP_CARD]);
+    mOptions[RSK_SHUFFLE_POTS] = Option::U8("Shuffle Pots", {"Off", "Dungeons", "Overworld", "All Pots"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ShufflePots"), mOptionDescriptions[RSK_SHUFFLE_POTS], WidgetType::Combobox, RO_SHUFFLE_POTS_OFF);
     mOptions[RSK_SHUFFLE_FISHING_POLE] = Option::Bool("Shuffle Fishing Pole", CVAR_RANDOMIZER_SETTING("ShuffleFishingPole"), mOptionDescriptions[RSK_SHUFFLE_FISHING_POLE]);
     mOptions[RSK_SHUFFLE_MAGIC_BEANS] = Option::Bool("Shuffle Magic Beans", CVAR_RANDOMIZER_SETTING("ShuffleBeans"), mOptionDescriptions[RSK_SHUFFLE_MAGIC_BEANS]);
     mOptions[RSK_SHUFFLE_MERCHANTS] = Option::U8("Shuffle Merchants", {"Off", "On (No Hints)", "On (With Hints)"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ShuffleMerchants"), mOptionDescriptions[RSK_SHUFFLE_MERCHANTS], WidgetType::Combobox, RO_SHUFFLE_MERCHANTS_OFF);
@@ -678,6 +679,7 @@ void Settings::CreateOptions() {
         &mOptions[RSK_FISHSANITY_POND_COUNT],
         &mOptions[RSK_FISHSANITY_AGE_SPLIT],
         &mOptions[RSK_SHUFFLE_SCRUBS],
+        &mOptions[RSK_SHUFFLE_POTS],
         &mOptions[RSK_SHUFFLE_BEEHIVES],
         &mOptions[RSK_SHUFFLE_COWS],
         &mOptions[RSK_SHUFFLE_MAGIC_BEANS],
@@ -884,6 +886,7 @@ void Settings::CreateOptions() {
         &mOptions[RSK_SHUFFLE_FISHING_POLE],
         &mOptions[RSK_SHUFFLE_TOKENS],
         &mOptions[RSK_SHUFFLE_SCRUBS],
+        &mOptions[RSK_SHUFFLE_POTS],
         &mOptions[RSK_SHUFFLE_BEEHIVES],
         &mOptions[RSK_SHUFFLE_COWS],
         &mOptions[RSK_SHUFFLE_KOKIRI_SWORD],
@@ -1074,6 +1077,7 @@ void Settings::CreateOptions() {
         &mOptions[RSK_FISHSANITY_POND_COUNT],
         &mOptions[RSK_FISHSANITY_AGE_SPLIT],
         &mOptions[RSK_SHUFFLE_SCRUBS],
+        &mOptions[RSK_SHUFFLE_POTS],
         &mOptions[RSK_SHUFFLE_BEEHIVES],
         &mOptions[RSK_SHUFFLE_COWS],
         &mOptions[RSK_SHUFFLE_MAGIC_BEANS],
@@ -1108,6 +1112,7 @@ void Settings::CreateOptions() {
         { "Shuffle Settings:Link's Pocket", RSK_LINKS_POCKET },
         { "Shuffle Settings:Shuffle Songs", RSK_SHUFFLE_SONGS },
         { "Shuffle Settings:Shuffle Gerudo Membership Card", RSK_SHUFFLE_GERUDO_MEMBERSHIP_CARD },
+        { "Shuffle Settings:Shuffle Pots", RSK_SHUFFLE_POTS },
         { "Shuffle Settings:Shopsanity", RSK_SHOPSANITY },
         { "Shuffle Settings:Shopsanity Prices", RSK_SHOPSANITY_PRICES },
         { "Shuffle Settings:Affordable Prices", RSK_SHOPSANITY_PRICES_AFFORDABLE },
@@ -2675,6 +2680,17 @@ void Settings::ParseJson(nlohmann::json spoilerFileJson) {
                         mOptions[index].SetSelectedIndex(RO_TOKENSANITY_OVERWORLD);
                     } else if (it.value() == "All Tokens") {
                         mOptions[index].SetSelectedIndex(RO_TOKENSANITY_ALL);
+                    }
+                    break;
+                case RSK_SHUFFLE_POTS:
+                    if (it.value() == "Off") {
+                        mOptions[index].SetSelectedIndex(RO_SHUFFLE_POTS_OFF);
+                    } else if (it.value() == "Dungeons") {
+                        mOptions[index].SetSelectedIndex(RO_SHUFFLE_POTS_DUNGEONS);
+                    } else if (it.value() == "Overworld") {
+                        mOptions[index].SetSelectedIndex(RO_SHUFFLE_POTS_OVERWORLD);
+                    } else if (it.value() == "All Pots") {
+                        mOptions[index].SetSelectedIndex(RO_SHUFFLE_POTS_ALL);
                     }
                     break;
                 case RSK_LINKS_POCKET:
