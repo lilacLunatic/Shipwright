@@ -87,10 +87,11 @@ static InitChainEntry sInitChain[] = {
 void ObjTsubo_SpawnCollectible(ObjTsubo* this, PlayState* play) {
     s16 dropParams = this->actor.params & 0x1F;
 
-    if ((dropParams >= ITEM00_RUPEE_GREEN) && (dropParams <= ITEM00_BOMBS_SPECIAL) &&
-        GameInteractor_Should(VB_POT_DROP_ITEM, true, this)) {
-        Item_DropCollectible(play, &this->actor.world.pos,
-                             (dropParams | (((this->actor.params >> 9) & 0x3F) << 8)));
+    if (GameInteractor_Should(VB_POT_DROP_ITEM, true, this)) {
+        if ((dropParams >= ITEM00_RUPEE_GREEN) && (dropParams <= ITEM00_BOMBS_SPECIAL)) {
+            Item_DropCollectible(play, &this->actor.world.pos,
+                                 (dropParams | (((this->actor.params >> 9) & 0x3F) << 8)));
+        }
     }
 }
 

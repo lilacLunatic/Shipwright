@@ -2260,12 +2260,10 @@ CowIdentity Randomizer::IdentifyCow(s32 sceneNum, s32 posX, s32 posZ) {
 
 PotIdentity Randomizer::IdentifyPot(s32 sceneNum, s32 posX, s32 posZ) {
     struct PotIdentity potIdentity;
-    uint32_t potSceneNum;
+    uint32_t potSceneNum = sceneNum;
 
     if (sceneNum == SCENE_GANONDORF_BOSS) {
         potSceneNum = SCENE_GANONS_TOWER;
-    } else {
-        potSceneNum = sceneNum;
     }
 
     potIdentity.randomizerInf = RAND_INF_MAX;
