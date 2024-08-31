@@ -245,6 +245,8 @@ typedef enum {
     // Opt: *ObjTsubo
     VB_POT_DRAW,
     VB_POT_DROP_ITEM,
+    // Opt: *ActorDoorShutter
+    VB_LOCK_DOOR,
 
     /*** Play Cutscenes ***/
 

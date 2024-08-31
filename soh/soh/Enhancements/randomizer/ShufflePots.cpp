@@ -8,6 +8,7 @@ extern "C" {
 #include "z64.h"
 #include "variables.h"
 #include "overlays/actors/ovl_Obj_Tsubo/z_obj_tsubo.h"
+#include "overlays/actors/Ovl_Door_Shutter/z_door_shutter.h"
 
 u8 Randomizer_GetSettingValue(RandomizerSettingKey randoSettingKey);
 GetItemEntry Randomizer_GetItemFromKnownCheck(RandomizerCheck randomizerCheck, GetItemID ogId);
@@ -77,12 +78,22 @@ void PotOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void* optio
             *should = false;
         }
     }
-    
+
     // Do not spawn vanilla item from pot, instead spawn the ranomized item.
     if (id == VB_POT_DROP_ITEM) {
         ObjTsubo* potActor = static_cast<ObjTsubo*>(optionalArg);
         if (ObjTsubo_RandomizerHoldsItem(potActor, gPlayState)) {
             ObjTsubo_RandomizerSpawnCollectible(potActor, gPlayState);
+            *should = false;
+        }
+    }
+
+    // Unlock early Ganon's Boss Key doors to allow access to the pots there when pots are shuffled in dungeon
+    if (id == VB_LOCK_DOOR) {
+        DoorShutter* doorActor = static_cast<DoorShutter*>(optionalArg);
+        uint8_t shufflePotSetting = Randomizer_GetSettingValue(RSK_SHUFFLE_POTS);
+        if (gPlayState->sceneNum == SCENE_GANONS_TOWER && doorActor->dyna.actor.world.pos.y == 800 &&
+            (shufflePotSetting == RO_SHUFFLE_POTS_DUNGEONS || shufflePotSetting == RO_SHUFFLE_POTS_ALL)) {
             *should = false;
         }
     }
