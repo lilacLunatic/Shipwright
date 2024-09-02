@@ -626,7 +626,7 @@ static void PlaceFreestandingItems() {
 
   for (RandomizerCheck rc : ctx->GetLocations(Rando::StaticData::overworldLocations, Category::cFreestanding)) {
     Rando::Location* loc = Rando::StaticData::GetLocation(rc);
-    RandomizerGet item = loc->GetVanillaItem() ?: GetJunkItem();
+    RandomizerGet item = loc->GetVanillaItem() != RG_NONE ? loc->GetVanillaItem() : GetJunkItem();
     if ((loc->GetRCType() == RCTYPE_FREESTANDING && (freestandingOption.Is(RO_TOKENSANITY_OVERWORLD) || freestandingOption.Is(RO_TOKENSANITY_ALL))) ||
         (loc->GetRCType() == RCTYPE_INVISIBLE_ITEM && (invisibleOption.Is(RO_TOKENSANITY_OVERWORLD) || invisibleOption.Is(RO_TOKENSANITY_ALL))) ||
         (loc->GetRCType() == RCTYPE_WONDER_SPOT && (wonderOption.Is(RO_TOKENSANITY_OVERWORLD) || wonderOption.Is(RO_TOKENSANITY_ALL)))) {
@@ -639,7 +639,7 @@ static void PlaceFreestandingItems() {
   for (auto dungeon : ctx->GetDungeons()->GetDungeonList()) {
     for (RandomizerCheck rc : ctx->GetLocations(dungeon->GetDungeonLocations(), Category::cFreestanding)) {
       Rando::Location* loc = Rando::StaticData::GetLocation(rc);
-      RandomizerGet item = loc->GetVanillaItem() ?: GetJunkItem();
+      RandomizerGet item = loc->GetVanillaItem() != RG_NONE ? loc->GetVanillaItem() : GetJunkItem();
       if ((loc->GetRCType() == RCTYPE_FREESTANDING && (freestandingOption.Is(RO_TOKENSANITY_DUNGEONS) || freestandingOption.Is(RO_TOKENSANITY_ALL))) ||
           (loc->GetRCType() == RCTYPE_INVISIBLE_ITEM && (invisibleOption.Is(RO_TOKENSANITY_DUNGEONS) || invisibleOption.Is(RO_TOKENSANITY_ALL))) ||
           (loc->GetRCType() == RCTYPE_WONDER_SPOT && (wonderOption.Is(RO_TOKENSANITY_DUNGEONS) || wonderOption.Is(RO_TOKENSANITY_ALL)) &&

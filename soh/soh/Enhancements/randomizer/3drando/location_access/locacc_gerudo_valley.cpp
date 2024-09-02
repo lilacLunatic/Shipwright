@@ -134,6 +134,8 @@ void AreaTable_Init_GerudoValley() {
                   LOCATION(RC_GF_ABOVE_CELL_WEST_SKULL,     logic->CanUse(RG_FAIRY_BOW)),
                   LOCATION(RC_GF_SOUTH_F1_NORTH_SKULL,      logic->CanUse(RG_FAIRY_BOW)),
                   LOCATION(RC_GF_SOUTH_F1_SOUTH_SKULL,      logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_SOUTH_F2_WEST_SKULL,       logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_SOUTH_F2_EAST_SKULL,       logic->CanUse(RG_FAIRY_BOW)),
                 }, {
                   //Exits
                   Entrance(RR_GV_FORTRESS_SIDE,                 {[]{return true;}}),
