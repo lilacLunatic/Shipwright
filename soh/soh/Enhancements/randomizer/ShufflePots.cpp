@@ -8,7 +8,7 @@ extern "C" {
 #include "z64.h"
 #include "variables.h"
 #include "overlays/actors/ovl_Obj_Tsubo/z_obj_tsubo.h"
-#include "overlays/actors/Ovl_Door_Shutter/z_door_shutter.h"
+#include "overlays/actors/ovl_Door_Shutter/z_door_shutter.h"
 
 u8 Randomizer_GetSettingValue(RandomizerSettingKey randoSettingKey);
 GetItemEntry Randomizer_GetItemFromKnownCheck(RandomizerCheck randomizerCheck, GetItemID ogId);
