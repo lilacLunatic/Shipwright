@@ -413,6 +413,9 @@ typedef enum {
     // Vanilla condition: true
     VB_PHANTOM_GANON_DEATH_SCENE,
     VB_NABOORU_KNUCKLE_DEATH_SCENE,
+
+    // Opt: *EnElf
+    VB_SPAWN_FAIRY_GROUP,
 } GIVanillaBehavior;
 
 #ifdef __cplusplus

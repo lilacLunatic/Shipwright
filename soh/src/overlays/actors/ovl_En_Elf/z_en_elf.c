@@ -7,6 +7,7 @@
 #include "z_en_elf.h"
 #include "objects/gameplay_keep/gameplay_keep.h"
 #include <assert.h>
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_UPDATE_WHILE_CULLED | ACTOR_FLAG_DRAW_WHILE_CULLED | ACTOR_FLAG_NO_FREEZE_OCARINA)
 
@@ -399,9 +400,11 @@ void EnElf_Init(Actor* thisx, PlayState* play) {
             EnElf_SetupAction(this, func_80A03604);
             func_80A01C38(this, 8);
 
-            for (i = 0; i < 8; i++) {
-                Actor_Spawn(&play->actorCtx, play, ACTOR_EN_ELF, thisx->world.pos.x,
-                            thisx->world.pos.y - 30.0f, thisx->world.pos.z, 0, 0, 0, FAIRY_HEAL, true);
+            if (GameInteractor_Should(VB_SPAWN_FAIRY_GROUP, true, this)) {
+                for (i = 0; i < 8; i++) {
+                    Actor_Spawn(&play->actorCtx, play, ACTOR_EN_ELF, thisx->world.pos.x,
+                                thisx->world.pos.y - 30.0f, thisx->world.pos.z, 0, 0, 0, FAIRY_HEAL, true);
+                }
             }
             break;
         default:
