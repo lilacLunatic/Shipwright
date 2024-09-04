@@ -697,7 +697,7 @@ void RandomizerOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void
             if (loc && loc->GetRandomizerCheck() != RC_UNKNOWN_CHECK) {
                 *should = Rando::Context::GetInstance()->GetItemLocation(loc->GetRandomizerCheck())->HasObtained();
                 if (loc->GetCollectionCheck().type == SPOILER_CHK_RANDOMIZER_INF) {
-                    Flags_SetRandomizerInf(loc->GetCollectionCheck().flag);
+                    Flags_SetRandomizerInf(static_cast<RandomizerInf>(loc->GetCollectionCheck().flag));
                 }
             }
             break;
