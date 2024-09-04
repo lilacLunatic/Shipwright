@@ -3883,6 +3883,7 @@ typedef enum {
     RSK_SKELETON_KEY,
     RSK_SHUFFLE_DEKU_STICK_BAG,
     RSK_SHUFFLE_DEKU_NUT_BAG,
+    RSK_SHUFFLE_FAIRIES,
     RSK_MAX
 } RandomizerSettingKey;
 
