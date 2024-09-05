@@ -31,5 +31,6 @@ void Grotto_ForceGrottoReturn(void);
 void Grotto_ForceRegularVoidOut(void);
 void Grotto_SanitizeEntranceType(void);
 s16 Grotto_GetRenamedGrottoIndexFromOriginal(s8 content, s8 scene);
+s8 Grotto_CurrentGrotto();
 
 #endif //_RANDO_GROTTO_H_
