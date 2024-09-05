@@ -684,6 +684,14 @@ Dungeons::Dungeons() {
                         RC_GANONS_CASTLE_DEKU_SCRUB_CENTER_LEFT,
                         RC_GANONS_CASTLE_DEKU_SCRUB_CENTER_RIGHT,
                         RC_GANONS_CASTLE_DEKU_SCRUB_RIGHT,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_1,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_2,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_3,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_4,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_5,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_6,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_7,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_8,
                     },
                     {
                         // MQ Locations
@@ -705,6 +713,14 @@ Dungeons::Dungeons() {
                         RC_GANONS_CASTLE_MQ_DEKU_SCRUB_CENTER,
                         RC_GANONS_CASTLE_MQ_DEKU_SCRUB_CENTER_RIGHT,
                         RC_GANONS_CASTLE_MQ_DEKU_SCRUB_LEFT,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_1,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_2,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_3,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_4,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_5,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_6,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_7,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_8,
                     },
                     {
                         // Shared Locations

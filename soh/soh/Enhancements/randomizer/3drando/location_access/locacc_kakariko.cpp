@@ -232,6 +232,14 @@ void AreaTable_Init_Kakariko() {
                   //Locations
                   LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_CHEST, true),
                   //Free Fairies
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_1, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_2, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_3, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_4, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_5, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_6, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_7, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_8, logic->CanBlastOrSmash),
                 }, {
                   //Exits
                   Entrance(RR_THE_GRAVEYARD, {[]{return true;}}),

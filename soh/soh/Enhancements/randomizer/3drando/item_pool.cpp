@@ -1170,9 +1170,32 @@ void GenerateItemPool() {
     for (auto rc : Rando::StaticData::overworldFairyLocations) {
       AddItemToMainPool(GetJunkItem());
     }
+    // 8 extra for Ganon's Castle
+    for (int i = 0; i < 8; i++) {
+      AddItemToMainPool(GetJunkItem());
+    }
   } else {
     for (auto rc : Rando::StaticData::overworldFairyLocations) {
       ctx->PlaceItemInLocation(rc, GetJunkItem(), false, true);
+    }
+    if (ctx->GetDungeon(Rando::GANONS_CASTLE)->IsMQ()) {
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_1, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_2, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_3, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_4, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_5, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_6, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_7, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_8, GetJunkItem(), false, true);
+    } else {
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_SCRUBS_FAIRY_1, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_SCRUBS_FAIRY_2, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_SCRUBS_FAIRY_3, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_SCRUBS_FAIRY_4, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_SCRUBS_FAIRY_5, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_SCRUBS_FAIRY_6, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_SCRUBS_FAIRY_7, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_GANONS_CASTLE_SCRUBS_FAIRY_8, GetJunkItem(), false, true);
     }
   }
 
