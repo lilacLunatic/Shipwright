@@ -416,6 +416,8 @@ typedef enum {
 
     // Opt: *EnElf
     VB_SPAWN_FAIRY_GROUP,
+    // Opt: *EnElf
+    VB_FAIRY_HEAL,
 } GIVanillaBehavior;
 
 #ifdef __cplusplus

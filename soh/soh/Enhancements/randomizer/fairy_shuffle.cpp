@@ -26,13 +26,19 @@ void FairyOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void* opt
                         enElf->actor.world.pos.y - 30.0f, enElf->actor.world.pos.z, 0, 0, 0, FAIRY_HEAL, true);
             int32_t params = (grottoId << 8) | index;
             Rando::Location* location = OTRGlobals::Instance->gRandomizer->GetCheckObjectFromActor(ACTOR_EN_ELF, gPlayState->sceneNum, params);
-            if (location != NULL && location->GetRandomizerCheck() != RC_UNKNOWN_CHECK) {
+            if (location != NULL && location->GetRandomizerCheck() != RC_UNKNOWN_CHECK && !Flags_GetRandomizerInf(location->GetCollectionCheck().flag)) {
                 GetItemEntry item = Rando::Context::GetInstance()->GetFinalGIEntry(location->GetRandomizerCheck(), true, GI_FAIRY);
                 newFairy->sohFairyIdentity = { static_cast<RandomizerInf>(location->GetCollectionCheck().flag), item };
                 newFairy->actor.draw = (ActorFunc)FairyDrawRandomizedItem;
             }
         }
         *should = false;
+    } else if (id == VB_FAIRY_HEAL) {
+        EnElf* enElf = static_cast<EnElf*>(optionalArg);
+        if (enElf->sohFairyIdentity.randomizerInf != RAND_INF_MAX) {
+            Flags_SetRandomizerInf(enElf->sohFairyIdentity.randomizerInf);
+            *should = false;
+        }
     }
 }
 
