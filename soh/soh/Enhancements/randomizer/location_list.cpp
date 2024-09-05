@@ -504,6 +504,15 @@ std::vector<RandomizerCheck> Rando::StaticData::overworldLocations = {
     RC_LH_GROTTO_BEEHIVE,
     RC_GV_DEKU_SCRUB_GROTTO_BEEHIVE,
     RC_COLOSSUS_GROTTO_BEEHIVE,
+
+    RC_SFM_FAIRY_GROTTO_FAIRY_1,
+    RC_SFM_FAIRY_GROTTO_FAIRY_2,
+    RC_SFM_FAIRY_GROTTO_FAIRY_3,
+    RC_SFM_FAIRY_GROTTO_FAIRY_4,
+    RC_SFM_FAIRY_GROTTO_FAIRY_5,
+    RC_SFM_FAIRY_GROTTO_FAIRY_6,
+    RC_SFM_FAIRY_GROTTO_FAIRY_7,
+    RC_SFM_FAIRY_GROTTO_FAIRY_8,
 };
 
 std::vector<RandomizerCheck> Rando::StaticData::gossipStoneLocations = {
@@ -578,6 +587,17 @@ std::vector<RandomizerCheck> Rando::StaticData::overworldFishLocations = {
     RC_HF_NEAR_MARKET_GROTTO_FISH, RC_HF_OPEN_GROTTO_FISH,           RC_KAK_OPEN_GROTTO_FISH,
     RC_KF_STORMS_GROTTO_FISH,      RC_LW_NEAR_SHORTCUTS_GROTTO_FISH, RC_ZR_OPEN_GROTTO_FISH,
     RC_ZD_FISH_1,   RC_ZD_FISH_2,   RC_ZD_FISH_3,   RC_ZD_FISH_4,    RC_ZD_FISH_5
+};
+
+std::vector<RandomizerCheck> Rando::StaticData::overworldFairyLocations = {
+    RC_SFM_FAIRY_GROTTO_FAIRY_1,
+    RC_SFM_FAIRY_GROTTO_FAIRY_2,
+    RC_SFM_FAIRY_GROTTO_FAIRY_3,
+    RC_SFM_FAIRY_GROTTO_FAIRY_4,
+    RC_SFM_FAIRY_GROTTO_FAIRY_5,
+    RC_SFM_FAIRY_GROTTO_FAIRY_6,
+    RC_SFM_FAIRY_GROTTO_FAIRY_7,
+    RC_SFM_FAIRY_GROTTO_FAIRY_8,
 };
 
 typedef enum {
@@ -1513,6 +1533,15 @@ void Rando::StaticData::InitLocationTable() { //                                
     locationTable[RC_ZD_FISH_4] =                                                      Location::Base(RC_ZD_FISH_4,                                                    RCQUEST_BOTH,    RCTYPE_FISH,                        RCAREA_ZORAS_DOMAIN,                 ACTOR_EN_FISH,        SCENE_ZORAS_DOMAIN,                 -1 ^ 3,                                            0x00, "Fish 4",                                      RHT_ZD_FISH,                                                     RG_FISH,                              { Category::cFish },                                    SpoilerCollectionCheck::Fish(0xFF, SCENE_ZORAS_DOMAIN),                                                                       SpoilerCollectionCheckGroup::GROUP_ZORAS_DOMAIN);
     locationTable[RC_ZD_FISH_5] =                                                      Location::Base(RC_ZD_FISH_5,                                                    RCQUEST_BOTH,    RCTYPE_FISH,                        RCAREA_ZORAS_DOMAIN,                 ACTOR_EN_FISH,        SCENE_ZORAS_DOMAIN,                 -1 ^ 4,                                            0x00, "Fish 5",                                      RHT_ZD_FISH,                                                     RG_FISH,                              { Category::cFish },                                    SpoilerCollectionCheck::Fish(0xFF, SCENE_ZORAS_DOMAIN),                                                                       SpoilerCollectionCheckGroup::GROUP_ZORAS_DOMAIN);
 
+    // Fairies
+    locationTable[RC_SFM_FAIRY_GROTTO_FAIRY_1] =                                       Location::Fairy(RC_SFM_FAIRY_GROTTO_FAIRY_1,                                    RCQUEST_BOTH,                                        RCAREA_SACRED_FOREST_MEADOW,                               SCENE_FAIRYS_FOUNTAIN,              0x1800,               RAND_INF_SFM_FAIRY_GROTTO_FAIRY_1, "Grotto Fairy 1",                              RHT_SFM_FAIRY_GROTTO_FAIRY,                                                                                                                                                                                                                                                                  SpoilerCollectionCheckGroup::GROUP_LOST_WOODS);
+    locationTable[RC_SFM_FAIRY_GROTTO_FAIRY_2] =                                       Location::Fairy(RC_SFM_FAIRY_GROTTO_FAIRY_2,                                    RCQUEST_BOTH,                                        RCAREA_SACRED_FOREST_MEADOW,                               SCENE_FAIRYS_FOUNTAIN,              0x1801,               RAND_INF_SFM_FAIRY_GROTTO_FAIRY_2, "Grotto Fairy 2",                              RHT_SFM_FAIRY_GROTTO_FAIRY,                                                                                                                                                                                                                                                                  SpoilerCollectionCheckGroup::GROUP_LOST_WOODS);
+    locationTable[RC_SFM_FAIRY_GROTTO_FAIRY_3] =                                       Location::Fairy(RC_SFM_FAIRY_GROTTO_FAIRY_3,                                    RCQUEST_BOTH,                                        RCAREA_SACRED_FOREST_MEADOW,                               SCENE_FAIRYS_FOUNTAIN,              0x1802,               RAND_INF_SFM_FAIRY_GROTTO_FAIRY_3, "Grotto Fairy 3",                              RHT_SFM_FAIRY_GROTTO_FAIRY,                                                                                                                                                                                                                                                                  SpoilerCollectionCheckGroup::GROUP_LOST_WOODS);
+    locationTable[RC_SFM_FAIRY_GROTTO_FAIRY_4] =                                       Location::Fairy(RC_SFM_FAIRY_GROTTO_FAIRY_4,                                    RCQUEST_BOTH,                                        RCAREA_SACRED_FOREST_MEADOW,                               SCENE_FAIRYS_FOUNTAIN,              0x1803,               RAND_INF_SFM_FAIRY_GROTTO_FAIRY_4, "Grotto Fairy 4",                              RHT_SFM_FAIRY_GROTTO_FAIRY,                                                                                                                                                                                                                                                                  SpoilerCollectionCheckGroup::GROUP_LOST_WOODS);
+    locationTable[RC_SFM_FAIRY_GROTTO_FAIRY_5] =                                       Location::Fairy(RC_SFM_FAIRY_GROTTO_FAIRY_5,                                    RCQUEST_BOTH,                                        RCAREA_SACRED_FOREST_MEADOW,                               SCENE_FAIRYS_FOUNTAIN,              0x1804,               RAND_INF_SFM_FAIRY_GROTTO_FAIRY_5, "Grotto Fairy 5",                              RHT_SFM_FAIRY_GROTTO_FAIRY,                                                                                                                                                                                                                                                                  SpoilerCollectionCheckGroup::GROUP_LOST_WOODS);
+    locationTable[RC_SFM_FAIRY_GROTTO_FAIRY_6] =                                       Location::Fairy(RC_SFM_FAIRY_GROTTO_FAIRY_6,                                    RCQUEST_BOTH,                                        RCAREA_SACRED_FOREST_MEADOW,                               SCENE_FAIRYS_FOUNTAIN,              0x1805,               RAND_INF_SFM_FAIRY_GROTTO_FAIRY_6, "Grotto Fairy 6",                              RHT_SFM_FAIRY_GROTTO_FAIRY,                                                                                                                                                                                                                                                                  SpoilerCollectionCheckGroup::GROUP_LOST_WOODS);
+    locationTable[RC_SFM_FAIRY_GROTTO_FAIRY_7] =                                       Location::Fairy(RC_SFM_FAIRY_GROTTO_FAIRY_7,                                    RCQUEST_BOTH,                                        RCAREA_SACRED_FOREST_MEADOW,                               SCENE_FAIRYS_FOUNTAIN,              0x1806,               RAND_INF_SFM_FAIRY_GROTTO_FAIRY_7, "Grotto Fairy 7",                              RHT_SFM_FAIRY_GROTTO_FAIRY,                                                                                                                                                                                                                                                                  SpoilerCollectionCheckGroup::GROUP_LOST_WOODS);
+    locationTable[RC_SFM_FAIRY_GROTTO_FAIRY_8] =                                       Location::Fairy(RC_SFM_FAIRY_GROTTO_FAIRY_8,                                    RCQUEST_BOTH,                                        RCAREA_SACRED_FOREST_MEADOW,                               SCENE_FAIRYS_FOUNTAIN,              0x1807,               RAND_INF_SFM_FAIRY_GROTTO_FAIRY_8, "Grotto Fairy 8",                              RHT_SFM_FAIRY_GROTTO_FAIRY,                                                                                                                                                                                                                                                                  SpoilerCollectionCheckGroup::GROUP_LOST_WOODS);
 
     // Gossip Stones
     locationTable[RC_DMC_GOSSIP_STONE] =                                          Location::HintStone(RC_DMC_GOSSIP_STONE,                                             RCQUEST_BOTH,                                        RCAREA_DEATH_MOUNTAIN_CRATER,                              SCENE_DEATH_MOUNTAIN_CRATER,        14341,                                             0x05, "Gossip Stone",                  {});

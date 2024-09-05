@@ -350,6 +350,10 @@ class Location {
            std::vector<Category>&& categories, SpoilerCollectionCheck collectionCheck = SpoilerCollectionCheck(),
            SpoilerCollectionCheckGroup collectionCheckGroup = GROUP_NO_GROUP, bool isVanillaCompletion_ = false);
 
+    static Location
+    Fairy(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckArea area_, uint8_t scene_, int32_t actorParams_,
+          RandomizerInf flag, std::string&& shortName_, RandomizerHintTextKey hintKey, SpoilerCollectionCheckGroup collectionCheckGroup);
+
     static Location OtherHint(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckType checkType_,
                               RandomizerCheckArea area_, ActorID actorId_, uint8_t scene_,
                               std::string&& shortName_, std::string&& spoilerName_, bool isVanillaCompletion_ = false);

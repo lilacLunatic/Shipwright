@@ -274,6 +274,7 @@ typedef enum {
     RCTYPE_OCARINA,                    // Ocarina locations
     RCTYPE_BEEHIVE,                    // Beehives
     RCTYPE_FISH,
+    RCTYPE_FAIRY,                      // Fairies
 } RandomizerCheckType;
 
 typedef enum { RCQUEST_VANILLA, RCQUEST_MQ, RCQUEST_BOTH } RandomizerCheckQuest;
@@ -1651,6 +1652,14 @@ typedef enum {
     RC_ZD_FISH_3,
     RC_ZD_FISH_4,
     RC_ZD_FISH_5,
+    RC_SFM_FAIRY_GROTTO_FAIRY_1,
+    RC_SFM_FAIRY_GROTTO_FAIRY_2,
+    RC_SFM_FAIRY_GROTTO_FAIRY_3,
+    RC_SFM_FAIRY_GROTTO_FAIRY_4,
+    RC_SFM_FAIRY_GROTTO_FAIRY_5,
+    RC_SFM_FAIRY_GROTTO_FAIRY_6,
+    RC_SFM_FAIRY_GROTTO_FAIRY_7,
+    RC_SFM_FAIRY_GROTTO_FAIRY_8,
     RC_MAX
 } RandomizerCheck;
 
@@ -3636,6 +3645,8 @@ typedef enum {
     RHT_YOUR_POCKET,
     RHT_DUNGEON_ORDINARY,
     RHT_DUNGEON_MASTERFUL,
+    // Fairy Shuffle
+    RHT_SFM_FAIRY_GROTTO_FAIRY,
     RHT_MAX
 } RandomizerHintTextKey;
 

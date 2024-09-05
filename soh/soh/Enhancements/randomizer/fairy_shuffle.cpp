@@ -10,9 +10,11 @@ void FairyDrawRandomizedItem(EnElf* enElf, PlayState* play) {
     if (CVarGetInteger(CVAR_RANDOMIZER_ENHANCEMENT("MysteriousShuffle"), 0)) {
         randoGetItem = GET_ITEM_MYSTERY;
     }
-    func_8002ED80(&enElf->actor, play, 0);
+    Matrix_Push();
+    Matrix_Scale(37.5, 37.5, 37.5, MTXMODE_APPLY);
     EnItem00_CustomItemsParticles(&enElf->actor, play, randoGetItem);
     GetItemEntry_Draw(play, randoGetItem);
+    Matrix_Pop();
 }
 
 void FairyOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void* optionalArg) {
@@ -22,8 +24,8 @@ void FairyOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void* opt
         for (s16 index = 0; index < 8; index++) {
             EnElf* newFairy = (EnElf*)Actor_Spawn(&gPlayState->actorCtx, gPlayState, ACTOR_EN_ELF, enElf->actor.world.pos.x,
                         enElf->actor.world.pos.y - 30.0f, enElf->actor.world.pos.z, 0, 0, 0, FAIRY_HEAL, true);
-            //EnElf* newFairy = newActor);
-            Rando::Location* location = OTRGlobals::Instance->gRandomizer->GetCheckObjectFromActor(ACTOR_EN_ELF, gPlayState->sceneNum, TWO_ACTOR_PARAMS(grottoId, index));
+            int32_t params = (grottoId << 8) | index;
+            Rando::Location* location = OTRGlobals::Instance->gRandomizer->GetCheckObjectFromActor(ACTOR_EN_ELF, gPlayState->sceneNum, params);
             if (location != NULL && location->GetRandomizerCheck() != RC_UNKNOWN_CHECK) {
                 GetItemEntry item = Rando::Context::GetInstance()->GetFinalGIEntry(location->GetRandomizerCheck(), true, GI_FAIRY);
                 newFairy->sohFairyIdentity = { static_cast<RandomizerInf>(location->GetCollectionCheck().flag), item };

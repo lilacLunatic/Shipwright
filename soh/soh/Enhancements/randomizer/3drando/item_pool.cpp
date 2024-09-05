@@ -1165,6 +1165,17 @@ void GenerateItemPool() {
     AddItemsToPool(ItemPool, shopsanityRupees); //Shopsanity gets extra large rupees
   }
 
+  //Fairysanity
+  if (ctx->GetOption(RSK_SHUFFLE_FAIRIES)) {
+    for (auto rc : Rando::StaticData::overworldFairyLocations) {
+      AddItemToMainPool(GetJunkItem());
+    }
+  } else {
+    for (auto rc : Rando::StaticData::overworldFairyLocations) {
+      ctx->PlaceItemInLocation(rc, GetJunkItem(), false, true);
+    }
+  }
+
   //Scrubsanity
   if (ctx->GetOption(RSK_SHUFFLE_SCRUBS).IsNot(RO_SCRUBS_OFF)) {
     //Deku Tree
