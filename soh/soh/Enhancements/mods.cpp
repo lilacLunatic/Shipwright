@@ -34,6 +34,7 @@
 #include "src/overlays/actors/ovl_Door_Shutter/z_door_shutter.h"
 #include "src/overlays/actors/ovl_Door_Gerudo/z_door_gerudo.h"
 #include "src/overlays/actors/ovl_En_Door/z_en_door.h"
+#include "src/overlays/actors/ovl_En_Elf/z_en_elf.h"
 #include "objects/object_link_boy/object_link_boy.h"
 #include "objects/object_link_child/object_link_child.h"
 
@@ -1778,6 +1779,28 @@ void RegisterSkeletonKey() {
     });
 }
 
+#define FAIRY_FLAG_BIG (1 << 9)
+void RegisterFairyCustomization() {
+    GameInteractor::Instance->RegisterGameHookForID<GameInteractor::OnVanillaBehavior>(VB_FAIRY_HEAL, [](GIVanillaBehavior id, bool* should, void* refActor) {
+        EnElf* enElf = static_cast<EnElf*>(refActor);
+        // Don't trigger if fairy is shuffled
+        if (!IS_RANDO || !OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_FAIRIES) || enElf->sohFairyIdentity.randomizerInf == RAND_INF_MAX) {
+            if (CVarGetInteger(CVAR_ENHANCEMENT("FairyEffect"), 0) && !(enElf->fairyFlags & FAIRY_FLAG_BIG))
+            {
+                if (CVarGetInteger(CVAR_ENHANCEMENT("FairyPercentRestore"), 0))
+                {
+                    Health_ChangeBy(gPlayState, (gSaveContext.healthCapacity * CVarGetInteger(CVAR_ENHANCEMENT("FairyHealth"), 100) / 100 + 15) / 16 * 16);
+                }
+                else
+                {
+                    Health_ChangeBy(gPlayState, CVarGetInteger(CVAR_ENHANCEMENT("FairyHealth"), 8) * 16);
+                }
+                *should = false;
+            }
+        }
+    });
+}
+
 void InitMods() {
     RandomizerRegisterHooks();
     TimeSaverRegisterHooks();
@@ -1828,4 +1851,5 @@ void InitMods() {
     RegisterHurtContainerModeHandler();
     RegisterPauseMenuHooks();
     RegisterSkeletonKey();
+    RegisterFairyCustomization();
 }
