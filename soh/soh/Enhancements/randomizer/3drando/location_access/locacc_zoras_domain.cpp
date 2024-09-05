@@ -67,7 +67,17 @@ void AreaTable_Init_ZorasDomain() {
   areaTable[RR_ZR_FAIRY_GROTTO] = Area("ZR Fairy Grotto", "ZR Fairy Grotto", RA_NONE, NO_DAY_NIGHT_CYCLE, {
                   //Event
                   EventAccess(&logic->FreeFairies, {[]{return true;}}),
-                }, {}, {
+                }, {
+                  //Locations
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_1,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_2,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_3,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_4,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_5,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_6,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_7,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_8,  true),
+                }, {
                   //Exits
                   Entrance(RR_ZORAS_RIVER, {[]{return true;}}),
   });
@@ -142,7 +152,17 @@ void AreaTable_Init_ZorasDomain() {
   areaTable[RR_ZD_STORMS_GROTTO] = Area("ZD Storms Grotto", "ZD Storms Grotto", RA_NONE, NO_DAY_NIGHT_CYCLE, {
                   //Events
                   EventAccess(&logic->FreeFairies, {[]{return true;}}),
-                }, {}, {
+                }, {
+                  //Locations
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_1,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_2,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_3,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_4,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_5,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_6,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_7,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_8,  true),
+                }, {
                   //Exits
                   Entrance(RR_ZORAS_DOMAIN, {[]{return true;}}),
   });
