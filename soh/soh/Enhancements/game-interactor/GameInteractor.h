@@ -414,10 +414,13 @@ typedef enum {
     VB_PHANTOM_GANON_DEATH_SCENE,
     VB_NABOORU_KNUCKLE_DEATH_SCENE,
 
+    /*** Fairy Shuffle ***/
     // Opt: *EnElf
     VB_SPAWN_FAIRY_GROUP,
     // Opt: *EnElf
     VB_FAIRY_HEAL,
+    // Opt: *ObjBean
+    VB_BEAN_SPAWN_FAIRIES,
 } GIVanillaBehavior;
 
 #ifdef __cplusplus
