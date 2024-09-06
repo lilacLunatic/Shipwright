@@ -6,6 +6,7 @@
 #include "src/overlays/actors/ovl_Obj_Bean/z_obj_bean.h"
 
 #define FAIRY_FLAG_TIMED (1 << 8)
+#define FAIRY_FLAG_BIG (1 << 9)
 
 void FairyDrawRandomizedItem(EnElf* enElf, PlayState* play) {
     GetItemEntry randoGetItem = enElf->sohFairyIdentity.itemEntry;
@@ -66,6 +67,11 @@ void FairyOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void* opt
 void FairyOnActorInitHandler(void* actorRef) {
     EnElf* enElf = static_cast<EnElf*>(actorRef);
     enElf->sohFairyIdentity = { RAND_INF_MAX, GET_ITEM_NONE };
+    s16 grottoId = (gPlayState->sceneNum == SCENE_GROTTOS) ? Grotto_CurrentGrotto() : 0;
+    if (enElf->fairyFlags & FAIRY_FLAG_BIG) {
+        grottoId |= 0x8000;
+    }
+    FairyInitialise(enElf, TWO_ACTOR_PARAMS(grottoId, (s16)enElf->actor.home.pos.z));
 }
 
 uint32_t onVanillaBehaviorHook = 0;
