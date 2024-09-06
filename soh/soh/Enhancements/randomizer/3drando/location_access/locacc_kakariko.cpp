@@ -217,6 +217,9 @@ void AreaTable_Init_Kakariko() {
                   LOCATION(RC_GRAVEYARD_DAMPE_GRAVEDIGGING_TOUR, logic->ChildsWallet && logic->IsChild && logic->AtNight), //TODO: This needs to change
                   LOCATION(RC_GRAVEYARD_GS_WALL,                 logic->IsChild && logic->HookshotOrBoomerang && logic->AtNight && logic->CanGetNightTimeGS),
                   LOCATION(RC_GRAVEYARD_GS_BEAN_PATCH,           logic->CanPlantBugs && logic->CanChildAttack),
+                  LOCATION(RC_GRAVEYARD_BEAN_SPROUT_FAIRY_1,     logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_GRAVEYARD_BEAN_SPROUT_FAIRY_2,     logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_GRAVEYARD_BEAN_SPROUT_FAIRY_3,     logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                 }, {
                   //Exits
                   Entrance(RR_GRAVEYARD_SHIELD_GRAVE,       {[]{return logic->IsAdult || logic->AtNight;}}),

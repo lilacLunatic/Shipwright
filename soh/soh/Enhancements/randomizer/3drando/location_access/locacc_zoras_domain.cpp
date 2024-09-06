@@ -34,6 +34,9 @@ void AreaTable_Init_ZorasDomain() {
                   LOCATION(RC_ZR_GS_LADDER,                         logic->IsChild && logic->AtNight && logic->CanChildAttack && logic->CanGetNightTimeGS),
                   LOCATION(RC_ZR_GS_NEAR_RAISED_GROTTOS,            logic->IsAdult && logic->HookshotOrBoomerang && logic->AtNight && logic->CanGetNightTimeGS),
                   LOCATION(RC_ZR_GS_ABOVE_BRIDGE,                   logic->IsAdult && logic->CanUse(RG_HOOKSHOT) && logic->AtNight && logic->CanGetNightTimeGS),
+                  LOCATION(RC_ZR_BEAN_SPROUT_FAIRY_1,               logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_ZR_BEAN_SPROUT_FAIRY_2,               logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_ZR_BEAN_SPROUT_FAIRY_3,               logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_ZR_NEAR_GROTTOS_GOSSIP_STONE,         true),
                   LOCATION(RC_ZR_NEAR_DOMAIN_GOSSIP_STONE,          true),
                 }, {

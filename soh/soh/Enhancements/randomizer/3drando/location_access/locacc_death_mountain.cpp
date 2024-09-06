@@ -15,6 +15,9 @@ void AreaTable_Init_DeathMountain() {
                   LOCATION(RC_DMT_GS_BEAN_PATCH,            logic->CanPlantBugs && (logic->HasExplosives || logic->GoronBracelet || (randoCtx->GetTrickOption(RT_DMT_SOIL_GS) && (logic->CanTakeDamage || logic->CanUse(RG_HOVER_BOOTS)) && logic->CanUse(RG_BOOMERANG)))),
                   LOCATION(RC_DMT_GS_NEAR_KAK,              logic->CanBlastOrSmash),
                   LOCATION(RC_DMT_GS_ABOVE_DODONGOS_CAVERN, logic->IsAdult && logic->AtNight && (logic->CanUse(RG_MEGATON_HAMMER) || (randoCtx->GetTrickOption(RT_DMT_HOOKSHOT_LOWER_GS) && logic->CanUse(RG_HOOKSHOT)) || (randoCtx->GetTrickOption(RT_DMT_BEAN_LOWER_GS) && CanPlantBean(RR_DEATH_MOUNTAIN_TRAIL)) || (randoCtx->GetTrickOption(RT_DMT_HOVERS_LOWER_GS) && logic->CanUse(RG_HOVER_BOOTS)) || randoCtx->GetTrickOption(RT_DMT_JS_LOWER_GS)) && logic->CanGetNightTimeGS),
+                  LOCATION(RC_DMT_BEAN_SPROUT_FAIRY_1,      logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->HasExplosives || logic->HasItem(RG_GORONS_BRACELET))),
+                  LOCATION(RC_DMT_BEAN_SPROUT_FAIRY_2,      logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->HasExplosives || logic->HasItem(RG_GORONS_BRACELET))),
+                  LOCATION(RC_DMT_BEAN_SPROUT_FAIRY_3,      logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->HasExplosives || logic->HasItem(RG_GORONS_BRACELET))),
                 }, {
                   //Exits
                   Entrance(RR_KAK_BEHIND_GATE,          {[]{return true;}}),
@@ -227,6 +230,9 @@ void AreaTable_Init_DeathMountain() {
                 }, {
                   //Locations
                   LOCATION(RC_DMC_GS_BEAN_PATCH, (logic->FireTimer >= 8 || logic->Hearts >= 3) && logic->CanPlantBugs && logic->CanChildAttack),
+                  LOCATION(RC_DMC_BEAN_SPROUT_FAIRY_1,  logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
+                  LOCATION(RC_DMC_BEAN_SPROUT_FAIRY_2,  logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
+                  LOCATION(RC_DMC_BEAN_SPROUT_FAIRY_3,  logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
                 }, {
                   //Exits
                   Entrance(RR_DMC_CENTRAL_NEARBY,   {[]{return true;}}),
