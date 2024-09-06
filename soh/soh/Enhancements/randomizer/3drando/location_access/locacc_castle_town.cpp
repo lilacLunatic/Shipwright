@@ -38,6 +38,14 @@ void AreaTable_Init_CastleTown() {
                   EventAccess(&logic->GossipStoneFairy, {[]{return logic->GossipStoneFairy || logic->CanSummonGossipFairyWithoutSuns;}}),
                 }, {
                   //Locations
+                  LOCATION(RC_TOT_LEFTMOST_GOSSIP_STONE_FAIRY,          logic->CanUse(RG_ZELDAS_LULLABY) || logic->CanUse(RG_SARIAS_SONG) || logic->CanUse(RG_EPONAS_SONG) || (logic->CanUse(RG_SUNS_SONG) && logic->IsAdult)),
+                  LOCATION(RC_TOT_LEFTMOST_GOSSIP_STONE_FAIRY_BIG,      logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_TOT_LEFT_CENTER_GOSSIP_STONE_FAIRY,       logic->CanUse(RG_ZELDAS_LULLABY) || logic->CanUse(RG_SARIAS_SONG) || logic->CanUse(RG_EPONAS_SONG) || (logic->CanUse(RG_SUNS_SONG) && logic->IsAdult)),
+                  LOCATION(RC_TOT_LEFT_CENTER_GOSSIP_STONE_FAIRY_BIG,   logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_TOT_RIGHT_CENTER_GOSSIP_STONE_FAIRY,      logic->CanUse(RG_ZELDAS_LULLABY) || logic->CanUse(RG_SARIAS_SONG) || logic->CanUse(RG_EPONAS_SONG) || (logic->CanUse(RG_SUNS_SONG) && logic->IsAdult)),
+                  LOCATION(RC_TOT_RIGHT_CENTER_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_TOT_RIGHTMOST_GOSSIP_STONE_FAIRY,         logic->CanUse(RG_ZELDAS_LULLABY) || logic->CanUse(RG_SARIAS_SONG) || logic->CanUse(RG_EPONAS_SONG) || (logic->CanUse(RG_SUNS_SONG) && logic->IsAdult)),
+                  LOCATION(RC_TOT_RIGHTMOST_GOSSIP_STONE_FAIRY_BIG,     logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_TOT_LEFTMOST_GOSSIP_STONE,     true),
                   LOCATION(RC_TOT_LEFT_CENTER_GOSSIP_STONE,  true),
                   LOCATION(RC_TOT_RIGHT_CENTER_GOSSIP_STONE, true),

@@ -21,7 +21,11 @@ void FairyDrawRandomizedItem(EnElf* enElf, PlayState* play) {
 }
 
 bool FairyInitialise(EnElf* fairy, int32_t params) {
-    Rando::Location* location = OTRGlobals::Instance->gRandomizer->GetCheckObjectFromActor(ACTOR_EN_ELF, gPlayState->sceneNum, params);
+    s16 sceneNum = gPlayState->sceneNum;
+    if (sceneNum == SCENE_TEMPLE_OF_TIME_EXTERIOR_NIGHT || sceneNum == SCENE_TEMPLE_OF_TIME_EXTERIOR_RUINS) {
+        sceneNum = SCENE_TEMPLE_OF_TIME_EXTERIOR_DAY;
+    }
+    Rando::Location* location = OTRGlobals::Instance->gRandomizer->GetCheckObjectFromActor(ACTOR_EN_ELF, sceneNum, params);
     RandomizerInf flag = static_cast<RandomizerInf>(location->GetCollectionCheck().flag);
     if (location->GetRandomizerCheck() != RC_UNKNOWN_CHECK && !Flags_GetRandomizerInf(flag)) {
         GetItemEntry item = Rando::Context::GetInstance()->GetFinalGIEntry(location->GetRandomizerCheck(), true, GI_FAIRY);
@@ -67,11 +71,13 @@ void FairyOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void* opt
 void FairyOnActorInitHandler(void* actorRef) {
     EnElf* enElf = static_cast<EnElf*>(actorRef);
     enElf->sohFairyIdentity = { RAND_INF_MAX, GET_ITEM_NONE };
-    s16 grottoId = (gPlayState->sceneNum == SCENE_GROTTOS) ? Grotto_CurrentGrotto() : 0;
+    s16 params = (gPlayState->sceneNum == SCENE_GROTTOS) ? Grotto_CurrentGrotto() : 0;
     if (enElf->fairyFlags & FAIRY_FLAG_BIG) {
-        grottoId |= 0x8000;
+        params |= 0x8000;
     }
-    FairyInitialise(enElf, TWO_ACTOR_PARAMS(grottoId, (s16)enElf->actor.home.pos.z));
+    if (FairyInitialise(enElf, TWO_ACTOR_PARAMS(params, (s16)enElf->actor.home.pos.z))) {
+        enElf->fairyFlags &= ~(FAIRY_FLAG_TIMED | FAIRY_FLAG_BIG);
+    }
 }
 
 uint32_t onVanillaBehaviorHook = 0;
