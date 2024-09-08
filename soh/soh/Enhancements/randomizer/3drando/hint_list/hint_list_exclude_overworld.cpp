@@ -1541,4 +1541,3 @@ void StaticData::HintTable_Init_Exclude_Overworld() {
                                                        /*french*/ "", {QM_RED, QM_GREEN}));
 }
 }
-}
