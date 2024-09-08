@@ -159,12 +159,13 @@ void AreaTable_Init_GerudoValley() {
 
   areaTable[RR_HAUNTED_WASTELAND] = Area("Haunted Wasteland", "Haunted Wasteland", RA_HAUNTED_WASTELAND, NO_DAY_NIGHT_CYCLE, {
                   //Events
-                  EventAccess(&logic->FairyPot, {[]{return true;}}),
-                  EventAccess(&logic->NutPot,   {[]{return true;}}),
+                  EventAccess(&logic->FairyPot,       {[]{return true;}}),
+                  EventAccess(&logic->NutPot,         {[]{return true;}}),
+                  EventAccess(&logic->CarpetMerchant, {[]{return logic->AdultsWallet && (logic->CanJumpslash || logic->CanUse(RG_HOVER_BOOTS));}}),
                 }, {
                   //Locations
                   LOCATION(RC_WASTELAND_CHEST,            logic->HasFireSource),
-                  LOCATION(RC_WASTELAND_BOMBCHU_SALESMAN, logic->AdultsWallet && (logic->CanJumpslash || logic->CanUse(RG_HOVER_BOOTS)) ),
+                  LOCATION(RC_WASTELAND_BOMBCHU_SALESMAN, logic->CarpetMerchant),
                   LOCATION(RC_WASTELAND_GS,               logic->HookshotOrBoomerang),
                   LOCATION(RC_WASTELAND_NEAR_GS_POT_1,    logic->CanBreakPots),
                   LOCATION(RC_WASTELAND_NEAR_GS_POT_2,    logic->CanBreakPots),
