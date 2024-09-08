@@ -73,8 +73,9 @@ void FairyOnActorInitHandler(void* actorRef) {
     enElf->sohFairyIdentity = { RAND_INF_MAX, GET_ITEM_NONE };
     s16 params = (gPlayState->sceneNum == SCENE_GROTTOS) ? Grotto_CurrentGrotto() : 0;
     if (enElf->fairyFlags & FAIRY_FLAG_BIG) {
-        params |= 0x8000;
+        params |= 0x1000;
     }
+
     if (FairyInitialise(enElf, TWO_ACTOR_PARAMS(params, (s16)enElf->actor.home.pos.z))) {
         enElf->fairyFlags &= ~(FAIRY_FLAG_TIMED | FAIRY_FLAG_BIG);
     }
