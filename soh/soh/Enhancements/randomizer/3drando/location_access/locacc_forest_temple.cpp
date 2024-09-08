@@ -41,6 +41,12 @@ void AreaTable_Init_ForestTemple() {
                 }, {
                   //Locations
                   LOCATION(RC_FOREST_TEMPLE_GS_LOBBY, logic->HookshotOrBoomerang),
+                  LOCATION(RC_FOREST_TEMPLE_LOBBY_POT_1, logic->CanBreakPots),
+                  LOCATION(RC_FOREST_TEMPLE_LOBBY_POT_2, logic->CanBreakPots),
+                  LOCATION(RC_FOREST_TEMPLE_LOBBY_POT_3, logic->CanBreakPots),
+                  LOCATION(RC_FOREST_TEMPLE_LOBBY_POT_4, logic->CanBreakPots),
+                  LOCATION(RC_FOREST_TEMPLE_LOBBY_POT_5, logic->CanBreakPots),
+                  LOCATION(RC_FOREST_TEMPLE_LOBBY_POT_6, logic->CanBreakPots),
                 }, {
                   //Exits
                   Entrance(RR_FOREST_TEMPLE_SOUTH_CORRIDOR,    {[]{return true;}}),
