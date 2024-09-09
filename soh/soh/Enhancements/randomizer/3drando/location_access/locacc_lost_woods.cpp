@@ -18,6 +18,8 @@ void AreaTable_Init_LostWoods() {
                   LOCATION(RC_KF_BEAN_SPROUT_FAIRY_1,  logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_KF_BEAN_SPROUT_FAIRY_2,  logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_KF_BEAN_SPROUT_FAIRY_3,  logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_KF_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_KF_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_KF_GOSSIP_STONE,         true),
                 }, {
                   //Exits
@@ -40,6 +42,10 @@ void AreaTable_Init_LostWoods() {
                   EventAccess(&logic->ShowedMidoSwordAndShield, {[]{return logic->ShowedMidoSwordAndShield || (logic->IsChild && logic->KokiriSword && logic->DekuShield);}}),
                 }, {
                   //Locations
+                  LOCATION(RC_KF_DEKU_TREE_LEFT_GOSSIP_STONE_FAIRY,       logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_KF_DEKU_TREE_LEFT_GOSSIP_STONE_FAIRY_BIG,   logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_KF_DEKU_TREE_RIGHT_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_KF_DEKU_TREE_RIGHT_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_KF_DEKU_TREE_LEFT_GOSSIP_STONE,  true),
                   LOCATION(RC_KF_DEKU_TREE_RIGHT_GOSSIP_STONE, true),
                 }, {
@@ -101,6 +107,8 @@ void AreaTable_Init_LostWoods() {
                   //Locations
                   LOCATION(RC_KF_STORMS_GROTTO_CHEST,         true),
                   LOCATION(RC_KF_STORMS_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_KF_STORMS_GROTTO_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_KF_STORMS_GROTTO_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_KF_STORMS_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_KF_STORMS_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_KF_STORMS_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),
@@ -141,6 +149,8 @@ void AreaTable_Init_LostWoods() {
                   LOCATION(RC_LW_BEAN_SPROUT_NEAR_BRIDGE_FAIRY_1, logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LW_BEAN_SPROUT_NEAR_BRIDGE_FAIRY_2, logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LW_BEAN_SPROUT_NEAR_BRIDGE_FAIRY_3, logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LW_GOSSIP_STONE_FAIRY,        logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_LW_GOSSIP_STONE_FAIRY_BIG,    logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LW_GOSSIP_STONE,              true),
                 }, {
                   //Exits
@@ -177,6 +187,8 @@ void AreaTable_Init_LostWoods() {
                   //Locations
                   LOCATION(RC_LW_NEAR_SHORTCUTS_GROTTO_CHEST,         true),
                   LOCATION(RC_LW_NEAR_SHORTCUTS_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_LW_NEAR_SHORTCUTS_GROTTO_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_LW_NEAR_SHORTCUTS_GROTTO_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LW_NEAR_SHORTCUTS_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_LW_NEAR_SHORTCUTS_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_LW_NEAR_SHORTCUTS_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),
@@ -219,6 +231,12 @@ void AreaTable_Init_LostWoods() {
                   LOCATION(RC_SONG_FROM_SARIA,             logic->IsChild && logic->ZeldasLetter),
                   LOCATION(RC_SHEIK_IN_FOREST,             logic->IsAdult),
                   LOCATION(RC_SFM_GS,                      logic->IsAdult && logic->HookshotOrBoomerang && logic->AtNight && logic->CanGetNightTimeGS),
+                  LOCATION(RC_SFM_MAZE_LOWER_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_SFM_MAZE_LOWER_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_SFM_MAZE_UPPER_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_SFM_MAZE_UPPER_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_SFM_SARIA_GOSSIP_STONE_FAIRY,           logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_SFM_SARIA_GOSSIP_STONE_FAIRY_BIG,       logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_SFM_MAZE_LOWER_GOSSIP_STONE, true),
                   LOCATION(RC_SFM_MAZE_UPPER_GOSSIP_STONE, true),
                   LOCATION(RC_SFM_SARIA_GOSSIP_STONE,      true),

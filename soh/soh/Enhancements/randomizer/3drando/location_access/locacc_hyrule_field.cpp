@@ -34,6 +34,8 @@ void AreaTable_Init_HyruleField() {
                   //Locations
                   LOCATION(RC_HF_SOUTHEAST_GROTTO_CHEST,         true),
                   LOCATION(RC_HF_SOUTHEAST_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_HF_SOUTHEAST_GROTTO_GOSSIP_STONE_FAIRY,     logic->CanSummonGossipFairy),
+                  LOCATION(RC_HF_SOUTHEAST_GROTTO_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_HF_SOUTHEAST_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_HF_SOUTHEAST_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_HF_SOUTHEAST_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),
@@ -46,6 +48,8 @@ void AreaTable_Init_HyruleField() {
                   //Locations
                   LOCATION(RC_HF_OPEN_GROTTO_CHEST,         true),
                   LOCATION(RC_HF_OPEN_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_HF_OPEN_GROTTO_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_HF_OPEN_GROTTO_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_HF_OPEN_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_HF_OPEN_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_HF_OPEN_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),
@@ -67,6 +71,8 @@ void AreaTable_Init_HyruleField() {
                   //Locations
                   LOCATION(RC_HF_GS_COW_GROTTO,           logic->HasFireSource && logic->HookshotOrBoomerang),
                   LOCATION(RC_HF_COW_GROTTO_COW,          logic->HasFireSource && logic->CanUse(RG_EPONAS_SONG)),
+                  LOCATION(RC_HF_COW_GROTTO_GOSSIP_STONE_FAIRY,      logic->HasFireSource && logic->CanSummonGossipFairy),
+                  LOCATION(RC_HF_COW_GROTTO_GOSSIP_STONE_FAIRY_BIG,  logic->HasFireSource && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_HF_COW_GROTTO_GOSSIP_STONE, logic->HasFireSource),
                 }, {
                   //Exits
@@ -77,6 +83,8 @@ void AreaTable_Init_HyruleField() {
                   //Locations
                   LOCATION(RC_HF_NEAR_MARKET_GROTTO_CHEST,         true),
                   LOCATION(RC_HF_NEAR_MARKET_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_HF_NEAR_MARKET_GROTTO_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_HF_NEAR_MARKET_GROTTO_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_HF_NEAR_MARKET_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_HF_NEAR_MARKET_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_HF_NEAR_MARKET_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),
@@ -139,6 +147,12 @@ void AreaTable_Init_HyruleField() {
                   LOCATION(RC_LH_BEAN_SPROUT_FAIRY_1,    logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LH_BEAN_SPROUT_FAIRY_2,    logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LH_BEAN_SPROUT_FAIRY_3,    logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LH_LAB_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_LH_LAB_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LH_SOUTHEAST_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_LH_SOUTHEAST_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LH_SOUTHWEST_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_LH_SOUTHWEST_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LH_LAB_GOSSIP_STONE,       true),
                   LOCATION(RC_LH_SOUTHEAST_GOSSIP_STONE, true),
                   LOCATION(RC_LH_SOUTHWEST_GOSSIP_STONE, true),

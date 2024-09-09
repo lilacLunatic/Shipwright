@@ -97,6 +97,10 @@ void AreaTable_Init_CastleTown() {
                   //Locations
                   LOCATION(RC_HC_MALON_EGG,              true),
                   LOCATION(RC_HC_GS_TREE,                logic->CanChildAttack),
+                  LOCATION(RC_HC_MALON_GOSSIP_STONE_FAIRY,          logic->CanSummonGossipFairy),
+                  LOCATION(RC_HC_MALON_GOSSIP_STONE_FAIRY_BIG,      logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_HC_ROCK_WALL_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_HC_ROCK_WALL_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_HC_MALON_GOSSIP_STONE,     true),
                   LOCATION(RC_HC_ROCK_WALL_GOSSIP_STONE, true),
                 }, {
@@ -134,6 +138,8 @@ void AreaTable_Init_CastleTown() {
                 }, {
                   //Locations
                   LOCATION(RC_HC_GS_STORMS_GROTTO,           (logic->CanBlastOrSmash && logic->HookshotOrBoomerang) || (logic->Boomerang && randoCtx->GetTrickOption(RT_HC_STORMS_GS))),
+                  LOCATION(RC_HC_STORMS_GROTTO_GOSSIP_STONE_FAIRY,      logic->CanBlastOrSmash && logic->CanSummonGossipFairy),
+                  LOCATION(RC_HC_STORMS_GROTTO_GOSSIP_STONE_FAIRY_BIG,  logic->CanBlastOrSmash && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_HC_STORMS_GROTTO_GOSSIP_STONE, logic->CanBlastOrSmash),
                 }, {
                   //Exits

@@ -215,6 +215,8 @@ Dungeons::Dungeons() {
                                                    RC_DODONGOS_CAVERN_GS_ALCOVE_ABOVE_STAIRS,
                                                    RC_DODONGOS_CAVERN_GS_BACK_ROOM,
                                                    RC_DODONGOS_CAVERN_GS_SIDE_ROOM_NEAR_LOWER_LIZALFOS,
+                                                   RC_DODONGOS_CAVERN_GOSSIP_STONE_FAIRY,
+                                                   RC_DODONGOS_CAVERN_GOSSIP_STONE_FAIRY_BIG,
                                                },
                                                {
                                                    // MQ Locations
@@ -233,6 +235,8 @@ Dungeons::Dungeons() {
                                                    RC_DODONGOS_CAVERN_MQ_GS_LIZALFOS_ROOM,
                                                    RC_DODONGOS_CAVERN_MQ_GS_LARVAE_ROOM,
                                                    RC_DODONGOS_CAVERN_MQ_GS_BACK_AREA,
+                                                   RC_DODONGOS_CAVERN_MQ_GOSSIP_STONE_FAIRY,
+                                                   RC_DODONGOS_CAVERN_MQ_GOSSIP_STONE_FAIRY_BIG,
                                                },
                                                {},
                                                {

@@ -198,6 +198,8 @@ void AreaTable_Init_Kakariko() {
                   //Locations
                   LOCATION(RC_KAK_OPEN_GROTTO_CHEST,         true),
                   LOCATION(RC_KAK_OPEN_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_KAK_OPEN_GROTTO_GOSSIP_STONE_FAIRY,     logic->CanSummonGossipFairy),
+                  LOCATION(RC_KAK_OPEN_GROTTO_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_KAK_OPEN_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_KAK_OPEN_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_KAK_OPEN_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),
@@ -292,6 +294,8 @@ void AreaTable_Init_Kakariko() {
                   EventAccess(&logic->GossipStoneFairy, {[]{return logic->GossipStoneFairy || logic->CanSummonGossipFairyWithoutSuns;}}),
                 }, {
                   //Locations
+                  LOCATION(RC_GRAVEYARD_GOSSIP_STONE_FAIRY,     logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_GRAVEYARD_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_GRAVEYARD_GOSSIP_STONE, true),
                 }, {
                   //Exits

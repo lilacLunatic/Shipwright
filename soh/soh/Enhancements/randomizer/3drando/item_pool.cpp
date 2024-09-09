@@ -1170,8 +1170,8 @@ void GenerateItemPool() {
     for (auto rc : Rando::StaticData::overworldFairyLocations) {
       AddItemToMainPool(GetJunkItem());
     }
-    // 8 extra for Ganon's Castle
-    for (int i = 0; i < 8; i++) {
+    // 8 extra for Ganon's Castle + 2 extra for Dodongo's Cavern
+    for (int i = 0; i < 10; i++) {
       AddItemToMainPool(GetJunkItem());
     }
   } else {
@@ -1196,6 +1196,13 @@ void GenerateItemPool() {
       ctx->PlaceItemInLocation(RC_GANONS_CASTLE_SCRUBS_FAIRY_6, GetJunkItem(), false, true);
       ctx->PlaceItemInLocation(RC_GANONS_CASTLE_SCRUBS_FAIRY_7, GetJunkItem(), false, true);
       ctx->PlaceItemInLocation(RC_GANONS_CASTLE_SCRUBS_FAIRY_8, GetJunkItem(), false, true);
+    }
+    if (ctx->GetDungeon(Rando::DODONGOS_CAVERN)->IsMQ()) {
+      ctx->PlaceItemInLocation(RC_DODONGOS_CAVERN_MQ_GOSSIP_STONE_FAIRY, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_DODONGOS_CAVERN_MQ_GOSSIP_STONE_FAIRY_BIG, GetJunkItem(), false, true);
+    } else {
+      ctx->PlaceItemInLocation(RC_DODONGOS_CAVERN_GOSSIP_STONE_FAIRY, GetJunkItem(), false, true);
+      ctx->PlaceItemInLocation(RC_DODONGOS_CAVERN_GOSSIP_STONE_FAIRY_BIG, GetJunkItem(), false, true);
     }
   }
 
