@@ -21,6 +21,9 @@ void FairyDrawRandomizedItem(EnElf* enElf, PlayState* play) {
 }
 
 bool FairyInitialise(EnElf* fairy, int32_t params) {
+    if (fairy->actor.params != FAIRY_HEAL_TIMED && fairy->actor.params != FAIRY_HEAL && fairy->actor.params != FAIRY_HEAL_BIG) {
+        return false;
+    }
     s16 sceneNum = gPlayState->sceneNum;
     if (sceneNum == SCENE_TEMPLE_OF_TIME_EXTERIOR_NIGHT || sceneNum == SCENE_TEMPLE_OF_TIME_EXTERIOR_RUINS) {
         sceneNum = SCENE_TEMPLE_OF_TIME_EXTERIOR_DAY;
