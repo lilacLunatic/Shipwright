@@ -149,8 +149,9 @@ void AreaTable_Init_LostWoods() {
                   LOCATION(RC_LW_BEAN_SPROUT_NEAR_BRIDGE_FAIRY_1, logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LW_BEAN_SPROUT_NEAR_BRIDGE_FAIRY_2, logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LW_BEAN_SPROUT_NEAR_BRIDGE_FAIRY_3, logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
-                  LOCATION(RC_LW_GOSSIP_STONE_FAIRY,        logic->CanSummonGossipFairyWithoutSuns),
-                  LOCATION(RC_LW_GOSSIP_STONE_FAIRY_BIG,    logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LW_GOSSIP_STONE_FAIRY,              logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_LW_GOSSIP_STONE_FAIRY_BIG,          logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LW_SHORTCUT_STORMS_FAIRY,           logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LW_GOSSIP_STONE,              true),
                 }, {
                   //Exits

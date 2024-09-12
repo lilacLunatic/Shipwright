@@ -11,6 +11,7 @@ void AreaTable_Init_HyruleField() {
                   //Locations
                   LOCATION(RC_HF_OCARINA_OF_TIME_ITEM,   logic->IsChild && logic->HasAllStones),
                   LOCATION(RC_SONG_FROM_OCARINA_OF_TIME, logic->IsChild && logic->HasAllStones),
+                  LOCATION(RC_HF_POND_STORMS_FAIRY,      logic->CanUse(RG_SONG_OF_STORMS)),
                 }, {
                   //Exits
                   Entrance(RR_LW_BRIDGE,              {[]{return true;}}),
@@ -153,6 +154,7 @@ void AreaTable_Init_HyruleField() {
                   LOCATION(RC_LH_SOUTHEAST_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LH_SOUTHWEST_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
                   LOCATION(RC_LH_SOUTHWEST_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LH_ISLAND_SUN_FAIRY,                  logic->CanUse(RG_SUNS_SONG) && ((logic->HasItem(RG_BRONZE_SCALE) && (logic->IsChild || logic->WaterTempleClear)) || logic->CanUse(RG_DISTANT_SCARECROW))),
                   LOCATION(RC_LH_LAB_GOSSIP_STONE,       true),
                   LOCATION(RC_LH_SOUTHEAST_GOSSIP_STONE, true),
                   LOCATION(RC_LH_SOUTHWEST_GOSSIP_STONE, true),

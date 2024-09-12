@@ -18,6 +18,7 @@ void AreaTable_Init_DeathMountain() {
                   LOCATION(RC_DMT_BEAN_SPROUT_FAIRY_1,      logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->HasExplosives || logic->HasItem(RG_GORONS_BRACELET))),
                   LOCATION(RC_DMT_BEAN_SPROUT_FAIRY_2,      logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->HasExplosives || logic->HasItem(RG_GORONS_BRACELET))),
                   LOCATION(RC_DMT_BEAN_SPROUT_FAIRY_3,      logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->HasExplosives || logic->HasItem(RG_GORONS_BRACELET))),
+                  LOCATION(RC_DMT_FLAG_SUN_FAIRY,           logic->CanUse(RG_SUNS_SONG)),
                 }, {
                   //Exits
                   Entrance(RR_KAK_BEHIND_GATE,          {[]{return true;}}),

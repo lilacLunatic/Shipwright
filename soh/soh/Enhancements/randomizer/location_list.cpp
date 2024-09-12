@@ -671,6 +671,12 @@ std::vector<RandomizerCheck> Rando::StaticData::overworldLocations = {
     RC_DMT_STORMS_GROTTO_GOSSIP_STONE_FAIRY_BIG,
     RC_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY,
     RC_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY_BIG,
+
+    RC_LH_ISLAND_SUN_FAIRY,
+    RC_HF_POND_STORMS_FAIRY,
+    RC_DMT_FLAG_SUN_FAIRY,
+    RC_LW_SHORTCUT_STORMS_FAIRY,
+    RC_GF_KITCHEN_SUN_FAIRY,
 };
 
 std::vector<RandomizerCheck> Rando::StaticData::gossipStoneLocations = {
@@ -886,6 +892,11 @@ std::vector<RandomizerCheck> Rando::StaticData::overworldFairyLocations = {
     RC_DMT_STORMS_GROTTO_GOSSIP_STONE_FAIRY_BIG,
     RC_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY,
     RC_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY_BIG,
+    RC_LH_ISLAND_SUN_FAIRY,
+    RC_HF_POND_STORMS_FAIRY,
+    RC_DMT_FLAG_SUN_FAIRY,
+    RC_LW_SHORTCUT_STORMS_FAIRY,
+    RC_GF_KITCHEN_SUN_FAIRY,
 };
 
 typedef enum {
@@ -2009,6 +2020,12 @@ void Rando::StaticData::InitLocationTable() { //                                
     locationTable[RC_DMT_STORMS_GROTTO_GOSSIP_STONE_FAIRY_BIG] =                       Location::Fairy(RC_DMT_STORMS_GROTTO_GOSSIP_STONE_FAIRY_BIG,                    RCQUEST_BOTH,                                        RCAREA_DEATH_MOUNTAIN_TRAIL,                               SCENE_GROTTOS,                      TWO_ACTOR_PARAMS(0x1008, -236),  RAND_INF_DMT_STORMS_GROTTO_GOSSIP_STONE_FAIRY_BIG,          "Storms Grotto Gossip Stone Big Fairy",     RHT_DMT_STORMS_GROTTO_GOSSIP_STONE_FAIRY_BIG,                                                                                                                                                                                                             SpoilerCollectionCheckGroup::GROUP_DEATH_MOUNTAIN);
     locationTable[RC_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY] =                            Location::Fairy(RC_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY,                         RCQUEST_BOTH,                                        RCAREA_DEATH_MOUNTAIN_CRATER,                              SCENE_GROTTOS,                      TWO_ACTOR_PARAMS(   0x6, -236),  RAND_INF_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY,               "Upper Grotto Gossip Stone Fairy",          RHT_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY,                                                                                                                                                                                                                  SpoilerCollectionCheckGroup::GROUP_DEATH_MOUNTAIN);
     locationTable[RC_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY_BIG] =                        Location::Fairy(RC_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY_BIG,                     RCQUEST_BOTH,                                        RCAREA_DEATH_MOUNTAIN_CRATER,                              SCENE_GROTTOS,                      TWO_ACTOR_PARAMS(0x1006, -236),  RAND_INF_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY_BIG,           "Upper Grotto Gossip Stone Big Fairy",      RHT_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY_BIG,                                                                                                                                                                                                              SpoilerCollectionCheckGroup::GROUP_DEATH_MOUNTAIN);
+
+    locationTable[RC_LH_ISLAND_SUN_FAIRY] =                                            Location::Fairy(RC_LH_ISLAND_SUN_FAIRY,                                         RCQUEST_BOTH,                                        RCAREA_LAKE_HYLIA,                                         SCENE_LAKE_HYLIA,                   TWO_ACTOR_PARAMS(0x1000, 7319),  RAND_INF_LH_ISLAND_SUN_FAIRY,                               "Island Sun's Song Fairy",                  RHT_LH_ISLAND_SUN_FAIRY,                                                                                                                                                                                                                                  SpoilerCollectionCheckGroup::GROUP_LAKE_HYLIA);
+    locationTable[RC_HF_POND_STORMS_FAIRY] =                                           Location::Fairy(RC_HF_POND_STORMS_FAIRY,                                        RCQUEST_BOTH,                                        RCAREA_HYRULE_FIELD,                                       SCENE_HYRULE_FIELD,                 TWO_ACTOR_PARAMS(0x1000, 5012),  RAND_INF_HF_POND_STORMS_FAIRY,                              "Pond Song of Storms Fairy",                RHT_HF_POND_STORMS_FAIRY,                                                                                                                                                                                                                                 SpoilerCollectionCheckGroup::GROUP_HYRULE_FIELD);
+    locationTable[RC_DMT_FLAG_SUN_FAIRY] =                                             Location::Fairy(RC_DMT_FLAG_SUN_FAIRY,                                          RCQUEST_BOTH,                                        RCAREA_DEATH_MOUNTAIN_TRAIL,                               SCENE_DEATH_MOUNTAIN_TRAIL,         TWO_ACTOR_PARAMS(0x1000, 464),   RAND_INF_DMT_FLAG_SUN_FAIRY,                                "Flag Sun's Song Fairy",                    RHT_DMT_FLAG_SUN_FAIRY,                                                                                                                                                                                                                                   SpoilerCollectionCheckGroup::GROUP_DEATH_MOUNTAIN);
+    locationTable[RC_LW_SHORTCUT_STORMS_FAIRY] =                                       Location::Fairy(RC_LW_SHORTCUT_STORMS_FAIRY,                                    RCQUEST_BOTH,                                        RCAREA_LOST_WOODS,                                         SCENE_LOST_WOODS,                   TWO_ACTOR_PARAMS(0x1000, -795),  RAND_INF_LW_SHORTCUT_STORMS_FAIRY,                          "Shortcuts Song of Storms Fairy",           RHT_LW_SHORTCUT_STORMS_FAIRY,                                                                                                                                                                                                                             SpoilerCollectionCheckGroup::GROUP_LOST_WOODS);
+    locationTable[RC_GF_KITCHEN_SUN_FAIRY] =                                           Location::Fairy(RC_GF_KITCHEN_SUN_FAIRY,                                        RCQUEST_BOTH,                                        RCAREA_GERUDO_FORTRESS,                                    SCENE_THIEVES_HIDEOUT,              TWO_ACTOR_PARAMS(0x1000, -621),  RAND_INF_GF_KITCHEN_SUN_FAIRY,                              "Kitchen Sun's Song Fairy",                 RHT_GF_KITCHEN_SUN_FAIRY,                                                                                                                                                                                                                                 SpoilerCollectionCheckGroup::GROUP_GERUDO_VALLEY);
 
     // Gossip Stones
     locationTable[RC_DMC_GOSSIP_STONE] =                                          Location::HintStone(RC_DMC_GOSSIP_STONE,                                             RCQUEST_BOTH,                                        RCAREA_DEATH_MOUNTAIN_CRATER,                              SCENE_DEATH_MOUNTAIN_CRATER,        14341,                                             0x05, "Gossip Stone",                  {});
