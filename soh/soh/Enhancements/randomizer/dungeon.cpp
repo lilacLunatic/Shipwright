@@ -575,6 +575,7 @@ Dungeons::Dungeons() {
             RC_BOTTOM_OF_THE_WELL_GS_LIKE_LIKE_CAGE,
             RC_BOTTOM_OF_THE_WELL_GS_EAST_INNER_ROOM,
             RC_BOTTOM_OF_THE_WELL_GS_WEST_INNER_ROOM,
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_SUN_FAIRY,
         },
         {
             // MQ Locations
@@ -586,6 +587,8 @@ Dungeons::Dungeons() {
             RC_BOTTOM_OF_THE_WELL_MQ_GS_BASEMENT,
             RC_BOTTOM_OF_THE_WELL_MQ_GS_COFFIN_ROOM,
             RC_BOTTOM_OF_THE_WELL_MQ_GS_WEST_INNER_ROOM,
+            RC_BOTTOM_OF_THE_WELL_MQ_CELL_SUN_FAIRY,
+            RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_SUN_FAIRY,
         },
         {}, {});
     dungeonList[ICE_CAVERN] = DungeonInfo("Ice Cavern", RHT_ICE_CAVERN, RG_ICE_CAVERN_MAP, RG_ICE_CAVERN_COMPASS,
@@ -599,6 +602,7 @@ Dungeons::Dungeons() {
                                               RC_ICE_CAVERN_GS_PUSH_BLOCK_ROOM,
                                               RC_ICE_CAVERN_GS_SPINNING_SCYTHE_ROOM,
                                               RC_ICE_CAVERN_GS_HEART_PIECE_ROOM,
+                                              RC_ICE_CAVERN_ENTRANCE_STORMS_FAIRY,
                                           },
                                           {
                                               // MQ Locations
@@ -642,6 +646,7 @@ Dungeons::Dungeons() {
                         RC_GERUDO_TRAINING_GROUND_HEAVY_BLOCK_THIRD_CHEST,
                         RC_GERUDO_TRAINING_GROUND_HEAVY_BLOCK_FOURTH_CHEST,
                         RC_GERUDO_TRAINING_GROUND_FREESTANDING_KEY,
+                        RC_GERUDO_TRAINING_GROUND_ENTRANCE_STORMS_FAIRY,
                     },
                     {
                         // MQ Locations
