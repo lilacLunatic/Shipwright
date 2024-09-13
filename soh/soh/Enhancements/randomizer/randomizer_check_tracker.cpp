@@ -69,6 +69,7 @@ bool showHyruleLoach;
 bool showWeirdEgg;
 bool showGerudoCard;
 bool showFrogSongRupees;
+bool showFairies;
 bool showStartingMapsCompasses;
 bool showKeysanity;
 bool showGerudoFortressKeys;
@@ -1207,6 +1208,9 @@ void LoadSettings() {
     showFrogSongRupees = IS_RANDO ?
         OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_FROG_SONG_RUPEES) == RO_GENERIC_YES
         : false;
+    showFairies = IS_RANDO ?
+        OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_FAIRIES) == RO_GENERIC_YES
+        : false;
     showStartingMapsCompasses = IS_RANDO ?
         OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_MAPANDCOMPASS) != RO_DUNGEON_ITEM_LOC_VANILLA
         : false;
@@ -1322,6 +1326,7 @@ bool IsCheckShuffled(RandomizerCheck rc) {
             (rc != RC_HC_MALON_EGG || showWeirdEgg) &&
             (loc->GetRCType() != RCTYPE_FROG_SONG || showFrogSongRupees) &&
             (loc->GetRCType() != RCTYPE_MAP_COMPASS || showStartingMapsCompasses) &&
+            (loc->GetRCType() != RCTYPE_FAIRY || showFairies) &&
             (loc->GetRCType() != RCTYPE_SMALL_KEY || showKeysanity) &&
             (loc->GetRCType() != RCTYPE_BOSS_KEY || showBossKeysanity) &&
             (loc->GetRCType() != RCTYPE_GANON_BOSS_KEY || showGanonBossKey) &&
