@@ -40,6 +40,7 @@ void AreaTable_Init_ShadowTemple() {
                   LOCATION(RC_SHADOW_TEMPLE_COMPASS_CHEST,            logic->CanJumpslash),
                   LOCATION(RC_SHADOW_TEMPLE_EARLY_SILVER_RUPEE_CHEST, logic->CanUse(RG_HOVER_BOOTS) || logic->CanUse(RG_HOOKSHOT)),
                   LOCATION(RC_SHADOW_TEMPLE_GS_NEAR_SHIP,             false),
+                  LOCATION(RC_SHADOW_TEMPLE_BEAMOS_STORM_FAIRY,       logic->CanUse(RG_SONG_OF_STORMS)),
                 }, {
                   //Exits
                   Entrance(RR_SHADOW_TEMPLE_HUGE_PIT,    {[]{return logic->HasExplosives && logic->IsAdult && logic->SmallKeys(RR_SHADOW_TEMPLE, 1, 2);}}),
@@ -58,6 +59,7 @@ void AreaTable_Init_ShadowTemple() {
                   LOCATION(RC_SHADOW_TEMPLE_GS_LIKE_LIKE_ROOM,                logic->CanJumpslash),
                   LOCATION(RC_SHADOW_TEMPLE_GS_FALLING_SPIKES_ROOM,           logic->Hookshot || (randoCtx->GetTrickOption(RT_SHADOW_UMBRELLA_GS) && logic->HoverBoots)),
                   LOCATION(RC_SHADOW_TEMPLE_GS_SINGLE_GIANT_POT,              logic->SmallKeys(RR_SHADOW_TEMPLE, 2, 3) && ((randoCtx->GetTrickOption(RT_LENS_SHADOW_PLATFORM) && randoCtx->GetTrickOption(RT_LENS_SHADOW)) || logic->CanUse(RG_LENS_OF_TRUTH)) && logic->Hookshot),
+                  LOCATION(RC_SHADOW_TEMPLE_PIT_STORM_FAIRY,                  logic->CanUse(RG_SONG_OF_STORMS)),
                 }, {
                   //Exits
                   Entrance(RR_SHADOW_TEMPLE_WIND_TUNNEL, {[]{return ((randoCtx->GetTrickOption(RT_LENS_SHADOW_PLATFORM) && randoCtx->GetTrickOption(RT_LENS_SHADOW)) || logic->CanUse(RG_LENS_OF_TRUTH)) && logic->Hookshot && logic->SmallKeys(RR_SHADOW_TEMPLE, 3, 4);}}),
@@ -69,6 +71,7 @@ void AreaTable_Init_ShadowTemple() {
                   LOCATION(RC_SHADOW_TEMPLE_AFTER_WIND_ENEMY_CHEST,  logic->CanJumpslash),
                   LOCATION(RC_SHADOW_TEMPLE_AFTER_WIND_HIDDEN_CHEST, true),
                   LOCATION(RC_SHADOW_TEMPLE_GS_NEAR_SHIP,            logic->CanUse(RG_LONGSHOT) && logic->SmallKeys(RR_SHADOW_TEMPLE, 4, 5)),
+                  LOCATION(RC_SHADOW_TEMPLE_WIND_HINT_SUN_FAIRY,        logic->CanUse(RG_SUNS_SONG)),
                 }, {
                   //Exits
                   Entrance(RR_SHADOW_TEMPLE_BEYOND_BOAT, {[]{return logic->CanJumpslash && logic->CanUse(RG_ZELDAS_LULLABY) && logic->SmallKeys(RR_SHADOW_TEMPLE, 4, 5);}}),
@@ -109,6 +112,7 @@ void AreaTable_Init_ShadowTemple() {
                   LOCATION(RC_SHADOW_TEMPLE_MQ_MAP_CHEST,                 logic->CanAdultAttack || logic->CanUse(RG_NUTS)),
                   LOCATION(RC_SHADOW_TEMPLE_MQ_EARLY_GIBDOS_CHEST,        logic->CanJumpslash),
                   LOCATION(RC_SHADOW_TEMPLE_MQ_NEAR_SHIP_INVISIBLE_CHEST, logic->CanAdultAttack || logic->CanUse(RG_NUTS)),
+                  LOCATION(RC_SHADOW_TEMPLE_MQ_BEAMOS_STORM_FAIRY,        logic->CanUse(RG_SONG_OF_STORMS)),
   }, {
                   //Exits
                   Entrance(RR_SHADOW_TEMPLE_MQ_UPPER_HUGE_PIT, {[]{return logic->HasExplosives && logic->SmallKeys(RR_SHADOW_TEMPLE, 2);}}),
@@ -120,6 +124,7 @@ void AreaTable_Init_ShadowTemple() {
                     //Trick: logic->CanUse(RG_SONG_OF_TIME) || (LogicShadowMQInvisibleBlades && DamageMultiplier.IsNot(DAMAGEMULTIPLIER_OHKO))
                   LOCATION(RC_SHADOW_TEMPLE_MQ_INVISIBLE_BLADES_INVISIBLE_CHEST, logic->CanUse(RG_SONG_OF_TIME) || (randoCtx->GetTrickOption(RT_SHADOW_MQ_INVISIBLE_BLADES) && randoCtx->GetOption(RSK_DAMAGE_MULTIPLIER).IsNot(RO_DAMAGE_MULTIPLIER_OHKO))),
                     //Trick: logic->CanUse(RG_SONG_OF_TIME) || (LogicShadowMQInvisibleBlades && DamageMultiplier.IsNot(DAMAGEMULTIPLIER_OHKO))
+                  LOCATION(RC_SHADOW_TEMPLE_MQ_PIT_STORM_FAIRY,                  logic->CanUse(RG_SONG_OF_STORMS)),
   }, {
                   //Exits
                   Entrance(RR_SHADOW_TEMPLE_MQ_LOWER_HUGE_PIT, {[]{return logic->HasFireSource || randoCtx->GetTrickOption(RT_SHADOW_MQ_HUGE_PIT);}}),
@@ -151,6 +156,7 @@ void AreaTable_Init_ShadowTemple() {
                   LOCATION(RC_SHADOW_TEMPLE_MQ_AFTER_WIND_HIDDEN_CHEST, true),
                   LOCATION(RC_SHADOW_TEMPLE_MQ_GS_WIND_HINT_ROOM,       true),
                   LOCATION(RC_SHADOW_TEMPLE_MQ_GS_AFTER_WIND,           true),
+                  LOCATION(RC_SHADOW_TEMPLE_MQ_WIND_HINT_SUN_FAIRY,     logic->CanUse(RG_SUNS_SONG)),
   }, {
                   //Exits
                   Entrance(RR_SHADOW_TEMPLE_MQ_BEYOND_BOAT, {[]{return logic->CanUse(RG_ZELDAS_LULLABY) && logic->SmallKeys(RR_SHADOW_TEMPLE, 5);}}),

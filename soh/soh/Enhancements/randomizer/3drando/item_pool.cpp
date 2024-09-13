@@ -664,6 +664,15 @@ static void PlaceVanillaFairies() {
     ctx->PlaceItemInLocation(RC_SPIRIT_TEMPLE_BOULDER_ROOM_SUN_FAIRY, GetJunkItem(), false, true);
     ctx->PlaceItemInLocation(RC_SPIRIT_TEMPLE_ARMOS_ROOM_SUN_FAIRY, GetJunkItem(), false, true);
   }
+  if (ctx->GetDungeon(Rando::SHADOW_TEMPLE)->IsMQ()) {
+    ctx->PlaceItemInLocation(RC_SHADOW_TEMPLE_MQ_BEAMOS_STORM_FAIRY, GetJunkItem(), false, true);
+    ctx->PlaceItemInLocation(RC_SHADOW_TEMPLE_MQ_PIT_STORM_FAIRY, GetJunkItem(), false, true);
+    ctx->PlaceItemInLocation(RC_SHADOW_TEMPLE_MQ_WIND_HINT_SUN_FAIRY, GetJunkItem(), false, true);
+  } else {
+    ctx->PlaceItemInLocation(RC_SHADOW_TEMPLE_BEAMOS_STORM_FAIRY, GetJunkItem(), false, true);
+    ctx->PlaceItemInLocation(RC_SHADOW_TEMPLE_PIT_STORM_FAIRY, GetJunkItem(), false, true);
+    ctx->PlaceItemInLocation(RC_SHADOW_TEMPLE_WIND_HINT_SUN_FAIRY, GetJunkItem(), false, true);
+  }
   if (ctx->GetDungeon(Rando::BOTTOM_OF_THE_WELL)->IsMQ()) {
     ctx->PlaceItemInLocation(RC_BOTTOM_OF_THE_WELL_MQ_CELL_SUN_FAIRY, GetJunkItem(), false, true);
     ctx->PlaceItemInLocation(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_SUN_FAIRY, GetJunkItem(), false, true);
@@ -1233,8 +1242,8 @@ void GenerateItemPool() {
     for (auto rc : Rando::StaticData::overworldFairyLocations) {
       AddItemToMainPool(GetJunkItem());
     }
-    // 8 extra for Ganon's Castle + 2 Dodongo's Cavern Gossip Stone
-    int extra = 10;
+    // 8 extra for Ganon's Castle + 2 Dodongo's Cavern Gossip Stone + 3 Shadow Temple
+    int extra = 13;
     extra += ctx->GetDungeon(Rando::FIRE_TEMPLE)->IsVanilla() ? 0 : 2;
     extra += ctx->GetDungeon(Rando::WATER_TEMPLE)->IsVanilla() ? 0 : 3;
     extra += ctx->GetDungeon(Rando::SPIRIT_TEMPLE)->IsVanilla() ? 2 : 1;

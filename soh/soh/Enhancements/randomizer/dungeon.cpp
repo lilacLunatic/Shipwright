@@ -526,6 +526,9 @@ Dungeons::Dungeons() {
                         RC_SHADOW_TEMPLE_GS_TRIPLE_GIANT_POT,
                         RC_SHADOW_TEMPLE_GS_LIKE_LIKE_ROOM,
                         RC_SHADOW_TEMPLE_GS_NEAR_SHIP,
+                        RC_SHADOW_TEMPLE_BEAMOS_STORM_FAIRY,
+                        RC_SHADOW_TEMPLE_PIT_STORM_FAIRY,
+                        RC_SHADOW_TEMPLE_WIND_HINT_SUN_FAIRY,
                     },
                     {
                         // MQ Locations
@@ -554,6 +557,9 @@ Dungeons::Dungeons() {
                         RC_SHADOW_TEMPLE_MQ_GS_AFTER_WIND,
                         RC_SHADOW_TEMPLE_MQ_GS_AFTER_SHIP,
                         RC_SHADOW_TEMPLE_MQ_GS_NEAR_BOSS,
+                        RC_SHADOW_TEMPLE_MQ_BEAMOS_STORM_FAIRY,
+                        RC_SHADOW_TEMPLE_MQ_PIT_STORM_FAIRY,
+                        RC_SHADOW_TEMPLE_MQ_WIND_HINT_SUN_FAIRY,
                     },
                     {},
                     {
