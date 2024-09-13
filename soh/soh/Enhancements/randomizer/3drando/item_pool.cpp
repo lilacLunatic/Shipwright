@@ -649,6 +649,21 @@ static void PlaceVanillaFairies() {
     ctx->PlaceItemInLocation(RC_DODONGOS_CAVERN_GOSSIP_STONE_FAIRY, GetJunkItem(), false, true);
     ctx->PlaceItemInLocation(RC_DODONGOS_CAVERN_GOSSIP_STONE_FAIRY_BIG, GetJunkItem(), false, true);
   }
+  if (ctx->GetDungeon(Rando::FIRE_TEMPLE)->IsMQ()) {
+    ctx->PlaceItemInLocation(RC_FIRE_TEMPLE_MQ_LOOP_STALFOS_SUN_FAIRY, GetJunkItem(), false, true);
+    ctx->PlaceItemInLocation(RC_FIRE_TEMPLE_MQ_LOOP_KNUCKLE_SUN_FAIRY, GetJunkItem(), false, true);
+  }
+  if (ctx->GetDungeon(Rando::WATER_TEMPLE)->IsMQ()) {
+    ctx->PlaceItemInLocation(RC_WATER_TEMPLE_MQ_DARK_LINK_PILAR_SUN_FAIRY, GetJunkItem(), false, true);
+    ctx->PlaceItemInLocation(RC_WATER_TEMPLE_MQ_DARK_LINK_LEFT_STORM_FAIRY, GetJunkItem(), false, true);
+    ctx->PlaceItemInLocation(RC_WATER_TEMPLE_MQ_DARK_LINK_RIGHT_SUN_FAIRY, GetJunkItem(), false, true);
+  }
+  if (ctx->GetDungeon(Rando::SPIRIT_TEMPLE)->IsMQ()) {
+    ctx->PlaceItemInLocation(RC_SPIRIT_TEMPLE_MQ_DINALFOS_ROOM_SUN_FAIRY, GetJunkItem(), false, true);
+  } else {
+    ctx->PlaceItemInLocation(RC_SPIRIT_TEMPLE_BOULDER_ROOM_SUN_FAIRY, GetJunkItem(), false, true);
+    ctx->PlaceItemInLocation(RC_SPIRIT_TEMPLE_ARMOS_ROOM_SUN_FAIRY, GetJunkItem(), false, true);
+  }
   if (ctx->GetDungeon(Rando::BOTTOM_OF_THE_WELL)->IsMQ()) {
     ctx->PlaceItemInLocation(RC_BOTTOM_OF_THE_WELL_MQ_CELL_SUN_FAIRY, GetJunkItem(), false, true);
     ctx->PlaceItemInLocation(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_SUN_FAIRY, GetJunkItem(), false, true);
@@ -660,6 +675,9 @@ static void PlaceVanillaFairies() {
   }
   if (ctx->GetDungeon(Rando::GERUDO_TRAINING_GROUNDS)->IsVanilla()) {
     ctx->PlaceItemInLocation(RC_GERUDO_TRAINING_GROUND_ENTRANCE_STORMS_FAIRY, GetJunkItem(), false, true);
+  }
+  if (ctx->GetDungeon(Rando::GANONS_CASTLE)->IsVanilla()) {
+    ctx->PlaceItemInLocation(RC_GANONS_CASTLE_SPIRIT_TRIAL_SUN_FAIRY, GetJunkItem(), false, true);
   }
 }
 
@@ -1217,9 +1235,13 @@ void GenerateItemPool() {
     }
     // 8 extra for Ganon's Castle + 2 Dodongo's Cavern Gossip Stone
     int extra = 10;
+    extra += ctx->GetDungeon(Rando::FIRE_TEMPLE)->IsVanilla() ? 0 : 2;
+    extra += ctx->GetDungeon(Rando::WATER_TEMPLE)->IsVanilla() ? 0 : 3;
+    extra += ctx->GetDungeon(Rando::SPIRIT_TEMPLE)->IsVanilla() ? 2 : 1;
     extra += ctx->GetDungeon(Rando::BOTTOM_OF_THE_WELL)->IsVanilla() ? 1 : 2;
     extra += ctx->GetDungeon(Rando::ICE_CAVERN)->IsVanilla() ? 1 : 0;
     extra += ctx->GetDungeon(Rando::GERUDO_TRAINING_GROUNDS)->IsVanilla() ? 1 : 0;
+    extra += ctx->GetDungeon(Rando::GANONS_CASTLE)->IsVanilla() ? 1 : 0;
     for (int i = 0; i < extra; i++) {
       AddItemToMainPool(GetJunkItem());
     }

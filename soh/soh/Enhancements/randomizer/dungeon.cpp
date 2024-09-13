@@ -377,6 +377,8 @@ Dungeons::Dungeons() {
                         RC_FIRE_TEMPLE_MQ_GS_BIG_LAVA_ROOM_OPEN_DOOR,
                         RC_FIRE_TEMPLE_MQ_GS_FIRE_WALL_MAZE_SIDE_ROOM,
                         RC_FIRE_TEMPLE_MQ_GS_SKULL_ON_FIRE,
+                        RC_FIRE_TEMPLE_MQ_LOOP_STALFOS_SUN_FAIRY,
+                        RC_FIRE_TEMPLE_MQ_LOOP_KNUCKLE_SUN_FAIRY,
                     },
                     {},
                     {
@@ -418,6 +420,9 @@ Dungeons::Dungeons() {
                         RC_WATER_TEMPLE_MQ_GS_LIZALFOS_HALLWAY,
                         RC_WATER_TEMPLE_MQ_GS_RIVER,
                         RC_WATER_TEMPLE_MQ_GS_TRIPLE_WALL_TORCH,
+                        RC_WATER_TEMPLE_MQ_DARK_LINK_PILAR_SUN_FAIRY,
+                        RC_WATER_TEMPLE_MQ_DARK_LINK_LEFT_STORM_FAIRY,
+                        RC_WATER_TEMPLE_MQ_DARK_LINK_RIGHT_SUN_FAIRY,
                     },
                     {},
                     {
@@ -452,6 +457,8 @@ Dungeons::Dungeons() {
                         RC_SPIRIT_TEMPLE_GS_LOBBY,
                         RC_SPIRIT_TEMPLE_GS_SUN_ON_FLOOR_ROOM,
                         RC_SPIRIT_TEMPLE_GS_METAL_FENCE,
+                        RC_SPIRIT_TEMPLE_BOULDER_ROOM_SUN_FAIRY,
+                        RC_SPIRIT_TEMPLE_ARMOS_ROOM_SUN_FAIRY,
                     },
                     {
                         // MQ Locations
@@ -480,6 +487,7 @@ Dungeons::Dungeons() {
                         RC_SPIRIT_TEMPLE_MQ_GS_NINE_THRONES_ROOM_WEST,
                         RC_SPIRIT_TEMPLE_MQ_GS_NINE_THRONES_ROOM_NORTH,
                         RC_SPIRIT_TEMPLE_MQ_GS_SUN_BLOCK_ROOM,
+                        RC_SPIRIT_TEMPLE_MQ_DINALFOS_ROOM_SUN_FAIRY,
                     },
                     {
                         // Shared Locations
@@ -701,6 +709,7 @@ Dungeons::Dungeons() {
                         RC_GANONS_CASTLE_SCRUBS_FAIRY_6,
                         RC_GANONS_CASTLE_SCRUBS_FAIRY_7,
                         RC_GANONS_CASTLE_SCRUBS_FAIRY_8,
+                        RC_GANONS_CASTLE_SPIRIT_TRIAL_SUN_FAIRY,
                     },
                     {
                         // MQ Locations
