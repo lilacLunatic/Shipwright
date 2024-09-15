@@ -348,6 +348,8 @@ void Settings::CreateOptionDescriptions() {
         "have collected all 100 Gold Skulltula Tokens.\n"
         "\n"
         "You can still talk to him multiple times to get Huge Rupees.";
+    mOptionDescriptions[RSK_SHUFFLE_FAIRIES] =
+        "Shuffle fairy locations.";
     mOptionDescriptions[RSK_SHUFFLE_DUNGEON_REWARDS] =
         "Shuffles the location of spiritual stones and medallions.\n"
         "\n"

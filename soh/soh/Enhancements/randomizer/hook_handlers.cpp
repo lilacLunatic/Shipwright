@@ -6,6 +6,7 @@
 #include "soh/Enhancements/randomizer/dungeon.h"
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
+#include "soh/Enhancements/randomizer/fairy_shuffle.h"
 
 extern "C" {
 #include "macros.h"
@@ -1518,6 +1519,8 @@ void RandomizerRegisterHooks() {
         onSceneInitHook = 0;
         onActorInitHook = 0;
 
+        FairyUnregisterHooks();
+
         if (!IS_RANDO) return;
 
         onFlagSetHook = GameInteractor::Instance->RegisterGameHook<GameInteractor::OnFlagSet>(RandomizerOnFlagSetHandler);
@@ -1528,5 +1531,9 @@ void RandomizerRegisterHooks() {
         onVanillaBehaviorHook = GameInteractor::Instance->RegisterGameHook<GameInteractor::OnVanillaBehavior>(RandomizerOnVanillaBehaviorHandler);
         onSceneInitHook = GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneInit>(RandomizerOnSceneInitHandler);
         onActorInitHook = GameInteractor::Instance->RegisterGameHook<GameInteractor::OnActorInit>(RandomizerOnActorInitHandler);
+
+        if (RAND_GET_OPTION(RSK_SHUFFLE_FAIRIES)) {
+            FairyRegisterHooks();
+        }
     });
 }

@@ -209,6 +209,8 @@ void AreaTable_Init_Kakariko() {
                   //Locations
                   LOCATION(RC_KAK_OPEN_GROTTO_CHEST,         true),
                   LOCATION(RC_KAK_OPEN_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_KAK_OPEN_GROTTO_GOSSIP_STONE_FAIRY,     logic->CanSummonGossipFairy),
+                  LOCATION(RC_KAK_OPEN_GROTTO_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_KAK_OPEN_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_KAK_OPEN_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_KAK_OPEN_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),
@@ -228,6 +230,9 @@ void AreaTable_Init_Kakariko() {
                   LOCATION(RC_GRAVEYARD_DAMPE_GRAVEDIGGING_TOUR, logic->ChildsWallet && logic->IsChild && logic->AtNight), //TODO: This needs to change
                   LOCATION(RC_GRAVEYARD_GS_WALL,                 logic->IsChild && logic->HookshotOrBoomerang && logic->AtNight && logic->CanGetNightTimeGS),
                   LOCATION(RC_GRAVEYARD_GS_BEAN_PATCH,           logic->CanPlantBugs && logic->CanChildAttack),
+                  LOCATION(RC_GRAVEYARD_BEAN_SPROUT_FAIRY_1,     logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_GRAVEYARD_BEAN_SPROUT_FAIRY_2,     logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_GRAVEYARD_BEAN_SPROUT_FAIRY_3,     logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                 }, {
                   //Exits
                   Entrance(RR_GRAVEYARD_SHIELD_GRAVE,       {[]{return logic->IsAdult || logic->AtNight;}}),
@@ -243,6 +248,14 @@ void AreaTable_Init_Kakariko() {
                   //Locations
                   LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_CHEST, true),
                   //Free Fairies
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_1, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_2, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_3, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_4, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_5, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_6, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_7, logic->CanBlastOrSmash),
+                  LOCATION(RC_GRAVEYARD_SHIELD_GRAVE_FAIRY_8, logic->CanBlastOrSmash),
                 }, {
                   //Exits
                   Entrance(RR_THE_GRAVEYARD, {[]{return true;}}),
@@ -298,6 +311,8 @@ void AreaTable_Init_Kakariko() {
                   EventAccess(&logic->GossipStoneFairy, {[]{return logic->GossipStoneFairy || logic->CanSummonGossipFairyWithoutSuns;}}),
                 }, {
                   //Locations
+                  LOCATION(RC_GRAVEYARD_GOSSIP_STONE_FAIRY,     logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_GRAVEYARD_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_GRAVEYARD_GOSSIP_STONE, true),
                 }, {
                   //Exits

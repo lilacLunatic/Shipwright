@@ -15,6 +15,10 @@ void AreaTable_Init_DeathMountain() {
                   LOCATION(RC_DMT_GS_BEAN_PATCH,            logic->CanPlantBugs && (logic->HasExplosives || logic->GoronBracelet || (randoCtx->GetTrickOption(RT_DMT_SOIL_GS) && (logic->CanTakeDamage || logic->CanUse(RG_HOVER_BOOTS)) && logic->CanUse(RG_BOOMERANG)))),
                   LOCATION(RC_DMT_GS_NEAR_KAK,              logic->CanBlastOrSmash),
                   LOCATION(RC_DMT_GS_ABOVE_DODONGOS_CAVERN, logic->IsAdult && logic->AtNight && (logic->CanUse(RG_MEGATON_HAMMER) || (randoCtx->GetTrickOption(RT_DMT_HOOKSHOT_LOWER_GS) && logic->CanUse(RG_HOOKSHOT)) || (randoCtx->GetTrickOption(RT_DMT_BEAN_LOWER_GS) && CanPlantBean(RR_DEATH_MOUNTAIN_TRAIL)) || (randoCtx->GetTrickOption(RT_DMT_HOVERS_LOWER_GS) && logic->CanUse(RG_HOVER_BOOTS)) || randoCtx->GetTrickOption(RT_DMT_JS_LOWER_GS)) && logic->CanGetNightTimeGS),
+                  LOCATION(RC_DMT_BEAN_SPROUT_FAIRY_1,      logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->HasExplosives || logic->HasItem(RG_GORONS_BRACELET))),
+                  LOCATION(RC_DMT_BEAN_SPROUT_FAIRY_2,      logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->HasExplosives || logic->HasItem(RG_GORONS_BRACELET))),
+                  LOCATION(RC_DMT_BEAN_SPROUT_FAIRY_3,      logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->HasExplosives || logic->HasItem(RG_GORONS_BRACELET))),
+                  LOCATION(RC_DMT_FLAG_SUN_FAIRY,           logic->CanUse(RG_SUNS_SONG)),
                 }, {
                   //Exits
                   Entrance(RR_KAK_BEHIND_GATE,          {[]{return true;}}),
@@ -35,6 +39,8 @@ void AreaTable_Init_DeathMountain() {
                   LOCATION(RC_DMT_TRADE_EYEDROPS,        logic->IsAdult && logic->Eyedrops),
                   LOCATION(RC_DMT_TRADE_CLAIM_CHECK,     logic->IsAdult && logic->ClaimCheck),
                   LOCATION(RC_DMT_GS_FALLING_ROCKS_PATH, logic->IsAdult && logic->AtNight && (logic->CanUse(RG_MEGATON_HAMMER) || randoCtx->GetTrickOption(RT_DMT_UPPER_GS)) && logic->CanGetNightTimeGS),
+                  LOCATION(RC_DMT_GOSSIP_STONE_FAIRY,     logic->CanSummonGossipFairy),
+                  LOCATION(RC_DMT_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_DMT_GOSSIP_STONE,          true),
                 }, {
                   //Exits
@@ -64,6 +70,8 @@ void AreaTable_Init_DeathMountain() {
                   //Locations
                   LOCATION(RC_DMT_STORMS_GROTTO_CHEST,         true),
                   LOCATION(RC_DMT_STORMS_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_DMT_STORMS_GROTTO_GOSSIP_STONE_FAIRY,     logic->CanSummonGossipFairy),
+                  LOCATION(RC_DMT_STORMS_GROTTO_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_DMT_STORMS_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_DMT_STORMS_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_DMT_STORMS_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),
@@ -100,6 +108,10 @@ void AreaTable_Init_DeathMountain() {
                   LOCATION(RC_GC_GS_BOULDER_MAZE,        logic->IsChild && logic->CanBlastOrSmash),
                   LOCATION(RC_GC_GS_CENTER_PLATFORM,     logic->CanAdultAttack),
                   LOCATION(RC_GC_MEDIGORON,              logic->IsAdult && logic->AdultsWallet && (logic->CanBlastOrSmash || logic->GoronBracelet)),
+                  LOCATION(RC_GC_MAZE_GOSSIP_STONE_FAIRY,           (logic->CanBlastOrSmash || logic->CanUse(RG_SILVER_GAUNTLETS)) && logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_GC_MAZE_GOSSIP_STONE_FAIRY_BIG,       (logic->CanBlastOrSmash || logic->CanUse(RG_SILVER_GAUNTLETS)) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_GC_MEDIGORON_GOSSIP_STONE_FAIRY,      (logic->CanBlastOrSmash || logic->GoronBracelet) && logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_GC_MEDIGORON_GOSSIP_STONE_FAIRY_BIG,  (logic->CanBlastOrSmash || logic->GoronBracelet) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_GC_MAZE_GOSSIP_STONE,      logic->CanBlastOrSmash || logic->CanUse(RG_SILVER_GAUNTLETS)),
                   LOCATION(RC_GC_MEDIGORON_GOSSIP_STONE, logic->CanBlastOrSmash || logic->GoronBracelet),
                   LOCATION(RC_GC_LOWER_STAIRCASE_POT_1,  logic->CanBreakPots),
@@ -187,6 +199,8 @@ void AreaTable_Init_DeathMountain() {
                   //Locations
                   LOCATION(RC_DMC_WALL_FREESTANDING_POH, logic->FireTimer >= 16 || logic->Hearts >= 3),
                   LOCATION(RC_DMC_GS_CRATE,              (logic->FireTimer >= 8 || logic->Hearts >= 3) && logic->IsChild && logic->CanChildAttack),
+                  LOCATION(RC_DMC_GOSSIP_STONE_FAIRY,     logic->CanSummonGossipFairyWithoutSuns && logic->HasExplosives && (logic->FireTimer >= 16 || logic->Hearts >= 3)),
+                  LOCATION(RC_DMC_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS) && logic->HasExplosives && (logic->FireTimer >= 16 || logic->Hearts >= 3)),
                   LOCATION(RC_DMC_GOSSIP_STONE,          logic->HasExplosives && (logic->FireTimer >= 16 || logic->Hearts >= 3)),
                 }, {
                   //Exits
@@ -242,6 +256,9 @@ void AreaTable_Init_DeathMountain() {
                 }, {
                   //Locations
                   LOCATION(RC_DMC_GS_BEAN_PATCH, (logic->FireTimer >= 8 || logic->Hearts >= 3) && logic->CanPlantBugs && logic->CanChildAttack),
+                  LOCATION(RC_DMC_BEAN_SPROUT_FAIRY_1,  logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
+                  LOCATION(RC_DMC_BEAN_SPROUT_FAIRY_2,  logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
+                  LOCATION(RC_DMC_BEAN_SPROUT_FAIRY_3,  logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
                 }, {
                   //Exits
                   Entrance(RR_DMC_CENTRAL_NEARBY,   {[]{return true;}}),
@@ -262,6 +279,8 @@ void AreaTable_Init_DeathMountain() {
                   //Locations
                   LOCATION(RC_DMC_UPPER_GROTTO_CHEST,         true),
                   LOCATION(RC_DMC_UPPER_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_DMC_UPPER_GROTTO_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_DMC_UPPER_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_DMC_UPPER_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_DMC_UPPER_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),

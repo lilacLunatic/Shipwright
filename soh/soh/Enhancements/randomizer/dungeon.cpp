@@ -245,6 +245,8 @@ Dungeons::Dungeons() {
                                                    RC_DODONGOS_CAVERN_BACK_ROOM_POT_2,
                                                    RC_DODONGOS_CAVERN_BACK_ROOM_POT_3,
                                                    RC_DODONGOS_CAVERN_BACK_ROOM_POT_4,
+                                                   RC_DODONGOS_CAVERN_GOSSIP_STONE_FAIRY,
+                                                   RC_DODONGOS_CAVERN_GOSSIP_STONE_FAIRY_BIG,
                                                },
                                                {
                                                    // MQ Locations
@@ -263,6 +265,7 @@ Dungeons::Dungeons() {
                                                    RC_DODONGOS_CAVERN_MQ_GS_LIZALFOS_ROOM,
                                                    RC_DODONGOS_CAVERN_MQ_GS_LARVAE_ROOM,
                                                    RC_DODONGOS_CAVERN_MQ_GS_BACK_AREA,
+
 
                                                    // MQ Pots
                                                    RC_DODONGOS_CAVERN_MQ_RIGHT_SIDE_POT_1,
@@ -295,6 +298,10 @@ Dungeons::Dungeons() {
                                                    RC_DODONGOS_CAVERN_MQ_BEFORE_BOSS_POT_2,
                                                    RC_DODONGOS_CAVERN_MQ_BACKROOM_POT_1,
                                                    RC_DODONGOS_CAVERN_MQ_BACKROOM_POT_2,
+
+                                                   RC_DODONGOS_CAVERN_MQ_GOSSIP_STONE_FAIRY,
+                                                   RC_DODONGOS_CAVERN_MQ_GOSSIP_STONE_FAIRY_BIG,
+
                                                },
                                                {},
                                                {
@@ -529,6 +536,7 @@ Dungeons::Dungeons() {
                         RC_FIRE_TEMPLE_MQ_GS_FIRE_WALL_MAZE_SIDE_ROOM,
                         RC_FIRE_TEMPLE_MQ_GS_SKULL_ON_FIRE,
 
+
                         // MQ Pots
                         RC_FIRE_TEMPLE_MQ_ENTRANCE_POT_1,
                         RC_FIRE_TEMPLE_MQ_ENTRANCE_POT_2,
@@ -558,6 +566,10 @@ Dungeons::Dungeons() {
                         RC_FIRE_TEMPLE_MQ_BEFORE_MINI_BOSS_POT_6,
                         RC_FIRE_TEMPLE_MQ_BEFORE_MINI_BOSS_POT_7,
                         RC_FIRE_TEMPLE_MQ_BEFORE_MINI_BOSS_POT_8,
+
+                        RC_FIRE_TEMPLE_MQ_LOOP_STALFOS_SUN_FAIRY,
+                        RC_FIRE_TEMPLE_MQ_LOOP_KNUCKLE_SUN_FAIRY,
+
                     },
                     {},
                     {
@@ -625,6 +637,7 @@ Dungeons::Dungeons() {
                         RC_WATER_TEMPLE_MQ_GS_RIVER,
                         RC_WATER_TEMPLE_MQ_GS_TRIPLE_WALL_TORCH,
 
+
                         // MQ Pots
                         RC_WATER_TEMPLE_MQ_CENTRAL_GATE_POT_1,
                         RC_WATER_TEMPLE_MQ_CENTRAL_GATE_POT_2,
@@ -657,6 +670,11 @@ Dungeons::Dungeons() {
                         RC_WATER_TEMPLE_MQ_LOWEST_GS_POT_3,
                         RC_WATER_TEMPLE_MQ_LOWEST_GS_POT_4,
                         RC_WATER_TEMPLE_MQ_BOSS_KEY_POT,
+
+                        RC_WATER_TEMPLE_MQ_DARK_LINK_PILAR_SUN_FAIRY,
+                        RC_WATER_TEMPLE_MQ_DARK_LINK_LEFT_STORM_FAIRY,
+                        RC_WATER_TEMPLE_MQ_DARK_LINK_RIGHT_SUN_FAIRY,
+
                     },
                     {},
                     {
@@ -692,6 +710,7 @@ Dungeons::Dungeons() {
                         RC_SPIRIT_TEMPLE_GS_SUN_ON_FLOOR_ROOM,
                         RC_SPIRIT_TEMPLE_GS_METAL_FENCE,
 
+
                         // Vanilla Pots
                         RC_SPIRIT_TEMPLE_LOBBY_POT_1,
                         RC_SPIRIT_TEMPLE_LOBBY_POT_2,
@@ -709,6 +728,10 @@ Dungeons::Dungeons() {
                         RC_SPIRIT_TEMPLE_CENTRAL_CHAMBER_POT_5,
                         RC_SPIRIT_TEMPLE_CENTRAL_CHAMBER_POT_6,
                         RC_SPIRIT_TEMPLE_BEAMOS_HALL_POT_1,
+
+                        RC_SPIRIT_TEMPLE_BOULDER_ROOM_SUN_FAIRY,
+                        RC_SPIRIT_TEMPLE_ARMOS_ROOM_SUN_FAIRY,
+
                     },
                     {
                         // MQ Locations
@@ -737,6 +760,7 @@ Dungeons::Dungeons() {
                         RC_SPIRIT_TEMPLE_MQ_GS_NINE_THRONES_ROOM_WEST,
                         RC_SPIRIT_TEMPLE_MQ_GS_NINE_THRONES_ROOM_NORTH,
                         RC_SPIRIT_TEMPLE_MQ_GS_SUN_BLOCK_ROOM,
+
 
                         // MQ Pots
                         RC_SPIRIT_TEMPLE_MQ_ENTRANCE_POT_1,
@@ -768,6 +792,9 @@ Dungeons::Dungeons() {
                         RC_SPIRIT_TEMPLE_MQ_BEFORE_MIRROR_POT_2,
                         RC_SPIRIT_TEMPLE_MQ_EARLY_ADULT_POT_1,
                         RC_SPIRIT_TEMPLE_MQ_EARLY_ADULT_POT_2,
+
+                        RC_SPIRIT_TEMPLE_MQ_DINALFOS_ROOM_SUN_FAIRY,
+
                     },
                     {
                         // Shared Locations
@@ -807,6 +834,7 @@ Dungeons::Dungeons() {
                         RC_SHADOW_TEMPLE_GS_LIKE_LIKE_ROOM,
                         RC_SHADOW_TEMPLE_GS_NEAR_SHIP,
 
+
                         // Vanilla Pots
                         RC_SHADOW_TEMPLE_NEAR_DEAD_HAND_POT_1,
                         RC_SHADOW_TEMPLE_WHISPERING_WALLS_POT_1,
@@ -829,6 +857,11 @@ Dungeons::Dungeons() {
                         RC_SHADOW_TEMPLE_AFTER_BOAT_POT_2,
                         RC_SHADOW_TEMPLE_AFTER_BOAT_POT_3,
                         RC_SHADOW_TEMPLE_AFTER_BOAT_POT_4,
+
+                        RC_SHADOW_TEMPLE_BEAMOS_STORM_FAIRY,
+                        RC_SHADOW_TEMPLE_PIT_STORM_FAIRY,
+                        RC_SHADOW_TEMPLE_WIND_HINT_SUN_FAIRY,
+
                     },
                     {
                         // MQ Locations
@@ -858,6 +891,7 @@ Dungeons::Dungeons() {
                         RC_SHADOW_TEMPLE_MQ_GS_AFTER_SHIP,
                         RC_SHADOW_TEMPLE_MQ_GS_NEAR_BOSS,
 
+
                         // MQ Pots
                         RC_SHADOW_TEMPLE_MQ_WHISPERING_WALLS_POT_1,
                         RC_SHADOW_TEMPLE_MQ_WHISPERING_WALLS_POT_2,
@@ -876,6 +910,11 @@ Dungeons::Dungeons() {
                         RC_SHADOW_TEMPLE_MQ_SPIKE_BARICADE_POT,
                         RC_SHADOW_TEMPLE_MQ_DEAD_HAND_POT_1,
                         RC_SHADOW_TEMPLE_MQ_DEAD_HAND_POT_2,
+
+                        RC_SHADOW_TEMPLE_MQ_BEAMOS_STORM_FAIRY,
+                        RC_SHADOW_TEMPLE_MQ_PIT_STORM_FAIRY,
+                        RC_SHADOW_TEMPLE_MQ_WIND_HINT_SUN_FAIRY,
+
                     },
                     {},
                     {
@@ -906,6 +945,7 @@ Dungeons::Dungeons() {
             RC_BOTTOM_OF_THE_WELL_GS_EAST_INNER_ROOM,
             RC_BOTTOM_OF_THE_WELL_GS_WEST_INNER_ROOM,
 
+
             // Vanilla Pots
             RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_1,
             RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_2,
@@ -926,6 +966,9 @@ Dungeons::Dungeons() {
             RC_BOTTOM_OF_THE_WELL_NEAR_ENTRANCE_POT_2,
             RC_BOTTOM_OF_THE_WELL_FIRE_KEESE_POT_1,
             RC_BOTTOM_OF_THE_WELL_UNDERWATER_POT,
+
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_SUN_FAIRY,
+
         },
         {
             // MQ Locations
@@ -938,6 +981,7 @@ Dungeons::Dungeons() {
             RC_BOTTOM_OF_THE_WELL_MQ_GS_COFFIN_ROOM,
             RC_BOTTOM_OF_THE_WELL_MQ_GS_WEST_INNER_ROOM,
 
+
             // MQ Pots
             RC_BOTTOM_OF_THE_WELL_MQ_INNER_LOBBY_POT_1,
             RC_BOTTOM_OF_THE_WELL_MQ_INNER_LOBBY_POT_2,
@@ -946,6 +990,10 @@ Dungeons::Dungeons() {
             RC_BOTTOM_OF_THE_WELL_MQ_SOUTH_KEY_POT_1,
             RC_BOTTOM_OF_THE_WELL_MQ_SOUTH_KEY_POT_2,
             RC_BOTTOM_OF_THE_WELL_MQ_SOUTH_KEY_POT_3,
+
+            RC_BOTTOM_OF_THE_WELL_MQ_CELL_SUN_FAIRY,
+            RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_SUN_FAIRY,
+
         },
         {}, {});
     dungeonList[ICE_CAVERN] = DungeonInfo("Ice Cavern", RHT_ICE_CAVERN, RG_ICE_CAVERN_MAP, RG_ICE_CAVERN_COMPASS,
@@ -960,6 +1008,7 @@ Dungeons::Dungeons() {
                                               RC_ICE_CAVERN_GS_SPINNING_SCYTHE_ROOM,
                                               RC_ICE_CAVERN_GS_HEART_PIECE_ROOM,
 
+
                                               // Vanilla Pots
                                               RC_ICE_CAVERN_HALL_POT_1,
                                               RC_ICE_CAVERN_HALL_POT_2,
@@ -969,6 +1018,9 @@ Dungeons::Dungeons() {
                                               RC_ICE_CAVERN_NEAR_END_POT_1,
                                               RC_ICE_CAVERN_NEAR_END_POT_2,
                                               RC_ICE_CAVERN_FROZEN_POT_1,
+
+                                              RC_ICE_CAVERN_ENTRANCE_STORMS_FAIRY,
+
                                           },
                                           {
                                               // MQ Locations
@@ -1025,6 +1077,7 @@ Dungeons::Dungeons() {
                         RC_GERUDO_TRAINING_GROUND_HEAVY_BLOCK_THIRD_CHEST,
                         RC_GERUDO_TRAINING_GROUND_HEAVY_BLOCK_FOURTH_CHEST,
                         RC_GERUDO_TRAINING_GROUND_FREESTANDING_KEY,
+                        RC_GERUDO_TRAINING_GROUND_ENTRANCE_STORMS_FAIRY,
                     },
                     {
                         // MQ Locations
@@ -1072,6 +1125,7 @@ Dungeons::Dungeons() {
                         RC_GANONS_CASTLE_DEKU_SCRUB_CENTER_RIGHT,
                         RC_GANONS_CASTLE_DEKU_SCRUB_RIGHT,
 
+
                         // Vanilla Pots
                         RC_GANONS_CASTLE_FOREST_TRIAL_POT_1,
                         RC_GANONS_CASTLE_FOREST_TRIAL_POT_2,
@@ -1089,6 +1143,17 @@ Dungeons::Dungeons() {
                         RC_GANONS_CASTLE_LIGHT_TRIAL_BOULDER_POT_1,
                         RC_GANONS_CASTLE_LIGHT_TRIAL_POT_1,
                         RC_GANONS_CASTLE_LIGHT_TRIAL_POT_2,
+
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_1,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_2,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_3,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_4,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_5,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_6,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_7,
+                        RC_GANONS_CASTLE_SCRUBS_FAIRY_8,
+                        RC_GANONS_CASTLE_SPIRIT_TRIAL_SUN_FAIRY,
+
                     },
                     {
                         // MQ Locations
@@ -1111,6 +1176,7 @@ Dungeons::Dungeons() {
                         RC_GANONS_CASTLE_MQ_DEKU_SCRUB_CENTER_RIGHT,
                         RC_GANONS_CASTLE_MQ_DEKU_SCRUB_LEFT,
 
+
                         // MQ Pots
                         RC_GANONS_CASTLE_MQ_FOREST_TRIAL_POT_1,
                         RC_GANONS_CASTLE_MQ_FOREST_TRIAL_POT_2,
@@ -1124,6 +1190,16 @@ Dungeons::Dungeons() {
                         RC_GANONS_CASTLE_MQ_LIGHT_TRIAL_POT_2,
                         RC_GANONS_CASTLE_MQ_SPIRIT_TRIAL_POT_1,
                         RC_GANONS_CASTLE_MQ_SPIRIT_TRIAL_POT_2,
+
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_1,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_2,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_3,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_4,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_5,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_6,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_7,
+                        RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_8,
+
                     },
                     {
                         // Shared Locations

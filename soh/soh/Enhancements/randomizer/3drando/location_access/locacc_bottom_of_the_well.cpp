@@ -42,6 +42,7 @@ void AreaTable_Init_BottomOfTheWell() {
                   LOCATION(RC_BOTTOM_OF_THE_WELL_GS_WEST_INNER_ROOM,           logic->Boomerang && (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)) && logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 3)),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_GS_EAST_INNER_ROOM,           logic->Boomerang && (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)) && logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 3)),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_GS_LIKE_LIKE_CAGE,            logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 3) && (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)) && logic->Boomerang),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_SUN_FAIRY,           (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)) && logic->CanUse(RG_SUNS_SONG)),
                 }, {
                   //Exits
                   Entrance(RR_BOTTOM_OF_THE_WELL_ENTRYWAY, {[]{return true;}}),
@@ -62,6 +63,7 @@ void AreaTable_Init_BottomOfTheWell() {
                     //Trick: logic->HasExplosives || (LogicBotWMQDeadHandKey && logic->Boomerang)
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_GS_BASEMENT,                logic->CanChildAttack),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_GS_COFFIN_ROOM,             logic->CanChildAttack && logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 2)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_SUN_FAIRY,         logic->CanUse(RG_SUNS_SONG)),
   }, {
                   //Exits
                   Entrance(RR_BOTTOM_OF_THE_WELL_ENTRYWAY,  {[]{return true;}}),
@@ -76,6 +78,7 @@ void AreaTable_Init_BottomOfTheWell() {
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_EAST_INNER_ROOM_FREESTANDING_KEY, true),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_GS_WEST_INNER_ROOM,               logic->CanChildAttack && (randoCtx->GetTrickOption(RT_BOTW_MQ_PITS) || logic->HasExplosives)),
                     //Trick: logic->CanChildAttack && (LogicBotWMQPits || logic->HasExplosives)
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_CELL_SUN_FAIRY,                   logic->CanUse(RG_SUNS_SONG)),
   }, {
                   //Exits
                   Entrance(RR_BOTTOM_OF_THE_WELL_MQ_PERIMETER, {[]{return true;}}),

@@ -50,6 +50,14 @@ void AreaTable_Init_GanonsCastle() {
                   LOCATION(RC_GANONS_CASTLE_DEKU_SCRUB_CENTER_RIGHT, logic->CanStunDeku),
                   LOCATION(RC_GANONS_CASTLE_DEKU_SCRUB_RIGHT,        logic->CanStunDeku),
                   LOCATION(RC_GANONS_CASTLE_DEKU_SCRUB_LEFT,         logic->CanStunDeku),
+                  LOCATION(RC_GANONS_CASTLE_SCRUBS_FAIRY_1,          true),
+                  LOCATION(RC_GANONS_CASTLE_SCRUBS_FAIRY_2,          true),
+                  LOCATION(RC_GANONS_CASTLE_SCRUBS_FAIRY_3,          true),
+                  LOCATION(RC_GANONS_CASTLE_SCRUBS_FAIRY_4,          true),
+                  LOCATION(RC_GANONS_CASTLE_SCRUBS_FAIRY_5,          true),
+                  LOCATION(RC_GANONS_CASTLE_SCRUBS_FAIRY_6,          true),
+                  LOCATION(RC_GANONS_CASTLE_SCRUBS_FAIRY_7,          true),
+                  LOCATION(RC_GANONS_CASTLE_SCRUBS_FAIRY_8,          true),
   }, {});
 
   areaTable[RR_GANONS_CASTLE_FOREST_TRIAL] = Area("Ganon's Castle Forest Trial", "Ganon's Castle", RA_GANONS_CASTLE, NO_DAY_NIGHT_CYCLE, {
@@ -153,6 +161,14 @@ void AreaTable_Init_GanonsCastle() {
                   LOCATION(RC_GANONS_CASTLE_MQ_DEKU_SCRUB_CENTER_RIGHT, logic->CanStunDeku),
                   LOCATION(RC_GANONS_CASTLE_MQ_DEKU_SCRUB_LEFT,         logic->CanStunDeku),
                   LOCATION(RC_GANONS_CASTLE_MQ_DEKU_SCRUB_RIGHT,        logic->CanStunDeku),
+                  LOCATION(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_1,          true),
+                  LOCATION(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_2,          true),
+                  LOCATION(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_3,          true),
+                  LOCATION(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_4,          true),
+                  LOCATION(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_5,          true),
+                  LOCATION(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_6,          true),
+                  LOCATION(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_7,          true),
+                  LOCATION(RC_GANONS_CASTLE_MQ_SCRUBS_FAIRY_8,          true),
   }, {});
 
   areaTable[RR_GANONS_CASTLE_MQ_FOREST_TRIAL] = Area("Ganon's Castle MQ Forest Trial", "Ganons Castle", RA_GANONS_CASTLE, NO_DAY_NIGHT_CYCLE, {
@@ -203,6 +219,7 @@ void AreaTable_Init_GanonsCastle() {
                   LOCATION(RC_GANONS_CASTLE_MQ_SPIRIT_TRIAL_SUN_BACK_LEFT_CHEST,     logic->IsAdult && logic->Hammer && logic->CanUse(RG_BOMBCHU_5) && ((logic->CanUse(RG_FIRE_ARROWS) && logic->CanUse(RG_MIRROR_SHIELD)) || (randoCtx->GetOption(RSK_SUNLIGHT_ARROWS) && logic->CanUse(RG_LIGHT_ARROWS)))),
                   LOCATION(RC_GANONS_CASTLE_MQ_SPIRIT_TRIAL_GOLDEN_GAUNTLETS_CHEST,  logic->IsAdult && logic->Hammer && logic->CanUse(RG_BOMBCHU_5) && ((logic->CanUse(RG_FIRE_ARROWS) && logic->CanUse(RG_MIRROR_SHIELD)) || (randoCtx->GetOption(RSK_SUNLIGHT_ARROWS) && logic->CanUse(RG_LIGHT_ARROWS)))),
                   LOCATION(RC_GANONS_CASTLE_MQ_SPIRIT_TRIAL_SUN_BACK_RIGHT_CHEST,    logic->IsAdult && logic->Hammer && logic->CanUse(RG_BOMBCHU_5) && ((logic->CanUse(RG_FIRE_ARROWS) && logic->CanUse(RG_MIRROR_SHIELD)) || (randoCtx->GetOption(RSK_SUNLIGHT_ARROWS) && logic->CanUse(RG_LIGHT_ARROWS)))),
+                  LOCATION(RC_GANONS_CASTLE_SPIRIT_TRIAL_SUN_FAIRY,                  logic->CanUse(RG_SUNS_SONG)),
   }, {});
 
   areaTable[RR_GANONS_CASTLE_MQ_LIGHT_TRIAL] = Area("Ganon's Castle MQ Light Trial", "Ganons Castle", RA_GANONS_CASTLE, NO_DAY_NIGHT_CYCLE, {

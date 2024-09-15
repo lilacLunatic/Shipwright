@@ -11,6 +11,7 @@ void AreaTable_Init_HyruleField() {
                   //Locations
                   LOCATION(RC_HF_OCARINA_OF_TIME_ITEM,   logic->IsChild && logic->HasAllStones),
                   LOCATION(RC_SONG_FROM_OCARINA_OF_TIME, logic->IsChild && logic->HasAllStones),
+                  LOCATION(RC_HF_POND_STORMS_FAIRY,      logic->CanUse(RG_SONG_OF_STORMS)),
                 }, {
                   //Exits
                   Entrance(RR_LW_BRIDGE,              {[]{return true;}}),
@@ -34,6 +35,8 @@ void AreaTable_Init_HyruleField() {
                   //Locations
                   LOCATION(RC_HF_SOUTHEAST_GROTTO_CHEST,         true),
                   LOCATION(RC_HF_SOUTHEAST_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_HF_SOUTHEAST_GROTTO_GOSSIP_STONE_FAIRY,     logic->CanSummonGossipFairy),
+                  LOCATION(RC_HF_SOUTHEAST_GROTTO_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_HF_SOUTHEAST_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_HF_SOUTHEAST_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_HF_SOUTHEAST_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),
@@ -46,6 +49,8 @@ void AreaTable_Init_HyruleField() {
                   //Locations
                   LOCATION(RC_HF_OPEN_GROTTO_CHEST,         true),
                   LOCATION(RC_HF_OPEN_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_HF_OPEN_GROTTO_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_HF_OPEN_GROTTO_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_HF_OPEN_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_HF_OPEN_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_HF_OPEN_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),
@@ -67,6 +72,8 @@ void AreaTable_Init_HyruleField() {
                   //Locations
                   LOCATION(RC_HF_GS_COW_GROTTO,           logic->HasFireSource && logic->HookshotOrBoomerang),
                   LOCATION(RC_HF_COW_GROTTO_COW,          logic->HasFireSource && logic->CanUse(RG_EPONAS_SONG)),
+                  LOCATION(RC_HF_COW_GROTTO_GOSSIP_STONE_FAIRY,      logic->HasFireSource && logic->CanSummonGossipFairy),
+                  LOCATION(RC_HF_COW_GROTTO_GOSSIP_STONE_FAIRY_BIG,  logic->HasFireSource && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_HF_COW_GROTTO_GOSSIP_STONE, logic->HasFireSource),
                   LOCATION(RC_HF_COW_GROTTO_POT_1,        logic->HasFireSource && logic->CanBreakPots),
                   LOCATION(RC_HF_COW_GROTTO_POT_2,        logic->HasFireSource && logic->CanBreakPots),
@@ -79,6 +86,8 @@ void AreaTable_Init_HyruleField() {
                   //Locations
                   LOCATION(RC_HF_NEAR_MARKET_GROTTO_CHEST,         true),
                   LOCATION(RC_HF_NEAR_MARKET_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_HF_NEAR_MARKET_GROTTO_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_HF_NEAR_MARKET_GROTTO_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_HF_NEAR_MARKET_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_HF_NEAR_MARKET_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_HF_NEAR_MARKET_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),
@@ -90,7 +99,17 @@ void AreaTable_Init_HyruleField() {
   areaTable[RR_HF_FAIRY_GROTTO] = Area("HF Fairy Grotto", "HF Fairy Grotto", RA_NONE, NO_DAY_NIGHT_CYCLE, {
                   //Events
                   EventAccess(&logic->FreeFairies, {[]{return true;}}),
-                }, {}, {
+                }, {
+                  //Locations
+                  LOCATION(RC_HF_FAIRY_GROTTO_FAIRY_1,  true),
+                  LOCATION(RC_HF_FAIRY_GROTTO_FAIRY_2,  true),
+                  LOCATION(RC_HF_FAIRY_GROTTO_FAIRY_3,  true),
+                  LOCATION(RC_HF_FAIRY_GROTTO_FAIRY_4,  true),
+                  LOCATION(RC_HF_FAIRY_GROTTO_FAIRY_5,  true),
+                  LOCATION(RC_HF_FAIRY_GROTTO_FAIRY_6,  true),
+                  LOCATION(RC_HF_FAIRY_GROTTO_FAIRY_7,  true),
+                  LOCATION(RC_HF_FAIRY_GROTTO_FAIRY_8,  true),
+                }, {
                   //Exits
                   Entrance(RR_HYRULE_FIELD, {[]{return true;}}),
   });
@@ -128,6 +147,16 @@ void AreaTable_Init_HyruleField() {
                   LOCATION(RC_LH_GS_LAB_WALL,            logic->IsChild && (logic->HookshotOrBoomerang || (randoCtx->GetTrickOption(RT_LH_LAB_WALL_GS) && logic->CanJumpslash)) && logic->AtNight && logic->CanGetNightTimeGS),
                   LOCATION(RC_LH_GS_SMALL_ISLAND,        logic->IsChild && logic->CanChildAttack && logic->AtNight && logic->CanGetNightTimeGS),
                   LOCATION(RC_LH_GS_TREE,                logic->IsAdult && logic->CanUse(RG_LONGSHOT) && logic->AtNight && logic->CanGetNightTimeGS),
+                  LOCATION(RC_LH_BEAN_SPROUT_FAIRY_1,    logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LH_BEAN_SPROUT_FAIRY_2,    logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LH_BEAN_SPROUT_FAIRY_3,    logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LH_LAB_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_LH_LAB_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LH_SOUTHEAST_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_LH_SOUTHEAST_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LH_SOUTHWEST_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_LH_SOUTHWEST_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_LH_ISLAND_SUN_FAIRY,                  logic->CanUse(RG_SUNS_SONG) && ((logic->HasItem(RG_BRONZE_SCALE) && (logic->IsChild || logic->WaterTempleClear)) || logic->CanUse(RG_DISTANT_SCARECROW))),
                   LOCATION(RC_LH_LAB_GOSSIP_STONE,       true),
                   LOCATION(RC_LH_SOUTHEAST_GOSSIP_STONE, true),
                   LOCATION(RC_LH_SOUTHWEST_GOSSIP_STONE, true),

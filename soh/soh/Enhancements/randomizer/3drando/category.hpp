@@ -20,6 +20,7 @@ enum class Category {
     cAdultTrade,
     cPot,
     cBeehive,
+    cFairy,
 };
 
 enum class OptionCategory {
