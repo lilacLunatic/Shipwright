@@ -123,6 +123,7 @@ void Settings::CreateOptions() {
     mOptions[RSK_SHUFFLE_BOSS_SOULS] = Option::U8("Shuffle Boss Souls", {"Off", "On", "On + Ganon"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ShuffleBossSouls"), mOptionDescriptions[RSK_SHUFFLE_BOSS_SOULS], WidgetType::Combobox);
     mOptions[RSK_SHUFFLE_DEKU_STICK_BAG] = Option::Bool("Shuffle Deku Stick Bag", CVAR_RANDOMIZER_SETTING("ShuffleDekuStickBag"), mOptionDescriptions[RSK_SHUFFLE_DEKU_STICK_BAG], IMFLAG_SEPARATOR_BOTTOM, WidgetType::Checkbox, RO_GENERIC_OFF);
     mOptions[RSK_SHUFFLE_DEKU_NUT_BAG] = Option::Bool("Shuffle Deku Nut Bag", CVAR_RANDOMIZER_SETTING("ShuffleDekuNutBag"), mOptionDescriptions[RSK_SHUFFLE_DEKU_NUT_BAG], IMFLAG_SEPARATOR_BOTTOM, WidgetType::Checkbox, RO_GENERIC_OFF);
+    mOptions[RSK_SHUFFLE_FREESTANDING] = Option::U8("Shuffle Freestanding Items", {"Off", "Dungeons", "Overworld", "All Items"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ShuffleFreestanding"), mOptionDescriptions[RSK_SHUFFLE_FREESTANDING], WidgetType::Combobox, RO_TOKENSANITY_OFF);
     mOptions[RSK_FISHSANITY] = Option::U8("Fishsanity", {"Off", "Shuffle only Hyrule Loach", "Shuffle Fishing Pond", "Shuffle Overworld Fish", "Shuffle Both"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("Fishsanity"), mOptionDescriptions[RSK_FISHSANITY], WidgetType::Combobox, RO_FISHSANITY_OFF);
     mOptions[RSK_FISHSANITY_POND_COUNT] = Option::U8("Pond Fish Count", {NumOpts(0,17,1)}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("FishsanityPondCount"), mOptionDescriptions[RSK_FISHSANITY_POND_COUNT], WidgetType::Slider, 0, true, IMFLAG_NONE);
     mOptions[RSK_FISHSANITY_AGE_SPLIT] = Option::Bool("Pond Age Split", CVAR_RANDOMIZER_SETTING("FishsanityAgeSplit"), mOptionDescriptions[RSK_FISHSANITY_AGE_SPLIT]);
@@ -326,6 +327,7 @@ void Settings::CreateOptions() {
     mTrickOptions[RT_FOREST_OUTDOORS_LEDGE] = TrickOption::LogicTrick(RCQUEST_BOTH, RA_FOREST_TEMPLE, {Tricks::Tag::NOVICE}, false, "Forest Temple NE Outdoors Ledge with Hover Boots", "With precise Hover Boots movement you can fall down to this ledge from upper balconies. If done precisely enough, it is not necessary to take fall damage. In MQ, this skips a Longshot requirement. In Vanilla, this can skip a Hookshot requirement in entrance randomizer.");
     mTrickOptions[RT_FOREST_DOORFRAME] = TrickOption::LogicTrick(RCQUEST_BOTH, RA_FOREST_TEMPLE, {Tricks::Tag::ADVANCED}, false, "Forest Temple East Courtyard Door Frame with Hover Boots", "A precise Hover Boots movement from the upper balconies in this courtyard can be used to get on top of the door frame. Applies to both Vanilla and Master Quest. In Vanilla, from on top the door frame you can summon Pierre, allowing you to access the falling ceiling room early. In Master Quest, this allows you to obtain the GS on the door frame as adult without Hookshot or Song of Time.");
     mTrickOptions[RT_FOREST_OUTSIDE_BACKDOOR] = TrickOption::LogicTrick(RCQUEST_BOTH, RA_FOREST_TEMPLE, {Tricks::Tag::ADVANCED}, false, "Forest Temple Outside Backdoor with Jump Slash", "A jump slash recoil can be used to reach the ledge in the block puzzle room that leads to the west courtyard. This skips a potential Hover Boots requirement in vanilla, and it can sometimes apply in MQ as well. This trick can be performed as both ages.");
+    mTrickOptions[RT_FOREST_OUTDOORS_HEARTS_BOOMERANG] = TrickOption::LogicTrick(RCQUEST_BOTH, RA_FOREST_TEMPLE, {Tricks::Tag::NOVICE}, false, "Forest Temple Outside Hearts with Boomerang", "A well aimed boomerang from the water's edge can reach the hearts from ground level. If unable to swim, you can back away from the water while the boomerang is returning so the hearts land on the ground.");
     mTrickOptions[RT_FOREST_MQ_WELL_SWIM] = TrickOption::LogicTrick(RCQUEST_MQ, RA_FOREST_TEMPLE, {Tricks::Tag::ADVANCED}, false, "Swim Through Forest Temple MQ Well with Hookshot", "Shoot the vines in the well as low and as far to the right as possible, and then immediately swim under the ceiling to the right. This can only be required if Forest Temple is in its Master Quest form.");
     mTrickOptions[RT_FOREST_MQ_BLOCK_PUZZLE] = TrickOption::LogicTrick(RCQUEST_MQ, RA_FOREST_TEMPLE, {Tricks::Tag::NOVICE}, false, "Skip Forest Temple MQ Block Puzzle with Bombchu", "Send the Bombchu straight up the center of the wall directly to the left upon entering the room.");
     mTrickOptions[RT_FOREST_MQ_JS_HALLWAY_SWITCH] = TrickOption::LogicTrick(RCQUEST_MQ, RA_FOREST_TEMPLE, {Tricks::Tag::NOVICE}, false, "Forest Temple MQ Twisted Hallway Switch with Jump Slash", "The switch to twist the hallway can be hit with a jump slash through the glass block. To get in front of the switch, either use the Hover Boots or hit the shortcut switch at the top of the room and jump from the glass blocks that spawn. Sticks can be used as child, but the Kokiri Sword is too short to reach through the glass.");
@@ -506,6 +508,7 @@ void Settings::CreateOptions() {
         &mTrickOptions[RT_FOREST_OUTDOORS_LEDGE],
         &mTrickOptions[RT_FOREST_DOORFRAME],
         &mTrickOptions[RT_FOREST_OUTSIDE_BACKDOOR],
+        &mTrickOptions[RT_FOREST_OUTDOORS_HEARTS_BOOMERANG],
         &mTrickOptions[RT_FOREST_MQ_WELL_SWIM],
         &mTrickOptions[RT_FOREST_MQ_BLOCK_PUZZLE],
         &mTrickOptions[RT_FOREST_MQ_JS_HALLWAY_SWITCH],
@@ -670,6 +673,7 @@ void Settings::CreateOptions() {
         &mOptions[RSK_SHUFFLE_FISHING_POLE],
         &mOptions[RSK_SHUFFLE_DEKU_STICK_BAG],
         &mOptions[RSK_SHUFFLE_DEKU_NUT_BAG],
+        &mOptions[RSK_SHUFFLE_FREESTANDING],
     }, false, WidgetContainerType::COLUMN);
     mOptionGroups[RSG_SHUFFLE_NPCS_IMGUI] = OptionGroup::SubGroup("Shuffle NPCs & Merchants", {
         &mOptions[RSK_SHOPSANITY],
@@ -904,6 +908,7 @@ void Settings::CreateOptions() {
         &mOptions[RSK_SHUFFLE_BOSS_SOULS],
         &mOptions[RSK_SHUFFLE_DEKU_STICK_BAG],
         &mOptions[RSK_SHUFFLE_DEKU_NUT_BAG],
+        &mOptions[RSK_SHUFFLE_FREESTANDING],
     });
     mOptionGroups[RSG_SHUFFLE_DUNGEON_ITEMS] = OptionGroup("Shuffle Dungeon Items", {
         &mOptions[RSK_SHUFFLE_MAPANDCOMPASS],
@@ -1080,6 +1085,7 @@ void Settings::CreateOptions() {
         &mOptions[RSK_SHUFFLE_POTS],
         &mOptions[RSK_SHUFFLE_BEEHIVES],
         &mOptions[RSK_SHUFFLE_COWS],
+        &mOptions[RSK_SHUFFLE_FREESTANDING],
         &mOptions[RSK_SHUFFLE_MAGIC_BEANS],
         &mOptions[RSK_SHUFFLE_MERCHANTS],
         &mOptions[RSK_SHUFFLE_FROG_SONG_RUPEES],
@@ -1124,6 +1130,7 @@ void Settings::CreateOptions() {
         { "Shuffle Settings:Beehive Shuffle", RSK_SHUFFLE_BEEHIVES },
         { "Shuffle Settings:Shuffle Cows", RSK_SHUFFLE_COWS },
         { "Shuffle Settings:Tokensanity", RSK_SHUFFLE_TOKENS },
+        { "Shuffle Settings:Freestanding Shuffle", RSK_SHUFFLE_FREESTANDING },
         { "Shuffle Settings:Shuffle Ocarinas", RSK_SHUFFLE_OCARINA },
         { "Shuffle Settings:Shuffle Ocarina Buttons", RSK_SHUFFLE_OCARINA_BUTTONS },
         { "Shuffle Settings:Shuffle Swim", RSK_SHUFFLE_SWIM },
@@ -2348,6 +2355,17 @@ void Settings::ParseJson(nlohmann::json spoilerFileJson) {
                         mOptions[index].SetSelectedIndex(RO_SCRUBS_EXPENSIVE);
                     } else if (it.value() == "Random Prices") {
                         mOptions[index].SetSelectedIndex(RO_SCRUBS_RANDOM);
+                    }
+                    break;
+                case RSK_SHUFFLE_FREESTANDING:
+                    if (it.value() == "Off") {
+                        mOptions[index].SetSelectedIndex(RO_TOKENSANITY_OFF);
+                    } else if (it.value() == "Overworld") {
+                        mOptions[index].SetSelectedIndex(RO_TOKENSANITY_OVERWORLD);
+                    } else if (it.value() == "Dungeons") {
+                        mOptions[index].SetSelectedIndex(RO_TOKENSANITY_DUNGEONS);
+                    } else if (it.value() == "All Items") {
+                        mOptions[index].SetSelectedIndex(RO_TOKENSANITY_ALL);
                     }
                     break;
                 case RSK_SHUFFLE_FISHING_POLE:

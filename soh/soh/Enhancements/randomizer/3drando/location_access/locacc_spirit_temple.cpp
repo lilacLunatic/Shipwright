@@ -135,6 +135,8 @@ void AreaTable_Init_SpiritTemple() {
                   //Locations
                   LOCATION(RC_SPIRIT_TEMPLE_BOSS_KEY_CHEST, logic->CanUse(RG_ZELDAS_LULLABY) && ((logic->CanTakeDamage && randoCtx->GetTrickOption(RT_FLAMING_CHESTS)) || (logic->Bow && logic->Hookshot))),
                   LOCATION(RC_SPIRIT_TEMPLE_TOPMOST_CHEST,  (logic->MirrorShield && logic->CanAdultAttack) || (randoCtx->GetOption(RSK_SUNLIGHT_ARROWS) && logic->CanUse(RG_LIGHT_ARROWS))),
+                  LOCATION(RC_SPIRIT_TEMPLE_ADULT_CLIMB_LEFT_HEART,   logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_SPIRIT_TEMPLE_ADULT_CLIMB_RIGHT_HEART,  logic->CanUse(RG_HOOKSHOT)),
   }, {
                   //Exits
                   Entrance(RR_SPIRIT_TEMPLE_INSIDE_STATUE_HEAD, {[]{return logic->MirrorShield && logic->HasExplosives && logic->Hookshot;}}),
@@ -175,6 +177,8 @@ void AreaTable_Init_SpiritTemple() {
                   LOCATION(RC_SPIRIT_TEMPLE_MQ_MAP_CHEST,                  logic->KokiriSword || logic->Bombs),
                   LOCATION(RC_SPIRIT_TEMPLE_MQ_SILVER_BLOCK_HALLWAY_CHEST, logic->CanUse(RG_BOMBCHU_5) && logic->SmallKeys(RR_SPIRIT_TEMPLE, 7) && logic->Slingshot && (logic->CanUse(RG_DINS_FIRE) || (Here(RR_SPIRIT_TEMPLE_MQ_ADULT, []{return logic->IsAdult && (logic->CanUse(RG_FIRE_ARROWS) || (randoCtx->GetTrickOption(RT_SPIRIT_MQ_FROZEN_EYE) && logic->CanUse(RG_FAIRY_BOW) && logic->CanUse(RG_SONG_OF_TIME)));})))),
                     //Trick: logic->CanUse(RG_BOMBCHU_5) && logic->SmallKeys(RR_SPIRIT_TEMPLE, 7) && logic->Slingshot && (logic->CanUse(RG_DINS_FIRE) || (SPIRIT_TEMPLE_MQ_ADULT.Adult() && logic->IsAdult && (logic->CanUse(RG_FIRE_ARROWS) || (LogicSpiritMQFrozenEye && logic->CanUse(RG_FAIRY_BOW) && logic->CanUse(RG_SONG_OF_TIME)))))
+                  LOCATION(RC_SPIRIT_TEMPLE_MQ_CHILD_LEFT_HEART,           logic->CanUse(RG_FAIRY_SLINGSHOT) || logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_SPIRIT_TEMPLE_MQ_CHILD_RIGHT_HEART,          logic->CanUse(RG_FAIRY_SLINGSHOT) || logic->CanUse(RG_FAIRY_BOW)),
   }, {
                   //Exits
                   Entrance(RR_SPIRIT_TEMPLE_MQ_SHARED, {[]{return logic->CanUse(RG_BOMBCHU_5) && logic->SmallKeys(RR_SPIRIT_TEMPLE, 2);}}),

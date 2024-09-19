@@ -61,6 +61,13 @@ void AreaTable_Init_BottomOfTheWell() {
                   LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_10,              logic->CanBreakPots),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_11,              logic->CanBreakPots),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_12,              logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_PLATFORM_LEFT_RUPEE,        randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_PLATFORM_BACK_LEFT_RUPEE,   randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_PLATFORM_MIDDLE_RUPEE,      randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_PLATFORM_BACK_RIGHT_RUPEE,  randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_PLATFORM_RIGHT_RUPEE,       randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_COFFIN_ROOM_FRONT_LEFT_HEART,        (logic->HasItem(RG_BRONZE_SCALE) || logic->CanUse(RG_ZELDAS_LULLABY)) && (logic->CanUse(RG_STICKS) || logic->CanUse(RG_DINS_FIRE))),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_COFFIN_ROOM_MIDDLE_RIGHT_HEART,      (logic->HasItem(RG_BRONZE_SCALE) || logic->CanUse(RG_ZELDAS_LULLABY)) && (logic->CanUse(RG_STICKS) || logic->CanUse(RG_DINS_FIRE))),
                 }, {
                   //Exits
                   Entrance(RR_BOTTOM_OF_THE_WELL_ENTRYWAY, {[]{return true;}}),
@@ -81,6 +88,13 @@ void AreaTable_Init_BottomOfTheWell() {
                     //Trick: logic->HasExplosives || (LogicBotWMQDeadHandKey && logic->Boomerang)
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_GS_BASEMENT,                logic->CanChildAttack),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_GS_COFFIN_ROOM,             logic->CanChildAttack && logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 2)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BOMB_LEFT_HEART,            logic->HasExplosives),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BOMB_RIGHT_HEART,           logic->HasExplosives),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_HALLWAY_FRONT_HEART,   true),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_HALLWAY_LEFT_HEART,    true),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_HALLWAY_RIGHT_HEART,   true),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_COFFIN_ROOM_FRONT_RIGHT_HEART,  logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 2)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_COFFIN_ROOM_MIDDLE_LEFT_HEART,  logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 2)),
   }, {
                   //Exits
                   Entrance(RR_BOTTOM_OF_THE_WELL_ENTRYWAY,  {[]{return true;}}),
