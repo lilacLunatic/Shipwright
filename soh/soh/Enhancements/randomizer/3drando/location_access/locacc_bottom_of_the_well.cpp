@@ -68,6 +68,7 @@ void AreaTable_Init_BottomOfTheWell() {
                   LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_PLATFORM_RIGHT_RUPEE,       randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_COFFIN_ROOM_FRONT_LEFT_HEART,        (logic->HasItem(RG_BRONZE_SCALE) || logic->CanUse(RG_ZELDAS_LULLABY)) && (logic->CanUse(RG_STICKS) || logic->CanUse(RG_DINS_FIRE))),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_COFFIN_ROOM_MIDDLE_RIGHT_HEART,      (logic->HasItem(RG_BRONZE_SCALE) || logic->CanUse(RG_ZELDAS_LULLABY)) && (logic->CanUse(RG_STICKS) || logic->CanUse(RG_DINS_FIRE))),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_SUN_FAIRY,           (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)) && logic->CanUse(RG_SUNS_SONG)),
                 }, {
                   //Exits
                   Entrance(RR_BOTTOM_OF_THE_WELL_ENTRYWAY, {[]{return true;}}),
@@ -95,6 +96,7 @@ void AreaTable_Init_BottomOfTheWell() {
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_HALLWAY_RIGHT_HEART,   true),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_COFFIN_ROOM_FRONT_RIGHT_HEART,  logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 2)),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_COFFIN_ROOM_MIDDLE_LEFT_HEART,  logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 2)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_SUN_FAIRY,         logic->CanUse(RG_SUNS_SONG)),
   }, {
                   //Exits
                   Entrance(RR_BOTTOM_OF_THE_WELL_ENTRYWAY,  {[]{return true;}}),
@@ -109,6 +111,7 @@ void AreaTable_Init_BottomOfTheWell() {
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_EAST_INNER_ROOM_FREESTANDING_KEY, true),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_GS_WEST_INNER_ROOM,               logic->CanChildAttack && (randoCtx->GetTrickOption(RT_BOTW_MQ_PITS) || logic->HasExplosives)),
                     //Trick: logic->CanChildAttack && (LogicBotWMQPits || logic->HasExplosives)
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_CELL_SUN_FAIRY,                   logic->CanUse(RG_SUNS_SONG)),
   }, {
                   //Exits
                   Entrance(RR_BOTTOM_OF_THE_WELL_MQ_PERIMETER, {[]{return true;}}),

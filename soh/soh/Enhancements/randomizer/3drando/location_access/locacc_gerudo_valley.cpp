@@ -28,6 +28,11 @@ void AreaTable_Init_GerudoValley() {
                   LOCATION(RC_GV_WATERFALL_FREESTANDING_POH, logic->IsChild || logic->Swim),//can use cucco as child
                   LOCATION(RC_GV_GS_BEAN_PATCH,              logic->CanPlantBugs && logic->CanChildAttack),
                   LOCATION(RC_GV_COW,                        logic->IsChild && logic->CanUse(RG_EPONAS_SONG)),
+                  LOCATION(RC_GV_BEAN_SPROUT_FAIRY_1,        logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_GV_BEAN_SPROUT_FAIRY_2,        logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_GV_BEAN_SPROUT_FAIRY_3,        logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_GV_GOSSIP_STONE_FAIRY,         logic->CanSummonGossipFairy),
+                  LOCATION(RC_GV_GOSSIP_STONE_FAIRY_BIG,     logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_GV_GOSSIP_STONE,               true),
                 }, {
                   //Exits
@@ -136,6 +141,7 @@ void AreaTable_Init_GerudoValley() {
                   LOCATION(RC_GF_SOUTH_F1_CARPENTER_CELL_POT_2, logic->CanBreakPots),
                   LOCATION(RC_GF_SOUTH_F1_CARPENTER_CELL_POT_3, logic->CanBreakPots),
                   LOCATION(RC_GF_SOUTH_F1_CARPENTER_CELL_POT_4, logic->CanBreakPots),
+                  LOCATION(RC_GF_KITCHEN_SUN_FAIRY,  (logic->HasItem(RG_GERUDO_MEMBERSHIP_CARD) || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_HOOKSHOT)) && logic->CanUse(RG_SUNS_SONG)),
                 }, {
                   //Exits
                   Entrance(RR_GV_FORTRESS_SIDE,                 {[]{return true;}}),
@@ -156,7 +162,17 @@ void AreaTable_Init_GerudoValley() {
   areaTable[RR_GF_STORMS_GROTTO] = Area("GF Storms Grotto", "GF Storms Grotto", RA_NONE, NO_DAY_NIGHT_CYCLE, {
                   //Events
                   EventAccess(&logic->FreeFairies, {[]{return true;}}),
-                }, {}, {
+                }, {
+                  //Locations
+                  LOCATION(RC_GF_FAIRY_GROTTO_FAIRY_1,  true),
+                  LOCATION(RC_GF_FAIRY_GROTTO_FAIRY_2,  true),
+                  LOCATION(RC_GF_FAIRY_GROTTO_FAIRY_3,  true),
+                  LOCATION(RC_GF_FAIRY_GROTTO_FAIRY_4,  true),
+                  LOCATION(RC_GF_FAIRY_GROTTO_FAIRY_5,  true),
+                  LOCATION(RC_GF_FAIRY_GROTTO_FAIRY_6,  true),
+                  LOCATION(RC_GF_FAIRY_GROTTO_FAIRY_7,  true),
+                  LOCATION(RC_GF_FAIRY_GROTTO_FAIRY_8,  true),
+                }, {
                   //Exits
                   Entrance(RR_GERUDO_FORTRESS, {[]{return true;}}),
   });
@@ -203,6 +219,19 @@ void AreaTable_Init_GerudoValley() {
                   LOCATION(RC_COLOSSUS_GS_BEAN_PATCH,    logic->CanPlantBugs && logic->CanChildAttack),
                   LOCATION(RC_COLOSSUS_GS_TREE,          logic->IsAdult && logic->HookshotOrBoomerang && logic->AtNight && logic->CanGetNightTimeGS),
                   LOCATION(RC_COLOSSUS_GS_HILL,          logic->IsAdult && logic->AtNight && ((CanPlantBean(RR_DESERT_COLOSSUS) && logic->CanAdultAttack) || logic->CanUse(RG_LONGSHOT) || (randoCtx->GetTrickOption(RT_COLOSSUS_GS) && logic->CanUse(RG_HOOKSHOT))) && logic->CanGetNightTimeGS),
+                  LOCATION(RC_COLOSSUS_OASIS_FAIRY_1,           logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_COLOSSUS_OASIS_FAIRY_2,           logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_COLOSSUS_OASIS_FAIRY_3,           logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_COLOSSUS_OASIS_FAIRY_4,           logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_COLOSSUS_OASIS_FAIRY_5,           logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_COLOSSUS_OASIS_FAIRY_6,           logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_COLOSSUS_OASIS_FAIRY_7,           logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_COLOSSUS_OASIS_FAIRY_8,           logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_COLOSSUS_BEAN_SPROUT_FAIRY_1,     logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_COLOSSUS_BEAN_SPROUT_FAIRY_2,     logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_COLOSSUS_BEAN_SPROUT_FAIRY_3,     logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_COLOSSUS_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_COLOSSUS_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_COLOSSUS_GOSSIP_STONE,     true),
                 }, {
                   //Exits

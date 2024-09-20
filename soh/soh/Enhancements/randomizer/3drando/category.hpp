@@ -21,6 +21,7 @@ enum class Category {
     cPot,
     cBeehive,
     cFreestanding,
+    cFairy,
 };
 
 enum class OptionCategory {

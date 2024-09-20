@@ -352,6 +352,7 @@ void AreaTable_Init_FireTemple() {
                   LOCATION(RC_FIRE_TEMPLE_MQ_MAP_ROOM_SIDE_CHEST, logic->CanJumpslash || logic->CanUse(RG_FAIRY_SLINGSHOT) || logic->CanUse(RG_FAIRY_BOW) || logic->Bombs || logic->CanUse(RG_DINS_FIRE)),
                   LOCATION(RC_FIRE_TEMPLE_MQ_NEAR_BOSS_CHEST,     logic->IsAdult && (randoCtx->GetTrickOption(RT_FEWER_TUNIC_REQUIREMENTS) || logic->CanUse(RG_GORON_TUNIC)) && (((logic->CanUse(RG_HOVER_BOOTS) || (randoCtx->GetTrickOption(RT_FIRE_MQ_NEAR_BOSS) && logic->CanUse(RG_FAIRY_BOW))) && logic->HasFireSource) || (logic->CanUse(RG_HOOKSHOT) && logic->CanUse(RG_FIRE_ARROWS) || (logic->CanUse(RG_DINS_FIRE) && ((randoCtx->GetOption(RSK_DAMAGE_MULTIPLIER).IsNot(RO_DAMAGE_MULTIPLIER_OHKO) && randoCtx->GetOption(RSK_DAMAGE_MULTIPLIER).IsNot(RO_DAMAGE_MULTIPLIER_QUADRUPLE) && randoCtx->GetOption(RSK_DAMAGE_MULTIPLIER).IsNot(RO_DAMAGE_MULTIPLIER_OCTUPLE) && randoCtx->GetOption(RSK_DAMAGE_MULTIPLIER).IsNot(RO_DAMAGE_MULTIPLIER_SEXDECUPLE)) || logic->CanUse(RG_GORON_TUNIC) || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_LONGSHOT)))))),
                     //Trick: logic->IsAdult && (LogicFewerTunicRequirements || logic->CanUse(RG_GORON_TUNIC)) && (((logic->CanUse(RG_HOVER_BOOTS) || (LogicFireMQNearBoss && logic->CanUse(RG_FAIRY_BOW))) && logic->HasFireSource) || (logic->CanUse(RG_HOOKSHOT) && logic->CanUse(RG_FIRE_ARROWS) || (logic->CanUse(RG_DINS_FIRE) && ((DamageMultiplier.IsNot(DAMAGEMULTIPLIER_OHKO) && DamageMultiplier.IsNot(DAMAGEMULTIPLIER_QUADRUPLE) && DamageMultiplier.IsNot(DAMAGEMULTIPLIER_OCTUPLE) && DamageMultiplier.IsNot(DAMAGEMULTIPLIER_SEXDECUPLE)) || logic->CanUse(RG_GORON_TUNIC) || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_LONGSHOT)))))
+                  LOCATION(RC_FIRE_TEMPLE_MQ_LOOP_STALFOS_SUN_FAIRY,  logic->SmallKeys(RR_FIRE_TEMPLE, 5) && logic->CanUse(RG_SUNS_SONG)),
   }, {
                   //Exits
                   Entrance(RR_FIRE_TEMPLE_ENTRYWAY,             {[]{return true;}}),
@@ -367,6 +368,7 @@ void AreaTable_Init_FireTemple() {
                   //Locations
                   LOCATION(RC_FIRE_TEMPLE_MQ_MEGATON_HAMMER_CHEST, logic->IsAdult && (logic->CanUse(RG_MEGATON_HAMMER) || logic->CanUse(RG_HOOKSHOT) || (logic->HasExplosives && (logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_BIGGORON_SWORD) || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_FAIRY_SLINGSHOT) || logic->CanUse(RG_BOOMERANG))))),
                   LOCATION(RC_FIRE_TEMPLE_MQ_MAP_CHEST,            logic->IsAdult && logic->CanUse(RG_MEGATON_HAMMER)),
+                  LOCATION(RC_FIRE_TEMPLE_MQ_LOOP_KNUCKLE_SUN_FAIRY,  logic->CanUse(RG_SUNS_SONG)),
   }, {});
 
   areaTable[RR_FIRE_TEMPLE_MQ_BIG_LAVA_ROOM] = Area("Fire Temple MQ Big Lava Room", "Fire Temple", RA_FIRE_TEMPLE, NO_DAY_NIGHT_CYCLE, {

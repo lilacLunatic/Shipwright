@@ -40,6 +40,28 @@ void AreaTable_Init_ZorasDomain() {
                   LOCATION(RC_ZR_BENEATH_WATERFALL_RIGHT_RUPEE,         logic->IsAdult),
                   LOCATION(RC_ZR_NEAR_GROTTOS_GOSSIP_STONE,             true),
                   LOCATION(RC_ZR_NEAR_DOMAIN_GOSSIP_STONE,              true),
+                  LOCATION(RC_ZR_MAGIC_BEAN_SALESMAN,               logic->ChildsWallet && logic->IsChild),
+                  LOCATION(RC_ZR_FROGS_OCARINA_GAME,                logic->IsChild && logic->CanUse(RG_ZELDAS_LULLABY) && logic->CanUse(RG_SARIAS_SONG) && logic->CanUse(RG_SUNS_SONG) && logic->CanUse(RG_EPONAS_SONG) && logic->CanUse(RG_SONG_OF_TIME) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_ZR_FROGS_IN_THE_RAIN,                 logic->IsChild && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_ZR_FROGS_ZELDAS_LULLABY,              logic->IsChild && logic->CanUse(RG_ZELDAS_LULLABY)),
+                  LOCATION(RC_ZR_FROGS_EPONAS_SONG,                 logic->IsChild && logic->CanUse(RG_EPONAS_SONG)),
+                  LOCATION(RC_ZR_FROGS_SARIAS_SONG,                 logic->IsChild && logic->CanUse(RG_SARIAS_SONG)),
+                  LOCATION(RC_ZR_FROGS_SUNS_SONG,                   logic->IsChild && logic->CanUse(RG_SUNS_SONG)),
+                  LOCATION(RC_ZR_FROGS_SONG_OF_TIME,                logic->IsChild && logic->CanUse(RG_SONG_OF_TIME)),
+                  LOCATION(RC_ZR_NEAR_OPEN_GROTTO_FREESTANDING_POH, logic->IsChild || logic->CanUse(RG_HOVER_BOOTS) || (logic->IsAdult && randoCtx->GetTrickOption(RT_ZR_LOWER))),
+                  LOCATION(RC_ZR_NEAR_DOMAIN_FREESTANDING_POH,      logic->IsChild || logic->CanUse(RG_HOVER_BOOTS) || (logic->IsAdult && randoCtx->GetTrickOption(RT_ZR_UPPER))),
+                  LOCATION(RC_ZR_GS_LADDER,                         logic->IsChild && logic->AtNight && logic->CanChildAttack && logic->CanGetNightTimeGS),
+                  LOCATION(RC_ZR_GS_NEAR_RAISED_GROTTOS,            logic->IsAdult && logic->HookshotOrBoomerang && logic->AtNight && logic->CanGetNightTimeGS),
+                  LOCATION(RC_ZR_GS_ABOVE_BRIDGE,                   logic->IsAdult && logic->CanUse(RG_HOOKSHOT) && logic->AtNight && logic->CanGetNightTimeGS),
+                  LOCATION(RC_ZR_BEAN_SPROUT_FAIRY_1,               logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_ZR_BEAN_SPROUT_FAIRY_2,               logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_ZR_BEAN_SPROUT_FAIRY_3,               logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_ZR_NEAR_GROTTOS_GOSSIP_STONE_FAIRY,     logic->CanSummonGossipFairy),
+                  LOCATION(RC_ZR_NEAR_GROTTOS_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_ZR_NEAR_DOMAIN_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_ZR_NEAR_DOMAIN_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_ZR_NEAR_GROTTOS_GOSSIP_STONE,         true),
+                  LOCATION(RC_ZR_NEAR_DOMAIN_GOSSIP_STONE,          true),
                 }, {
                   //Exits
                   Entrance(RR_ZR_FRONT,            {[]{return true;}}),
@@ -60,6 +82,8 @@ void AreaTable_Init_ZorasDomain() {
                   //Locations
                   LOCATION(RC_ZR_OPEN_GROTTO_CHEST,         true),
                   LOCATION(RC_ZR_OPEN_GROTTO_FISH,          logic->HasBottle),
+                  LOCATION(RC_ZR_OPEN_GROTTO_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
+                  LOCATION(RC_ZR_OPEN_GROTTO_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_ZR_OPEN_GROTTO_GOSSIP_STONE,  true),
                   LOCATION(RC_ZR_OPEN_GROTTO_BEEHIVE_LEFT,  logic->CanBreakLowerBeehives),
                   LOCATION(RC_ZR_OPEN_GROTTO_BEEHIVE_RIGHT, logic->CanBreakLowerBeehives),
@@ -71,7 +95,17 @@ void AreaTable_Init_ZorasDomain() {
   areaTable[RR_ZR_FAIRY_GROTTO] = Area("ZR Fairy Grotto", "ZR Fairy Grotto", RA_NONE, NO_DAY_NIGHT_CYCLE, {
                   //Event
                   EventAccess(&logic->FreeFairies, {[]{return true;}}),
-                }, {}, {
+                }, {
+                  //Locations
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_1,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_2,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_3,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_4,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_5,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_6,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_7,  true),
+                  LOCATION(RC_ZR_FAIRY_GROTTO_FAIRY_8,  true),
+                }, {
                   //Exits
                   Entrance(RR_ZORAS_RIVER, {[]{return true;}}),
   });
@@ -107,6 +141,8 @@ void AreaTable_Init_ZorasDomain() {
                   LOCATION(RC_ZD_FISH_3,                              logic->IsChild && logic->HasBottle),
                   LOCATION(RC_ZD_FISH_4,                              logic->IsChild && logic->HasBottle),
                   LOCATION(RC_ZD_FISH_5,                              logic->IsChild && logic->HasBottle),
+                  LOCATION(RC_ZD_GOSSIP_STONE_FAIRY,                  logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_ZD_GOSSIP_STONE_FAIRY_BIG,              logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_ZD_GOSSIP_STONE,                        true),
                   LOCATION(RC_ZD_IN_FRONT_OF_KING_ZORA_BEEHIVE_LEFT,  logic->CanBreakUpperBeehives),
                   LOCATION(RC_ZD_IN_FRONT_OF_KING_ZORA_BEEHIVE_RIGHT, logic->CanBreakUpperBeehives),
@@ -151,7 +187,17 @@ void AreaTable_Init_ZorasDomain() {
   areaTable[RR_ZD_STORMS_GROTTO] = Area("ZD Storms Grotto", "ZD Storms Grotto", RA_NONE, NO_DAY_NIGHT_CYCLE, {
                   //Events
                   EventAccess(&logic->FreeFairies, {[]{return true;}}),
-                }, {}, {
+                }, {
+                  //Locations
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_1,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_2,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_3,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_4,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_5,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_6,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_7,  true),
+                  LOCATION(RC_ZD_FAIRY_GROTTO_FAIRY_8,  true),
+                }, {
                   //Exits
                   Entrance(RR_ZORAS_DOMAIN, {[]{return true;}}),
   });
@@ -170,6 +216,10 @@ void AreaTable_Init_ZorasDomain() {
                   LOCATION(RC_ZF_HIDDEN_CAVE_POT_1,        logic->CanUse(RG_SILVER_GAUNTLETS) && logic->IsAdult && logic->CanBlastOrSmash && logic->CanBreakPots),
                   LOCATION(RC_ZF_HIDDEN_CAVE_POT_2,        logic->CanUse(RG_SILVER_GAUNTLETS) && logic->IsAdult && logic->CanBlastOrSmash && logic->CanBreakPots),
                   LOCATION(RC_ZF_HIDDEN_CAVE_POT_3,        logic->CanUse(RG_SILVER_GAUNTLETS) && logic->IsAdult && logic->CanBlastOrSmash && logic->CanBreakPots),
+                  LOCATION(RC_ZF_FAIRY_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_ZF_FAIRY_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_ZF_JABU_GOSSIP_STONE_FAIRY,       logic->CanSummonGossipFairyWithoutSuns),
+                  LOCATION(RC_ZF_JABU_GOSSIP_STONE_FAIRY_BIG,   logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_ZF_FAIRY_GOSSIP_STONE,       true),
                   LOCATION(RC_ZF_JABU_GOSSIP_STONE,        true),
                   LOCATION(RC_ZF_NEAR_JABU_POT_1,          logic->IsChild && logic->CanBreakPots),

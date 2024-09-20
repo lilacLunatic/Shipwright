@@ -288,7 +288,10 @@ void AreaTable_Init_WaterTemple() {
   |   MASTER QUEST DUNGEON    |
   ---------------------------*/
   if (randoCtx->GetDungeon(WATER_TEMPLE)->IsMQ()) {
-  areaTable[RR_WATER_TEMPLE_MQ_LOBBY] = Area("Water Temple MQ Lobby", "Water Temple", RA_WATER_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {}, {
+  areaTable[RR_WATER_TEMPLE_MQ_LOBBY] = Area("Water Temple MQ Lobby", "Water Temple", RA_WATER_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {
+                  //Locations
+                  LOCATION(RC_WATER_TEMPLE_MQ_DARK_LINK_PILAR_SUN_FAIRY, logic->SmallKeys(RR_WATER_TEMPLE, 1) && logic->CanUse(RG_SUNS_SONG) && logic->CanUse(RG_LONGSHOT) && (logic->CanUse(RG_HOVER_BOOTS) || (logic->CanJumpslash && logic->Hearts > 0)))
+                }, {
                   //Exits
                   Entrance(RR_WATER_TEMPLE_ENTRYWAY,            {[]{return true;}}),
                   Entrance(RR_WATER_TEMPLE_MQ_DIVE,             {[]{return logic->IsAdult && logic->WaterTimer >= 24 && logic->CanUse(RG_IRON_BOOTS);}}),
@@ -323,6 +326,8 @@ void AreaTable_Init_WaterTemple() {
                   //Locations
                   LOCATION(RC_WATER_TEMPLE_MQ_BOSS_KEY_CHEST, logic->IsAdult && logic->WaterTimer >= 24 && logic->CanUse(RG_DINS_FIRE) && (randoCtx->GetTrickOption(RT_WATER_DRAGON_JUMP_DIVE) || logic->CanDive || logic->CanUse(RG_IRON_BOOTS))),
                   LOCATION(RC_WATER_TEMPLE_MQ_GS_RIVER,       true),
+                  LOCATION(RC_WATER_TEMPLE_MQ_DARK_LINK_LEFT_STORM_FAIRY, logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_DARK_LINK_RIGHT_SUN_FAIRY,  logic->CanUse(RG_SUNS_SONG)),
   }, {
                   //Exits
                   Entrance(RR_WATER_TEMPLE_MQ_BASEMENT_GATED_AREAS, {[]{return logic->IsAdult && logic->WaterTimer >= 24 && logic->CanUse(RG_DINS_FIRE) && logic->CanUse(RG_IRON_BOOTS);}}),

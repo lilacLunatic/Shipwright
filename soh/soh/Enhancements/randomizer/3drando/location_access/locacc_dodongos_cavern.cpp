@@ -32,6 +32,8 @@ void AreaTable_Init_DodongosCavern() {
                   //Locations
                   LOCATION(RC_DODONGOS_CAVERN_MAP_CHEST,        Here(RR_DODONGOS_CAVERN_LOBBY, []{return logic->CanBlastOrSmash || logic->GoronBracelet;})),
                   LOCATION(RC_DODONGOS_CAVERN_DEKU_SCRUB_LOBBY, logic->CanStunDeku || logic->GoronBracelet),
+                  LOCATION(RC_DODONGOS_CAVERN_GOSSIP_STONE_FAIRY,     logic->CanSummonGossipFairy),
+                  LOCATION(RC_DODONGOS_CAVERN_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_DODONGOS_CAVERN_GOSSIP_STONE,     Here(RR_DODONGOS_CAVERN_LOBBY, []{return logic->CanBlastOrSmash || logic->GoronBracelet;})),
                 }, {
                   //Exits
@@ -275,6 +277,8 @@ void AreaTable_Init_DodongosCavern() {
                   LOCATION(RC_DODONGOS_CAVERN_MQ_DEKU_SCRUB_LOBBY_REAR,      logic->CanStunDeku),
                   LOCATION(RC_DODONGOS_CAVERN_MQ_DEKU_SCRUB_LOBBY_FRONT,     logic->CanStunDeku),
                   LOCATION(RC_DODONGOS_CAVERN_MQ_DEKU_SCRUB_STAIRCASE,       logic->CanStunDeku),
+                  LOCATION(RC_DODONGOS_CAVERN_MQ_GOSSIP_STONE_FAIRY,         logic->CanSummonGossipFairy),
+                  LOCATION(RC_DODONGOS_CAVERN_MQ_GOSSIP_STONE_FAIRY_BIG,     logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_DODONGOS_CAVERN_GOSSIP_STONE,                  true),
   }, {
                   //Exits
