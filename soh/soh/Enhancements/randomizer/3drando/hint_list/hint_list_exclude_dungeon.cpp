@@ -675,6 +675,7 @@ hintTextTable[RHT_DODONGOS_CAVERN_BOSS_ROOM_CHEST] = HintText(CustomMessage("The
                                                                              // /*spanish*/ Según dicen, una #Skulltula en un borde# del Templo del Bosque otorga #[[1]]#.
     hintTextTable[RHT_FOREST_TEMPLE_MQ_GS_WELL] = HintText(CustomMessage("They say that #draining a well# in Forest Temple uncovers a spider with #[[1]]#.",
                                                               /*german*/ "",
+                                                              /*spanish*/ "", {QM_RED, QM_GREEN}));
   hintTextTable[RHT_FOREST_TEMPLE_MQ_GS_WELL] = HintText(CustomMessage("They say that #draining a well# in Forest Temple uncovers a spider with #[[1]]#.",
                                                               /*german*/ "Man erzählt sich, daß das #Entleeren eines Brunnens# im Waldtempel eine Spinne mit #[[1]]# enthülle.",
                                                               /*french*/ "Selon moi, une #Skulltula au fond du Puits du Temple de la Forêt# a #[[1]]#.", {QM_RED, QM_GREEN}));
