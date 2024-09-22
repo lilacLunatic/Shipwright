@@ -147,6 +147,9 @@ void AreaTable_Init_HyruleField() {
                   LOCATION(RC_LH_GS_LAB_WALL,            logic->IsChild && (logic->HookshotOrBoomerang || (randoCtx->GetTrickOption(RT_LH_LAB_WALL_GS) && logic->CanJumpslash)) && logic->AtNight && logic->CanGetNightTimeGS),
                   LOCATION(RC_LH_GS_SMALL_ISLAND,        logic->IsChild && logic->CanChildAttack && logic->AtNight && logic->CanGetNightTimeGS),
                   LOCATION(RC_LH_GS_TREE,                logic->IsAdult && logic->CanUse(RG_LONGSHOT) && logic->AtNight && logic->CanGetNightTimeGS),
+                  LOCATION(RC_LH_FRONT_RUPEE,            logic->IsChild && logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_LH_MIDDLE_RUPEE,           logic->IsChild && (logic->HasItem(RG_SILVER_SCALE) || logic->CanUse(RG_IRON_BOOTS))),
+                  LOCATION(RC_LH_BACK_RUPEE,             logic->IsChild && (logic->HasItem(RG_SILVER_SCALE) || logic->CanUse(RG_IRON_BOOTS))),
                   LOCATION(RC_LH_BEAN_SPROUT_FAIRY_1,    logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LH_BEAN_SPROUT_FAIRY_2,    logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_LH_BEAN_SPROUT_FAIRY_3,    logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
@@ -187,9 +190,12 @@ void AreaTable_Init_HyruleField() {
                   EventAccess(&logic->EyedropsAccess, {[]{return logic->EyedropsAccess || (logic->IsAdult && (logic->EyeballFrogAccess || (logic->EyeballFrog && logic->DisableTradeRevert)));}}),
                 }, {
                   //Locations
-                  LOCATION(RC_LH_LAB_DIVE,     logic->ProgressiveScale >= 2 || (randoCtx->GetTrickOption(RT_LH_LAB_DIVING) && logic->CanUse(RG_IRON_BOOTS) && logic->CanUse(RG_HOOKSHOT))),
-                  LOCATION(RC_LH_TRADE_FROG,   logic->IsAdult && logic->EyeballFrog),
-                  LOCATION(RC_LH_GS_LAB_CRATE, logic->CanUse(RG_IRON_BOOTS) && logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_LH_LAB_DIVE,        logic->ProgressiveScale >= 2 || (randoCtx->GetTrickOption(RT_LH_LAB_DIVING) && logic->CanUse(RG_IRON_BOOTS) && logic->CanUse(RG_HOOKSHOT))),
+                  LOCATION(RC_LH_TRADE_FROG,      logic->IsAdult && logic->EyeballFrog),
+                  LOCATION(RC_LH_GS_LAB_CRATE,    logic->CanUse(RG_IRON_BOOTS) && logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_LH_LAB_FRONT_RUPEE, logic->CanUse(RG_IRON_BOOTS) || logic->HasItem(RG_GOLDEN_SCALE)),
+                  LOCATION(RC_LH_LAB_LEFT_RUPEE,  logic->CanUse(RG_IRON_BOOTS) || logic->HasItem(RG_GOLDEN_SCALE)),
+                  LOCATION(RC_LH_LAB_RIGHT_RUPEE, logic->CanUse(RG_IRON_BOOTS) || logic->HasItem(RG_GOLDEN_SCALE)),
                 }, {
                   //Exits
                   Entrance(RR_LAKE_HYLIA, {[]{return true;}}),

@@ -35,6 +35,10 @@ void AreaTable_Init_FireTemple() {
                 }, {
                   //Locations
                   LOCATION(RC_FIRE_TEMPLE_NEAR_BOSS_CHEST, true),
+                  LOCATION(RC_FIRE_TEMPLE_NEAR_BOSS_POT_1, logic->CanBreakPots),
+                  LOCATION(RC_FIRE_TEMPLE_NEAR_BOSS_POT_2, logic->CanBreakPots),
+                  LOCATION(RC_FIRE_TEMPLE_NEAR_BOSS_POT_3, logic->CanBreakPots),
+                  LOCATION(RC_FIRE_TEMPLE_NEAR_BOSS_POT_4, logic->CanBreakPots),
                 }, {
                   //Exits
                   Entrance(RR_FIRE_TEMPLE_FIRST_ROOM, {[]{return true;}}),
@@ -90,7 +94,12 @@ void AreaTable_Init_FireTemple() {
                   Entrance(RR_FIRE_TEMPLE_LOOP_GORON_ROOM, {[]{return logic->FireLoopSwitch;}}),
   });
 
-  areaTable[RR_FIRE_TEMPLE_BIG_LAVA_ROOM] = Area("Fire Temple Big Lava Room", "Fire Temple", RA_FIRE_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {}, {
+  areaTable[RR_FIRE_TEMPLE_BIG_LAVA_ROOM] = Area("Fire Temple Big Lava Room", "Fire Temple", RA_FIRE_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {
+                  //Locations
+                  LOCATION(RC_FIRE_TEMPLE_BIG_LAVA_POT_1, logic->CanBreakPots),
+                  LOCATION(RC_FIRE_TEMPLE_BIG_LAVA_POT_2, logic->CanBreakPots),
+                  LOCATION(RC_FIRE_TEMPLE_BIG_LAVA_POT_3, logic->CanBreakPots),
+      }, {
                   //Exits
                   Entrance(RR_FIRE_TEMPLE_FIRST_ROOM,                {[]{return logic->SmallKeys(RR_FIRE_TEMPLE, 2);}}),
                   Entrance(RR_FIRE_TEMPLE_BIG_LAVA_ROOM_NORTH_GORON, {[]{return true;}}),
@@ -123,7 +132,12 @@ void AreaTable_Init_FireTemple() {
                   Entrance(RR_FIRE_TEMPLE_BIG_LAVA_ROOM, {[]{return true;}}),
   });
 
-  areaTable[RR_FIRE_TEMPLE_FIRE_PILLAR_ROOM] = Area("Fire Temple Fire Pillar Room", "Fire Temple", RA_FIRE_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {}, {
+  areaTable[RR_FIRE_TEMPLE_FIRE_PILLAR_ROOM] = Area("Fire Temple Fire Pillar Room", "Fire Temple", RA_FIRE_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {
+                  //Locations
+                  LOCATION(RC_FIRE_TEMPLE_FIRE_PILLAR_LEFT_HEART,   logic->FireTimer >= 56),
+                  LOCATION(RC_FIRE_TEMPLE_FIRE_PILLAR_RIGHT_HEART,  logic->FireTimer >= 56),
+                  LOCATION(RC_FIRE_TEMPLE_FIRE_PILLAR_BACK_HEART,   logic->FireTimer >= 56),
+                }, {
                   //Exits
                   Entrance(RR_FIRE_TEMPLE_BIG_LAVA_ROOM, {[]{return logic->SmallKeys(RR_FIRE_TEMPLE, 3);}}),
                   Entrance(RR_FIRE_TEMPLE_SHORTCUT_ROOM, {[]{return logic->FireTimer >= 56 && logic->SmallKeys(RR_FIRE_TEMPLE, 4);}}),
@@ -165,7 +179,12 @@ void AreaTable_Init_FireTemple() {
                   Entrance(RR_FIRE_TEMPLE_BOULDER_MAZE_LOWER, {[]{return true;}}),
   });
 
-  areaTable[RR_FIRE_TEMPLE_EAST_CENTRAL_ROOM] = Area("Fire Temple East Central Room", "Fire Temple", RA_FIRE_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {}, {
+  areaTable[RR_FIRE_TEMPLE_EAST_CENTRAL_ROOM] = Area("Fire Temple East Central Room", "Fire Temple", RA_FIRE_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {
+                  //Locations
+                  LOCATION(RC_FIRE_TEMPLE_EAST_CENTRAL_LEFT_HEART,    true),
+                  LOCATION(RC_FIRE_TEMPLE_EAST_CENTRAL_RIGHT_HEART,   true),
+                  LOCATION(RC_FIRE_TEMPLE_EAST_CENTRAL_MIDDLE_HEART,  true),
+                }, {
                   //Exits
                   Entrance(RR_FIRE_TEMPLE_BIG_LAVA_ROOM,      {[]{return logic->CanTakeDamage;}}),
                   Entrance(RR_FIRE_TEMPLE_BOULDER_MAZE_LOWER, {[]{return logic->SmallKeys(RR_FIRE_TEMPLE, 5, 8);}}),
@@ -173,7 +192,12 @@ void AreaTable_Init_FireTemple() {
                   Entrance(RR_FIRE_TEMPLE_MAP_AREA,           {[]{return logic->CanUse(RG_FAIRY_SLINGSHOT) || logic->CanUse(RG_FAIRY_BOW);}}),
   });
 
-  areaTable[RR_FIRE_TEMPLE_FIRE_WALL_CHASE] = Area("Fire Temple Fire Wall Chase", "Fire Temple", RA_FIRE_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {}, {
+  areaTable[RR_FIRE_TEMPLE_FIRE_WALL_CHASE] = Area("Fire Temple Fire Wall Chase", "Fire Temple", RA_FIRE_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {
+                  //Locations
+                  LOCATION(RC_FIRE_TEMPLE_FIRE_WALL_EAST_HEART, logic->FireTimer >= 24 && (logic->IsAdult || logic->CanUse(RG_BOOMERANG))),
+                  LOCATION(RC_FIRE_TEMPLE_FIRE_WALL_WEST_HEART, logic->FireTimer >= 24 && (logic->IsAdult || logic->CanUse(RG_BOOMERANG))),
+                  LOCATION(RC_FIRE_TEMPLE_FIRE_WALL_EXIT_HEART, logic->FireTimer >= 24),
+                }, {
                   //Exits
                   Entrance(RR_FIRE_TEMPLE_EAST_CENTRAL_ROOM,  {[]{return logic->FireTimer >= 24 && logic->SmallKeys(RR_FIRE_TEMPLE, 6, 8);}}),
                   Entrance(RR_FIRE_TEMPLE_MAP_AREA,           {[]{return logic->IsAdult;}}),
@@ -225,7 +249,17 @@ void AreaTable_Init_FireTemple() {
                   Entrance(RR_FIRE_TEMPLE_FIRE_MAZE_ROOM,  {[]{return true;}}),
   });
 
-  areaTable[RR_FIRE_TEMPLE_FIRE_MAZE_ROOM] = Area("Fire Temple Fire Maze Room", "Fire Temple", RA_FIRE_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {}, {
+  areaTable[RR_FIRE_TEMPLE_FIRE_MAZE_ROOM] = Area("Fire Temple Fire Maze Room", "Fire Temple", RA_FIRE_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {
+                  //Locations
+                  LOCATION(RC_FIRE_TEMPLE_FLAME_MAZE_LEFT_POT_1,    logic->CanBreakPots),
+                  LOCATION(RC_FIRE_TEMPLE_FLAME_MAZE_LEFT_POT_2,    logic->CanBreakPots),
+                  LOCATION(RC_FIRE_TEMPLE_FLAME_MAZE_LEFT_POT_3,    logic->CanBreakPots),
+                  LOCATION(RC_FIRE_TEMPLE_FLAME_MAZE_LEFT_POT_4,    logic->CanBreakPots),
+                  LOCATION(RC_FIRE_TEMPLE_FLAME_MAZE_RIGHT_POT_1,   logic->CanBreakPots),
+                  LOCATION(RC_FIRE_TEMPLE_FLAME_MAZE_RIGHT_POT_2,   logic->CanBreakPots),
+                  LOCATION(RC_FIRE_TEMPLE_FLAME_MAZE_RIGHT_POT_3,   logic->CanBreakPots),
+                  LOCATION(RC_FIRE_TEMPLE_FLAME_MAZE_RIGHT_POT_4,   logic->CanBreakPots),
+      }, {
                   //Exits
                   Entrance(RR_FIRE_TEMPLE_CORRIDOR,            {[]{return true;}}),
                   Entrance(RR_FIRE_TEMPLE_FIRE_MAZE_UPPER,     {[]{return logic->CanUse(RG_HOVER_BOOTS);}}),
@@ -348,6 +382,9 @@ void AreaTable_Init_FireTemple() {
                   LOCATION(RC_FIRE_TEMPLE_MQ_BIG_LAVA_ROOM_BLOCKED_DOOR_CHEST, logic->HasFireSource && logic->HasExplosives && logic->IsAdult && (logic->CanUse(RG_HOOKSHOT) || randoCtx->GetTrickOption(RT_FIRE_MQ_BLOCKED_CHEST))),
                     //Trick: logic->HasFireSource && logic->HasExplosives && logic->IsAdult && (logic->CanUse(RG_HOOKSHOT) || LogicFireMQBlockedChest)
                   LOCATION(RC_FIRE_TEMPLE_MQ_GS_BIG_LAVA_ROOM_OPEN_DOOR,       true),
+                  LOCATION(RC_FIRE_TEMPLE_MQ_FIRE_PILLAR_LEFT_HEART,           logic->CanUse(RG_GORON_TUNIC) && logic->SmallKeys(RR_FIRE_TEMPLE, 1)),
+                  LOCATION(RC_FIRE_TEMPLE_MQ_FIRE_PILLAR_RIGHT_HEART,          logic->CanUse(RG_GORON_TUNIC) && logic->SmallKeys(RR_FIRE_TEMPLE, 1)),
+                  LOCATION(RC_FIRE_TEMPLE_MQ_FIRE_PILLAR_LOWER_HEART,          logic->CanUse(RG_GORON_TUNIC) && logic->SmallKeys(RR_FIRE_TEMPLE, 1)),
   }, {
                   //Exits
                   Entrance(RR_FIRE_TEMPLE_MQ_LOWER_MAZE, {[]{return logic->IsAdult && logic->CanUse(RG_GORON_TUNIC) && logic->SmallKeys(RR_FIRE_TEMPLE, 2) && (logic->HasFireSource || (randoCtx->GetTrickOption(RT_FIRE_MQ_CLIMB) && logic->HoverBoots));}}),

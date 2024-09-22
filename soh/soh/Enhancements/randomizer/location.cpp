@@ -99,7 +99,7 @@ RandomizerGet Rando::Location::GetVanillaItem() const {
 
 Rando::Location Rando::Location::Base(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckType checkType_,
                                       RandomizerCheckArea area_, ActorID actorId_, uint8_t scene_, int32_t actorParams_,
-                                      uint8_t flag_, std::string&& shortName_, std::string&& spoilerName_,
+                                      uint16_t flag_, std::string&& shortName_, std::string&& spoilerName_,
                                       const RandomizerHintTextKey hintKey, const RandomizerGet vanillaItem,
                                       std::vector<Category>&& categories, SpoilerCollectionCheck collectionCheck,
                                       SpoilerCollectionCheckGroup collectionCheckGroup, bool isVanillaCompletion_) {
@@ -110,7 +110,7 @@ Rando::Location Rando::Location::Base(RandomizerCheck rc, RandomizerCheckQuest q
 
 Rando::Location Rando::Location::Base(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckType checkType_,
                                       RandomizerCheckArea area_, ActorID actorId_, uint8_t scene_, int32_t actorParams_,
-                                      uint8_t flag_, std::string&& shortName_,
+                                      uint16_t flag_, std::string&& shortName_,
                                       const RandomizerHintTextKey hintKey, const RandomizerGet vanillaItem,
                                       std::vector<Category>&& categories, SpoilerCollectionCheck collectionCheck,
                                       SpoilerCollectionCheckGroup collectionCheckGroup, bool isVanillaCompletion_) {
@@ -121,7 +121,7 @@ Rando::Location Rando::Location::Base(RandomizerCheck rc, RandomizerCheckQuest q
 
 Rando::Location Rando::Location::Chest(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckType checkType_,
                                        RandomizerCheckArea area_, ActorID actorId_, uint8_t scene_,
-                                       int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+                                       int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
                                        std::string&& spoilerName_, const RandomizerHintTextKey hintKey,
                                        const RandomizerGet vanillaItem, std::vector<Category>&& categories,
                                        SpoilerCollectionCheckGroup collectionCheckGroup, bool isVanillaCompletion_) {
@@ -134,7 +134,7 @@ Rando::Location Rando::Location::Chest(RandomizerCheck rc, RandomizerCheckQuest 
 
 Rando::Location Rando::Location::Chest(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckType checkType_,
                                        RandomizerCheckArea area_, ActorID actorId_, uint8_t scene_,
-                                       int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+                                       int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
                                        const RandomizerHintTextKey hintKey,
                                        const RandomizerGet vanillaItem, std::vector<Category>&& categories,
                                        SpoilerCollectionCheckGroup collectionCheckGroup, bool isVanillaCompletion_) {
@@ -147,7 +147,7 @@ Rando::Location Rando::Location::Chest(RandomizerCheck rc, RandomizerCheckQuest 
 
 Rando::Location Rando::Location::Chest(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckType checkType_,
                                        RandomizerCheckArea area_, ActorID actorId_, uint8_t scene_,
-                                       int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+                                       int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
                                        std::string&& spoilerName_, const RandomizerHintTextKey hintKey,
                                        const RandomizerGet vanillaItem, std::vector<Category>&& categories,
                                        SpoilerCollectionCheck collectionCheck,
@@ -159,7 +159,7 @@ Rando::Location Rando::Location::Chest(RandomizerCheck rc, RandomizerCheckQuest 
 
 Rando::Location Rando::Location::Chest(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckType checkType_,
                                        RandomizerCheckArea area_, ActorID actorId_, uint8_t scene_,
-                                       int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+                                       int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
                                        const RandomizerHintTextKey hintKey,
                                        const RandomizerGet vanillaItem, std::vector<Category>&& categories,
                                        SpoilerCollectionCheck collectionCheck,
@@ -171,7 +171,7 @@ Rando::Location Rando::Location::Chest(RandomizerCheck rc, RandomizerCheckQuest 
 
 Rando::Location Rando::Location::Collectable(
     RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckType checkType_, RandomizerCheckArea area_,
-    ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+    ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
     std::string&& spoilerName_, const RandomizerHintTextKey hintKey, const RandomizerGet vanillaItem,
     std::vector<Category>&& categories, SpoilerCollectionCheckGroup collectionCheckGroup, bool isVanillaCompletion_) {
     return {rc, quest_, checkType_, area_, LocationType::Collectable, actorId_, scene_, actorParams_, flag_,
@@ -183,7 +183,7 @@ Rando::Location Rando::Location::Collectable(
 
 Rando::Location Rando::Location::Collectable(
     RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckType checkType_, RandomizerCheckArea area_,
-    ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+    ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
     const RandomizerHintTextKey hintKey, const RandomizerGet vanillaItem,
     std::vector<Category>&& categories, SpoilerCollectionCheckGroup collectionCheckGroup, bool isVanillaCompletion_) {
     return {rc, quest_, checkType_, area_, LocationType::Collectable, actorId_, scene_, actorParams_, flag_,
@@ -195,7 +195,7 @@ Rando::Location Rando::Location::Collectable(
 
 Rando::Location Rando::Location::Collectable(RandomizerCheck rc, RandomizerCheckQuest quest_,
                                              RandomizerCheckType checkType_, RandomizerCheckArea area_,
-                                             ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint8_t flag_,
+                                             ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint16_t flag_,
                                              std::string&& shortName_, std::string&& spoilerName_,
                                              const RandomizerHintTextKey hintKey, const RandomizerGet vanillaItem,
                                              std::vector<Category>&& categories, const uint8_t collectFlag_,
@@ -210,7 +210,7 @@ Rando::Location Rando::Location::Collectable(RandomizerCheck rc, RandomizerCheck
 
 Rando::Location Rando::Location::Collectable(RandomizerCheck rc, RandomizerCheckQuest quest_,
                                              RandomizerCheckType checkType_, RandomizerCheckArea area_,
-                                             ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint8_t flag_,
+                                             ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint16_t flag_,
                                              std::string&& shortName_,
                                              const RandomizerHintTextKey hintKey, const RandomizerGet vanillaItem,
                                              std::vector<Category>&& categories, const uint8_t collectFlag_,
@@ -225,7 +225,7 @@ Rando::Location Rando::Location::Collectable(RandomizerCheck rc, RandomizerCheck
 
 Rando::Location Rando::Location::Collectable(RandomizerCheck rc, RandomizerCheckQuest quest_,
                                              RandomizerCheckType checkType_, RandomizerCheckArea area_,
-                                             ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint8_t flag_,
+                                             ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint16_t flag_,
                                              std::string&& shortName_, std::string&& spoilerName_,
                                              const RandomizerHintTextKey hintKey, const RandomizerGet vanillaItem,
                                              std::vector<Category>&& categories, SpoilerCollectionCheck collectionCheck,
@@ -238,7 +238,7 @@ Rando::Location Rando::Location::Collectable(RandomizerCheck rc, RandomizerCheck
 
 Rando::Location Rando::Location::Collectable(RandomizerCheck rc, RandomizerCheckQuest quest_,
                                              RandomizerCheckType checkType_, RandomizerCheckArea area_,
-                                             ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint8_t flag_,
+                                             ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint16_t flag_,
                                              std::string&& shortName_,
                                              const RandomizerHintTextKey hintKey, const RandomizerGet vanillaItem,
                                              std::vector<Category>&& categories, SpoilerCollectionCheck collectionCheck,
@@ -250,7 +250,7 @@ Rando::Location Rando::Location::Collectable(RandomizerCheck rc, RandomizerCheck
 }
 
 Rando::Location Rando::Location::GSToken(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckArea area_,
-                                         uint8_t scene_, int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+                                         uint8_t scene_, int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
                                          std::string&& spoilerName_, const RandomizerHintTextKey hintKey,
                                          std::vector<Category>&& categories,
                                          SpoilerCollectionCheckGroup collectionCheckGroup, bool isVanillaCompletion_) {
@@ -262,7 +262,7 @@ Rando::Location Rando::Location::GSToken(RandomizerCheck rc, RandomizerCheckQues
 }
 
 Rando::Location Rando::Location::GSToken(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckArea area_,
-                                         uint8_t scene_, int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+                                         uint8_t scene_, int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
                                          const RandomizerHintTextKey hintKey,
                                          std::vector<Category>&& categories,
                                          SpoilerCollectionCheckGroup collectionCheckGroup, bool isVanillaCompletion_) {
@@ -274,7 +274,7 @@ Rando::Location Rando::Location::GSToken(RandomizerCheck rc, RandomizerCheckQues
 }
 
 Rando::Location Rando::Location::GSToken(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckArea area_,
-                                         uint8_t scene_, int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+                                         uint8_t scene_, int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
                                          std::string&& spoilerName_, const RandomizerHintTextKey hintKey,
                                          std::vector<Category>&& categories, const uint8_t skullScene_,
                                          SpoilerCollectionCheckGroup collectionCheckGroup, bool isVanillaCompletion_) {
@@ -286,7 +286,7 @@ Rando::Location Rando::Location::GSToken(RandomizerCheck rc, RandomizerCheckQues
 }
 
 Rando::Location Rando::Location::GSToken(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckArea area_,
-                                         uint8_t scene_, int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+                                         uint8_t scene_, int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
                                          const RandomizerHintTextKey hintKey,
                                          std::vector<Category>&& categories, const uint8_t skullScene_,
                                          SpoilerCollectionCheckGroup collectionCheckGroup, bool isVanillaCompletion_) {
@@ -299,7 +299,7 @@ Rando::Location Rando::Location::GSToken(RandomizerCheck rc, RandomizerCheckQues
 
 Rando::Location Rando::Location::GrottoScrub(RandomizerCheck rc, RandomizerCheckQuest quest_,
                                              RandomizerCheckType checkType_, RandomizerCheckArea area_,
-                                             ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint8_t flag_,
+                                             ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint16_t flag_,
                                              std::string&& shortName_, std::string&& spoilerName_,
                                              const RandomizerHintTextKey hintKey, const RandomizerGet vanillaItem,
                                              std::vector<Category>&& categories, SpoilerCollectionCheck collectionCheck,
@@ -312,7 +312,7 @@ Rando::Location Rando::Location::GrottoScrub(RandomizerCheck rc, RandomizerCheck
 
 Rando::Location Rando::Location::GrottoScrub(RandomizerCheck rc, RandomizerCheckQuest quest_,
                                              RandomizerCheckType checkType_, RandomizerCheckArea area_,
-                                             ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint8_t flag_,
+                                             ActorID actorId_, uint8_t scene_, int32_t actorParams_, uint16_t flag_,
                                              std::string&& shortName_,
                                              const RandomizerHintTextKey hintKey, const RandomizerGet vanillaItem,
                                              std::vector<Category>&& categories, SpoilerCollectionCheck collectionCheck,
@@ -325,7 +325,7 @@ Rando::Location Rando::Location::GrottoScrub(RandomizerCheck rc, RandomizerCheck
 
 Rando::Location Rando::Location::Delayed(RandomizerCheck rc, RandomizerCheckQuest quest_,
                                          RandomizerCheckType checkType_, RandomizerCheckArea area_, ActorID actorId_,
-                                         uint8_t scene_, int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+                                         uint8_t scene_, int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
                                          std::string&& spoilerName_, const RandomizerHintTextKey hintKey,
                                          const RandomizerGet vanillaItem, std::vector<Category>&& categories,
                                          SpoilerCollectionCheck collectionCheck,
@@ -337,7 +337,7 @@ Rando::Location Rando::Location::Delayed(RandomizerCheck rc, RandomizerCheckQues
 
 Rando::Location Rando::Location::Delayed(RandomizerCheck rc, RandomizerCheckQuest quest_,
                                          RandomizerCheckType checkType_, RandomizerCheckArea area_, ActorID actorId_,
-                                         uint8_t scene_, int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+                                         uint8_t scene_, int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
                                          const RandomizerHintTextKey hintKey,
                                          const RandomizerGet vanillaItem, std::vector<Category>&& categories,
                                          SpoilerCollectionCheck collectionCheck,
@@ -349,7 +349,7 @@ Rando::Location Rando::Location::Delayed(RandomizerCheck rc, RandomizerCheckQues
 
 Rando::Location Rando::Location::Reward(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckType checkType_,
                                         RandomizerCheckArea area_, ActorID actorId_, uint8_t scene_,
-                                        int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+                                        int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
                                         std::string&& spoilerName_, const RandomizerHintTextKey hintKey,
                                         const RandomizerGet vanillaItem, std::vector<Category>&& categories,
                                         SpoilerCollectionCheck collectionCheck,
@@ -361,7 +361,7 @@ Rando::Location Rando::Location::Reward(RandomizerCheck rc, RandomizerCheckQuest
 
 Rando::Location Rando::Location::Reward(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckType checkType_,
                                         RandomizerCheckArea area_, ActorID actorId_, uint8_t scene_,
-                                        int32_t actorParams_, uint8_t flag_, std::string&& shortName_,
+                                        int32_t actorParams_, uint16_t flag_, std::string&& shortName_,
                                         const RandomizerHintTextKey hintKey,
                                         const RandomizerGet vanillaItem, std::vector<Category>&& categories,
                                         SpoilerCollectionCheck collectionCheck,
@@ -375,7 +375,7 @@ Rando::Location Rando::Location::Fairy(RandomizerCheck rc, RandomizerCheckQuest 
                                         RandomizerCheckArea area_, uint8_t scene_,
                                         int32_t actorParams_, RandomizerInf flag_, std::string&& shortName_,
                                         const RandomizerHintTextKey hintKey, SpoilerCollectionCheckGroup collectionCheckGroup) {
-    return {rc, quest_, RCTYPE_FAIRY, area_, LocationType::Base, ACTOR_EN_ELF, scene_, actorParams_, flag_,
+    return {rc, quest_, RCTYPE_FAIRY, area_, LocationType::Base, ACTOR_EN_ELF, scene_, actorParams_, (uint16_t)flag_,
                     std::move(shortName_), hintKey, RG_NONE, { Category::cFairy }, false,
                     SpoilerCollectionCheck(SPOILER_CHK_RANDOMIZER_INF, scene_, flag_), collectionCheckGroup};
 }
@@ -399,7 +399,7 @@ Rando::Location Rando::Location::OtherHint(RandomizerCheck rc, RandomizerCheckQu
 }
 
 Rando::Location Rando::Location::HintStone(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckArea area_,
-                                           uint8_t scene_, int32_t actorParams_, uint8_t flag_,
+                                           uint8_t scene_, int32_t actorParams_, uint16_t flag_,
                                            std::string&& shortName_, std::string&& spoilerName_,
                                            std::vector<Category>&& categories, bool isVanillaCompletion_) {
     return {rc, quest_, RCTYPE_GOSSIP_STONE, area_, LocationType::Base, ACTOR_EN_GS, scene_, actorParams_, flag_,
@@ -408,7 +408,7 @@ Rando::Location Rando::Location::HintStone(RandomizerCheck rc, RandomizerCheckQu
 }
 
 Rando::Location Rando::Location::HintStone(RandomizerCheck rc, RandomizerCheckQuest quest_, RandomizerCheckArea area_,
-                                           uint8_t scene_, int32_t actorParams_, uint8_t flag_,
+                                           uint8_t scene_, int32_t actorParams_, uint16_t flag_,
                                            std::string&& shortName_,
                                            std::vector<Category>&& categories, bool isVanillaCompletion_) {
     return {rc, quest_, RCTYPE_GOSSIP_STONE, area_, LocationType::Base, ACTOR_EN_GS, scene_, actorParams_, flag_,

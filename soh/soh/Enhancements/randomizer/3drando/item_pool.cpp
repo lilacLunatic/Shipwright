@@ -618,6 +618,30 @@ static void PlaceVanillaOverworldFish() {
   }
 }
 
+static void PlaceFreestandingItems() {
+  auto ctx = Rando::Context::GetInstance();
+  auto option = ctx->GetOption(RSK_SHUFFLE_FREESTANDING);
+  for (RandomizerCheck loc : ctx->GetLocations(Rando::StaticData::overworldLocations, Category::cFreestanding)) {
+    RandomizerGet vanillaItem = Rando::StaticData::GetLocation(loc)->GetVanillaItem();
+    if (option.Is(RO_TOKENSANITY_OVERWORLD) || option.Is(RO_TOKENSANITY_ALL)) {
+      AddItemToMainPool(vanillaItem);
+    } else {
+      ctx->PlaceItemInLocation(loc, vanillaItem, false, true);
+    }
+  }
+
+  for (auto dungeon : ctx->GetDungeons()->GetDungeonList()) {
+    for (RandomizerCheck loc : ctx->GetLocations(dungeon->GetDungeonLocations(), Category::cFreestanding)) {
+      RandomizerGet vanillaItem = Rando::StaticData::GetLocation(loc)->GetVanillaItem();
+      if (option.Is(RO_TOKENSANITY_DUNGEONS) || option.Is(RO_TOKENSANITY_ALL)) {
+        AddItemToMainPool(vanillaItem);
+      } else {
+        ctx->PlaceItemInLocation(loc, vanillaItem, false, true);
+      }
+    }
+  }
+}
+
 static void PlaceVanillaFairies() {
   auto ctx = Rando::Context::GetInstance();
   for (auto rc : Rando::StaticData::overworldFairyLocations) {
@@ -1328,6 +1352,8 @@ void GenerateItemPool() {
   } else {
     PlaceVanillaDekuScrubItems();
   }
+
+  PlaceFreestandingItems();
 
   AddItemsToPool(ItemPool, alwaysItems);
   AddItemsToPool(ItemPool, dungeonRewards);
