@@ -1900,6 +1900,19 @@ void StaticData::HintTable_Init_Item() {
                                                CustomMessage("plenty of scrub spit", /*german*/"einige Buschspucke", /*french*/"un paquet de crachats Mojo")});
                                                 // /*spanish*/unos cuantos escupitajos deku
 
+    hintTextTable[RHT_DEKU_SEEDS_5] = HintText(CustomMessage("Deku Seeds (5 pieces)", /*german*/"Deku-Samen (5 Stück)", /*french*/"!!!"),
+                                              // /*spanish*/
+                                              {
+                                              CustomMessage("a projectile", /*german*/"ein Projektil", /*french*/"un projectile"),
+                                               // /*spanish*/
+                                              CustomMessage("some Deku munitions", /*german*/"viel Deku-Munition", /*french*/"un paquet de munitions Mojo")
+                                               // /*spanish*/
+                                              }, {
+                                              CustomMessage("a little catapult ammo", /*german*/"", /*french*/""),
+                                               // /*spanish*/
+                                              CustomMessage("a few seeds", /*german*/"", /*french*/"")});
+                                               // /*spanish*/
+
     hintTextTable[RHT_DEKU_SEEDS_30] = HintText(CustomMessage("Deku Seeds (30 pieces)", /*german*/"Deku-Samen (30 Stück)", /*french*/"une trentaine de graines Mojo"),
                                                 // /*spanish*/unas (30) semillas deku
                                                 {
@@ -1921,6 +1934,26 @@ void StaticData::HintTable_Init_Item() {
                                                }, {
                                                CustomMessage("a breakable branch", /*german*/"ein brüchiger Zweig", /*french*/"un bout de bois")});
                                                 // /*spanish*/un pequeño báculo
+
+    hintTextTable[RHT_MAGIC_REFILL_SMALL] = HintText(CustomMessage("Magic Refill (Small)", /*german*/"!!!", /*french*/"!!!"),
+                                               // /*spanish*/
+                                               {
+                                               CustomMessage("a magic refill", /*german*/"!!!", /*french*/"!!!"),
+                                               CustomMessage("a jar of magic", /*german*/"!!!", /*french*/"!!!"),
+                                                // /*spanish*/
+                                               }, {
+                                               CustomMessage("a small jar of magic", /*german*/"!!!", /*french*/"!!!")});
+                                                // /*spanish*/
+
+    hintTextTable[RHT_MAGIC_REFILL_LARGE] = HintText(CustomMessage("Magic Refill (Large)", /*german*/"!!!", /*french*/"!!!"),
+                                               // /*spanish*/
+                                               {
+                                               CustomMessage("a magic refill", /*german*/"!!!", /*french*/"!!!"),
+                                               CustomMessage("a jar of magic", /*german*/"!!!", /*french*/"!!!"),
+                                                // /*spanish*/
+                                               }, {
+                                               CustomMessage("a big jar of magic", /*german*/"!!!", /*french*/"!!!")});
+                                                // /*spanish*/
 
     hintTextTable[RHT_TREASURE_GAME_HEART] = HintText(CustomMessage("a Piece of Heart", /*german*/"ein Herzteil", /*french*/"un Quart de Coeur"),
                                                       // /*spanish*/el amor de la victoria

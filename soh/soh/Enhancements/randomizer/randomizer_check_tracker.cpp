@@ -64,6 +64,11 @@ bool showBeehives;
 bool showCows;
 bool showOverworldFreestanding;
 bool showDungeonFreestanding;
+bool showOverworldInvisibleItems;
+bool showDungeonInvisibleItems;
+bool showOverworldWonderSpots;
+bool showDungeonWonderSpots;
+bool showBrokenWonderSpot;
 bool showAdultTrade;
 bool showKokiriSword;
 bool showMasterSword;
@@ -1336,10 +1341,54 @@ void LoadSettings() {
                 showDungeonFreestanding = false;
                 break;
         }
+        switch (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_INVISIBLE_ITEMS)) {
+            case RO_TOKENSANITY_ALL:
+                showOverworldInvisibleItems = true;
+                showDungeonInvisibleItems = true;
+                break;
+            case RO_TOKENSANITY_OVERWORLD:
+                showOverworldInvisibleItems = true;
+                showDungeonInvisibleItems= false;
+                break;
+            case RO_TOKENSANITY_DUNGEONS:
+                showOverworldInvisibleItems= false;
+                showDungeonInvisibleItems = true;
+                break;
+            default:
+                showOverworldInvisibleItems= false;
+                showDungeonInvisibleItems= false;
+                break;
+        }
+        switch (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_WONDER_SPOTS)) {
+            case RO_TOKENSANITY_ALL:
+                showOverworldWonderSpots = true;
+                showDungeonWonderSpots = true;
+                break;
+            case RO_TOKENSANITY_OVERWORLD:
+                showOverworldWonderSpots = true;
+                showDungeonWonderSpots = false;
+                break;
+            case RO_TOKENSANITY_DUNGEONS:
+                showOverworldWonderSpots = false;
+                showDungeonWonderSpots = true;
+                break;
+            default:
+                showOverworldWonderSpots = false;
+                showDungeonWonderSpots = false;
+                break;
+        }
     } else { // Vanilla
         showOverworldFreestanding = false;
-        showDungeonFreestanding = true;
+        showDungeonFreestanding = false;
+        showOverworldInvisibleItems = false;
+        showDungeonInvisibleItems = false;
+        showOverworldWonderSpots = false;
+        showDungeonWonderSpots = false;
     }
+
+    showBrokenWonderSpot = IS_RANDO ?
+        showDungeonWonderSpots && OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_PATCH_WONDER_SPOT) == RO_GENERIC_YES
+        : false;
 }
 
 bool IsCheckShuffled(RandomizerCheck rc) {
@@ -1380,6 +1429,14 @@ bool IsCheckShuffled(RandomizerCheck rc) {
             (loc->GetRCType() != RCTYPE_FREESTANDING ||
                 (showOverworldFreestanding && RandomizerCheckObjects::AreaIsOverworld(loc->GetArea())) ||
                 (showDungeonFreestanding && RandomizerCheckObjects::AreaIsDungeon(loc->GetArea()))
+                ) &&
+            (loc->GetRCType() != RCTYPE_INVISIBLE_ITEM ||
+                (showOverworldInvisibleItems && RandomizerCheckObjects::AreaIsOverworld(loc->GetArea())) ||
+                (showDungeonInvisibleItems && RandomizerCheckObjects::AreaIsDungeon(loc->GetArea()))
+                ) &&
+            (loc->GetRCType() != RCTYPE_WONDER_SPOT ||
+                (showOverworldWonderSpots && RandomizerCheckObjects::AreaIsOverworld(loc->GetArea())) ||
+                (showDungeonWonderSpots && RandomizerCheckObjects::AreaIsDungeon(loc->GetArea()) && (rc != RC_WATER_TEMPLE_MQ_TRIPLE_WALL_TORCH_MURAL || showBrokenWonderSpot))
                 ) &&
             (loc->GetRCType() != RCTYPE_ADULT_TRADE ||
                 showAdultTrade ||

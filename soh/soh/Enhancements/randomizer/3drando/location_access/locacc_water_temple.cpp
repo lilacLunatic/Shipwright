@@ -290,8 +290,14 @@ void AreaTable_Init_WaterTemple() {
   if (randoCtx->GetDungeon(WATER_TEMPLE)->IsMQ()) {
   areaTable[RR_WATER_TEMPLE_MQ_LOBBY] = Area("Water Temple MQ Lobby", "Water Temple", RA_WATER_TEMPLE, NO_DAY_NIGHT_CYCLE, {}, {
                   //Locations
-                  LOCATION(RC_WATER_TEMPLE_MQ_DARK_LINK_PILAR_SUN_FAIRY, logic->SmallKeys(RR_WATER_TEMPLE, 1) && logic->CanUse(RG_SUNS_SONG) && logic->CanUse(RG_LONGSHOT) && (logic->CanUse(RG_HOVER_BOOTS) || (logic->CanJumpslash && logic->Hearts > 0)))
-                }, {
+                  LOCATION(RC_WATER_TEMPLE_MQ_DARK_LINK_PILAR_SUN_FAIRY, logic->SmallKeys(RR_WATER_TEMPLE, 1) && logic->CanUse(RG_SUNS_SONG) && logic->CanUse(RG_LONGSHOT) && (logic->CanUse(RG_HOVER_BOOTS) || (logic->CanJumpslash && logic->Hearts > 0))),
+                  LOCATION(RC_WATER_TEMPLE_MQ_WATERFALL_LEFT_MURAL,     logic->SmallKeys(RR_WATER_TEMPLE, 1) && logic->CanUse(RG_LONGSHOT)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_WATERFALL_RIGHT_MURAL_1,  logic->SmallKeys(RR_WATER_TEMPLE, 1) && logic->CanUse(RG_LONGSHOT)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_WATERFALL_RIGHT_MURAL_2,  logic->SmallKeys(RR_WATER_TEMPLE, 1) && logic->CanUse(RG_LONGSHOT)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_WATERFALL_RIGHT_MURAL_3,  logic->SmallKeys(RR_WATER_TEMPLE, 1) && logic->CanUse(RG_LONGSHOT)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_BEFORE_BOSS_WEST_MURAL,   logic->CanUse(RG_LONGSHOT)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_BEFORE_BOSS_EAST_MURAL,   logic->CanUse(RG_LONGSHOT)),
+  }, {
                   //Exits
                   Entrance(RR_WATER_TEMPLE_ENTRYWAY,            {[]{return true;}}),
                   Entrance(RR_WATER_TEMPLE_MQ_DIVE,             {[]{return logic->IsAdult && logic->WaterTimer >= 24 && logic->CanUse(RG_IRON_BOOTS);}}),
@@ -304,6 +310,9 @@ void AreaTable_Init_WaterTemple() {
                   LOCATION(RC_WATER_TEMPLE_MQ_MAP_CHEST,            logic->HasFireSource && logic->IsAdult && logic->CanUse(RG_HOOKSHOT)),
                   LOCATION(RC_WATER_TEMPLE_MQ_CENTRAL_PILLAR_CHEST, logic->IsAdult && logic->CanUse(RG_ZORA_TUNIC) && logic->CanUse(RG_HOOKSHOT) && ((randoCtx->GetTrickOption(RT_WATER_MQ_CENTRAL_PILLAR) && logic->CanUse(RG_FIRE_ARROWS)) || (logic->CanUse(RG_DINS_FIRE) && logic->CanUse(RG_SONG_OF_TIME)))),
                     //Trick: logic->IsAdult && logic->CanUse(RG_ZORA_TUNIC) && logic->CanUse(RG_HOOKSHOT) && ((LogicWaterMQCentralPillar && logic->CanUse(RG_FIRE_ARROWS)) || (logic->CanUse(RG_DINS_FIRE) && logic->CanUse(RG_SONG_OF_TIME)))
+                  LOCATION(RC_WATER_TEMPLE_MQ_EAST_MIDDLE_MURAL,    logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_EAST_UPPER_MURAL,     logic->HasFireSource && logic->IsAdult && logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_CENTRAL_PILLAR_MURAL, logic->IsAdult && logic->CanUse(RG_ZORA_TUNIC) && logic->CanUse(RG_HOOKSHOT) && ((randoCtx->GetTrickOption(RT_WATER_MQ_CENTRAL_PILLAR) && logic->CanUse(RG_FIRE_ARROWS)) || (logic->CanUse(RG_DINS_FIRE) && logic->CanUse(RG_SONG_OF_TIME)))),
   }, {
                   //Exits
                   Entrance(RR_WATER_TEMPLE_MQ_LOWERED_WATER_LEVELS, {[]{return logic->CanUse(RG_ZELDAS_LULLABY);}}),
@@ -316,6 +325,9 @@ void AreaTable_Init_WaterTemple() {
                   LOCATION(RC_WATER_TEMPLE_MQ_LONGSHOT_CHEST,               logic->IsAdult && logic->CanUse(RG_HOOKSHOT)),
                   LOCATION(RC_WATER_TEMPLE_MQ_GS_LIZALFOS_HALLWAY,          logic->CanUse(RG_DINS_FIRE)),
                   LOCATION(RC_WATER_TEMPLE_MQ_GS_BEFORE_UPPER_WATER_SWITCH, logic->IsAdult && logic->CanUse(RG_LONGSHOT)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_EAST_LOWER_MURAL,                 (logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_DINS_FIRE)) && logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_LIZALFOS_HALLWAY_MURAL,           logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_BEFORE_UPPER_WATER_SWITCH_MURAL,  logic->IsAdult && logic->CanUse(RG_HOOKSHOT)),
   }, {});
 
   areaTable[RR_WATER_TEMPLE_MQ_DARK_LINK_REGION] = Area("Water Temple MQ Dark Link Region", "Water Temple", RA_WATER_TEMPLE, NO_DAY_NIGHT_CYCLE, {
@@ -328,6 +340,10 @@ void AreaTable_Init_WaterTemple() {
                   LOCATION(RC_WATER_TEMPLE_MQ_GS_RIVER,       true),
                   LOCATION(RC_WATER_TEMPLE_MQ_DARK_LINK_LEFT_STORM_FAIRY, logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_WATER_TEMPLE_MQ_DARK_LINK_RIGHT_SUN_FAIRY,  logic->CanUse(RG_SUNS_SONG)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_AFTER_DARK_LINK_MURAL,            logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_WHIRLPOOL_BACK_ROOM_MURAL,        logic->CanUse(RG_HOOKSHOT) && logic->WaterTimer >= 24 && logic->CanUse(RG_IRON_BOOTS)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_WHIRLPOOL_ROOM_DRAGON_LEFT_EYE,   logic->CanUse(RG_HOOKSHOT) && logic->WaterTimer >= 24 && logic->CanUse(RG_IRON_BOOTS)),
+                  LOCATION(RC_WATER_TEMPLE_MQ_WHIRLPOOL_ROOM_DRAGON_RIGHT_EYE,  logic->CanUse(RG_HOOKSHOT) && logic->WaterTimer >= 24 && logic->CanUse(RG_IRON_BOOTS)),
   }, {
                   //Exits
                   Entrance(RR_WATER_TEMPLE_MQ_BASEMENT_GATED_AREAS, {[]{return logic->IsAdult && logic->WaterTimer >= 24 && logic->CanUse(RG_DINS_FIRE) && logic->CanUse(RG_IRON_BOOTS);}}),
@@ -339,6 +355,11 @@ void AreaTable_Init_WaterTemple() {
                   LOCATION(RC_WATER_TEMPLE_MQ_GS_TRIPLE_WALL_TORCH,     logic->CanUse(RG_FIRE_ARROWS) && (logic->HoverBoots || logic->CanUse(RG_SCARECROW))),
                   LOCATION(RC_WATER_TEMPLE_MQ_GS_FREESTANDING_KEY_AREA, randoCtx->GetTrickOption(RT_WATER_MQ_LOCKED_GS) || (logic->SmallKeys(RR_WATER_TEMPLE, 2) && (logic->HoverBoots || logic->CanUse(RG_SCARECROW) || randoCtx->GetTrickOption(RT_WATER_NORTH_BASEMENT_LEDGE_JUMP)) && logic->CanJumpslash)),
                     //Trick: LogicWaterMQLockedGS || (logic->SmallKeys(RR_WATER_TEMPLE, 2) && (logic->HoverBoots || logic->CanUse(RG_SCARECROW) || LogicWaterNorthBasementLedgeJump))
+                  // Bugged: out of bounds damage type
+                  LOCATION(RC_WATER_TEMPLE_MQ_TRIPLE_WALL_TORCH_MURAL,                    logic->CanUse(RG_HOOKSHOT) && logic->CanUse(RG_FIRE_ARROWS) && (logic->CanUse(RG_HOVER_BOOTS) || logic->CanUse(RG_SCARECROW) || randoCtx->GetTrickOption(RT_WATER_NORTH_BASEMENT_LEDGE_JUMP))),
+                  LOCATION(RC_WATER_TEMPLE_MQ_FREESTANDING_KEY_MURAL,                     logic->CanUse(RG_HOOKSHOT) && (logic->CanUse(RG_HOVER_BOOTS) || logic->CanUse(RG_SCARECROW) || randoCtx->GetTrickOption(RT_WATER_NORTH_BASEMENT_LEDGE_JUMP))),
+                  LOCATION(RC_WATER_TEMPLE_MQ_TORCHES_NEAR_FREESTANDING_KEY_FIRST_GEYSER, logic->SmallKeys(RR_WATER_TEMPLE, 2) && (logic->CanUse(RG_HOVER_BOOTS) || logic->CanUse(RG_SCARECROW) || randoCtx->GetTrickOption(RT_WATER_NORTH_BASEMENT_LEDGE_JUMP))),
+                  LOCATION(RC_WATER_TEMPLE_MQ_TORCHES_NEAR_FREESTANDING_KEY_THIRD_GEYSER, logic->SmallKeys(RR_WATER_TEMPLE, 2) && (logic->CanUse(RG_HOVER_BOOTS) || logic->CanUse(RG_SCARECROW) || randoCtx->GetTrickOption(RT_WATER_NORTH_BASEMENT_LEDGE_JUMP))),
   }, {});
   }
 

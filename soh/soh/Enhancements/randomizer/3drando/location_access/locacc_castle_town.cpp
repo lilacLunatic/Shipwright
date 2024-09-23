@@ -11,7 +11,16 @@ void AreaTable_Init_CastleTown() {
                   Entrance(RR_MARKET_GUARD_HOUSE, {[]{return true;}}),
   });
 
-  areaTable[RR_THE_MARKET] = Area("Market", "Market", RA_THE_MARKET, NO_DAY_NIGHT_CYCLE, {}, {}, {
+  areaTable[RR_THE_MARKET] = Area("Market", "Market", RA_THE_MARKET, NO_DAY_NIGHT_CYCLE, {}, {
+                  //Locations
+                  LOCATION(RC_MARKET_BOWLING_BALCONY_DAY_RIGHT,         logic->IsChild && logic->AtDay),
+                  LOCATION(RC_MARKET_BOWLING_BALCONY_DAY_MIDDLE_RIGHT,  logic->IsChild && logic->AtDay),
+                  LOCATION(RC_MARKET_BOWLING_BALCONY_DAY_MIDDLE,        logic->IsChild && logic->AtDay),
+                  LOCATION(RC_MARKET_BOWLING_BALCONY_DAY_MIDDLE_LEFT,   logic->IsChild && logic->AtDay),
+                  LOCATION(RC_MARKET_BOWLING_BALCONY_DAY_LEFT,          logic->IsChild && logic->AtDay),
+                  LOCATION(RC_MARKET_BOWLING_BALCONY_NIGHT_RIGHT,       logic->IsChild && logic->AtNight),
+                  LOCATION(RC_MARKET_BOWLING_BALCONY_NIGHT_LEFT,        logic->IsChild && logic->AtNight),
+                }, {
                   //Exits
                   Entrance(RR_MARKET_ENTRANCE,            {[]{return true;}}),
                   Entrance(RR_TOT_ENTRANCE,               {[]{return true;}}),
@@ -102,6 +111,18 @@ void AreaTable_Init_CastleTown() {
                   LOCATION(RC_HC_ROCK_WALL_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
                   LOCATION(RC_HC_ROCK_WALL_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_HC_MALON_GOSSIP_STONE,     true),
+                  LOCATION(RC_HC_MOAT_RUPEE_1,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_2,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_3,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_4,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_5,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_6,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_7,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_8,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_9,           logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_MOAT_RUPEE_FINAL,       logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_HC_DRAWBRIDGE_EAST_TORCH,  logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_HC_DRAWBRIDGE_WEST_TORCH,  logic->CanUse(RG_FAIRY_SLINGSHOT)),
                   LOCATION(RC_HC_ROCK_WALL_GOSSIP_STONE, true),
                 }, {
                   //Exits
@@ -117,6 +138,7 @@ void AreaTable_Init_CastleTown() {
                   //Locations
                   LOCATION(RC_HC_ZELDAS_LETTER, true),
                   LOCATION(RC_SONG_FROM_IMPA,   true),
+                  LOCATION(RC_HC_ZELDAS_WINDOW, logic->CanUse(RG_FAIRY_SLINGSHOT)),
                 }, {
                   //Exits
                   Entrance(RR_HYRULE_CASTLE_GROUNDS, {[]{return true;}}),

@@ -115,7 +115,8 @@ void AreaTable_Init_ShadowTemple() {
                   LOCATION(RC_SHADOW_TEMPLE_AFTER_SHIP_UPPER_LEFT_HEART,  logic->CanUse(RG_DISTANT_SCARECROW)),
                   LOCATION(RC_SHADOW_TEMPLE_AFTER_SHIP_UPPER_RIGHT_HEART, logic->CanUse(RG_DISTANT_SCARECROW)),
                   LOCATION(RC_SHADOW_TEMPLE_AFTER_SHIP_LOWER_HEART,       (logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_DISTANT_SCARECROW) || (randoCtx->GetTrickOption(RT_SHADOW_STATUE) && logic->CanUse(RG_BOMBCHU_5))) && logic->CanUse(RG_SONG_OF_TIME) || (logic->CanUse(RG_DISTANT_SCARECROW) && logic->CanUse(RG_HOVER_BOOTS))),
-  }, {
+                  LOCATION(RC_SHADOW_TEMPLE_POTS_PLAQUE,                  logic->CanUse(RG_FAIRY_BOW)),
+                }, {
                   //Exits
                   Entrance(RR_SHADOW_TEMPLE_BOSS_ENTRYWAY, {[]{return (logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_DISTANT_SCARECROW) || (randoCtx->GetTrickOption(RT_SHADOW_STATUE) && logic->CanUse(RG_BOMBCHU_5))) && logic->SmallKeys(RR_SHADOW_TEMPLE, 5) && logic->CanUse(RG_HOVER_BOOTS) && logic->BossKeyShadowTemple;}})
   });
@@ -218,6 +219,7 @@ void AreaTable_Init_ShadowTemple() {
                   //below previously returned true
                   LOCATION(RC_SHADOW_TEMPLE_MQ_BOMB_FLOWER_CHEST,      logic->CanUse(RG_LENS_OF_TRUTH) || randoCtx->GetTrickOption(RT_LENS_SHADOW_MQ_DEADHAND)),
                   LOCATION(RC_SHADOW_TEMPLE_MQ_FREESTANDING_KEY,       true),
+                  LOCATION(RC_SHADOW_TEMPLE_MQ_POTS_PLAQUE,            logic->CanUse(RG_FAIRY_BOW)),
   }, {});
   }
 

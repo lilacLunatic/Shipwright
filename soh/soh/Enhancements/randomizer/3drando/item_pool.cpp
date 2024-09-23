@@ -620,23 +620,33 @@ static void PlaceVanillaOverworldFish() {
 
 static void PlaceFreestandingItems() {
   auto ctx = Rando::Context::GetInstance();
-  auto option = ctx->GetOption(RSK_SHUFFLE_FREESTANDING);
-  for (RandomizerCheck loc : ctx->GetLocations(Rando::StaticData::overworldLocations, Category::cFreestanding)) {
-    RandomizerGet vanillaItem = Rando::StaticData::GetLocation(loc)->GetVanillaItem();
-    if (option.Is(RO_TOKENSANITY_OVERWORLD) || option.Is(RO_TOKENSANITY_ALL)) {
-      AddItemToMainPool(vanillaItem);
+  auto freestandingOption = ctx->GetOption(RSK_SHUFFLE_FREESTANDING);
+  auto invisibleOption = ctx->GetOption(RSK_SHUFFLE_INVISIBLE_ITEMS);
+  auto wonderOption = ctx->GetOption(RSK_SHUFFLE_WONDER_SPOTS);
+
+  for (RandomizerCheck rc : ctx->GetLocations(Rando::StaticData::overworldLocations, Category::cFreestanding)) {
+    Rando::Location* loc = Rando::StaticData::GetLocation(rc);
+    RandomizerGet item = loc->GetVanillaItem() != RG_NONE ? loc->GetVanillaItem() : GetJunkItem();
+    if ((loc->GetRCType() == RCTYPE_FREESTANDING && (freestandingOption.Is(RO_TOKENSANITY_OVERWORLD) || freestandingOption.Is(RO_TOKENSANITY_ALL))) ||
+        (loc->GetRCType() == RCTYPE_INVISIBLE_ITEM && (invisibleOption.Is(RO_TOKENSANITY_OVERWORLD) || invisibleOption.Is(RO_TOKENSANITY_ALL))) ||
+        (loc->GetRCType() == RCTYPE_WONDER_SPOT && (wonderOption.Is(RO_TOKENSANITY_OVERWORLD) || wonderOption.Is(RO_TOKENSANITY_ALL)))) {
+      AddItemToMainPool(item);
     } else {
-      ctx->PlaceItemInLocation(loc, vanillaItem, false, true);
+      ctx->PlaceItemInLocation(rc, item, false, true);
     }
   }
 
   for (auto dungeon : ctx->GetDungeons()->GetDungeonList()) {
-    for (RandomizerCheck loc : ctx->GetLocations(dungeon->GetDungeonLocations(), Category::cFreestanding)) {
-      RandomizerGet vanillaItem = Rando::StaticData::GetLocation(loc)->GetVanillaItem();
-      if (option.Is(RO_TOKENSANITY_DUNGEONS) || option.Is(RO_TOKENSANITY_ALL)) {
-        AddItemToMainPool(vanillaItem);
+    for (RandomizerCheck rc : ctx->GetLocations(dungeon->GetDungeonLocations(), Category::cFreestanding)) {
+      Rando::Location* loc = Rando::StaticData::GetLocation(rc);
+      RandomizerGet item = loc->GetVanillaItem() != RG_NONE ? loc->GetVanillaItem() : GetJunkItem();
+      if ((loc->GetRCType() == RCTYPE_FREESTANDING && (freestandingOption.Is(RO_TOKENSANITY_DUNGEONS) || freestandingOption.Is(RO_TOKENSANITY_ALL))) ||
+          (loc->GetRCType() == RCTYPE_INVISIBLE_ITEM && (invisibleOption.Is(RO_TOKENSANITY_DUNGEONS) || invisibleOption.Is(RO_TOKENSANITY_ALL))) ||
+          (loc->GetRCType() == RCTYPE_WONDER_SPOT && (wonderOption.Is(RO_TOKENSANITY_DUNGEONS) || wonderOption.Is(RO_TOKENSANITY_ALL)) &&
+            (rc != RC_WATER_TEMPLE_MQ_TRIPLE_WALL_TORCH_MURAL || ctx->GetOption(RSK_PATCH_WONDER_SPOT)))) {
+        AddItemToMainPool(item);
       } else {
-        ctx->PlaceItemInLocation(loc, vanillaItem, false, true);
+        ctx->PlaceItemInLocation(rc, item, false, true);
       }
     }
   }

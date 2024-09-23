@@ -270,8 +270,8 @@ void AreaTable_Init_DeathMountain() {
                 }, {
                   //Locations
                   LOCATION(RC_DMC_GS_BEAN_PATCH, (logic->FireTimer >= 8 || logic->Hearts >= 3) && logic->CanPlantBugs && logic->CanChildAttack),
-                  LOCATION(RC_DMC_NEAR_PLATFORM_RED_RUPEE, logic->IsChild),
-                  LOCATION(RC_DMC_MIDDLE_PLATFORM_RED_RUPEE, logic->IsChild && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
+                  LOCATION(RC_DMC_NEAR_PLATFORM_RED_RUPEE,      logic->IsChild),
+                  LOCATION(RC_DMC_MIDDLE_PLATFORM_RED_RUPEE,    logic->IsChild && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
                   LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_1, logic->IsChild && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
                   LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_2, logic->IsChild && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
                   LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_3, logic->IsChild && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
@@ -281,6 +281,7 @@ void AreaTable_Init_DeathMountain() {
                   LOCATION(RC_DMC_BEAN_SPROUT_FAIRY_1,  logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
                   LOCATION(RC_DMC_BEAN_SPROUT_FAIRY_2,  logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
                   LOCATION(RC_DMC_BEAN_SPROUT_FAIRY_3,  logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS) && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
+                  LOCATION(RC_DMC_UNDER_BRIDGE_RUPEE,           logic->IsAdult && logic->CanUse(RG_HOOKSHOT) && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
                 }, {
                   //Exits
                   Entrance(RR_DMC_CENTRAL_NEARBY,   {[]{return true;}}),

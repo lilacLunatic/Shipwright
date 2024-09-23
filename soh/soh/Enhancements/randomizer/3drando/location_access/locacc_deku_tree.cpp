@@ -225,6 +225,10 @@ void AreaTable_Init_DekuTree() {
                   //Locations
                   LOCATION(RC_DEKU_TREE_MQ_GS_BASEMENT_GRAVES_ROOM, (logic->IsAdult && logic->CanUse(RG_LONGSHOT)) || (logic->CanUse(RG_SONG_OF_TIME) && logic->HookshotOrBoomerang)),
                   LOCATION(RC_DEKU_TREE_MQ_GS_BASEMENT_BACK_ROOM,   logic->HasFireSourceWithTorch && logic->HookshotOrBoomerang),
+                  LOCATION(RC_DEKU_TREE_MQ_SOUTHEAST_GRAVE,         logic->CanJumpslash),
+                  LOCATION(RC_DEKU_TREE_MQ_WEST_GRAVE,              logic->CanJumpslash),
+                  LOCATION(RC_DEKU_TREE_MQ_NORTHEAST_GRAVE,         logic->CanJumpslash),
+                  LOCATION(RC_DEKU_TREE_MQ_NORTHWEST_GRAVE,         logic->CanJumpslash),
   }, {
                   //Exits
                   Entrance(RR_DEKU_TREE_MQ_BASEMENT_LEDGE,           {[]{return logic->IsChild;}}),

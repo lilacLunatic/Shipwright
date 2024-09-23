@@ -33,6 +33,8 @@ void AreaTable_Init_GerudoValley() {
                   LOCATION(RC_GV_BEAN_SPROUT_FAIRY_3,        logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_GV_GOSSIP_STONE_FAIRY,         logic->CanSummonGossipFairy),
                   LOCATION(RC_GV_GOSSIP_STONE_FAIRY_BIG,     logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_GV_LADDER_RUPEE,               logic->IsAdult && logic->HasItem(RG_BRONZE_SCALE)),
+                  LOCATION(RC_GV_WATERFALL_RUPEE,            logic->IsAdult && logic->HasItem(RG_BRONZE_SCALE)),
                   LOCATION(RC_GV_GOSSIP_STONE,               true),
                 }, {
                   //Exits
@@ -142,6 +144,20 @@ void AreaTable_Init_GerudoValley() {
                   LOCATION(RC_GF_SOUTH_F1_CARPENTER_CELL_POT_3, logic->CanBreakPots),
                   LOCATION(RC_GF_SOUTH_F1_CARPENTER_CELL_POT_4, logic->CanBreakPots),
                   LOCATION(RC_GF_KITCHEN_SUN_FAIRY,  (logic->HasItem(RG_GERUDO_MEMBERSHIP_CARD) || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_HOOKSHOT)) && logic->CanUse(RG_SUNS_SONG)),
+                  LOCATION(RC_GF_WELCOME_SIGN,       logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_GF_TO_ARCHERY_SIGN,    logic->CanUse(RG_HOOKSHOT) && (logic->IsChild || logic->GerudoToken)),
+                  LOCATION(RC_GF_NORTH_F1_NORTH_SKULL,      logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_NORTH_F1_SOUTH_SKULL,      logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_OUTSIDE_KITCHEN_SKULL,     logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_KITCHEN_SOUP_POT,          logic->GerudoToken || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_HOOKSHOT)),
+                  LOCATION(RC_GF_NORTH_F2_NEAR_CELL_SKULL,  logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_NORTH_F2_HALLWAY_SKULL,    logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_ABOVE_CELL_EAST_SKULL,     logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_ABOVE_CELL_WEST_SKULL,     logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_SOUTH_F1_NORTH_SKULL,      logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_SOUTH_F1_SOUTH_SKULL,      logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_SOUTH_F2_WEST_SKULL,       logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GF_SOUTH_F2_EAST_SKULL,       logic->CanUse(RG_FAIRY_BOW)),
                 }, {
                   //Exits
                   Entrance(RR_GV_FORTRESS_SIDE,                 {[]{return true;}}),
@@ -232,6 +248,13 @@ void AreaTable_Init_GerudoValley() {
                   LOCATION(RC_COLOSSUS_BEAN_SPROUT_FAIRY_3,     logic->IsChild && logic->HasItem(RG_MAGIC_BEAN) && logic->CanUse(RG_SONG_OF_STORMS)),
                   LOCATION(RC_COLOSSUS_GOSSIP_STONE_FAIRY,      logic->CanSummonGossipFairy),
                   LOCATION(RC_COLOSSUS_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_COLOSSUS_FAIRY_EAST_PALM_TREE,            (logic->IsChild && logic->CanUse(RG_FAIRY_SLINGSHOT)) || (logic->IsAdult && logic->CanUse(RG_FAIRY_BOW))),
+                  LOCATION(RC_COLOSSUS_FAIRY_WEST_PALM_TREE,            (logic->IsChild && logic->CanUse(RG_FAIRY_SLINGSHOT)) || (logic->IsAdult && logic->CanUse(RG_FAIRY_BOW))),
+                  LOCATION(RC_COLOSSUS_CHILD_OASIS_WEST_PALM_TREE,      logic->IsChild && logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_COLOSSUS_CHILD_OASIS_EAST_PALM_TREE,      logic->IsChild && logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_COLOSSUS_CHILD_OASIS_SOUTHEAST_PALM_TREE, logic->IsChild && logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_COLOSSUS_ADULT_OASIS_EAST_PALM_TREE,      logic->IsAdult && logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_COLOSSUS_ADULT_OASIS_SOUTHEAST_PALM_TREE, logic->IsAdult && logic->CanUse(RG_FAIRY_BOW)),
                   LOCATION(RC_COLOSSUS_GOSSIP_STONE,     true),
                 }, {
                   //Exits

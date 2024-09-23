@@ -31,6 +31,7 @@ void AreaTable_Init_Kakariko() {
                   LOCATION(RC_KAK_NEAR_GUARDS_HOUSE_POT_3,     logic->IsChild && logic->CanBreakPots),
                   LOCATION(RC_KAK_NEAR_MEDICINE_SHOP_POT_1,    logic->IsChild && logic->CanBreakPots),
                   LOCATION(RC_KAK_NEAR_MEDICINE_SHOP_POT_2,    logic->IsChild && logic->CanBreakPots),
+                  LOCATION(RC_KAK_HOUSE_UNDER_CONSTRUCTION_RUPEE, logic->IsChild),
                 }, {
                   //Exits
                   Entrance(RR_HYRULE_FIELD,                {[]{return true;}}),
@@ -102,7 +103,10 @@ void AreaTable_Init_Kakariko() {
                   Entrance(RR_KAKARIKO_VILLAGE, {[]{return true;}}),
   });
 
-  areaTable[RR_KAK_IMPAS_HOUSE] = Area("Kak Impas House", "Kak Impas House", RA_NONE, NO_DAY_NIGHT_CYCLE, {}, {}, {
+  areaTable[RR_KAK_IMPAS_HOUSE] = Area("Kak Impas House", "Kak Impas House", RA_NONE, NO_DAY_NIGHT_CYCLE, {}, {
+                  //Locations
+                  LOCATION(RC_KAK_IMPAS_HOUSE_UPSTAIRS, true),
+                }, {
                   //Exits
                   Entrance(RR_KAK_IMPAS_HOUSE_NEAR_COW, {[]{return true;}}),
                   Entrance(RR_KAKARIKO_VILLAGE,         {[]{return true;}}),
@@ -300,6 +304,21 @@ void AreaTable_Init_Kakariko() {
                   LOCATION(RC_GRAVEYARD_DAMPE_RACE_RUPEE_6,          true),
                   LOCATION(RC_GRAVEYARD_DAMPE_RACE_RUPEE_7,          true),
                   LOCATION(RC_GRAVEYARD_DAMPE_RACE_RUPEE_8,          true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_1,   true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_2,   true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_3,   true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_4,   true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_5,   true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_6,   true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_7,   true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_8,   true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_9,   true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_10,  true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_11,  true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_12,  true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_13,  true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_14,  true),
+                  LOCATION(RC_GRAVEYARD_DAMPE_RACE_HIDDEN_RUPEE_15,  true),
                 }, {
                   //Exits
                   Entrance(RR_THE_GRAVEYARD, {[]{return true;}}),

@@ -27,6 +27,13 @@ void AreaTable_Init_GerudoTrainingGrounds() {
                   LOCATION(RC_GERUDO_TRAINING_GROUND_BEAMOS_CHEST,      logic->HasExplosives && (logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_BIGGORON_SWORD))),
                   LOCATION(RC_GERUDO_TRAINING_GROUND_BEAMOS_SOUTH_HEART, true),
                   LOCATION(RC_GERUDO_TRAINING_GROUND_BEAMOS_EAST_HEART,  true),
+                  LOCATION(RC_GERUDO_TRAINING_GROUND_LOBBY_LEFT_CHEST,    logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_GERUDO_TRAINING_GROUND_LOBBY_RIGHT_CHEST,   logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_GERUDO_TRAINING_GROUND_STALFOS_CHEST,       logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_BIGGORON_SWORD)),
+                  LOCATION(RC_GERUDO_TRAINING_GROUND_BEAMOS_CHEST,        logic->HasExplosives && (logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_BIGGORON_SWORD))),
+                  LOCATION(RC_GERUDO_TRAINING_GROUND_BEAMOS_SOUTH_HEART,  true),
+                  LOCATION(RC_GERUDO_TRAINING_GROUND_BEAMOS_EAST_HEART,   true),
+                  LOCATION(RC_GERUDO_TRAINING_GROUND_BEAMOS_PLAQUE,       logic->CanUse(RG_FAIRY_BOW)),
                   LOCATION(RC_GERUDO_TRAINING_GROUND_ENTRANCE_STORMS_FAIRY, logic->CanUse(RG_SONG_OF_STORMS)),
                 }, {
                   //Exits
@@ -72,6 +79,7 @@ void AreaTable_Init_GerudoTrainingGrounds() {
                   //Locations
                   LOCATION(RC_GERUDO_TRAINING_GROUND_HAMMER_ROOM_CLEAR_CHEST,  logic->CanAdultAttack || logic->CanChildAttack),
                   LOCATION(RC_GERUDO_TRAINING_GROUND_HAMMER_ROOM_SWITCH_CHEST, logic->CanUse(RG_MEGATON_HAMMER) || (logic->CanTakeDamage && randoCtx->GetTrickOption(RT_FLAMING_CHESTS))),
+                  LOCATION(RC_GERUDO_TRAINING_GROUND_HAMMER_ROOM_PLAQUE,       logic->CanUse(RG_FAIRY_BOW)),
                 }, {
                   //Exits
                   Entrance(RR_GERUDO_TRAINING_GROUNDS_EYE_STATUE_LOWER, {[]{return logic->CanUse(RG_MEGATON_HAMMER) && logic->CanUse(RG_FAIRY_BOW);}}),
@@ -89,6 +97,7 @@ void AreaTable_Init_GerudoTrainingGrounds() {
   areaTable[RR_GERUDO_TRAINING_GROUNDS_EYE_STATUE_UPPER] = Area("Gerudo Training Grounds Eye Statue Upper", "Gerudo Training Grounds", RA_GERUDO_TRAINING_GROUND, NO_DAY_NIGHT_CYCLE, {}, {
                   //Locations
                   LOCATION(RC_GERUDO_TRAINING_GROUND_NEAR_SCARECROW_CHEST, logic->CanUse(RG_FAIRY_BOW)),
+                  LOCATION(RC_GERUDO_TRAINING_GROUND_EYE_STATUE_TOP,       logic->CanUse(RG_HOVER_BOOTS)),
                 }, {
                   //Exits
                   Entrance(RR_GERUDO_TRAINING_GROUNDS_EYE_STATUE_LOWER, {[]{return true;}}),
@@ -136,7 +145,8 @@ void AreaTable_Init_GerudoTrainingGrounds() {
                   //EventAccess(&WallFairy, {[]{return WallFairy || (logic->IsAdult && logic->CanUse(RG_FAIRY_BOW));}}),
   }, {
                   //Locations
-                  LOCATION(RC_GERUDO_TRAINING_GROUND_MQ_DINOLFOS_CHEST, logic->IsAdult && (logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_BIGGORON_SWORD))),
+                  LOCATION(RC_GERUDO_TRAINING_GROUND_MQ_DINOLFOS_CHEST,   logic->IsAdult && (logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_BIGGORON_SWORD))),
+                  LOCATION(RC_GERUDO_TRAINING_GROUND_MQ_DINALFOS_PLAQUE,  logic->CanUse(RG_FAIRY_BOW)),
   }, {
                   //Exits
                   Entrance(RR_GERUDO_TRAINING_GROUNDS_MQ_UNDERWATER, {[]{return (logic->Bow || (logic->CanUse(RG_LONGSHOT) && logic->HasFireSource)) && logic->CanUse(RG_HOVER_BOOTS) && logic->IsAdult && (logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_BIGGORON_SWORD));}}),
@@ -174,6 +184,7 @@ void AreaTable_Init_GerudoTrainingGrounds() {
                   LOCATION(RC_GERUDO_TRAINING_GROUND_MQ_EYE_STATUE_CHEST,          logic->CanUse(RG_FAIRY_BOW)),
                   LOCATION(RC_GERUDO_TRAINING_GROUND_MQ_SECOND_IRON_KNUCKLE_CHEST, logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_BIGGORON_SWORD)),
                   LOCATION(RC_GERUDO_TRAINING_GROUND_MQ_FLAME_CIRCLE_CHEST,        logic->CanUse(RG_HOOKSHOT) || logic->CanUse(RG_FAIRY_BOW) || logic->HasExplosives),
+                  LOCATION(RC_GERUDO_TRAINING_GROUND_MQ_EYE_STATUE_TOP,            logic->CanUse(RG_LONGSHOT) || logic->CanUse(RG_HOVER_BOOTS)),
   }, {
                   //Exits
                   Entrance(RR_GERUDO_TRAINING_GROUNDS_MQ_CENTRAL_MAZE_RIGHT, {[]{return logic->CanUse(RG_MEGATON_HAMMER);}}),

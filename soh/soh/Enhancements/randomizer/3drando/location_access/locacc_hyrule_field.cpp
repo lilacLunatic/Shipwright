@@ -12,6 +12,9 @@ void AreaTable_Init_HyruleField() {
                   LOCATION(RC_HF_OCARINA_OF_TIME_ITEM,   logic->IsChild && logic->HasAllStones),
                   LOCATION(RC_SONG_FROM_OCARINA_OF_TIME, logic->IsChild && logic->HasAllStones),
                   LOCATION(RC_HF_POND_STORMS_FAIRY,      logic->CanUse(RG_SONG_OF_STORMS)),
+                  LOCATION(RC_HF_DRAWBRIDGE_RIGHT,       logic->IsChild),
+                  LOCATION(RC_HF_DRAWBRIDGE_MIDDLE,      logic->IsChild),
+                  LOCATION(RC_HF_DRAWBRIDGE_LEFT,        logic->IsChild),
                 }, {
                   //Exits
                   Entrance(RR_LW_BRIDGE,              {[]{return true;}}),
@@ -275,6 +278,8 @@ void AreaTable_Init_HyruleField() {
                   LOCATION(RC_LLR_RAIN_SHED_POT_1, logic->IsChild && logic->CanBreakPots),
                   LOCATION(RC_LLR_RAIN_SHED_POT_2, logic->IsChild && logic->CanBreakPots),
                   LOCATION(RC_LLR_RAIN_SHED_POT_3, logic->IsChild && logic->CanBreakPots),
+                  LOCATION(RC_LLR_EAST_HURDLE,     logic->Epona),
+                  LOCATION(RC_LLR_WEST_HURDLE,     logic->Epona),
                 }, {
                   //Exits
                   Entrance(RR_HYRULE_FIELD,     {[]{return true;}}),

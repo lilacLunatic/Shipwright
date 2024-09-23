@@ -182,6 +182,8 @@ void AreaTable_Init_JabuJabusBelly() {
                   //Locations
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_MAP_CHEST,             logic->CanBlastOrSmash),
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_FIRST_ROOM_SIDE_CHEST, logic->IsChild && logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_ENTRANCE_RIGHT_COW,    logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_ENTRANCE_LEFT_COW,     logic->CanUse(RG_FAIRY_SLINGSHOT)),
   }, {
                   //Exits
                   Entrance(RR_JABU_JABUS_BELLY_ENTRYWAY, {[]{return true;}}),
@@ -199,12 +201,15 @@ void AreaTable_Init_JabuJabusBelly() {
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_BOOMERANG_ROOM_SMALL_CHEST,   true),
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_BOOMERANG_CHEST,              logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_BIGGORON_SWORD) || logic->CanUse(RG_MEGATON_HAMMER) || logic->CanUse(RG_FAIRY_SLINGSHOT) || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_STICKS) || logic->Bombs),
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_GS_BOOMERANG_CHEST_ROOM,      logic->CanUse(RG_SONG_OF_TIME) || (randoCtx->GetTrickOption(RT_JABU_MQ_SOT_GS) && logic->IsChild && logic->CanUse(RG_BOOMERANG))),
+                    //Trick: logic->CanUse(RG_SONG_OF_TIME) || (LogicJabuMQSoTGS && logic->IsChild && logic->CanUse(RG_BOOMERANG))
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_LIFT_HEART_1,                 true),
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_LIFT_HEART_2,                 true),
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_LIFT_RUPEE_1,                 logic->HasItem(RG_GOLDEN_SCALE)),
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_LIFT_RUPEE_2,                 logic->HasItem(RG_SILVER_SCALE)),
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_LIFT_RUPEE_3,                 logic->HasItem(RG_BRONZE_SCALE)),
-                    //Trick: logic->CanUse(RG_SONG_OF_TIME) || (LogicJabuMQSoTGS && logic->IsChild && logic->CanUse(RG_BOOMERANG))
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_LIFT_COW,                     logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_LOBBY_BASEMENT_LEFT_COW,      logic->HasItem(RG_BRONZE_SCALE) && logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_LOBBY_BASEMENT_RIGHT_COW,     logic->HasItem(RG_BRONZE_SCALE) && logic->CanUse(RG_FAIRY_SLINGSHOT)),
   }, {
                   //Exits
                   Entrance(RR_JABU_JABUS_BELLY_MQ_BEGINNING, {[]{return true;}}),
@@ -216,6 +221,9 @@ void AreaTable_Init_JabuJabusBelly() {
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_FALLING_LIKE_LIKE_ROOM_CHEST, true),
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_GS_TAILPASARAN_ROOM,          logic->Swim && (logic->CanUse(RG_STICKS) || logic->CanUse(RG_DINS_FIRE))),
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_GS_INVISIBLE_ENEMIES_ROOM,    (randoCtx->GetTrickOption(RT_LENS_JABU_MQ) || logic->CanUse(RG_LENS_OF_TRUTH)) || Here(RR_JABU_JABUS_BELLY_MQ_MAIN, []{return logic->IsAdult && logic->CanUse(RG_HOVER_BOOTS) && logic->CanUse(RG_HOOKSHOT);})),
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_FALLING_LIKE_LIKE_ROOM_BOMB_GRASS,  logic->HasExplosives),
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_FALLING_LIKE_LIKE_ROOM_LEFT_COW,    logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_FALLING_LIKE_LIKE_ROOM_RIGHT_COW,   logic->CanUse(RG_FAIRY_SLINGSHOT)),
   }, {
                   //Exits
                   Entrance(RR_JABU_JABUS_BELLY_MQ_MAIN,      {[]{return true;}}),
@@ -230,6 +238,11 @@ void AreaTable_Init_JabuJabusBelly() {
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_COW,             logic->CanUse(RG_EPONAS_SONG)),
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_NEAR_BOSS_CHEST, logic->CanUse(RG_FAIRY_SLINGSHOT)),
                   LOCATION(RC_JABU_JABUS_BELLY_MQ_GS_NEAR_BOSS,    logic->CanUse(RG_BOOMERANG) || (randoCtx->GetTrickOption(RT_JABU_NEAR_BOSS_RANGED) && logic->CanUse(RG_HOOKSHOT))),
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_AFTER_BIG_OCTO_COW_1,         logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_AFTER_BIG_OCTO_COW_2,         logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_AFTER_NEAR_BOSS_EAST_COW,     logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_AFTER_NEAR_BOSS_WEST_COW_LOW, logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_JABU_JABUS_BELLY_MQ_AFTER_NEAR_BOSS_WEST_COW_MID, logic->CanUse(RG_FAIRY_SLINGSHOT)),
   }, {
                   //Exits
                   Entrance(RR_JABU_JABUS_BELLY_MQ_MAIN, {[]{return true;}}),

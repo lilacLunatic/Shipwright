@@ -35,6 +35,7 @@ extern "C" {
 #include "src/overlays/actors/ovl_Obj_Comb/z_obj_comb.h"
 #include "src/overlays/actors/ovl_En_Bom_Bowl_Pit/z_en_bom_bowl_pit.h"
 #include "src/overlays/actors/ovl_En_Ge1/z_en_ge1.h"
+#include "src/overlays/actors/ovl_En_Wonder_Item/z_en_wonder_item.h"
 #include "adult_trade_shuffle.h"
 #include "draw.h"
 
@@ -78,7 +79,8 @@ RandomizerCheck GetRandomizerCheckFromSceneFlag(int16_t sceneNum, int16_t flagTy
         if (loc.GetCollectionCheck().scene == sceneNum && loc.GetCollectionCheck().flag == flag && (
             (flagType == FLAG_SCENE_TREASURE && loc.GetCollectionCheck().type == SPOILER_CHK_CHEST) ||
             (flagType == FLAG_SCENE_COLLECTIBLE && loc.GetCollectionCheck().type == SPOILER_CHK_COLLECTABLE) ||
-            (flagType == FLAG_GS_TOKEN && loc.GetCollectionCheck().type == SPOILER_CHK_GOLD_SKULLTULA)
+            (flagType == FLAG_GS_TOKEN && loc.GetCollectionCheck().type == SPOILER_CHK_GOLD_SKULLTULA) ||
+            (flagType == FLAG_SCENE_SWITCH && loc.GetCollectionCheck().type == SPOILER_CHK_SWITCH)
         ) && LocMatchesQuest(loc)) {
             return loc.GetRandomizerCheck();
         }
@@ -691,6 +693,19 @@ void RandomizerOnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, void
                 GetItemEntry itemEntry = randomizerQueuedItemEntry;
                 item00->itemEntry = itemEntry;
                 item00->actor.draw = (ActorFunc)EnItem00_DrawRandomizedItem;
+            }
+            break;
+        }
+        case VB_WONDER_ITEM_DROP_COLLECTIBLE: {
+            EnWonderItem* wonderItem = static_cast<EnWonderItem*>(optionalArg);
+            auto pos = wonderItem->actor.world.pos;
+            uint32_t params = (wonderItem->switchFlag > 0) ? wonderItem->actor.params : TWO_ACTOR_PARAMS((int32_t)pos.x, (int32_t)pos.z);
+            Rando::Location* loc = OTRGlobals::Instance->gRandomizer->GetCheckObjectFromActor(wonderItem->actor.id, gPlayState->sceneNum, params);
+            if (loc && loc->GetRandomizerCheck() != RC_UNKNOWN_CHECK) {
+                *should = Rando::Context::GetInstance()->GetItemLocation(loc->GetRandomizerCheck())->HasObtained();
+                if (loc->GetCollectionCheck().type == SPOILER_CHK_RANDOMIZER_INF) {
+                    Flags_SetRandomizerInf(static_cast<RandomizerInf>(loc->GetCollectionCheck().flag));
+                }
             }
             break;
         }
@@ -1508,6 +1523,14 @@ void RandomizerOnActorInitHandler(void* actorRef) {
         )
     ) {
         Actor_Kill(actor);
+    }
+
+    if (actor->id == ACTOR_EN_WONDER_ITEM && RAND_GET_OPTION(RSK_PATCH_WONDER_SPOT)) {
+        EnWonderItem* item = static_cast<EnWonderItem*>(actorRef);
+        if (item->wonderMode == WONDERITEM_INTERACT_SWITCH && item->actor.world.rot.z == 7) {
+            item->actor.world.rot.z = 6;
+            item->collider.info.bumper.dmgFlags = 0x00000080;
+        }
     }
 }
 

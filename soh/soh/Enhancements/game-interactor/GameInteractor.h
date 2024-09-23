@@ -428,6 +428,8 @@ typedef enum {
     VB_FAIRY_HEAL,
     // Opt: *ObjBean
     VB_BEAN_SPAWN_FAIRIES,
+    // Opt: *EnWonderItem
+    VB_WONDER_ITEM_DROP_COLLECTIBLE,
 } GIVanillaBehavior;
 
 #ifdef __cplusplus

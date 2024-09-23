@@ -1935,5 +1935,102 @@ void StaticData::HintTable_Init_Exclude_Overworld() {
                                             /*german*/ "!!!",
                                             /*french*/ "!!!", {QM_RED, QM_GREEN}));
 
+    hintTextTable[RHT_KF_THICK_GRASS] = HintText(CustomMessage("They say that the #dense grass# of Kokiri Forest hides #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_KF_FENCE_MAZE] = HintText(CustomMessage("They say that #jumping over the low fences of a maze# reveals #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_KF_SHOP_RUPEE] = HintText(CustomMessage("They say that at the #behind the counter# is #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_MARKET_BOWLING_BALCONY] = HintText(CustomMessage("They say that at atop the #balcony of a bowling alley# lies #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_DAMPES_GRAVE_INVISIBLE_RUPEE] = HintText(CustomMessage("They say that #well hidden# within the grave of a quick-footed spirit lies #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_HF_DRAWBRIDGE] = HintText(CustomMessage("They say that above the #drawbridge gaurding the markey# lies #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_KAK_HOUSE_UNDER_CONSTRUCTION_RUPEE] = HintText(CustomMessage("They say that #amidst the construction of a new shooting gallery# lies #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_KAK_IMPAS_HOUSE_UPSTAIRS] = HintText(CustomMessage("They say that within #Impa's loft# lies #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_ZR_RIVER_INVISIBLE_RUPEE] = HintText(CustomMessage("They say that #hidden within a rapid river# lies #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_SFM_BUSH_RUPEE] = HintText(CustomMessage("They say that the #dense bushes in the deap woods# hide #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_ZF_SCARECROW_RUPEE] = HintText(CustomMessage("They say that atop a #hard-to-climb hill in a spring# lies #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_GV_LADDER_RUPEE] = HintText(CustomMessage("They say that #just off a ladder behind a waterfall# lies #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_GV_WATERFALL_RUPEE] = HintText(CustomMessage("They say that #over the edge of a waterfall# lies #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_LW_OCARINA_GAME_BUSH] = HintText(CustomMessage("They say that at the bottom of a #partially-frozen spring# lies #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_HC_MOAT_RUPEE] = HintText(CustomMessage("They say that at the #dense bushes near some woodland flautists# hide #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_DMC_UNDER_BRIDGE_RUPEE] = HintText(CustomMessage("They say that #below a bridge across lava# lies #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_LLR_HURDLE_JUMP] = HintText(CustomMessage("They say that #jumping hurdles on horseback# rewards #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+
+    hintTextTable[RHT_KF_FENCE_MAZE_SIGN] = HintText(CustomMessage("They say #slashing a sign in a fenced maze# reveals #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_KF_ISLANDS] = HintText(CustomMessage("They say that #jumping between stones in a stream# rewards #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_HC_ZELDAS_WINDOW] = HintText(CustomMessage("They say that a #shooting a window overlooking a royal courtyard# knocks down #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_COLOSSUS_PALM_TREE] = HintText(CustomMessage("They say that #shooting a palm tree in the desert# knocks down #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_GF_SIGN] = HintText(CustomMessage("They say that #grappling a welcome sign to a fortress# reals back #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_GF_SKULL] = HintText(CustomMessage("They say that #shooting a mounted skull# knocks down #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
+    hintTextTable[RHT_HC_DRAWBRIDGE_TORCH] = HintText(CustomMessage("They say that #shooting a torch flanking the castle entrance# knocks down #[[1]]#.",
+                                                          /*german*/ "",
+                                                          /*french*/ "", {QM_RED, QM_GREEN}));
+                                                       // /*spanish*/
 }
 }

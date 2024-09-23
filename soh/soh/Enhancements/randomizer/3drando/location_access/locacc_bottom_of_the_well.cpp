@@ -97,6 +97,10 @@ void AreaTable_Init_BottomOfTheWell() {
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_COFFIN_ROOM_FRONT_RIGHT_HEART,  logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 2)),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_COFFIN_ROOM_MIDDLE_LEFT_HEART,  logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 2)),
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_SUN_FAIRY,         logic->CanUse(RG_SUNS_SONG)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_EAST_FACE_1,                    logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_EAST_FACE_2,                    logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_EAST_FACE_3,                    logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_WEST_FACE,                      logic->CanUse(RG_FAIRY_SLINGSHOT)),
   }, {
                   //Exits
                   Entrance(RR_BOTTOM_OF_THE_WELL_ENTRYWAY,  {[]{return true;}}),
@@ -112,6 +116,7 @@ void AreaTable_Init_BottomOfTheWell() {
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_GS_WEST_INNER_ROOM,               logic->CanChildAttack && (randoCtx->GetTrickOption(RT_BOTW_MQ_PITS) || logic->HasExplosives)),
                     //Trick: logic->CanChildAttack && (LogicBotWMQPits || logic->HasExplosives)
                   LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_CELL_SUN_FAIRY,                   logic->CanUse(RG_SUNS_SONG)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_EAST_INNER_ROOM_FACE,             logic->CanUse(RG_FAIRY_SLINGSHOT)),
   }, {
                   //Exits
                   Entrance(RR_BOTTOM_OF_THE_WELL_MQ_PERIMETER, {[]{return true;}}),
