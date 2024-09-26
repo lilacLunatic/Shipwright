@@ -198,7 +198,7 @@ void AreaTable_Init_DeathMountain() {
                   Entrance(RR_DMC_LADDER_AREA_NEARBY,   {[]{return logic->FireTimer >= 16 || logic->Hearts >= 3;}}),
                   Entrance(RR_DMC_CENTRAL_NEARBY,       {[]{return logic->IsAdult && logic->CanUse(RG_GORON_TUNIC) && logic->CanUse(RG_DISTANT_SCARECROW) && ((logic->EffectiveHealth > 2) || (logic->CanUse(RG_BOTTLE_WITH_FAIRY) && randoCtx->GetOption(RSK_SHUFFLE_DUNGEON_ENTRANCES).IsNot(RO_DUNGEON_ENTRANCE_SHUFFLE_OFF)) || logic->CanUse(RG_NAYRUS_LOVE));}}),
                   Entrance(RR_DMC_LOWER_NEARBY,         {[]{return false;}}),
-                  Entrance(RR_DMC_DISTANT_PLATFORM,     {[]{return (logic->FireTimer >= 48 && logic->Hearts >= 2) || logic->Hearts >= 3;}}),
+                  Entrance(RR_DMC_DISTANT_PLATFORM,     {[]{return (logic->FireTimer >= 48 && logic->CanTakeDamage) || logic->Hearts >= 3;}}),
   });
 
   areaTable[RR_DMC_LADDER_AREA_NEARBY] = Area("DMC Ladder Area Nearby", "Death Mountain Crater", RA_DEATH_MOUNTAIN_CRATER, NO_DAY_NIGHT_CYCLE, {}, {
@@ -242,14 +242,14 @@ void AreaTable_Init_DeathMountain() {
                   //Locations
                   LOCATION(RC_DMC_GS_BEAN_PATCH, (logic->FireTimer >= 8 || logic->Hearts >= 3) && logic->CanPlantBugs && logic->CanChildAttack),
                   LOCATION(RC_DMC_NEAR_PLATFORM_RED_RUPEE,      logic->IsChild),
-                  LOCATION(RC_DMC_MIDDLE_PLATFORM_RED_RUPEE,    logic->IsChild && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
-                  LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_1, logic->IsChild && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
-                  LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_2, logic->IsChild && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
-                  LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_3, logic->IsChild && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
-                  LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_4, logic->IsChild && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
-                  LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_5, logic->IsChild && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
-                  LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_6, logic->IsChild && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
-                  LOCATION(RC_DMC_UNDER_BRIDGE_RUPEE,           logic->IsAdult && logic->CanUse(RG_HOOKSHOT) && (logic->FireTimer >= 8 || logic->Hearts >= 3)),
+                  LOCATION(RC_DMC_MIDDLE_PLATFORM_RED_RUPEE,    logic->IsChild && logic->Hearts >= 3),
+                  LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_1, logic->IsChild && logic->Hearts >= 3),
+                  LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_2, logic->IsChild && logic->Hearts >= 3),
+                  LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_3, logic->IsChild && logic->Hearts >= 3),
+                  LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_4, logic->IsChild && logic->Hearts >= 3),
+                  LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_5, logic->IsChild && logic->Hearts >= 3),
+                  LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_6, logic->IsChild && logic->Hearts >= 3),
+                  LOCATION(RC_DMC_UNDER_BRIDGE_RUPEE,           logic->IsAdult && logic->CanUse(RG_LONGHOOKSHOT) && logic->FireTimer >= 24),
                 }, {
                   //Exits
                   Entrance(RR_DMC_CENTRAL_NEARBY,   {[]{return true;}}),
@@ -301,6 +301,6 @@ void AreaTable_Init_DeathMountain() {
                   LOCATION(RC_DMC_DISTANT_PLATFORM_RED_RUPEE, true),
                 }, {
                   //Exits
-                  Entrance(RR_DMC_CENTRAL_LOCAL, {[]{return logic->DistantScarecrow;}}),
+                  Entrance(RR_DMC_CENTRAL_LOCAL, {[]{return logic->FireTimer >= 48 && logic->DistantScarecrow;}}),
   });
 }
