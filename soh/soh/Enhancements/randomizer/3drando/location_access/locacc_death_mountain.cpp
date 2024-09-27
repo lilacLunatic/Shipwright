@@ -249,7 +249,7 @@ void AreaTable_Init_DeathMountain() {
                   LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_4, logic->IsChild && logic->Hearts >= 3),
                   LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_5, logic->IsChild && logic->Hearts >= 3),
                   LOCATION(RC_DMC_MIDDLE_PLATFORM_BLUE_RUPEE_6, logic->IsChild && logic->Hearts >= 3),
-                  LOCATION(RC_DMC_UNDER_BRIDGE_RUPEE,           logic->IsAdult && logic->CanUse(RG_LONGHOOKSHOT) && logic->FireTimer >= 24),
+                  LOCATION(RC_DMC_UNDER_BRIDGE_RUPEE,           logic->IsAdult && logic->CanUse(RG_LONGSHOT) && logic->FireTimer >= 24),
                 }, {
                   //Exits
                   Entrance(RR_DMC_CENTRAL_NEARBY,   {[]{return true;}}),
