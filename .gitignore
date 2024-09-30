@@ -41,6 +41,7 @@ tools/asmsplitter/c/*
 ctx.c
 tools/*dSYM/
 graphs/
+.netcoredbg_hist
 
 # Assets
 *.png
@@ -448,5 +449,5 @@ _packages
 */extract_assets_cmake*
 /build*
 
-soh/build.c
+soh/src/boot/build.c
 soh/properties.h

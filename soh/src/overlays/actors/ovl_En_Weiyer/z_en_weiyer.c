@@ -6,6 +6,7 @@
 
 #include "z_en_weiyer.h"
 #include "objects/object_ei/object_ei.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE)
 
@@ -576,7 +577,7 @@ void func_80B3368C(EnWeiyer* this, PlayState* play) {
                 Audio_PlayActorSound2(&this->actor, NA_SE_EN_EIER_DEAD);
                 this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
                 func_80B32724(this);
-                gSaveContext.sohStats.count[COUNT_ENEMIES_DEFEATED_STINGER]++;
+                GameInteractor_ExecuteOnEnemyDefeat(&this->actor);
             } else {
                 func_80B325A0(this);
             }
@@ -639,13 +640,13 @@ void EnWeiyer_Draw(Actor* thisx, PlayState* play) {
         Gfx_SetupDL_25Opa(play->state.gfxCtx);
         gSPSegment(POLY_OPA_DISP++, 0x08, &D_80116280[2]);
         gDPSetEnvColor(POLY_OPA_DISP++, 255, 255, 255, 255);
-        POLY_OPA_DISP = SkelAnime_Draw(play, this->skelAnime.skeleton, this->skelAnime.jointTable,
-                                       EnWeiyer_OverrideLimbDraw, NULL, &this->actor, POLY_OPA_DISP);
+        POLY_OPA_DISP = SkelAnime_DrawSkeleton2(play, &this->skelAnime, EnWeiyer_OverrideLimbDraw, NULL, &this->actor,
+                                                POLY_OPA_DISP);
     } else {
         Gfx_SetupDL_25Xlu(play->state.gfxCtx);
         gSPSegment(POLY_XLU_DISP++, 0x08, &D_80116280[0]);
         gDPSetEnvColor(POLY_XLU_DISP++, 255, 255, 255, this->actor.shape.shadowAlpha);
-        POLY_XLU_DISP = SkelAnime_Draw(play, this->skelAnime.skeleton, this->skelAnime.jointTable,
+        POLY_XLU_DISP = SkelAnime_DrawSkeleton2(play, &this->skelAnime,
                                        EnWeiyer_OverrideLimbDraw, NULL, &this->actor, POLY_XLU_DISP);
     }
 

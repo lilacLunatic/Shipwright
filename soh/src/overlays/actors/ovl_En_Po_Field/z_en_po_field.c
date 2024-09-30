@@ -7,6 +7,7 @@
 #include "z_en_po_field.h"
 #include "objects/gameplay_keep/gameplay_keep.h"
 #include "objects/object_po_field/object_po_field.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #include <string.h>
 
@@ -385,7 +386,7 @@ void EnPoField_CorrectYPos(EnPoField* this, PlayState* play) {
 
 f32 EnPoField_SetFleeSpeed(EnPoField* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
-    f32 speed = ((player->stateFlags1 & 0x800000) && player->rideActor != NULL) ? player->rideActor->speedXZ : 12.0f;
+    f32 speed = ((player->stateFlags1 & PLAYER_STATE1_ON_HORSE) && player->rideActor != NULL) ? player->rideActor->speedXZ : 12.0f;
 
     if (this->actor.xzDistToPlayer < 300.0f) {
         this->actor.speedXZ = speed * 1.5f + 2.0f;
@@ -413,13 +414,13 @@ void EnPoField_WaitForSpawn(EnPoField* this, PlayState* play) {
             if (fabsf(sEnPoFieldSpawnPositions[i].x - player->actor.world.pos.x) < 150.0f &&
                 fabsf(sEnPoFieldSpawnPositions[i].z - player->actor.world.pos.z) < 150.0f) {
                 if (Flags_GetSwitch(play, sEnPoFieldSpawnSwitchFlags[i])) {
-                    if (player->stateFlags1 & 0x800000) { // Player riding Epona
+                    if (player->stateFlags1 & PLAYER_STATE1_ON_HORSE) { // Player riding Epona
                         return;
                     } else {
                         this->actor.params = EN_PO_FIELD_SMALL;
                         spawnDist = 300.0f;
                     }
-                } else if (player->stateFlags1 & 0x800000 || Rand_ZeroOne() < 0.4f) {
+                } else if (player->stateFlags1 & PLAYER_STATE1_ON_HORSE || Rand_ZeroOne() < 0.4f) {
                     this->actor.params = EN_PO_FIELD_BIG;
                     this->spawnFlagIndex = i;
                     spawnDist = 480.0f;
@@ -579,11 +580,7 @@ void EnPoField_Death(EnPoField* this, PlayState* play) {
                              255, 0, 0, 255, 1, 9, 1);
         if (this->actionTimer == 1) {
             Audio_PlayActorSound2(&this->actor, NA_SE_EN_EXTINCT);
-            if (this->actor.params == EN_PO_FIELD_BIG) {
-                gSaveContext.sohStats.count[COUNT_ENEMIES_DEFEATED_POE_BIG]++;
-            } else {
-                gSaveContext.sohStats.count[COUNT_ENEMIES_DEFEATED_POE]++;
-            }
+            GameInteractor_ExecuteOnEnemyDefeat(&this->actor);
         }
     } else if (this->actionTimer == 28) {
         EnPoField_SetupSoulIdle(this, play);
@@ -947,15 +944,14 @@ void EnPoField_Draw(Actor* thisx, PlayState* play) {
                                     this->lightColor.a));
             gSPSegment(POLY_OPA_DISP++, 0x0C, D_80116280 + 2);
             POLY_OPA_DISP =
-                SkelAnime_Draw(play, this->skelAnime.skeleton, this->skelAnime.jointTable,
+                SkelAnime_DrawSkeleton2(play, &this->skelAnime,
                                EnPoField_OverrideLimbDraw2, EnPoField_PostLimDraw2, &this->actor, POLY_OPA_DISP);
         } else {
             gSPSegment(POLY_XLU_DISP++, 0x08,
                        Gfx_EnvColor(play->state.gfxCtx, this->lightColor.r, this->lightColor.g, this->lightColor.b,
                                     this->lightColor.a));
             gSPSegment(POLY_XLU_DISP++, 0x0C, D_80116280);
-            POLY_XLU_DISP =
-                SkelAnime_Draw(play, this->skelAnime.skeleton, this->skelAnime.jointTable,
+            POLY_XLU_DISP = SkelAnime_DrawSkeleton2(play, &this->skelAnime,
                                EnPoField_OverrideLimbDraw2, EnPoField_PostLimDraw2, &this->actor, POLY_XLU_DISP);
         }
         gDPPipeSync(POLY_OPA_DISP++);

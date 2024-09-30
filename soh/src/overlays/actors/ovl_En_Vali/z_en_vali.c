@@ -6,6 +6,7 @@
 
 #include "z_en_vali.h"
 #include "objects/object_vali/object_vali.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include <stdlib.h>
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_WHILE_CULLED | ACTOR_FLAG_IGNORE_QUAKE)
@@ -245,7 +246,7 @@ void EnVali_SetupDivideAndDie(EnVali* this, PlayState* play) {
 
         // Offset small jellyfish with Enemy Randomizer, otherwise it gets
         // stuck in a loop spawning more big jellyfish with seeded spawns.
-        if (CVarGetInteger("gRandomizedEnemies", 0)) {
+        if (CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0)) {
             this->actor.world.rot.y += rand() % 50;
         }
 
@@ -262,7 +263,7 @@ void EnVali_SetupDivideAndDie(EnVali* this, PlayState* play) {
     this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
     this->actor.draw = NULL;
     this->actionFunc = EnVali_DivideAndDie;
-    gSaveContext.sohStats.count[COUNT_ENEMIES_DEFEATED_BARI]++;
+    GameInteractor_ExecuteOnEnemyDefeat(&this->actor);
 }
 
 void EnVali_SetupStunned(EnVali* this) {
@@ -813,7 +814,7 @@ void EnVali_Draw(Actor* thisx, PlayState* play) {
 
     EnVali_DrawBody(this, play);
 
-    POLY_XLU_DISP = SkelAnime_Draw(play, this->skelAnime.skeleton, this->skelAnime.jointTable,
+    POLY_XLU_DISP = SkelAnime_DrawSkeleton2(play, &this->skelAnime,
                                    EnVali_OverrideLimbDraw, EnVali_PostLimbDraw, this, POLY_XLU_DISP);
 
     CLOSE_DISPS(play->state.gfxCtx);

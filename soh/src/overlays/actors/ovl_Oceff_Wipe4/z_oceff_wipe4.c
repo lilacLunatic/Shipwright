@@ -39,7 +39,7 @@ void OceffWipe4_Init(Actor* thisx, PlayState* play) {
 void OceffWipe4_Destroy(Actor* thisx, PlayState* play) {
     OceffWipe4* this = (OceffWipe4*)thisx;
 
-    func_800876C8(play);
+    Magic_Reset(play);
 }
 
 void OceffWipe4_Update(Actor* thisx, PlayState* play) {
@@ -68,7 +68,7 @@ void OceffWipe4_Draw(Actor* thisx, PlayState* play) {
     eye = GET_ACTIVE_CAM(play)->eye;
     Camera_GetSkyboxOffset(&vec, GET_ACTIVE_CAM(play));
     
-    int fastOcarinaPlayback = (CVarGetInteger("gFastOcarinaPlayback", 0) != 0);
+    int fastOcarinaPlayback = (CVarGetInteger(CVAR_ENHANCEMENT("FastOcarinaPlayback"), 0) != 0);
     if (this->timer < 16) {
         z = Math_SinS(this->timer * 1024) * (fastOcarinaPlayback ? 1200.0f : 1330.0f);
     } else {

@@ -61,7 +61,7 @@ void func_8087B758(BgHaka* this, Player* player) {
 
     func_8002DBD0(&this->dyna.actor, &sp1C, &player->actor.world.pos);
     if (fabsf(sp1C.x) < 34.6f && sp1C.z > -112.8f && sp1C.z < -36.0f) {
-        player->stateFlags2 |= 0x200;
+        player->stateFlags2 |= PLAYER_STATE2_SPAWN_DUST;
     }
 }
 
@@ -69,18 +69,18 @@ void func_8087B7E8(BgHaka* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
     if (this->dyna.unk_150 != 0.0f) {
-        if (play->sceneNum == SCENE_SPOT02 && !LINK_IS_ADULT && IS_DAY && !CVarGetInteger("gDayGravePull", 0)) {
+        if (play->sceneNum == SCENE_GRAVEYARD && !LINK_IS_ADULT && IS_DAY && !CVarGetInteger(CVAR_ENHANCEMENT("DayGravePull"), 0)) {
             this->dyna.unk_150 = 0.0f;
-            player->stateFlags2 &= ~0x10;
+            player->stateFlags2 &= ~PLAYER_STATE2_MOVING_DYNAPOLY;
             if (!Play_InCsMode(play)) {
                 Message_StartTextbox(play, 0x5073, NULL);
                 this->dyna.actor.params = 100;
                 this->actionFunc = func_8087BAE4;
             }
         } else if (0.0f < this->dyna.unk_150 ||
-                   (play->sceneNum == SCENE_SPOT06 && !LINK_IS_ADULT && !Flags_GetSwitch(play, 0x23))) {
+                   (play->sceneNum == SCENE_LAKE_HYLIA && !LINK_IS_ADULT && !Flags_GetSwitch(play, 0x23))) {
             this->dyna.unk_150 = 0.0f;
-            player->stateFlags2 &= ~0x10;
+            player->stateFlags2 &= ~PLAYER_STATE2_MOVING_DYNAPOLY;
         } else {
             this->dyna.actor.world.rot.y = this->dyna.actor.shape.rot.y + 0x8000;
             this->actionFunc = func_8087B938;
@@ -112,18 +112,18 @@ void func_8087B938(BgHaka* this, PlayState* play) {
             }
             actor = actor->next;
         }
-        player->stateFlags2 &= ~0x10;
+        player->stateFlags2 &= ~PLAYER_STATE2_MOVING_DYNAPOLY;
 
         if (this->dyna.actor.params == 1) {
             func_80078884(NA_SE_SY_CORRECT_CHIME);
-        } else if (!IS_DAY && play->sceneNum == SCENE_SPOT02) {
+        } else if (!IS_DAY && play->sceneNum == SCENE_GRAVEYARD) {
             Actor_Spawn(&play->actorCtx, play, ACTOR_EN_POH, this->dyna.actor.home.pos.x,
                         this->dyna.actor.home.pos.y, this->dyna.actor.home.pos.z, 0, this->dyna.actor.shape.rot.y, 0,
                         1, true);
         }
 
         // un tss un tss
-        if (play->sceneNum == SCENE_SPOT02 && allPulled) {
+        if (play->sceneNum == SCENE_GRAVEYARD && allPulled) {
             func_80078884(NA_SE_SY_CORRECT_CHIME);
             func_800F5ACC(NA_BGM_STAFF_2);
             Actor* actor2 = play->actorCtx.actorLists[ACTORCAT_BG].head;
@@ -146,7 +146,7 @@ void func_8087BAAC(BgHaka* this, PlayState* play) {
 
     if (this->dyna.unk_150 != 0.0f) {
         this->dyna.unk_150 = 0.0f;
-        player->stateFlags2 &= ~0x10;
+        player->stateFlags2 &= ~PLAYER_STATE2_MOVING_DYNAPOLY;
     }
 }
 
@@ -159,7 +159,7 @@ void func_8087BAE4(BgHaka* this, PlayState* play) {
     }
     if (this->dyna.unk_150 != 0.0f) {
         this->dyna.unk_150 = 0.0f;
-        player->stateFlags2 &= ~0x10;
+        player->stateFlags2 &= ~PLAYER_STATE2_MOVING_DYNAPOLY;
     }
     if (this->dyna.actor.params == 0) {
         this->actionFunc = func_8087B7E8;

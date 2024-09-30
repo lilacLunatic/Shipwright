@@ -767,7 +767,7 @@ void func_80AEC2C0(EnRu1* this, PlayState* play) {
 bool shouldSpawnRuto() {
     // Flags_GetInfTable(INFTABLE_146) check is to prevent Ruto from spawning during the short period of time when
     // she's on the Zora's Sapphire pedestal but hasn't been kidnapped yet (would result in multiple Rutos otherwise)
-    return !Flags_GetInfTable(INFTABLE_145) || (gSaveContext.n64ddFlag && (Flags_GetInfTable(INFTABLE_146)));
+    return !Flags_GetInfTable(INFTABLE_145) || (IS_RANDO && (Flags_GetInfTable(INFTABLE_146)));
 }
 
 void func_80AEC320(EnRu1* this, PlayState* play) {
@@ -866,7 +866,8 @@ void func_80AEC780(EnRu1* this, PlayState* play) {
     s32 pad;
     Player* player = GET_PLAYER(play);
 
-    if ((func_80AEC5FC(this, play)) && (!Play_InCsMode(play)) && (!(player->stateFlags1 & 0x206000)) &&
+    if ((func_80AEC5FC(this, play)) && (!Play_InCsMode(play)) && 
+        (!(player->stateFlags1 & (PLAYER_STATE1_HANGING_OFF_LEDGE | PLAYER_STATE1_CLIMBING_LEDGE | PLAYER_STATE1_CLIMBING_LADDER))) &&
         (player->actor.bgCheckFlags & 1)) {
 
         play->csCtx.segment = &D_80AF0880;
@@ -1652,7 +1653,7 @@ void func_80AEE7C4(EnRu1* this, PlayState* play) {
     }
 
     player = GET_PLAYER(play);
-    if (player->stateFlags2 & 0x10000000) {
+    if (player->stateFlags2 & PLAYER_STATE2_IDLING) {
         this->unk_370 += 1.0f;
         if (this->action != 32) {
             if (*unk_370 > 30.0f) {

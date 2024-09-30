@@ -1,3 +1,6 @@
+#ifndef _ENHANCEMENT_TYPES_H_
+#define _ENHANCEMENT_TYPES_H_
+
 typedef enum {
     WARP_MODE_OVERRIDE_OFF,
     WARP_MODE_OVERRIDE_MQ_AS_VANILLA,
@@ -10,6 +13,13 @@ typedef enum {
     CSMC_TEXTURE,
     CSMC_SIZE
 } ChestStyleMatchesContentsType;
+
+typedef enum {
+    SGIA_DISABLED,
+    SGIA_JUNK,
+    SGIA_ALL,
+    SGIA_SIZE
+} SkipGetItemAnimationType;
 
 typedef enum {
     BUNNY_HOOD_VANILLA,
@@ -68,3 +78,17 @@ typedef enum {
     BONK_DAMAGE_8_HEARTS,
     BONK_DAMAGE_OHKO,
 } BonkDamage;
+
+typedef enum {
+    DEKU_STICK_NORMAL,
+    DEKU_STICK_UNBREAKABLE,
+    DEKU_STICK_UNBREAKABLE_AND_ALWAYS_ON_FIRE,
+} DekuStickType;
+
+typedef enum {
+    SWORD_TOGGLE_NONE,
+    SWORD_TOGGLE_CHILD,
+    SWORD_TOGGLE_BOTH_AGES,
+} SwordToggleMode;
+
+#endif

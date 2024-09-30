@@ -1,12 +1,15 @@
 #pragma once
+#include <nlohmann/json.hpp>
+#include "randomizerTypes.h"
+#include "randomizer_check_objects.h"
 
 #include <libultraship/libultraship.h>
 
 namespace CheckTracker {
 
-class CheckTrackerSettingsWindow : public LUS::GuiWindow {
+class CheckTrackerSettingsWindow : public Ship::GuiWindow {
   public:
-    using LUS::GuiWindow::GuiWindow;
+    using GuiWindow::GuiWindow;
     ~CheckTrackerSettingsWindow() {};
 
   protected:
@@ -15,9 +18,9 @@ class CheckTrackerSettingsWindow : public LUS::GuiWindow {
     void UpdateElement() override {};
 };
 
-class CheckTrackerWindow : public LUS::GuiWindow {
+class CheckTrackerWindow : public Ship::GuiWindow {
   public:
-    using LUS::GuiWindow::GuiWindow;
+    using GuiWindow::GuiWindow;
     ~CheckTrackerWindow() {};
 
   protected:
@@ -25,17 +28,6 @@ class CheckTrackerWindow : public LUS::GuiWindow {
     void DrawElement() override;
     void UpdateElement() override {};
 };
-
-// Check tracker check visibility categories
-typedef enum {
-    RCSHOW_UNCHECKED,
-    RCSHOW_SKIPPED,
-    RCSHOW_SEEN,
-    RCSHOW_HINTED,
-    RCSHOW_CHECKED,
-    RCSHOW_SCUMMED,
-    RCSHOW_SAVED,
-} RandomizerCheckShow;
 
 //Converts an index into a Little Endian bitmask, as follows:
 //00: 0000000100000000
@@ -51,6 +43,19 @@ typedef enum {
 //repeat...
 #define INDEX_TO_16BIT_LITTLE_ENDIAN_BITMASK(idx) (0x8000 >> (7 - (idx % 8) + ((idx % 16) / 8) * 8))
 
-
-
+void Teardown();
+void UpdateAllOrdering();
+bool IsVisibleInCheckTracker(RandomizerCheck rc);
+bool IsCheckShuffled(RandomizerCheck rc);
+void InitTrackerData(bool isDebug);
+RandomizerCheckArea GetCheckArea();
+uint16_t GetTotalChecks();
+uint16_t GetTotalChecksGotten();
+bool IsAreaSpoiled(RandomizerCheckArea rcArea);
+void SetAreaSpoiled(RandomizerCheckArea rcArea);
+void UpdateInventoryChecks();
+void UpdateAreas(RandomizerCheckArea area);
+void UpdateAllOrdering();
+void UpdateAllAreas();
+void RecalculateAllAreaTotals();
 } // namespace CheckTracker

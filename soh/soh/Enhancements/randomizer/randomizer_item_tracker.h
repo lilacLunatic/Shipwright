@@ -15,9 +15,18 @@ typedef struct ItemTrackerItem {
     void (*drawFunc)(ItemTrackerItem);
 } ItemTrackerItem;
 
+bool HasSong(ItemTrackerItem);
+bool HasQuestItem(ItemTrackerItem);
+bool HasEquipment(ItemTrackerItem);
+
 #define ITEM_TRACKER_ITEM(id, data, drawFunc)     \
     {                                             \
         id, #id, #id "_Faded", data, drawFunc     \
+    }
+
+#define ITEM_TRACKER_ITEM_CUSTOM(id, name, nameFaded, data, drawFunc)\
+    {                                                                \
+        id, #name, #nameFaded "_Faded", data, drawFunc               \
     }
 
 typedef struct ItemTrackerDungeon {
@@ -25,7 +34,7 @@ typedef struct ItemTrackerDungeon {
     std::vector<uint32_t> items;
 } ItemTrackerDungeon;
 
-class ItemTrackerSettingsWindow : public LUS::GuiWindow {
+class ItemTrackerSettingsWindow : public Ship::GuiWindow {
   public:
     using GuiWindow::GuiWindow;
 
@@ -35,9 +44,10 @@ class ItemTrackerSettingsWindow : public LUS::GuiWindow {
     void UpdateElement() override {};
 };
 
-class ItemTrackerWindow : public LUS::GuiWindow {
+class ItemTrackerWindow : public Ship::GuiWindow {
   public:
     using GuiWindow::GuiWindow;
+    void Draw() override;
 
 protected:
     void InitElement() override;

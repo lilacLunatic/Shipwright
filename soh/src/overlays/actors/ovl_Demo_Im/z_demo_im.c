@@ -10,6 +10,7 @@
 #include "scenes/indoors/nakaniwa/nakaniwa_scene.h"
 #include "objects/object_im/object_im.h"
 #include "vt.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UPDATE_WHILE_CULLED)
 
@@ -318,7 +319,9 @@ void func_809853B4(DemoIm* this, PlayState* play) {
 
     Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_DEMO_EFFECT, playerX, playerY, playerZ, 0,
                        0, 0, 0xD);
-    Item_Give(play, ITEM_MEDALLION_SHADOW);
+    if (GameInteractor_Should(VB_GIVE_ITEM_SHADOW_MEDALLION, true, NULL)) {
+        Item_Give(play, ITEM_MEDALLION_SHADOW);
+    }
 }
 
 void func_80985430(DemoIm* this, PlayState* play) {
@@ -334,7 +337,9 @@ void func_8098544C(DemoIm* this, PlayState* play) {
         this->action = 1;
         play->csCtx.segment = D_8098786C;
         gSaveContext.cutsceneTrigger = 2;
-        Item_Give(play, ITEM_MEDALLION_SHADOW);
+        if (GameInteractor_Should(VB_GIVE_ITEM_SHADOW_MEDALLION, true, NULL)) {
+            Item_Give(play, ITEM_MEDALLION_SHADOW);
+        }
         player->actor.world.rot.y = player->actor.shape.rot.y = this->actor.world.rot.y + 0x8000;
     }
 }
@@ -868,14 +873,14 @@ void func_80986B2C(PlayState* play) {
         Player* player = GET_PLAYER(play);
 
         // In entrance rando have impa bring link back to the front of castle grounds
-        if (gSaveContext.n64ddFlag && Randomizer_GetSettingValue(RSK_SHUFFLE_OVERWORLD_ENTRANCES)) {
-            play->nextEntranceIndex = 0x0138;
+        if (IS_RANDO && Randomizer_GetSettingValue(RSK_SHUFFLE_OVERWORLD_ENTRANCES)) {
+            play->nextEntranceIndex = ENTR_HYRULE_CASTLE_0;
         } else {
-            play->nextEntranceIndex = 0xCD;
+            play->nextEntranceIndex = ENTR_HYRULE_FIELD_0;
         }
-        play->fadeTransition = 38;
-        play->sceneLoadFlag = 0x14;
-        func_8002DF54(play, &player->actor, 8);
+        play->transitionType = TRANS_TYPE_CIRCLE(TCA_STARBURST, TCC_BLACK, TCS_FAST);
+        play->transitionTrigger = TRANS_TRIGGER_START;
+        Player_SetCsActionWithHaltedActors(play, &player->actor, 8);
     }
 }
 
@@ -903,39 +908,16 @@ void func_80986BF8(DemoIm* this, PlayState* play) {
     }
 }
 
-void GivePlayerRandoRewardImpa(Actor* impa, PlayState* play, RandomizerCheck check) {
-    GetItemEntry getItemEntry = Randomizer_GetItemFromKnownCheck(check, RG_ZELDAS_LULLABY);
-
-    if (impa->parent != NULL && impa->parent->id == GET_PLAYER(play)->actor.id &&
-        !Flags_GetTreasure(play, 0x1F)) {
-        Flags_SetTreasure(play, 0x1F);
-    } else if (!Flags_GetTreasure(play, 0x1F) && !Randomizer_GetSettingValue(RSK_SKIP_CHILD_ZELDA)) {
-        GiveItemEntryFromActor(impa, play, getItemEntry, 75.0f, 50.0f);
-    } else if (!Player_InBlockingCsMode(play, GET_PLAYER(play))) {
-        Flags_SetEventChkInf(EVENTCHKINF_LEARNED_ZELDAS_LULLABY);
-        play->sceneLoadFlag = 0x14;
-        play->fadeTransition = 3;
-        gSaveContext.nextTransitionType = 3;
-        // In entrance rando have impa bring link back to the front of castle grounds
-        if (Randomizer_GetSettingValue(RSK_SHUFFLE_OVERWORLD_ENTRANCES)) {
-            play->nextEntranceIndex = 0x0138;
-        } else {
-            play->nextEntranceIndex = 0x0594;
-        }
-        gSaveContext.nextCutsceneIndex = 0;
-    }
-}
-
 void func_80986C30(DemoIm* this, PlayState* play) {
     if (func_80986A5C(this, play)) {
-        if (gSaveContext.n64ddFlag) {
-            GivePlayerRandoRewardImpa(this, play, RC_SONG_FROM_IMPA);
-        } else {
+        if (GameInteractor_Should(VB_PLAY_ZELDAS_LULLABY_CS, true, this)) {
             play->csCtx.segment = SEGMENTED_TO_VIRTUAL(gZeldasCourtyardLullabyCs);
             gSaveContext.cutsceneTrigger = 1;
-            Flags_SetEventChkInf(EVENTCHKINF_LEARNED_ZELDAS_LULLABY);
-            Item_Give(play, ITEM_SONG_LULLABY);
             func_80985F54(this);
+        }
+        Flags_SetEventChkInf(EVENTCHKINF_LEARNED_ZELDAS_LULLABY);
+        if (GameInteractor_Should(VB_GIVE_ITEM_ZELDAS_LULLABY, true, NULL)) {
+            Item_Give(play, ITEM_SONG_LULLABY);
         }
     }
 }
@@ -960,7 +942,7 @@ void func_80986D40(DemoIm* this, PlayState* play) {
     if (gSaveContext.sceneSetupIndex == 6) {
         this->action = 19;
         this->drawConfig = 1;
-    } else if ((Flags_GetEventChkInf(EVENTCHKINF_ZELDA_FLED_HYRULE_CASTLE)) && !gSaveContext.n64ddFlag) {
+    } else if ((Flags_GetEventChkInf(EVENTCHKINF_ZELDA_FLED_HYRULE_CASTLE)) && !IS_RANDO) { // SoH [Randomizer] Not sure why we're not killing impa here.
         Actor_Kill(&this->actor);
     } else if (!Flags_GetEventChkInf(EVENTCHKINF_LEARNED_ZELDAS_LULLABY)) {
         this->action = 23;
@@ -1231,8 +1213,7 @@ void DemoIm_DrawSolid(DemoIm* this, PlayState* play) {
     gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, 255);
     gSPSegment(POLY_OPA_DISP++, 0x0C, &D_80116280[2]);
 
-    SkelAnime_DrawFlexOpa(play, skelAnime->skeleton, skelAnime->jointTable, skelAnime->dListCount,
-                          DemoIm_OverrideLimbDraw, DemoIm_PostLimbDraw, this);
+    SkelAnime_DrawSkeletonOpa(play, skelAnime, DemoIm_OverrideLimbDraw, DemoIm_PostLimbDraw, this);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }

@@ -19,6 +19,17 @@ typedef struct {
     s16 buildVersionMajor;
     s16 buildVersionMinor;
     s16 buildVersionPatch;
+
+    u8 inventoryItems[24];
+    u16 equipment;
+    u32 upgrades;
+    u8 isMagicAcquired;
+    u8 isDoubleMagicAcquired;
+    s16 rupees;
+    s16 gsTokens;
+    u8 isDoubleDefenseAcquired;
+    u8 gregFound;
+    u8 hasWallet;
 } SaveFileMetaInfo;
 
 #ifdef __cplusplus
@@ -29,7 +40,10 @@ typedef struct {
 #include <functional>
 #include <vector>
 #include <filesystem>
-#include "thread-pool/BS_thread_pool.hpp"
+
+#define BS_THREAD_POOL_ENABLE_PRIORITY
+#define BS_THREAD_POOL_ENABLE_PAUSE
+#include <BS_thread_pool.hpp>
 
 #include "z64save.h"
 
@@ -118,6 +132,8 @@ class SaveManager {
         }
     }
 
+    void LoadCharArray(const std::string& name, char* destination, size_t size);
+
     // In the LoadArrayFunc func, the name must be "" to load from the array.
     using LoadArrayFunc = std::function<void(size_t)>;
     void LoadArray(const std::string& name, const size_t size, LoadArrayFunc func);
@@ -130,6 +146,7 @@ class SaveManager {
 
   private:
     std::filesystem::path GetFileName(int fileNum);
+    std::filesystem::path GetFileTempName(int fileNum);
     nlohmann::json saveBlock;
 
     void ConvertFromUnversioned();
@@ -141,9 +158,13 @@ class SaveManager {
     static void InitFileImpl(bool isDebug);
     static void InitFileNormal();
     static void InitFileDebug();
+    static void InitFileMaxed();
 
     static void LoadRandomizerVersion1();
     static void LoadRandomizerVersion2();
+    static void LoadRandomizerVersion3();
+    static void LoadTrackerData();
+    static void SaveTrackerData(SaveContext* saveContext, int sectionID, bool fullSave);
     static void SaveRandomizer(SaveContext* saveContext, int sectionID, bool fullSave);
 
     static void LoadBaseVersion1();
@@ -167,6 +188,7 @@ class SaveManager {
     nlohmann::json* currentJsonContext = nullptr;
     nlohmann::json::iterator currentJsonArrayContext;
     std::shared_ptr<BS::thread_pool> smThreadPool;
+    std::mutex saveMtx;
 };
 
 #else

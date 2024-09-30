@@ -8,6 +8,7 @@
 #include "vt.h"
 #include "objects/object_nb/object_nb.h"
 #include "overlays/actors/ovl_Door_Warp1/z_door_warp1.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS ACTOR_FLAG_UPDATE_WHILE_CULLED
 
@@ -326,7 +327,9 @@ void EnNb_GiveMedallion(EnNb* this, PlayState* play) {
 
     Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_DEMO_EFFECT, posX, posY, posZ, 0, 0, 0,
                        0xC);
-    Item_Give(play, ITEM_MEDALLION_SPIRIT);
+    if (GameInteractor_Should(VB_GIVE_ITEM_SPIRIT_MEDALLION, true, NULL)) {
+        Item_Give(play, ITEM_MEDALLION_SPIRIT);
+    }
 }
 
 void EnNb_ComeUpImpl(EnNb* this, PlayState* play) {
@@ -342,7 +345,9 @@ void EnNb_SetupChamberCsImpl(EnNb* this, PlayState* play) {
         this->action = NB_CHAMBER_UNDERGROUND;
         play->csCtx.segment = &D_80AB431C;
         gSaveContext.cutsceneTrigger = 2;
-        Item_Give(play, ITEM_MEDALLION_SPIRIT);
+        if (GameInteractor_Should(VB_GIVE_ITEM_SPIRIT_MEDALLION, true, NULL)) {
+            Item_Give(play, ITEM_MEDALLION_SPIRIT);
+        }
         player->actor.world.rot.y = player->actor.shape.rot.y = this->actor.world.rot.y + 0x8000;
     }
 }
@@ -964,8 +969,7 @@ void func_80AB2E70(EnNb* this, PlayState* play) {
     gSPSegment(POLY_OPA_DISP++, 0x09, SEGMENTED_TO_VIRTUAL(gNabooruEyeWideTex));
     gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, 255);
     gSPSegment(POLY_OPA_DISP++, 0x0C, &D_80116280[2]);
-    SkelAnime_DrawFlexOpa(play, skelAnime->skeleton, skelAnime->jointTable, skelAnime->dListCount, NULL, NULL,
-                          &this->actor);
+    SkelAnime_DrawSkeletonOpa(play, skelAnime, NULL, NULL, &this->actor);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }
@@ -994,8 +998,7 @@ void func_80AB2FE4(EnNb* this, PlayState* play) {
     gSPSegment(POLY_OPA_DISP++, 0x09, SEGMENTED_TO_VIRTUAL(eyeTexture));
     gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, 255);
     gSPSegment(POLY_OPA_DISP++, 0x0C, &D_80116280[2]);
-    SkelAnime_DrawFlexOpa(play, skelAnime->skeleton, skelAnime->jointTable, skelAnime->dListCount, func_80AB2FC0,
-                          NULL, &this->actor);
+    SkelAnime_DrawSkeletonOpa(play, skelAnime, func_80AB2FC0, NULL, &this->actor);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }
@@ -1102,7 +1105,7 @@ void EnNb_LookUp(EnNb* this, PlayState* play) {
 }
 
 void EnNb_CrawlspaceSpawnCheck(EnNb* this, PlayState* play) {
-    if (!gSaveContext.n64ddFlag && !Flags_GetEventChkInf(EVENTCHKINF_NABOORU_CAPTURED_BY_TWINROVA) && LINK_IS_CHILD) {
+    if (!IS_RANDO && !Flags_GetEventChkInf(EVENTCHKINF_NABOORU_CAPTURED_BY_TWINROVA) && LINK_IS_CHILD) {
         EnNb_UpdatePath(this, play);
 
         // looking into crawlspace
@@ -1509,8 +1512,7 @@ void EnNb_DrawDefault(EnNb* this, PlayState* play) {
     gSPSegment(POLY_OPA_DISP++, 0x09, SEGMENTED_TO_VIRTUAL(eyeTexture));
     gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, 255);
     gSPSegment(POLY_OPA_DISP++, 0x0C, &D_80116280[2]);
-    SkelAnime_DrawFlexOpa(play, skelAnime->skeleton, skelAnime->jointTable, skelAnime->dListCount,
-                          EnNb_OverrideLimbDraw, EnNb_PostLimbDraw, &this->actor);
+    SkelAnime_DrawSkeletonOpa(play, skelAnime, EnNb_OverrideLimbDraw, EnNb_PostLimbDraw, &this->actor);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }

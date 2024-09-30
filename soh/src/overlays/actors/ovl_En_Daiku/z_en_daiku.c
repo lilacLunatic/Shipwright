@@ -1,6 +1,7 @@
 #include "z_en_daiku.h"
 #include "overlays/actors/ovl_En_GeldB/z_en_geldb.h"
 #include "objects/object_daiku/object_daiku.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_WHILE_CULLED)
 
@@ -163,9 +164,9 @@ void EnDaiku_Init(Actor* thisx, PlayState* play) {
         isFree = true;
     }
 
-    if (isFree == true && play->sceneNum == SCENE_GERUDOWAY) {
+    if (isFree == true && play->sceneNum == SCENE_THIEVES_HIDEOUT) {
         noKill = false;
-    } else if (isFree == false && play->sceneNum == SCENE_TENT) {
+    } else if (isFree == false && play->sceneNum == SCENE_CARPENTERS_TENT) {
         noKill = false;
     }
 
@@ -197,7 +198,7 @@ void EnDaiku_Init(Actor* thisx, PlayState* play) {
     this->initRot = this->actor.world.rot;
     this->initPos = this->actor.world.pos;
 
-    if (play->sceneNum == SCENE_GERUDOWAY) {
+    if (play->sceneNum == SCENE_THIEVES_HIDEOUT) {
         EnDaiku_ChangeAnim(this, ENDAIKU_ANIM_STAND, &this->currentAnimIndex);
         this->stateFlags |= ENDAIKU_STATEFLAG_1 | ENDAIKU_STATEFLAG_2;
         this->actionFunc = EnDaiku_Jailed;
@@ -227,7 +228,7 @@ s32 EnDaiku_UpdateTalking(EnDaiku* this, PlayState* play) {
     s32 newTalkState = ENDAIKU_STATE_TALKING;
 
     if (Message_GetState(&play->msgCtx) == TEXT_STATE_DONE) {
-        if (play->sceneNum == SCENE_GERUDOWAY) {
+        if (play->sceneNum == SCENE_THIEVES_HIDEOUT) {
             if (Message_ShouldAdvance(play)) {
                 if (this->actor.textId == 0x6007) {
                     Flags_SetSwitch(play, this->startFightSwitchFlag);
@@ -237,7 +238,7 @@ s32 EnDaiku_UpdateTalking(EnDaiku* this, PlayState* play) {
                     newTalkState = ENDAIKU_STATE_NO_TALK;
                 }
             }
-        } else if (play->sceneNum == SCENE_TENT) {
+        } else if (play->sceneNum == SCENE_CARPENTERS_TENT) {
             if (Message_ShouldAdvance(play)) {
                 switch (this->actor.textId) {
                     case 0x6061:
@@ -270,7 +271,7 @@ void EnDaiku_UpdateText(EnDaiku* this, PlayState* play) {
         Actor_GetScreenPos(play, &this->actor, &sp2E, &sp2C);
         if (sp2E >= 0 && sp2E <= 320 && sp2C >= 0 && sp2C <= 240 && this->talkState == ENDAIKU_STATE_CAN_TALK &&
             func_8002F2CC(&this->actor, play, 100.0f) == 1) {
-            if (play->sceneNum == SCENE_GERUDOWAY) {
+            if (play->sceneNum == SCENE_THIEVES_HIDEOUT) {
                 if (this->stateFlags & ENDAIKU_STATEFLAG_GERUDODEFEATED) {
                     freedCount = 0;
                     for (carpenterType = 0; carpenterType < 4; carpenterType++) {
@@ -297,7 +298,7 @@ void EnDaiku_UpdateText(EnDaiku* this, PlayState* play) {
                              (ENDAIKU_STATEFLAG_GERUDOFIGHTING | ENDAIKU_STATEFLAG_GERUDODEFEATED))) {
                     this->actor.textId = 0x6007;
                 }
-            } else if (play->sceneNum == SCENE_TENT) {
+            } else if (play->sceneNum == SCENE_CARPENTERS_TENT) {
                 switch (this->actor.params & 3) {
                     case 0:
                         if (CHECK_QUEST_ITEM(QUEST_MEDALLION_SPIRIT)) {
@@ -381,7 +382,7 @@ void EnDaiku_Jailed(EnDaiku* this, PlayState* play) {
 void EnDaiku_WaitFreedom(EnDaiku* this, PlayState* play) {
     SkelAnime_Update(&this->skelAnime);
 
-    if (Flags_GetSwitch(play, this->actor.params >> 8 & 0x3F)) {
+    if (Flags_GetSwitch(play, this->actor.params >> 8 & 0x3F) || (IS_RANDO && Flags_GetRandomizerInf(RAND_INF_HAS_SKELETON_KEY))) {
         this->actor.flags |= ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY;
         EnDaiku_UpdateText(this, play);
     }
@@ -403,6 +404,7 @@ void EnDaiku_InitEscape(EnDaiku* this, PlayState* play) {
     this->stateFlags &= ~(ENDAIKU_STATEFLAG_1 | ENDAIKU_STATEFLAG_2);
 
     gSaveContext.eventChkInf[EVENTCHKINF_CARPENTERS_FREE_INDEX] |= EVENTCHKINF_CARPENTERS_FREE_MASK(this->actor.params & 3);
+    GameInteractor_ExecuteOnFlagSet(FLAG_EVENT_CHECK_INF, (EVENTCHKINF_CARPENTERS_FREE_INDEX << 4) + (this->actor.params & 3));
 
     this->actor.gravity = -1.0f;
     this->escapeSubCamTimer = sEscapeSubCamParams[this->actor.params & 3].maxFramesActive;
@@ -468,7 +470,7 @@ void EnDaiku_InitSubCamera(EnDaiku* this, PlayState* play) {
 
     Play_CameraSetAtEye(play, this->subCamId, &this->subCamAt, &this->subCamEye);
     Play_CameraSetFov(play, this->subCamId, play->mainCamera.fov);
-    func_8002DF54(play, &this->actor, 1);
+    Player_SetCsActionWithHaltedActors(play, &this->actor, 1);
 }
 
 void EnDaiku_UpdateSubCamera(EnDaiku* this, PlayState* play) {
@@ -505,7 +507,7 @@ void EnDaiku_EscapeSuccess(EnDaiku* this, PlayState* play) {
             Actor_Kill(&this->actor);
         }
     } else {
-        func_8002DF54(play, &this->actor, 7);
+        Player_SetCsActionWithHaltedActors(play, &this->actor, 7);
     }
 }
 
@@ -602,8 +604,7 @@ void EnDaiku_Draw(Actor* thisx, PlayState* play) {
         gDPSetEnvColor(POLY_OPA_DISP++, 200, 0, 150, 255);
     }
 
-    SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
-                          EnDaiku_OverrideLimbDraw, EnDaiku_PostLimbDraw, this);
+    SkelAnime_DrawSkeletonOpa(play, &this->skelAnime, EnDaiku_OverrideLimbDraw, EnDaiku_PostLimbDraw, this);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }

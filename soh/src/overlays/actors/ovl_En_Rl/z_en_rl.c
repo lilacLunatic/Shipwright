@@ -7,6 +7,7 @@
 #include "z_en_rl.h"
 #include "vt.h"
 #include "objects/object_rl/object_rl.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS ACTOR_FLAG_UPDATE_WHILE_CULLED
 
@@ -118,7 +119,7 @@ void func_80AE7590(EnRl* this, PlayState* play) {
     Vec3f pos;
     s16 sceneNum = play->sceneNum;
 
-    if (gSaveContext.sceneSetupIndex == 4 && sceneNum == SCENE_KENJYANOMA && play->csCtx.state != CS_STATE_IDLE &&
+    if (gSaveContext.sceneSetupIndex == 4 && sceneNum == SCENE_CHAMBER_OF_THE_SAGES && play->csCtx.state != CS_STATE_IDLE &&
         play->csCtx.npcActions[6] != NULL && play->csCtx.npcActions[6]->action == 2 &&
         !this->lightMedallionGiven) {
         player = GET_PLAYER(play);
@@ -126,7 +127,9 @@ void func_80AE7590(EnRl* this, PlayState* play) {
         pos.y = player->actor.world.pos.y + 80.0f;
         pos.z = player->actor.world.pos.z;
         Actor_Spawn(&play->actorCtx, play, ACTOR_DEMO_EFFECT, pos.x, pos.y, pos.z, 0, 0, 0, 0xE, true);
-        Item_Give(play, ITEM_MEDALLION_LIGHT);
+        if (GameInteractor_Should(VB_GIVE_ITEM_LIGHT_MEDALLION, true, NULL)) {
+            Item_Give(play, ITEM_MEDALLION_LIGHT);
+        }
         this->lightMedallionGiven = 1;
     }
 }
@@ -359,8 +362,7 @@ void func_80AE7FDC(EnRl* this, PlayState* play) {
     gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, 255);
     gSPSegment(POLY_OPA_DISP++, 0x0C, &D_80116280[2]);
 
-    SkelAnime_DrawFlexOpa(play, skelAnime->skeleton, skelAnime->jointTable, skelAnime->dListCount, NULL, NULL,
-                          &this->actor);
+    SkelAnime_DrawSkeletonOpa(play, skelAnime, NULL, NULL, &this->actor);
     CLOSE_DISPS(play->state.gfxCtx);
 }
 

@@ -1,4 +1,5 @@
 #include "global.h"
+#include "align_asset_macro.h"
 
 u16 sGfxPrintFontTLUT[64] = {
     0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000,
@@ -128,15 +129,19 @@ u8 sGfxPrintFontData[(16 * 256) / 2] = {
 
 // Can be used to set GFXP_FLAG_ENLARGE by default
 static u8 sDefaultSpecialFlags;
-static const char rGfxPrintFontData[] = "__OTR__textures/font/sGfxPrintFontData";
-static const char rGfxPrintFontDataAlt[] = "__OTR__alt/textures/font/sGfxPrintFontData";
+
+#define drGfxPrintFontData "__OTR__textures/font/sGfxPrintFontData";
+static const ALIGN_ASSET(2) char rGfxPrintFontData[] = drGfxPrintFontData;
+
+#define drGfxPrintFontDataAlt "__OTR__alt/textures/font/sGfxPrintFontData";
+static const ALIGN_ASSET(2) char rGfxPrintFontDataAlt[] = drGfxPrintFontDataAlt;
 
 // OTRTODO: this isn't as clean as it could be if we implemented
 // the GfxPrint texture extraction to `.otr` as described in
 // https://github.com/HarbourMasters/Shipwright/issues/2762
 typedef enum {hardcoded, otrDefault, otrAlt} font_texture_t;
 font_texture_t GfxPrint_TextureToUse() {
-    if (CVarGetInteger("gAltAssets", 0) && ResourceMgr_FileExists(rGfxPrintFontDataAlt)) {
+    if (ResourceMgr_IsAltAssetsEnabled() && ResourceMgr_FileExists(rGfxPrintFontDataAlt)) {
         // If we have alt assets enabled, and we have alt prefixed font texture, use that
         return otrAlt;
     } else if (ResourceMgr_FileExists(rGfxPrintFontData)) {
@@ -209,7 +214,7 @@ void GfxPrint_SetColor(GfxPrint* this, u32 r, u32 g, u32 b, u32 a) {
 }
 
 void GfxPrint_SetPosPx(GfxPrint* this, s32 x, s32 y) {
-    this->posX = this->baseX + (x * 4) + CVarGetInteger("gGfxPrintCharStartOffset", 0);
+    this->posX = this->baseX + (x * 4) + CVarGetInteger(CVAR_DEVELOPER_TOOLS("GfxPrintChar.StartOffset"), 0);
     this->posY = this->baseY + (y * 4);
 }
 
@@ -267,7 +272,7 @@ void GfxPrint_PrintCharImpl(GfxPrint* this, u8 c) {
                             (u16)(c >> 3) * 256, 1 << 10, 1 << 10);
     }
 
-    this->posX += CVarGetInteger("gGfxPrintCharSpacing", 32);
+    this->posX += CVarGetInteger(CVAR_DEVELOPER_TOOLS("GfxPrintChar.Spacing"), 32);
 }
 
 void GfxPrint_PrintStringWithSize(GfxPrint* this, const void* buffer, u32 charSize, u32 charCount) {

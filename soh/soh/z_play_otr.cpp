@@ -1,7 +1,7 @@
 #include "OTRGlobals.h"
 #include <libultraship/libultraship.h>
 #include "soh/resource/type/Scene.h"
-#include <Utils/StringHelper.h>
+#include <utils/StringHelper.h>
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 #include "global.h"
 #include "vt.h"
@@ -10,12 +10,12 @@
 extern "C" void Play_InitScene(PlayState * play, s32 spawn);
 extern "C" void Play_InitEnvironment(PlayState * play, s16 skyboxId);
 void OTRPlay_InitScene(PlayState* play, s32 spawn);
-s32 OTRScene_ExecuteCommands(PlayState* play, LUS::Scene* scene);
+s32 OTRScene_ExecuteCommands(PlayState* play, SOH::Scene* scene);
 
 //LUS::OTRResource* OTRPlay_LoadFile(PlayState* play, RomFile* file) {
-LUS::IResource* OTRPlay_LoadFile(PlayState* play, const char* fileName)
+Ship::IResource* OTRPlay_LoadFile(PlayState* play, const char* fileName)
 {
-    auto res = LUS::Context::GetInstance()->GetResourceManager()->LoadResource(fileName);
+    auto res = Ship::Context::GetInstance()->GetResourceManager()->LoadResource(fileName);
     return res.get();
 }
 
@@ -29,11 +29,13 @@ extern "C" void OTRPlay_SpawnScene(PlayState* play, s32 sceneNum, s32 spawn) {
 
     //osSyncPrintf("\nSCENE SIZE %fK\n", (scene->sceneFile.vromEnd - scene->sceneFile.vromStart) / 1024.0f);
 
-    std::string sceneVersion;
-    if (IsGameMasterQuest()) {
-        sceneVersion = "mq";
-    } else {
-        sceneVersion = "nonmq";
+    // Scenes considered "dungeon" with a MQ variant
+    int16_t inNonSharedScene = (sceneNum >= SCENE_DEKU_TREE && sceneNum <= SCENE_ICE_CAVERN) ||
+                               sceneNum == SCENE_GERUDO_TRAINING_GROUND || sceneNum == SCENE_INSIDE_GANONS_CASTLE;
+
+    std::string sceneVersion = "shared";
+    if (inNonSharedScene) {
+        sceneVersion = IsGameMasterQuest() ? "mq" : "nonmq";
     }
     std::string scenePath = StringHelper::Sprintf("scenes/%s/%s/%s", sceneVersion.c_str(), scene->sceneFile.fileName, scene->sceneFile.fileName);
 
@@ -73,13 +75,13 @@ void OTRPlay_InitScene(PlayState* play, s32 spawn) {
     func_80096FD4(play, &play->roomCtx.curRoom);
     YREG(15) = 0;
     gSaveContext.worldMapArea = 0;
-    OTRScene_ExecuteCommands(play, (LUS::Scene*)play->sceneSegment);
+    OTRScene_ExecuteCommands(play, (SOH::Scene*)play->sceneSegment);
     Play_InitEnvironment(play, play->skyboxId);
     // Unpause the timer for Boss Rush when the scene loaded isn't the Chamber of Sages.
-    if (gSaveContext.isBossRush && play->sceneNum != SCENE_KENJYANOMA) {
+    if (IS_BOSS_RUSH && play->sceneNum != SCENE_CHAMBER_OF_THE_SAGES) {
         gSaveContext.isBossRushPaused = 0;
     }
-    /* auto data = static_cast<LUS::Vertex*>(LUS::Context::GetInstance()
+    /* auto data = static_cast<LUS::Vertex*>(Ship::Context::GetInstance()
                                                ->GetResourceManager()
                                                ->ResourceLoad("object_link_child\\object_link_childVtx_01FE08")
                                                .get());
@@ -87,6 +89,7 @@ void OTRPlay_InitScene(PlayState* play, s32 spawn) {
     auto data2 = ResourceMgr_LoadVtxByCRC(0x68d4ea06044e228f);*/
     
     GameInteractor::Instance->ExecuteHooks<GameInteractor::OnSceneInit>(play->sceneNum);
+    SPDLOG_INFO("Scene Init - sceneNum: {0:#x}, entranceIndex: {1:#x}", play->sceneNum, gSaveContext.entranceIndex);
 
     volatile int a = 0;
 }

@@ -68,6 +68,7 @@ typedef enum { // Pre-existing IDs for save sections in base code
     SECTION_ID_STATS,
     SECTION_ID_ENTRANCES,
     SECTION_ID_SCENES,
+    SECTION_ID_TRACKER_DATA,
     SECTION_ID_MAX
 } SaveFuncIDs;
 
@@ -92,7 +93,6 @@ typedef struct {
     /*      */ u32 count[COUNT_MAX];
     /*      */ u32 entrancesDiscovered[SAVEFILE_ENTRANCES_DISCOVERED_IDX_COUNT];
     /*      */ u32 scenesDiscovered[SAVEFILE_SCENES_DISCOVERED_IDX_COUNT];
-    /*      */ u8 locationsSkipped[RC_MAX];
     /*      */ bool rtaTiming;
     /*      */ uint64_t fileCreatedAt;
 } SohStats;
@@ -150,22 +150,12 @@ typedef struct {
 
 typedef struct {
     RandomizerCheck check;
-    RandomizerGetData get;
-} ItemLocationRando;
-
-typedef struct {
-    RandomizerCheck check;
     RandomizerCheck hintedCheck;
     RandomizerGet rGet;
     RandomizerCheckArea area;
     HintType type;
     char hintText[200];
 } HintLocationRando;
-
-typedef struct {
-    RandomizerSettingKey key;
-    u8 value;
-} RandoSetting;
 
 typedef struct {
     /* 0x0000 */ s32 entranceIndex; // start of `save` substruct, originally called "memory"
@@ -280,47 +270,37 @@ typedef struct {
     /* 0x1420 */ s16 worldMapArea;
     /* 0x1422 */ s16 sunsSongState; // controls the effects of suns song
     /* 0x1424 */ s16 healthAccumulator;
-    /* 0x1426 */ u16 pendingSale;
-    /* 0x1428 */ u16 pendingSaleMod;
     // #region SOH [General]
     // Upstream TODO: Move these to their own struct or name to more obviously specific to SoH
-    /*        */ uint32_t isMasterQuest;
-    /*        */ uint32_t isBossRush;
+    /*        */ u16 pendingSale;
+    /*        */ u16 pendingSaleMod;
+    /*        */ uint8_t questId;
     /*        */ uint32_t isBossRushPaused;
     /*        */ uint8_t bossRushOptions[BOSSRUSH_OPTIONS_AMOUNT];
-    /*        */ u8 mqDungeonCount;
     /*        */ u8 pendingIceTrapCount;
     /*        */ SohStats sohStats;
-    /*        */ u8 temporaryWeapon;
     /*        */ FaroresWindData backupFW;
     // #endregion
     // #region SOH [Randomizer]
     // Upstream TODO: Move these to their own struct or name to more obviously specific to Randomizer
-    /*        */ RandoSetting randoSettings[300];
-    /*        */ ItemLocationRando itemLocations[RC_MAX];
-    /*        */ HintLocationRando hintLocations[50];
-    /*        */ EntranceOverride entranceOverrides[ENTRANCE_OVERRIDES_MAX_COUNT];
-    /*        */ char childAltarText[250];
-    /*        */ char adultAltarText[750];
-    /*        */ RandomizerCheck rewardCheck[9];
-    /*        */ char ganonHintText[150];
-    /*        */ char gregHintText[250];
-    /*        */ char ganonText[250];
-    /*        */ char dampeText[150];
-    /*        */ char warpMinuetText[100];
-    /*        */ char warpBoleroText[100];
-    /*        */ char warpSerenadeText[100];
-    /*        */ char warpRequiemText[100];
-    /*        */ char warpNocturneText[100];
-    /*        */ char warpPreludeText[100];
-    /*        */ RandomizerCheck ganonHintCheck;
-    /*        */ RandomizerCheck gregCheck;
-    /*        */ RandomizerCheck dampeCheck;
-    /*        */ u8 seedIcons[5];
-    /*        */ u16 randomizerInf[9];
+    /*        */ u16 randomizerInf[(RAND_INF_MAX + 15) / 16];
+    /*        */ u8 mqDungeonCount;
     /*        */ u16 adultTradeItems;
+    /*        */ u8 triforcePiecesCollected;
     // #endregion
 } SaveContext; // size = 0x1428
+
+typedef enum {
+    /* 00 */ QUEST_NORMAL,
+    /* 01 */ QUEST_MASTER,
+    /* 02 */ QUEST_RANDOMIZER,
+    /* 03 */ QUEST_BOSSRUSH,
+} Quest;
+
+#define IS_VANILLA (gSaveContext.questId == QUEST_NORMAL)
+#define IS_MASTER_QUEST (gSaveContext.questId == QUEST_MASTER)
+#define IS_RANDO (gSaveContext.questId == QUEST_RANDOMIZER)
+#define IS_BOSS_RUSH (gSaveContext.questId == QUEST_BOSSRUSH)
 
 typedef enum {
     /* 0x00 */ BTN_ENABLED,
@@ -345,6 +325,18 @@ typedef enum {
     /* 0x05 */ HS_UNK_05,
     /* 0x06 */ HS_DAMPE_RACE
 } HighScores;
+
+// the score value for the fishing minigame also stores many flags.
+#define HS_FISH_LENGTH_CHILD 0x7F       // mask for record length of catch as child.
+#define HS_FISH_LENGTH_ADULT 0x7F000000 // mask for record length of catch as adult.
+#define HS_FISH_PLAYED_CHILD 0x100      // set when first talking to owner as child
+#define HS_FISH_PLAYED_ADULT 0x200      // set when first talking to owner as adult
+#define HS_FISH_PRIZE_CHILD 0x400       // won the Piece of Heart
+#define HS_FISH_PRIZE_ADULT 0x800       // won the Golden Scale
+#define HS_FISH_STOLE_HAT 0x1000        // Pond owner is visibly bald as Adult Link.
+#define HS_FISH_CHEAT_CHILD 0x80        // used Sinking Lure as child to catch record fish
+#define HS_FISH_CHEAT_ADULT 0x80000000  // used Sinking Lure as adult to catch record fish
+#define HS_FISH_PLAYED 0x10000          // incremented for every play. controls weather.
 
 typedef enum {
     /* 0 */ SUNSSONG_INACTIVE,
@@ -572,11 +564,16 @@ typedef enum {
 
 // 0xDA-0xDE
 #define EVENTCHKINF_SKULLTULA_REWARD_INDEX 13
-#define EVENTCHKINF_SKULLTULA_REWARD_10_MASK (1 << 10)
-#define EVENTCHKINF_SKULLTULA_REWARD_20_MASK (1 << 11)
-#define EVENTCHKINF_SKULLTULA_REWARD_30_MASK (1 << 12)
-#define EVENTCHKINF_SKULLTULA_REWARD_40_MASK (1 << 13)
-#define EVENTCHKINF_SKULLTULA_REWARD_50_MASK (1 << 14)
+#define EVENTCHKINF_SKULLTULA_REWARD_10_SHIFT 10
+#define EVENTCHKINF_SKULLTULA_REWARD_20_SHIFT 11
+#define EVENTCHKINF_SKULLTULA_REWARD_30_SHIFT 12
+#define EVENTCHKINF_SKULLTULA_REWARD_40_SHIFT 13
+#define EVENTCHKINF_SKULLTULA_REWARD_50_SHIFT 14
+#define EVENTCHKINF_SKULLTULA_REWARD_10_MASK (1 << EVENTCHKINF_SKULLTULA_REWARD_10_SHIFT)
+#define EVENTCHKINF_SKULLTULA_REWARD_20_MASK (1 << EVENTCHKINF_SKULLTULA_REWARD_20_SHIFT)
+#define EVENTCHKINF_SKULLTULA_REWARD_30_MASK (1 << EVENTCHKINF_SKULLTULA_REWARD_30_SHIFT)
+#define EVENTCHKINF_SKULLTULA_REWARD_40_MASK (1 << EVENTCHKINF_SKULLTULA_REWARD_40_SHIFT)
+#define EVENTCHKINF_SKULLTULA_REWARD_50_MASK (1 << EVENTCHKINF_SKULLTULA_REWARD_50_SHIFT)
 
 
 /*

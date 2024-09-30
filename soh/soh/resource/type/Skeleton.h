@@ -5,7 +5,7 @@
 #include "SkeletonLimb.h"
 #include <z64animation.h>
 
-namespace LUS {
+namespace SOH {
 
 enum class SkeletonType {
     Normal,
@@ -24,6 +24,7 @@ enum class SkeletonType {
 typedef struct {
     /* 0x00 */ void** segment;
     /* 0x04 */ uint8_t limbCount;
+               uint8_t skeletonType;
 } SkeletonHeader; // size = 0x8
 
 // Model has limbs with flexible meshes
@@ -49,11 +50,11 @@ union SkeletonData {
     SkelCurveLimbList skelCurveLimbList;
 };
 
-class Skeleton : public Resource<SkeletonData> {
+class Skeleton : public Ship::Resource<SkeletonData> {
   public:
     using Resource::Resource;
 
-    Skeleton() : Resource(std::shared_ptr<ResourceInitData>()) {}
+    Skeleton() : Resource(std::shared_ptr<Ship::ResourceInitData>()) {}
 
     SkeletonData* GetPointer();
     size_t GetPointerSize();
@@ -90,4 +91,4 @@ class SkeletonPatcher {
 };
 
 
-} // namespace LUS
+} // namespace SOH

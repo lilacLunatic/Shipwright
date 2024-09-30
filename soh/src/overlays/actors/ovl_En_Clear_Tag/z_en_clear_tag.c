@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "soh/frame_interpolation.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_WHILE_CULLED | ACTOR_FLAG_DRAW_WHILE_CULLED)
 
@@ -261,7 +262,7 @@ void EnClearTag_Init(Actor* thisx, PlayState* play) {
 
         // Change Arwing to regular enemy instead of boss with enemy randomizer and crowd control.
         // This way Arwings will be considered for "clear enemy" rooms properly.
-        if (CVarGetInteger("gRandomizedEnemies", 0) || CVarGetInteger("gCrowdControl", 0)) {
+        if (CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0) || (CVarGetInteger(CVAR_REMOTE("Scheme"), GI_SCHEME_SAIL) == GI_SCHEME_CROWD_CONTROL && CVarGetInteger(CVAR_REMOTE("Enabled"), 0))) {
             Actor_ChangeCategory(play, &play->actorCtx, thisx, ACTORCAT_ENEMY);
         }
 
@@ -374,7 +375,7 @@ void EnClearTag_Update(Actor* thisx, PlayState* play2) {
                     if ((s8)this->actor.colChkInfo.health <= 0) {
                         this->state = CLEAR_TAG_STATE_CRASHING;
                         this->actor.velocity.y = 0.0f;
-                        gSaveContext.sohStats.count[COUNT_ENEMIES_DEFEATED_ARWING]++;
+                        GameInteractor_ExecuteOnEnemyDefeat(&this->actor);
                         goto state_crashing;
                     }
                 }
@@ -477,7 +478,7 @@ void EnClearTag_Update(Actor* thisx, PlayState* play2) {
 
                     // Introduce a range requirement in Enemy Rando so Arwings don't shoot the player from
                     // across the map. Especially noticeable in big maps like Lake Hylia and Hyrule Field.
-                    uint8_t enemyRandoShootLaser = !CVarGetInteger("gRandomizedEnemies", 0) || this->actor.xzDistToPlayer < 1000.0f;
+                    uint8_t enemyRandoShootLaser = !CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0) || this->actor.xzDistToPlayer < 1000.0f;
 
                     // Check if the Arwing should fire its laser.
                     if ((this->frameCounter % 4) == 0 && (Rand_ZeroOne() < 0.75f) &&

@@ -129,15 +129,15 @@ void BossRush_SpawnBlueWarps(PlayState* play) {
     // Spawn blue warps in Chamber of Sages based on what bosses have been defeated.
     if (gSaveContext.linkAge == LINK_AGE_CHILD) {
         // Forest Medallion (Gohma)
-        if (!Flags_GetRandomizerInf(RAND_INF_DUNGEONS_DONE_DEKU_TREE)) {
+        if (!Flags_GetEventChkInf(EVENTCHKINF_USED_DEKU_TREE_BLUE_WARP)) {
             Actor_Spawn(&play->actorCtx, play, ACTOR_DOOR_WARP1, -100, 6, -170, 0, 0, 0, -1, false);
         }
         // Fire Medallion (King Dodongo)
-        if (!Flags_GetRandomizerInf(RAND_INF_DUNGEONS_DONE_DODONGOS_CAVERN)) {
+        if (!Flags_GetEventChkInf(EVENTCHKINF_USED_DODONGOS_CAVERN_BLUE_WARP)) {
             Actor_Spawn(&play->actorCtx, play, ACTOR_DOOR_WARP1, 100, 6, -170, 0, 0, 0, -1, false);
         }
         // Water Medallion (Barinade)
-        if (!Flags_GetRandomizerInf(RAND_INF_DUNGEONS_DONE_JABU_JABUS_BELLY)) {
+        if (!Flags_GetEventChkInf(EVENTCHKINF_USED_JABU_JABUS_BELLY_BLUE_WARP)) {
             Actor_Spawn(&play->actorCtx, play, ACTOR_DOOR_WARP1, 199, 6, 0, 0, 0, 0, -1, false);
         }
     } else {
@@ -146,15 +146,15 @@ void BossRush_SpawnBlueWarps(PlayState* play) {
             Actor_Spawn(&play->actorCtx, play, ACTOR_DOOR_WARP1, -199, 6, 0, 0, 0, 0, -1, false);
         }
         // Forest Medallion (Phantom Ganondorf)
-        if (!Flags_GetRandomizerInf(RAND_INF_DUNGEONS_DONE_FOREST_TEMPLE)) {
+        if (!Flags_GetEventChkInf(EVENTCHKINF_USED_FOREST_TEMPLE_BLUE_WARP)) {
             Actor_Spawn(&play->actorCtx, play, ACTOR_DOOR_WARP1, -100, 6, -170, 0, 0, 0, -1, false);
         }
         // Fire Medallion (Volvagia)
-        if (!Flags_GetRandomizerInf(RAND_INF_DUNGEONS_DONE_FIRE_TEMPLE)) {
+        if (!Flags_GetEventChkInf(EVENTCHKINF_USED_FIRE_TEMPLE_BLUE_WARP)) {
             Actor_Spawn(&play->actorCtx, play, ACTOR_DOOR_WARP1, 100, 6, -170, 0, 0, 0, -1, false);
         }
         // Water Medallion (Morpha)
-        if (!Flags_GetRandomizerInf(RAND_INF_DUNGEONS_DONE_WATER_TEMPLE)) {
+        if (!Flags_GetEventChkInf(EVENTCHKINF_USED_WATER_TEMPLE_BLUE_WARP)) {
             Actor_Spawn(&play->actorCtx, play, ACTOR_DOOR_WARP1, 199, 6, 0, 0, 0, 0, -1, false);
         }
         // Spirit Medallion (Twinrova)
@@ -171,37 +171,37 @@ void BossRush_SpawnBlueWarps(PlayState* play) {
 void BossRush_HandleBlueWarp(PlayState* play, f32 warpPosX, f32 warpPosZ) {
 
     // If warping from Chamber of Sages, choose the correct boss room to teleport to.
-    if (play->sceneNum == SCENE_KENJYANOMA) {
+    if (play->sceneNum == SCENE_CHAMBER_OF_THE_SAGES) {
         // Gohma & Phantom Ganon
         if (warpPosX == -100 && warpPosZ == -170) {
             if (gSaveContext.linkAge == LINK_AGE_CHILD) {
-                play->nextEntranceIndex = 0x040F;
+                play->nextEntranceIndex = ENTR_DEKU_TREE_BOSS_0;
             } else {
-                play->nextEntranceIndex = 0x000C;
+                play->nextEntranceIndex = ENTR_FOREST_TEMPLE_BOSS_0;
             }
         // King Dodongo & Volvagia
         } else if (warpPosX == 100 && warpPosZ == -170) {
             if (gSaveContext.linkAge == LINK_AGE_CHILD) {
-                play->nextEntranceIndex = 0x040B;
+                play->nextEntranceIndex = ENTR_DODONGOS_CAVERN_BOSS_0;
             } else {
-                play->nextEntranceIndex = 0x0305;
+                play->nextEntranceIndex = ENTR_FIRE_TEMPLE_BOSS_0;
             }
         // Barinade & Morb
         } else if (warpPosX == 199 && warpPosZ == 0) {
             if (gSaveContext.linkAge == LINK_AGE_CHILD) {
-                play->nextEntranceIndex = 0x0301;
+                play->nextEntranceIndex = ENTR_JABU_JABU_BOSS_0;
             } else {
-                play->nextEntranceIndex = 0x0417;
+                play->nextEntranceIndex = ENTR_WATER_TEMPLE_BOSS_0;
             }
         // Twinrova
         } else if (warpPosX == 100 && warpPosZ == 170) {
-            play->nextEntranceIndex = 0x05EC;
+            play->nextEntranceIndex = ENTR_SPIRIT_TEMPLE_BOSS_2;
         // Bongo Bongo
         } else if (warpPosX == -100 && warpPosZ == 170) {
-            play->nextEntranceIndex = 0x0413;
+            play->nextEntranceIndex = ENTR_SHADOW_TEMPLE_BOSS_0;
         // Ganondork
         } else if (warpPosX == -199 && warpPosZ == 0) {
-            play->nextEntranceIndex = 0x041F;
+            play->nextEntranceIndex = ENTR_GANONDORF_BOSS_0;
         }
     // If coming from a boss room, teleport back to Chamber of Sages and set flag.
     } else {
@@ -216,10 +216,10 @@ void BossRush_HandleBlueWarp(PlayState* play, f32 warpPosX, f32 warpPosZ) {
                 BossRush_SetEquipment(LINK_AGE_ADULT);
             // Warp to credits.
             } else if (gSaveContext.bossRushOptions[BR_OPTIONS_BOSSES] == BR_CHOICE_BOSSES_CHILD) {
-                play->nextEntranceIndex = 0x6B;
+                play->nextEntranceIndex = ENTR_CHAMBER_OF_THE_SAGES_0;
                 gSaveContext.nextCutsceneIndex = 0xFFF2;
-                play->sceneLoadFlag = 0x14;
-                play->fadeTransition = 3;
+                play->transitionTrigger = TRANS_TRIGGER_START;
+                play->transitionType = TRANS_TYPE_FADE_WHITE;
             }
         }
     }
@@ -235,34 +235,34 @@ void BossRush_HandleBlueWarpHeal(PlayState* play) {
 }
 
 void BossRush_HandleCompleteBoss(PlayState* play) {
-    if (!gSaveContext.isBossRush) {
+    if (!IS_BOSS_RUSH) {
         return;
     }
 
     gSaveContext.isBossRushPaused = 1;
     switch (play->sceneNum) {
-        case SCENE_YDAN_BOSS:
-            Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_DEKU_TREE);
+        case SCENE_DEKU_TREE_BOSS:
+            Flags_SetEventChkInf(EVENTCHKINF_USED_DEKU_TREE_BLUE_WARP);
             break;
-        case SCENE_DDAN_BOSS:
-            Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_DODONGOS_CAVERN);
+        case SCENE_DODONGOS_CAVERN_BOSS:
+            Flags_SetEventChkInf(EVENTCHKINF_USED_DODONGOS_CAVERN_BLUE_WARP);
             break;
-        case SCENE_BDAN_BOSS:
-            Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_JABU_JABUS_BELLY);
+        case SCENE_JABU_JABU_BOSS:
+            Flags_SetEventChkInf(EVENTCHKINF_USED_JABU_JABUS_BELLY_BLUE_WARP);
             break;
-        case SCENE_MORIBOSSROOM:
-            Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_FOREST_TEMPLE);
+        case SCENE_FOREST_TEMPLE_BOSS:
+            Flags_SetEventChkInf(EVENTCHKINF_USED_FOREST_TEMPLE_BLUE_WARP);
             break;
-        case SCENE_FIRE_BS:
-            Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_FIRE_TEMPLE);
+        case SCENE_FIRE_TEMPLE_BOSS:
+            Flags_SetEventChkInf(EVENTCHKINF_USED_FIRE_TEMPLE_BLUE_WARP);
             break;
-        case SCENE_MIZUSIN_BS:
-            Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_WATER_TEMPLE);
+        case SCENE_WATER_TEMPLE_BOSS:
+            Flags_SetEventChkInf(EVENTCHKINF_USED_WATER_TEMPLE_BLUE_WARP);
             break;
-        case SCENE_JYASINBOSS:
+        case SCENE_SPIRIT_TEMPLE_BOSS:
             Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_SPIRIT_TEMPLE);
             break;
-        case SCENE_HAKADAN_BS:
+        case SCENE_SHADOW_TEMPLE_BOSS:
             Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_SHADOW_TEMPLE);
             break;
         default:
@@ -271,12 +271,12 @@ void BossRush_HandleCompleteBoss(PlayState* play) {
 
     // Fully heal the player after Ganondorf
     if (gSaveContext.bossRushOptions[BR_OPTIONS_HEAL] == BR_CHOICE_HEAL_EVERYBOSS &&
-        play->sceneNum == SCENE_GANON_BOSS) {
+        play->sceneNum == SCENE_GANONDORF_BOSS) {
         Health_ChangeBy(play, 320);
     }
 
     if ((CheckDungeonCount() == 3 && gSaveContext.bossRushOptions[BR_OPTIONS_BOSSES] == BR_CHOICE_BOSSES_CHILD) ||
-        play->sceneNum == SCENE_GANON_DEMO) {
+        play->sceneNum == SCENE_GANON_BOSS) {
         gSaveContext.sohStats.playTimer += 2;
         gSaveContext.sohStats.gameComplete = 1;
         gSaveContext.sohStats.itemTimestamp[TIMESTAMP_BOSSRUSH_FINISH] = GAMEPLAYSTAT_TOTAL_TIME;
@@ -291,8 +291,9 @@ void BossRush_InitSave() {
         gSaveContext.playerName[i] = brPlayerName[i];
     }
 
+    gSaveContext.questId = QUEST_BOSSRUSH;
     gSaveContext.isBossRushPaused = 1;
-    gSaveContext.entranceIndex = 107;
+    gSaveContext.entranceIndex = ENTR_CHAMBER_OF_THE_SAGES_0;
     gSaveContext.cutsceneIndex = 0x8000;
     gSaveContext.isMagicAcquired = 1;
 
@@ -431,13 +432,13 @@ void BossRush_InitSave() {
     // Set flags and Link's age based on chosen settings.
     if (gSaveContext.bossRushOptions[BR_OPTIONS_BOSSES] == BR_CHOICE_BOSSES_ADULT ||
         gSaveContext.bossRushOptions[BR_OPTIONS_BOSSES] == BR_CHOICE_BOSSES_GANONDORF_GANON) {
-        Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_DEKU_TREE);
-        Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_DODONGOS_CAVERN);
-        Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_JABU_JABUS_BELLY);
+        Flags_SetEventChkInf(EVENTCHKINF_USED_DEKU_TREE_BLUE_WARP);
+        Flags_SetEventChkInf(EVENTCHKINF_USED_DODONGOS_CAVERN_BLUE_WARP);
+        Flags_SetEventChkInf(EVENTCHKINF_USED_JABU_JABUS_BELLY_BLUE_WARP);
         if (gSaveContext.bossRushOptions[BR_OPTIONS_BOSSES] == BR_CHOICE_BOSSES_GANONDORF_GANON) {
-            Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_FOREST_TEMPLE);
-            Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_FIRE_TEMPLE);
-            Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_WATER_TEMPLE);
+            Flags_SetEventChkInf(EVENTCHKINF_USED_FOREST_TEMPLE_BLUE_WARP);
+            Flags_SetEventChkInf(EVENTCHKINF_USED_FIRE_TEMPLE_BLUE_WARP);
+            Flags_SetEventChkInf(EVENTCHKINF_USED_WATER_TEMPLE_BLUE_WARP);
             Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_SPIRIT_TEMPLE);
             Flags_SetRandomizerInf(RAND_INF_DUNGEONS_DONE_SHADOW_TEMPLE);
         }
@@ -462,8 +463,8 @@ void BossRush_SetEquipment(uint8_t linkAge) {
 
         brCButtonSlots = { SLOT_STICK, SLOT_NUT, SLOT_BOMB, SLOT_NONE, SLOT_NONE, SLOT_NONE, SLOT_NONE };
 
-        Inventory_ChangeEquipment(EQUIP_SWORD, PLAYER_SWORD_KOKIRI);
-        Inventory_ChangeEquipment(EQUIP_SHIELD, PLAYER_SHIELD_DEKU);
+        Inventory_ChangeEquipment(EQUIP_TYPE_SWORD, EQUIP_VALUE_SWORD_KOKIRI);
+        Inventory_ChangeEquipment(EQUIP_TYPE_SHIELD, EQUIP_VALUE_SHIELD_DEKU);
     // Set Adult equipment.
     } else {
         brButtonItems = { ITEM_SWORD_MASTER, ITEM_BOW,  ITEM_HAMMER, ITEM_BOMB,
@@ -471,9 +472,9 @@ void BossRush_SetEquipment(uint8_t linkAge) {
 
         brCButtonSlots = { SLOT_BOW, SLOT_HAMMER, SLOT_BOMB, SLOT_NONE, SLOT_NONE, SLOT_NONE, SLOT_NONE };
 
-        Inventory_ChangeEquipment(EQUIP_SWORD, PLAYER_SWORD_MASTER);
-        Inventory_ChangeEquipment(EQUIP_SHIELD, PLAYER_SHIELD_MIRROR);
-        Inventory_ChangeEquipment(EQUIP_TUNIC, PLAYER_TUNIC_GORON + 1); // Game expects tunic + 1, don't ask me why.
+        Inventory_ChangeEquipment(EQUIP_TYPE_SWORD, EQUIP_VALUE_SWORD_MASTER);
+        Inventory_ChangeEquipment(EQUIP_TYPE_SHIELD, EQUIP_VALUE_SHIELD_MIRROR);
+        Inventory_ChangeEquipment(EQUIP_TYPE_TUNIC, EQUIP_VALUE_TUNIC_GORON);
     }
 
     // Button Items

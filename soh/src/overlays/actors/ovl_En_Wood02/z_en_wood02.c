@@ -101,12 +101,18 @@ static f32 sSpawnSin;
 s32 EnWood02_SpawnZoneCheck(EnWood02* this, PlayState* play, Vec3f* pos) {
     f32 phi_f12;
 
-    if (CVarGetInteger("gDisableDrawDistance", 0) != 0) {
-        return true;
-    }
-
     SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, pos, &this->actor.projectedPos,
                                  &this->actor.projectedW);
+
+    // #region SOH [Enhancement] Use the extended culling calculation
+    if (CVarGetInteger(CVAR_ENHANCEMENT("DisableDrawDistance"), 1) > 1 ||
+        CVarGetInteger(CVAR_ENHANCEMENT("WidescreenActorCulling"), 0)) {
+        bool shipShouldDraw = false;
+        bool shipShouldUpdate = false;
+        return Ship_CalcShouldDrawAndUpdate(play, &this->actor, &this->actor.projectedPos, this->actor.projectedW,
+                                            &shipShouldDraw, &shipShouldUpdate);
+    }
+    // #endregion
 
     phi_f12 = ((this->actor.projectedW == 0.0f) ? 1000.0f : fabsf(1.0f / this->actor.projectedW));
 
@@ -177,7 +183,7 @@ void EnWood02_Init(Actor* thisx, PlayState* play2) {
     // as the night scene, For the always spawn GS enhancement we apply the needed
     // params to have the GS drop when bonking
     if ((this->actor.params & 0xFF) == WOOD_TREE_CONICAL_MEDIUM && IS_DAY &&
-        play->sceneNum == SCENE_SPOT01 && CVarGetInteger("gNightGSAlwaysSpawn", 0)) {
+        play->sceneNum == SCENE_KAKARIKO_VILLAGE && CVarGetInteger(CVAR_ENHANCEMENT("NightGSAlwaysSpawn"), 0)) {
         this->actor.params = 0x2001;
         this->actor.home.rot.z = 0x71;
     }
@@ -322,6 +328,7 @@ void EnWood02_Update(Actor* thisx, PlayState* play2) {
     Vec3f dropsSpawnPt;
     s32 i;
     s32 leavesParams;
+    s32 numDrops;
 
     // Despawn extra trees in a group if out of range
     if ((this->spawnType == WOOD_SPAWN_SPAWNED) && (this->actor.parent != NULL)) {
@@ -351,7 +358,13 @@ void EnWood02_Update(Actor* thisx, PlayState* play2) {
             dropsSpawnPt = this->actor.world.pos;
             dropsSpawnPt.y += 200.0f;
 
-            if ((this->unk_14C >= 0) && (this->unk_14C < 0x64)) {
+            if ((this->unk_14C >= 0) && (this->unk_14C < 0x64) && (CVarGetInteger(CVAR_ENHANCEMENT("TreesDropSticks"), 0)) && !(INV_CONTENT(ITEM_STICK) == ITEM_NONE)) {
+                (numDrops = (Rand_ZeroOne() * 4));
+                for (i = 0; i < numDrops; ++i) {
+                    Item_DropCollectible(play, &dropsSpawnPt, ITEM00_STICK);
+                }
+            } else {
+                if ((this->unk_14C >= 0) && (this->unk_14C < 0x64)) {
                 Item_DropCollectibleRandom(play, &this->actor, &dropsSpawnPt, this->unk_14C << 4);
             } else {
                 if (this->actor.home.rot.z != 0) {
@@ -360,6 +373,7 @@ void EnWood02_Update(Actor* thisx, PlayState* play2) {
                     Actor_Spawn(&play->actorCtx, play, ACTOR_EN_SW, dropsSpawnPt.x, dropsSpawnPt.y,
                                 dropsSpawnPt.z, 0, this->actor.world.rot.y, 0, this->actor.home.rot.z, true);
                     this->actor.home.rot.z = 0;
+                    }
                 }
             }
 

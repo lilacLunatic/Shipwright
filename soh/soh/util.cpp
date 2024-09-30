@@ -1,6 +1,10 @@
 #include "util.h"
 
+#include <string.h>
 #include <vector>
+#include <algorithm>
+#include <array>
+#include "Enhancements/randomizer/randomizerTypes.h"
 
 std::vector<std::string> sceneNames = {
     "Inside the Deku Tree",
@@ -301,6 +305,41 @@ std::vector<std::string> questItemNames = {
         "Gold Skulltula Token",
 };
 
+std::array<std::string, RA_MAX> rcareaPrefixes = {
+    "KF",
+    "LW",
+    "SFM",
+    "HF",
+    "LH",
+    "GV",
+    "GF",
+    "Wasteland",
+    "Colossus",
+    "Market",
+    "HC",
+    "Kak",
+    "Graveyard",
+    "DMT",
+    "GC",
+    "DMC",
+    "ZR",
+    "ZD",
+    "ZF",
+    "LLR",
+    "Deku Tree",
+    "Dodongos Cavern",
+    "Jabu Jabus Belly",
+    "Forest Temple",
+    "Fire Temple",
+    "Water Temple",
+    "Spirit Temple",
+    "Shadow Temple",
+    "Bottom of the Well",
+    "Ice Cavern",
+    "Gerudo Training Grounds",
+    "Ganon's Castle",
+};
+
 const std::string& SohUtils::GetSceneName(int32_t scene) {
     return sceneNames[scene];
 }
@@ -311,4 +350,43 @@ const std::string& SohUtils::GetItemName(int32_t item) {
 
 const std::string& SohUtils::GetQuestItemName(int32_t item) {
     return questItemNames[item];
+}
+
+const std::string& SohUtils::GetRandomizerCheckAreaPrefix(int32_t rcarea) {
+    return rcareaPrefixes[rcarea];
+}
+
+void SohUtils::CopyStringToCharArray(char* destination, std::string source, size_t size) {
+    strncpy(destination, source.c_str(), size - 1);
+    destination[size - 1] = '\0';
+}
+
+std::string SohUtils::Sanitize(std::string stringValue) {
+    // Add backslashes.
+    for (auto i = stringValue.begin();;) {
+        auto const pos = std::find_if(i, stringValue.end(), [](char const c) { return '\\' == c || '\'' == c || '"' == c; });
+        if (pos == stringValue.end()) {
+            break;
+        }
+        i = std::next(stringValue.insert(pos, '\\'), 2);
+    }
+
+    // Removes others.
+    stringValue.erase(std::remove_if(stringValue.begin(), stringValue.end(), [](char const c) {
+        return '\n' == c || '\r' == c || '\0' == c || '\x1A' == c; }), stringValue.end());
+
+    return stringValue;
+}
+
+size_t SohUtils::CopyStringToCharBuffer(char* buffer, const std::string& source, const size_t maxBufferSize) {
+    if (!source.empty()) {
+        // Prevent potential horrible overflow due to implicit conversion of maxBufferSize to an unsigned. Prevents negatives.
+        memset(buffer, 0, std::max<size_t>(0, maxBufferSize));
+        // Gaurentee that this value will be greater than 0, regardless of passed variables.
+        const size_t copiedCharLen = std::min<size_t>(std::max<size_t>(0, maxBufferSize - 1), source.length());
+        memcpy(buffer, source.c_str(), copiedCharLen);
+        return copiedCharLen;
+    }
+
+    return 0;
 }

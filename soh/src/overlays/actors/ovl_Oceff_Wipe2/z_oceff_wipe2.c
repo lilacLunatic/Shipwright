@@ -40,7 +40,7 @@ void OceffWipe2_Destroy(Actor* thisx, PlayState* play) {
     OceffWipe2* this = (OceffWipe2*)thisx;
     Player* player = GET_PLAYER(play);
 
-    func_800876C8(play);
+    Magic_Reset(play);
     if (gSaveContext.nayrusLoveTimer != 0) {
         player->stateFlags3 |= PLAYER_STATE3_RESTORE_NAYRUS_LOVE;
     }
@@ -72,7 +72,7 @@ void OceffWipe2_Draw(Actor* thisx, PlayState* play) {
     eye = GET_ACTIVE_CAM(play)->eye;
     Camera_GetSkyboxOffset(&vec, GET_ACTIVE_CAM(play));
 
-    int fastOcarinaPlayback = (CVarGetInteger("gFastOcarinaPlayback", 0) != 0);
+    int fastOcarinaPlayback = (CVarGetInteger(CVAR_ENHANCEMENT("FastOcarinaPlayback"), 0) != 0);
     if (this->timer < 32) {
         z = Math_SinS(this->timer << 9) * (fastOcarinaPlayback ? 1200.0f : 1330.0f);
     } else {

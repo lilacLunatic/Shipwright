@@ -6,6 +6,7 @@
 
 #include "z_en_mb.h"
 #include "objects/object_mb/object_mb.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 /*
  * This actor can have three behaviors:
@@ -511,7 +512,7 @@ void EnMb_SetupClubAttack(EnMb* this) {
 
     // Rotate Club Moblin towards player in Enemy Randomizer because they're
     // borderline useless otherwise in most scenarios.
-    if (CVarGetInteger("gRandomizedEnemies", 0)) {
+    if (CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0)) {
         Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 3, 100.0f, 0);
         Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 3, 100.0f, 0);
     }
@@ -611,10 +612,10 @@ void EnMb_SetupStunned(EnMb* this) {
 void EnMb_Stunned(EnMb* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
-    if ((player->stateFlags2 & 0x80) && player->actor.parent == &this->actor) {
-        player->stateFlags2 &= ~0x80;
+    if ((player->stateFlags2 & PLAYER_STATE2_GRABBED_BY_ENEMY) && player->actor.parent == &this->actor) {
+        player->stateFlags2 &= ~PLAYER_STATE2_GRABBED_BY_ENEMY;
         player->actor.parent = NULL;
-        player->unk_850 = 200;
+        player->av2.actionVar2 = 200;
         func_8002F71C(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
         this->attack = ENMB_ATTACK_NONE;
     }
@@ -716,7 +717,7 @@ void EnMb_ClubWaitAfterAttack(EnMb* this, PlayState* play) {
 
     // Rotate Club Moblin towards player in Enemy Randomizer because they're
     // borderline useless otherwise in most scenarios.
-    if (CVarGetInteger("gRandomizedEnemies", 0)) {
+    if (CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0)) {
         Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 3, 100.0f, 0);
         Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 3, 100.0f, 0);
     }
@@ -736,10 +737,10 @@ void EnMb_SpearPatrolEndCharge(EnMb* this, PlayState* play) {
     s16 relYawFromPlayer;
     s16 yawPlayerToWaypoint;
 
-    if ((player->stateFlags2 & 0x80) && player->actor.parent == &this->actor) {
-        player->stateFlags2 &= ~0x80;
+    if ((player->stateFlags2 & PLAYER_STATE2_GRABBED_BY_ENEMY) && player->actor.parent == &this->actor) {
+        player->stateFlags2 &= ~PLAYER_STATE2_GRABBED_BY_ENEMY;
         player->actor.parent = NULL;
-        player->unk_850 = 200;
+        player->av2.actionVar2 = 200;
         func_8002F71C(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
     }
 
@@ -843,7 +844,7 @@ void EnMb_ClubAttack(EnMb* this, PlayState* play) {
 
     // Rotate Club Moblin towards player in Enemy Randomizer because they're
     // borderline useless otherwise in most scenarios.
-    if (!CVarGetInteger("gRandomizedEnemies", 0)) {
+    if (!CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0)) {
         Math_SmoothStepToS(&this->actor.shape.rot.y, relYawTarget[this->attack - 1] + this->actor.world.rot.y, 1, 0x2EE, 0);
     } else {
         Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 3, 100.0f, 0);
@@ -890,7 +891,7 @@ void EnMb_ClubAttack(EnMb* this, PlayState* play) {
             // Disable camera shake when the Moblin attacks with Enemy Randomizer enabled.
             // This camera shake gets very annoying as these Moblins can spawn in many rooms,
             // and also often (initially) out of reach for the player.
-            if (!CVarGetInteger("gRandomizedEnemies", 0)) {
+            if (!CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0)) {
                 Camera_AddQuake(&play->mainCamera, 2, 0x19, 5);
             }
             func_800358DC(&this->actor, &effSpawnPos, &this->actor.world.rot, flamesParams, 20, flamesUnused, play,
@@ -938,7 +939,7 @@ void EnMb_SpearPatrolPrepareAndCharge(EnMb* this, PlayState* play) {
 
     if (this->attackCollider.base.atFlags & AT_HIT) {
         if (this->attackCollider.base.at == &player->actor) {
-            if (!endCharge && !(player->stateFlags2 & 0x80)) {
+            if (!endCharge && !(player->stateFlags2 & PLAYER_STATE2_GRABBED_BY_ENEMY)) {
                 if (player->invincibilityTimer < 0) {
                     if (player->invincibilityTimer < -39) {
                         player->invincibilityTimer = 0;
@@ -960,24 +961,24 @@ void EnMb_SpearPatrolPrepareAndCharge(EnMb* this, PlayState* play) {
         }
     }
 
-    if ((player->stateFlags2 & 0x80) && player->actor.parent == &this->actor) {
+    if ((player->stateFlags2 & PLAYER_STATE2_GRABBED_BY_ENEMY) && player->actor.parent == &this->actor) {
         player->actor.world.pos.x = this->actor.world.pos.x + Math_CosS(this->actor.shape.rot.y) * 10.0f +
                                     Math_SinS(this->actor.shape.rot.y) * 89.0f;
         hasHitPlayer = true;
         player->actor.world.pos.z = this->actor.world.pos.z + Math_SinS(this->actor.shape.rot.y) * 10.0f +
                                     Math_CosS(this->actor.shape.rot.y) * 89.0f;
-        player->unk_850 = 0;
+        player->av2.actionVar2 = 0;
         player->actor.speedXZ = 0.0f;
         player->actor.velocity.y = 0.0f;
     }
 
     if (endCharge) {
-        if (hasHitPlayer || (player->stateFlags2 & 0x80)) {
+        if (hasHitPlayer || (player->stateFlags2 & PLAYER_STATE2_GRABBED_BY_ENEMY)) {
             this->attackCollider.base.atFlags &= ~AT_HIT;
-            if (player->stateFlags2 & 0x80) {
-                player->stateFlags2 &= ~0x80;
+            if (player->stateFlags2 & PLAYER_STATE2_GRABBED_BY_ENEMY) {
+                player->stateFlags2 &= ~PLAYER_STATE2_GRABBED_BY_ENEMY;
                 player->actor.parent = NULL;
-                player->unk_850 = 200;
+                player->av2.actionVar2 = 200;
                 func_8002F71C(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
             }
         }
@@ -1007,7 +1008,7 @@ void EnMb_SpearPatrolImmediateCharge(EnMb* this, PlayState* play) {
 
     if (this->attackCollider.base.atFlags & AT_HIT) {
         if (this->attackCollider.base.at == &player->actor) {
-            if (!endCharge && !(player->stateFlags2 & 0x80)) {
+            if (!endCharge && !(player->stateFlags2 & PLAYER_STATE2_GRABBED_BY_ENEMY)) {
                 if (player->invincibilityTimer < 0) {
                     if (player->invincibilityTimer <= -40) {
                         player->invincibilityTimer = 0;
@@ -1029,24 +1030,24 @@ void EnMb_SpearPatrolImmediateCharge(EnMb* this, PlayState* play) {
         }
     }
 
-    if ((player->stateFlags2 & 0x80) && player->actor.parent == &this->actor) {
+    if ((player->stateFlags2 & PLAYER_STATE2_GRABBED_BY_ENEMY) && player->actor.parent == &this->actor) {
         player->actor.world.pos.x = this->actor.world.pos.x + Math_CosS(this->actor.shape.rot.y) * 10.0f +
                                     Math_SinS(this->actor.shape.rot.y) * 89.0f;
         hasHitPlayer = true;
         player->actor.world.pos.z = this->actor.world.pos.z + Math_SinS(this->actor.shape.rot.y) * 10.0f +
                                     Math_CosS(this->actor.shape.rot.y) * 89.0f;
-        player->unk_850 = 0;
+        player->av2.actionVar2 = 0;
         player->actor.speedXZ = 0.0f;
         player->actor.velocity.y = 0.0f;
     }
 
     if (endCharge) {
-        if (hasHitPlayer || (player->stateFlags2 & 0x80)) {
+        if (hasHitPlayer || (player->stateFlags2 & PLAYER_STATE2_GRABBED_BY_ENEMY)) {
             this->attackCollider.base.atFlags &= ~AT_HIT;
-            if (player->stateFlags2 & 0x80) {
-                player->stateFlags2 &= ~0x80;
+            if (player->stateFlags2 & PLAYER_STATE2_GRABBED_BY_ENEMY) {
+                player->stateFlags2 &= ~PLAYER_STATE2_GRABBED_BY_ENEMY;
                 player->actor.parent = NULL;
-                player->unk_850 = 200;
+                player->av2.actionVar2 = 200;
                 func_8002F71C(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
             }
             this->attack = ENMB_ATTACK_NONE;
@@ -1266,18 +1267,18 @@ void EnMb_ClubWaitPlayerNear(EnMb* this, PlayState* play) {
 
     // Rotate Club Moblin towards player in Enemy Randomizer because they're
     // borderline useless otherwise in most scenarios.
-    if (CVarGetInteger("gRandomizedEnemies", 0)) {
+    if (CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0)) {
         Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 3, 100.0f, 0);
         Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 3, 100.0f, 0);
     }
 
     SkelAnime_Update(&this->skelAnime);
     if (Math_Vec3f_DistXZ(&this->actor.home.pos, &player->actor.world.pos) < this->playerDetectionRange &&
-        !(player->stateFlags1 & 0x4000000) && ABS(relYawFromPlayer) < 0x3E80) {
+        !(player->stateFlags1 & PLAYER_STATE1_DAMAGED) && ABS(relYawFromPlayer) < 0x3E80) {
         // Add a height check to the Moblin's Club attack when Enemy Randomizer is on.
         // Without the height check, the Moblin will attack (and play the sound effect) a lot even though
         // the Moblin is very far away from the player in vertical rooms (like the first room in Deku Tree).
-        s8 enemyRando = CVarGetInteger("gRandomizedEnemies", 0);
+        s8 enemyRando = CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0);
         if (!enemyRando || (enemyRando && this->actor.yDistToPlayer <= 100.0f && this->actor.yDistToPlayer >= -100.0f)) {
             EnMb_SetupClubAttack(this);
         }
@@ -1338,10 +1339,10 @@ void EnMb_SpearDead(EnMb* this, PlayState* play) {
 
     Math_SmoothStepToF(&this->actor.speedXZ, 0.0f, 1.0f, 0.5f, 0.0f);
 
-    if ((player->stateFlags2 & 0x80) && player->actor.parent == &this->actor) {
-        player->stateFlags2 &= ~0x80;
+    if ((player->stateFlags2 & PLAYER_STATE2_GRABBED_BY_ENEMY) && player->actor.parent == &this->actor) {
+        player->stateFlags2 &= ~PLAYER_STATE2_GRABBED_BY_ENEMY;
         player->actor.parent = NULL;
-        player->unk_850 = 200;
+        player->av2.actionVar2 = 200;
         func_8002F71C(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
         this->attack = ENMB_ATTACK_NONE;
     }
@@ -1421,10 +1422,10 @@ void EnMb_CheckColliding(EnMb* this, PlayState* play) {
         this->hitbox.base.acFlags &= ~AC_HIT;
         if (this->actor.colChkInfo.damageEffect != ENMB_DMGEFF_IGNORE &&
             this->actor.colChkInfo.damageEffect != ENMB_DMGEFF_FREEZE) {
-            if ((player->stateFlags2 & 0x80) && player->actor.parent == &this->actor) {
-                player->stateFlags2 &= ~0x80;
+            if ((player->stateFlags2 & PLAYER_STATE2_GRABBED_BY_ENEMY) && player->actor.parent == &this->actor) {
+                player->stateFlags2 &= ~PLAYER_STATE2_GRABBED_BY_ENEMY;
                 player->actor.parent = NULL;
-                player->unk_850 = 200;
+                player->av2.actionVar2 = 200;
                 func_8002F71C(play, &this->actor, 6.0f, this->actor.world.rot.y, 6.0f);
             }
             this->damageEffect = this->actor.colChkInfo.damageEffect;
@@ -1442,14 +1443,14 @@ void EnMb_CheckColliding(EnMb* this, PlayState* play) {
                 if (this->actor.params == ENMB_TYPE_CLUB) {
                     if (this->actor.colChkInfo.health == 0) {
                         EnMb_SetupClubDead(this);
-                        gSaveContext.sohStats.count[COUNT_ENEMIES_DEFEATED_MOBLIN_CLUB]++;
+                        GameInteractor_ExecuteOnEnemyDefeat(&this->actor);
                     } else if (this->state != ENMB_STATE_CLUB_KNEELING) {
                         EnMb_SetupClubDamaged(this);
                     }
                 } else {
                     if (this->actor.colChkInfo.health == 0) {
                         EnMb_SetupSpearDead(this);
-                        gSaveContext.sohStats.count[COUNT_ENEMIES_DEFEATED_MOBLIN]++;
+                        GameInteractor_ExecuteOnEnemyDefeat(&this->actor);
                     } else {
                         EnMb_SetupSpearDamaged(this);
                     }
@@ -1568,8 +1569,7 @@ void EnMb_Draw(Actor* thisx, PlayState* play) {
     EnMb* this = (EnMb*)thisx;
 
     Gfx_SetupDL_25Opa(play->state.gfxCtx);
-    SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
-                          NULL, EnMb_PostLimbDraw, thisx);
+    SkelAnime_DrawSkeletonOpa(play, &this->skelAnime, NULL, EnMb_PostLimbDraw, thisx);
 
     if (thisx->params != ENMB_TYPE_CLUB) {
         if (this->attack > ENMB_ATTACK_NONE) {

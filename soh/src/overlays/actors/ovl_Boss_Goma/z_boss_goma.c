@@ -445,7 +445,7 @@ void BossGoma_SetupCeilingIdle(BossGoma* this) {
 void BossGoma_SetupFallJump(BossGoma* this) {
     // When in Enemy Randomizer, reset the state of the spawned Gohma Larva because it's not done
     // by the (non-existent) Larva themselves.
-    if (CVarGetInteger("gRandomizedEnemies", 0)) {
+    if (CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0)) {
         this->childrenGohmaState[0] = this->childrenGohmaState[1] = this->childrenGohmaState[2] = 0;
     }
     Animation_Change(&this->skelanime, &gGohmaLandAnim, 1.0f, 0.0f, 0.0f, ANIMMODE_ONCE, -5.0f);
@@ -628,7 +628,7 @@ void BossGoma_SetupEncounterState4(BossGoma* this, PlayState* play) {
     this->actionState = 4;
     this->actor.flags |= ACTOR_FLAG_TARGETABLE;
     func_80064520(play, &play->csCtx);
-    func_8002DF54(play, &this->actor, 1);
+    Player_SetCsActionWithHaltedActors(play, &this->actor, 1);
     this->subCameraId = Play_CreateSubCamera(play);
     Play_ChangeCameraStatus(play, 0, 3);
     Play_ChangeCameraStatus(play, this->subCameraId, 7);
@@ -685,7 +685,7 @@ void BossGoma_Encounter(BossGoma* this, PlayState* play) {
                     Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_DOOR_SHUTTER, 164.72f,
                                        -480.0f, 397.68002f, 0, -0x705C, 0, 0x180);
                 } else {
-                    func_8002DF54(play, &this->actor, 8);
+                    Player_SetCsActionWithHaltedActors(play, &this->actor, 8);
                     this->actionState = 1;
                 }
             }
@@ -756,7 +756,7 @@ void BossGoma_Encounter(BossGoma* this, PlayState* play) {
             }
 
             if (this->frameCount == 190) {
-                func_8002DF54(play, &this->actor, 2);
+                Player_SetCsActionWithHaltedActors(play, &this->actor, 2);
             }
 
             if (this->frameCount >= 228) {
@@ -767,7 +767,7 @@ void BossGoma_Encounter(BossGoma* this, PlayState* play) {
                 func_800C08AC(play, this->subCameraId, 0);
                 this->subCameraId = 0;
                 func_80064534(play, &play->csCtx);
-                func_8002DF54(play, &this->actor, 7);
+                Player_SetCsActionWithHaltedActors(play, &this->actor, 7);
                 this->actionState = 3;
             }
             break;
@@ -964,7 +964,7 @@ void BossGoma_Encounter(BossGoma* this, PlayState* play) {
                 this->disableGameplayLogic = false;
                 this->patienceTimer = 200;
                 func_80064534(play, &play->csCtx);
-                func_8002DF54(play, &this->actor, 7);
+                Player_SetCsActionWithHaltedActors(play, &this->actor, 7);
             }
             break;
     }
@@ -1054,7 +1054,7 @@ void BossGoma_Defeated(BossGoma* this, PlayState* play) {
         case 0:
             this->actionState = 1;
             func_80064520(play, &play->csCtx);
-            func_8002DF54(play, &this->actor, 1);
+            Player_SetCsActionWithHaltedActors(play, &this->actor, 1);
             this->subCameraId = Play_CreateSubCamera(play);
             Play_ChangeCameraStatus(play, 0, 3);
             Play_ChangeCameraStatus(play, this->subCameraId, 7);
@@ -1118,7 +1118,7 @@ void BossGoma_Defeated(BossGoma* this, PlayState* play) {
                 this->timer = 70;
                 this->decayingProgress = 0;
                 this->subCameraFollowSpeed = 0.0f;
-                if (!gSaveContext.isBossRush) {
+                if (!IS_BOSS_RUSH) {
                     Actor_Spawn(&play->actorCtx, play, ACTOR_ITEM_B_HEART, this->actor.world.pos.x,
                                 this->actor.world.pos.y, this->actor.world.pos.z, 0, 0, 0, 0, true);
                 }
@@ -1152,7 +1152,7 @@ void BossGoma_Defeated(BossGoma* this, PlayState* play) {
                     }
                 }
 
-                if (!gSaveContext.isBossRush) {
+                if (!IS_BOSS_RUSH) {
                     Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_DOOR_WARP1, childPos.x,
                                        this->actor.world.pos.y, childPos.z, 0, 0, 0, WARP_DUNGEON_CHILD);
                 } else {
@@ -1189,7 +1189,7 @@ void BossGoma_Defeated(BossGoma* this, PlayState* play) {
                     func_800C08AC(play, this->subCameraId, 0);
                     this->subCameraId = 0;
                     func_80064534(play, &play->csCtx);
-                    func_8002DF54(play, &this->actor, 7);
+                    Player_SetCsActionWithHaltedActors(play, &this->actor, 7);
                     Actor_Kill(&this->actor);
                 }
 
@@ -1559,14 +1559,14 @@ void BossGoma_CeilingIdle(BossGoma* this, PlayState* play) {
 
     if (this->framesUntilNextAction == 0) {
         Actor* nearbyEnTest = NULL;
-        if (CVarGetInteger("gRandomizedEnemies", 0)) {
+        if (CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0)) {
             nearbyEnTest = Actor_FindNearby(play, &this->actor, -1, ACTORCAT_ENEMY, 8000.0f);
         }
         if (this->childrenGohmaState[0] == 0 && this->childrenGohmaState[1] == 0 && this->childrenGohmaState[2] == 0) {
             // if no child gohma has been spawned
             BossGoma_SetupCeilingPrepareSpawnGohmas(this);
         } else if ((this->childrenGohmaState[0] < 0 && this->childrenGohmaState[1] < 0 && this->childrenGohmaState[2] < 0) ||
-                   (nearbyEnTest == NULL && CVarGetInteger("gRandomizedEnemies", 0))) {
+                   (nearbyEnTest == NULL && CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0))) {
             // In authentic gameplay, check if all baby Ghomas are dead. In Enemy Randomizer, check if there's no enemies alive.
             BossGoma_SetupFallJump(this);
         } else {
@@ -2015,12 +2015,26 @@ s32 BossGoma_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f
                 Matrix_TranslateRotateZYX(pos, rot);
 
                 if (*dList != NULL) {
+                    if (this->skelanime.skeletonHeader->skeletonType == SKELANIME_TYPE_FLEX) {
+                        MATRIX_TOMTX(*play->flexLimbOverrideMTX);
+                    }
+
                     Matrix_Push();
                     Matrix_Scale(this->eyeIrisScaleX, this->eyeIrisScaleY, 1.0f, MTXMODE_APPLY);
-                    gSPMatrix(POLY_OPA_DISP++, MATRIX_NEWMTX(play->state.gfxCtx),
-                              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+
+                    if (this->skelanime.skeletonHeader->skeletonType == SKELANIME_TYPE_FLEX) {
+                        gSPMatrix(POLY_OPA_DISP++, *play->flexLimbOverrideMTX, G_MTX_LOAD);
+                    } else {
+                        gSPMatrix(POLY_OPA_DISP++, MATRIX_NEWMTX(play->state.gfxCtx),
+                                  G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                    }
+
                     gSPDisplayList(POLY_OPA_DISP++, *dList);
                     Matrix_Pop();
+
+                    if (this->skelanime.skeletonHeader->skeletonType == SKELANIME_TYPE_FLEX) {
+                        (*play->flexLimbOverrideMTX)++;
+                    }
                 }
 
                 doNotDrawLimb = true;
@@ -2034,14 +2048,28 @@ s32 BossGoma_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f
             Matrix_TranslateRotateZYX(pos, rot);
 
             if (*dList != NULL) {
+                if (this->skelanime.skeletonHeader->skeletonType == SKELANIME_TYPE_FLEX) {
+                    MATRIX_TOMTX(*play->flexLimbOverrideMTX);
+                }
+
                 Matrix_Push();
                 Matrix_Scale(this->tailLimbsScale[limbIndex - BOSSGOMA_LIMB_TAIL4],
                              this->tailLimbsScale[limbIndex - BOSSGOMA_LIMB_TAIL4],
                              this->tailLimbsScale[limbIndex - BOSSGOMA_LIMB_TAIL4], MTXMODE_APPLY);
-                gSPMatrix(POLY_OPA_DISP++, MATRIX_NEWMTX(play->state.gfxCtx),
-                          G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+
+                if (this->skelanime.skeletonHeader->skeletonType == SKELANIME_TYPE_FLEX) {
+                    gSPMatrix(POLY_OPA_DISP++, *play->flexLimbOverrideMTX, G_MTX_LOAD);
+                } else {
+                    gSPMatrix(POLY_OPA_DISP++, MATRIX_NEWMTX(play->state.gfxCtx),
+                              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                }
+
                 gSPDisplayList(POLY_OPA_DISP++, *dList);
                 Matrix_Pop();
+
+                if (this->skelanime.skeletonHeader->skeletonType == SKELANIME_TYPE_FLEX) {
+                    (*play->flexLimbOverrideMTX)++;
+                }
             }
 
             doNotDrawLimb = true;
@@ -2148,7 +2176,8 @@ void BossGoma_Draw(Actor* thisx, PlayState* play) {
         gSPSegment(POLY_OPA_DISP++, 0x08, BossGoma_EmptyDlist(play->state.gfxCtx));
     }
 
-    SkelAnime_DrawOpa(play, this->skelanime.skeleton, this->skelanime.jointTable, BossGoma_OverrideLimbDraw,
+    SkelAnime_DrawSkeletonOpa(play, &this->skelanime,
+                                               BossGoma_OverrideLimbDraw,
                       BossGoma_PostLimbDraw, this);
 
     CLOSE_DISPS(play->state.gfxCtx);

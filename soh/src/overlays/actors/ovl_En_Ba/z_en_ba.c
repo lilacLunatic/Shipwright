@@ -7,6 +7,7 @@
 #include "z_en_ba.h"
 #include "objects/object_bxa/object_bxa.h"
 #include "soh/frame_interpolation.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_WHILE_CULLED)
 
@@ -187,7 +188,7 @@ void EnBa_Idle(EnBa* this, PlayState* play) {
     }
     this->unk_2A8[13].x = this->unk_2A8[12].x;
     this->unk_2A8[13].y = this->unk_2A8[12].y;
-    if (!(player->stateFlags1 & 0x4000000) && (this->actor.xzDistToPlayer <= 175.0f) &&
+    if (!(player->stateFlags1 & PLAYER_STATE1_DAMAGED) && (this->actor.xzDistToPlayer <= 175.0f) &&
         (this->actor.world.pos.y == this->actor.home.pos.y + 100.0f)) {
         EnBa_SetupSwingAtPlayer(this);
     }
@@ -293,7 +294,7 @@ void EnBa_SwingAtPlayer(EnBa* this, PlayState* play) {
                     Matrix_MultVec3f(&D_809B8080, &this->unk_158[i + 1]);
                 }
                 this->unk_31A--;
-            } else if ((this->actor.xzDistToPlayer > 175.0f) || (player->stateFlags1 & 0x4000000)) {
+            } else if ((this->actor.xzDistToPlayer > 175.0f) || (player->stateFlags1 & PLAYER_STATE1_DAMAGED)) {
                 EnBa_SetupIdle(this);
             } else {
                 EnBa_SetupSwingAtPlayer(this);
@@ -312,7 +313,7 @@ void EnBa_SwingAtPlayer(EnBa* this, PlayState* play) {
         CollisionCheck_SetAT(play, &play->colChkCtx, &this->collider.base);
         return;
     }
-    if ((this->actor.xzDistToPlayer > 175.0f) || (player->stateFlags1 & 0x4000000)) {
+    if ((this->actor.xzDistToPlayer > 175.0f) || (player->stateFlags1 & PLAYER_STATE1_DAMAGED)) {
         EnBa_SetupIdle(this);
     } else {
         EnBa_SetupSwingAtPlayer(this);
@@ -455,7 +456,7 @@ void EnBa_Update(Actor* thisx, PlayState* play) {
         this->actor.colChkInfo.health--;
         if (this->actor.colChkInfo.health == 0) {
             func_809B75A0(this, play);
-            gSaveContext.sohStats.count[COUNT_ENEMIES_DEFEATED_PARASITIC_TENTACLE]++;
+            GameInteractor_ExecuteOnEnemyDefeat(&this->actor);
         } else {
             func_809B7174(this);
         }

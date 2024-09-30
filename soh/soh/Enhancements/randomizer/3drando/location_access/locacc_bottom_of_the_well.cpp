@@ -1,86 +1,125 @@
 #include "../location_access.hpp"
-#include "../logic.hpp"
-#include "../entrance.hpp"
-#include "../dungeon.hpp"
+#include "../../entrance.h"
+#include "../../dungeon.h"
 
-using namespace Logic;
-using namespace Settings;
+using namespace Rando;
 
-void AreaTable_Init_BottomOfTheWell() {
+void RegionTable_Init_BottomOfTheWell() {
   /*--------------------------
   |    VANILLA/MQ DECIDER    |
   ---------------------------*/
-  areaTable[BOTTOM_OF_THE_WELL_ENTRYWAY] = Area("Bottom of the Well Entryway", "Bottom of the Well", BOTTOM_OF_THE_WELL, NO_DAY_NIGHT_CYCLE, {}, {}, {
+  areaTable[RR_BOTTOM_OF_THE_WELL_ENTRYWAY] = Region("Bottom of the Well Entryway", "Bottom of the Well", RA_BOTTOM_OF_THE_WELL, NO_DAY_NIGHT_CYCLE, {}, {}, {
                   //Exits
-                  Entrance(BOTTOM_OF_THE_WELL_MAIN_AREA,    {[]{return Dungeon::BottomOfTheWell.IsVanilla() && IsChild && (CanChildAttack || Nuts);}}),
-                  Entrance(BOTTOM_OF_THE_WELL_MQ_PERIMETER, {[]{return Dungeon::BottomOfTheWell.IsMQ()      && IsChild;}}),
-                  Entrance(KAKARIKO_VILLAGE,                {[]{return true;}}),
+                  Entrance(RR_BOTTOM_OF_THE_WELL_MAIN_AREA,    {[]{return randoCtx->GetDungeon(Rando::BOTTOM_OF_THE_WELL)->IsVanilla() && logic->IsChild && (logic->CanChildAttack || logic->CanUse(RG_NUTS));}}),
+                  Entrance(RR_BOTTOM_OF_THE_WELL_MQ_PERIMETER, {[]{return randoCtx->GetDungeon(Rando::BOTTOM_OF_THE_WELL)->IsMQ()      && logic->IsChild;}}),
+                  Entrance(RR_KAKARIKO_VILLAGE,                {[]{return true;}}),
   });
 
   /*--------------------------
   |     VANILLA DUNGEON      |
   ---------------------------*/
-  if (Dungeon::BottomOfTheWell.IsVanilla()) {
-  areaTable[BOTTOM_OF_THE_WELL_MAIN_AREA] = Area("Bottom of the Well Main Area", "Bottom of the Well", BOTTOM_OF_THE_WELL, NO_DAY_NIGHT_CYCLE, {
+  if (randoCtx->GetDungeon(Rando::BOTTOM_OF_THE_WELL)->IsVanilla()) {
+  areaTable[RR_BOTTOM_OF_THE_WELL_MAIN_AREA] = Region("Bottom of the Well Main Region", "Bottom of the Well", RA_BOTTOM_OF_THE_WELL, NO_DAY_NIGHT_CYCLE, {
                   //Events
-                  EventAccess(&StickPot, {[]{return true;}}),
-                  EventAccess(&NutPot,   {[]{return true;}}),
+                  EventAccess(&logic->StickPot, {[]{return true;}}),
+                  EventAccess(&logic->NutPot,   {[]{return true;}}),
                 }, {
                   //Locations
-                  LocationAccess(BOTTOM_OF_THE_WELL_FRONT_LEFT_FAKE_WALL_CHEST,   {[]{return LogicLensBotw || CanUse(LENS_OF_TRUTH);}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_FRONT_CENTER_BOMBABLE_CHEST,  {[]{return HasExplosives;}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_RIGHT_BOTTOM_FAKE_WALL_CHEST, {[]{return LogicLensBotw || CanUse(LENS_OF_TRUTH);}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_COMPASS_CHEST,                {[]{return LogicLensBotw || CanUse(LENS_OF_TRUTH);}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_CENTER_SKULLTULA_CHEST,       {[]{return LogicLensBotw || CanUse(LENS_OF_TRUTH);}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_BACK_LEFT_BOMBABLE_CHEST,     {[]{return (LogicLensBotw || CanUse(LENS_OF_TRUTH)) && HasExplosives;}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_FREESTANDING_KEY,             {[]{return Sticks || CanUse(DINS_FIRE);}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_LENS_OF_TRUTH_CHEST,          {[]{return CanPlay(ZeldasLullaby) && (KokiriSword || (Sticks && LogicChildDeadhand));}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_INVISIBLE_CHEST,              {[]{return CanPlay(ZeldasLullaby) && (LogicLensBotw || CanUse(LENS_OF_TRUTH));}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_UNDERWATER_FRONT_CHEST,       {[]{return CanPlay(ZeldasLullaby);}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_UNDERWATER_LEFT_CHEST,        {[]{return CanPlay(ZeldasLullaby);}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_MAP_CHEST,                    {[]{return HasExplosives || (((SmallKeys(BOTTOM_OF_THE_WELL, 3) && (LogicLensBotw || CanUse(LENS_OF_TRUTH))) || CanUse(DINS_FIRE) || (Sticks && LogicBotwBasement)) && GoronBracelet);}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_FIRE_KEESE_CHEST,             {[]{return SmallKeys(BOTTOM_OF_THE_WELL, 3) && (LogicLensBotw || CanUse(LENS_OF_TRUTH));}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_LIKE_LIKE_CHEST,              {[]{return SmallKeys(BOTTOM_OF_THE_WELL, 3) && (LogicLensBotw || CanUse(LENS_OF_TRUTH));}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_GS_WEST_INNER_ROOM,           {[]{return Boomerang && (LogicLensBotw || CanUse(LENS_OF_TRUTH)) && SmallKeys(BOTTOM_OF_THE_WELL, 3);}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_GS_EAST_INNER_ROOM,           {[]{return Boomerang && (LogicLensBotw || CanUse(LENS_OF_TRUTH)) && SmallKeys(BOTTOM_OF_THE_WELL, 3);}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_GS_LIKE_LIKE_CAGE,            {[]{return SmallKeys(BOTTOM_OF_THE_WELL, 3) && (LogicLensBotw || CanUse(LENS_OF_TRUTH)) && Boomerang;}}),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_FRONT_LEFT_FAKE_WALL_CHEST,   randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_FRONT_CENTER_BOMBABLE_CHEST,  logic->HasExplosives),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_RIGHT_BOTTOM_FAKE_WALL_CHEST, randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_COMPASS_CHEST,                randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_CENTER_SKULLTULA_CHEST,       randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BACK_LEFT_BOMBABLE_CHEST,     (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)) && logic->HasExplosives),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_FREESTANDING_KEY,             (logic->Swim || logic->CanUse(RG_ZELDAS_LULLABY)) && logic->CanUse(RG_STICKS) || logic->CanUse(RG_DINS_FIRE)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_LENS_OF_TRUTH_CHEST,          logic->CanUse(RG_ZELDAS_LULLABY) && (logic->KokiriSword || (logic->CanUse(RG_STICKS) && randoCtx->GetTrickOption(RT_BOTW_CHILD_DEADHAND)))),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_INVISIBLE_CHEST,              logic->CanUse(RG_ZELDAS_LULLABY) && (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH))),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_UNDERWATER_FRONT_CHEST,       logic->CanUse(RG_ZELDAS_LULLABY)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_UNDERWATER_LEFT_CHEST,        logic->CanUse(RG_ZELDAS_LULLABY)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MAP_CHEST,                    logic->HasExplosives || (((logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 3) && (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH))) || logic->CanUse(RG_DINS_FIRE) || (logic->CanUse(RG_STICKS) && randoCtx->GetTrickOption(RT_BOTW_BASEMENT))) && logic->GoronBracelet)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_FIRE_KEESE_CHEST,             logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 3) && (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH))),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_LIKE_LIKE_CHEST,              logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 3) && (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH))),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_GS_WEST_INNER_ROOM,           logic->Boomerang && (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)) && logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 3)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_GS_EAST_INNER_ROOM,           logic->Boomerang && (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)) && logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 3)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_GS_LIKE_LIKE_CAGE,            logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 3) && (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)) && logic->Boomerang),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_LEFT_SIDE_POT_1,              logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_LEFT_SIDE_POT_2,              logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_LEFT_SIDE_POT_3,              logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_NEAR_ENTRANCE_POT_1,          logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_NEAR_ENTRANCE_POT_2,          logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_FIRE_KEESE_POT_1,             logic->CanBreakPots && logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 3)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_UNDERWATER_POT,               (logic->CanBreakPots && logic->CanUse(RG_ZELDAS_LULLABY)) || logic->Boomerang),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_1,               logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_2,               logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_3,               logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_4,               logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_5,               logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_6,               logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_7,               logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_8,               logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_9,               logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_10,              logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_11,              logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_POT_12,              logic->CanBreakPots),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_PLATFORM_LEFT_RUPEE,        randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_PLATFORM_BACK_LEFT_RUPEE,   randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_PLATFORM_MIDDLE_RUPEE,      randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_PLATFORM_BACK_RIGHT_RUPEE,  randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_PLATFORM_RIGHT_RUPEE,       randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_COFFIN_ROOM_FRONT_LEFT_HEART,        (logic->HasItem(RG_BRONZE_SCALE) || logic->CanUse(RG_ZELDAS_LULLABY)) && (logic->CanUse(RG_STICKS) || logic->CanUse(RG_DINS_FIRE))),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_COFFIN_ROOM_MIDDLE_RIGHT_HEART,      (logic->HasItem(RG_BRONZE_SCALE) || logic->CanUse(RG_ZELDAS_LULLABY)) && (logic->CanUse(RG_STICKS) || logic->CanUse(RG_DINS_FIRE))),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_BASEMENT_SUN_FAIRY,           (randoCtx->GetTrickOption(RT_LENS_BOTW) || logic->CanUse(RG_LENS_OF_TRUTH)) && logic->CanUse(RG_SUNS_SONG)),
                 }, {
                   //Exits
-                  Entrance(BOTTOM_OF_THE_WELL_ENTRYWAY, {[]{return true;}}),
+                  Entrance(RR_BOTTOM_OF_THE_WELL_ENTRYWAY, {[]{return true;}}),
   });
   }
 
   /*---------------------------
   |   MASTER QUEST DUNGEON    |
   ---------------------------*/
-  if (Dungeon::BottomOfTheWell.IsMQ()) {
-  areaTable[BOTTOM_OF_THE_WELL_MQ_PERIMETER] = Area("Bottom of the Well MQ Perimeter", "Bottom of the Well", BOTTOM_OF_THE_WELL, NO_DAY_NIGHT_CYCLE, {
+  if (randoCtx->GetDungeon(Rando::BOTTOM_OF_THE_WELL)->IsMQ()) {
+  areaTable[RR_BOTTOM_OF_THE_WELL_MQ_PERIMETER] = Region("Bottom of the Well MQ Perimeter", "Bottom of the Well", RA_BOTTOM_OF_THE_WELL, NO_DAY_NIGHT_CYCLE, {
                   //Events
-                  //EventAccess(&WallFairy, {[]{return WallFairy || Slingshot;}}),
+                  //EventAccess(&WallFairy, {[]{return WallFairy || logic->Slingshot;}}),
   }, {
                   //Locations
-                  LocationAccess(BOTTOM_OF_THE_WELL_MQ_COMPASS_CHEST,              {[]{return KokiriSword || (Sticks && LogicChildDeadhand);}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_MQ_DEAD_HAND_FREESTANDING_KEY, {[]{return HasExplosives || (LogicBotwMQDeadHandKey && Boomerang);}}),
-                    //Trick: HasExplosives || (LogicBotWMQDeadHandKey && Boomerang)
-                  LocationAccess(BOTTOM_OF_THE_WELL_MQ_GS_BASEMENT,                {[]{return CanChildAttack;}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_MQ_GS_COFFIN_ROOM,             {[]{return CanChildAttack && SmallKeys(BOTTOM_OF_THE_WELL, 2);}}),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_COMPASS_CHEST,              logic->KokiriSword || (logic->CanUse(RG_STICKS) && randoCtx->GetTrickOption(RT_BOTW_CHILD_DEADHAND))),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_DEAD_HAND_FREESTANDING_KEY, logic->HasExplosives || (randoCtx->GetTrickOption(RT_BOTW_MQ_DEADHAND_KEY) && logic->Boomerang)),
+                    //Trick: logic->HasExplosives || (LogicBotWMQDeadHandKey && logic->Boomerang)
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_GS_BASEMENT,                logic->CanChildAttack),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_GS_COFFIN_ROOM,             logic->CanChildAttack && logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 2)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BOMB_LEFT_HEART,            logic->HasExplosives),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BOMB_RIGHT_HEART,           logic->HasExplosives),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_HALLWAY_FRONT_HEART,   true),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_HALLWAY_LEFT_HEART,    true),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_HALLWAY_RIGHT_HEART,   true),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_COFFIN_ROOM_FRONT_RIGHT_HEART,  logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 2)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_COFFIN_ROOM_MIDDLE_LEFT_HEART,  logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 2)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_BASEMENT_SUN_FAIRY,         logic->CanUse(RG_SUNS_SONG)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_EAST_FACE_1,                    logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_EAST_FACE_2,                    logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_EAST_FACE_3,                    logic->CanUse(RG_FAIRY_SLINGSHOT)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_WEST_FACE,                      logic->CanUse(RG_FAIRY_SLINGSHOT)),
   }, {
                   //Exits
-                  Entrance(BOTTOM_OF_THE_WELL_ENTRYWAY,  {[]{return true;}}),
-                  Entrance(BOTTOM_OF_THE_WELL_MQ_MIDDLE, {[]{return CanPlay(ZeldasLullaby) || (LogicBotwMQPits && HasExplosives);}}),
-                    //Trick: CanPlay(ZeldasLullaby) || (LogicBotWMQPits && HasExplosives)
+                  Entrance(RR_BOTTOM_OF_THE_WELL_ENTRYWAY,  {[]{return true;}}),
+                  Entrance(RR_BOTTOM_OF_THE_WELL_MQ_MIDDLE, {[]{return logic->CanUse(RG_ZELDAS_LULLABY) || (randoCtx->GetTrickOption(RT_BOTW_MQ_PITS) && logic->HasExplosives);}}),
+                    //Trick: logic->CanUse(RG_ZELDAS_LULLABY) || (LogicBotWMQPits && logic->HasExplosives)
   });
 
-  areaTable[BOTTOM_OF_THE_WELL_MQ_MIDDLE] = Area("Bottom of the Well MQ Middle", "Bottom of the Well", BOTTOM_OF_THE_WELL, NO_DAY_NIGHT_CYCLE, {}, {
+  areaTable[RR_BOTTOM_OF_THE_WELL_MQ_MIDDLE] = Region("Bottom of the Well MQ Middle", "Bottom of the Well", RA_BOTTOM_OF_THE_WELL, NO_DAY_NIGHT_CYCLE, {}, {
                   //Locations
-                  LocationAccess(BOTTOM_OF_THE_WELL_MQ_MAP_CHEST,                        {[]{return true;}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_MQ_LENS_OF_TRUTH_CHEST,              {[]{return HasExplosives && SmallKeys(BOTTOM_OF_THE_WELL, 2);}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_MQ_EAST_INNER_ROOM_FREESTANDING_KEY, {[]{return true;}}),
-                  LocationAccess(BOTTOM_OF_THE_WELL_MQ_GS_WEST_INNER_ROOM,               {[]{return CanChildAttack && (LogicBotwMQPits || HasExplosives);}}),
-                    //Trick: CanChildAttack && (LogicBotWMQPits || HasExplosives)
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_MAP_CHEST,                        true),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_LENS_OF_TRUTH_CHEST,              logic->HasExplosives && logic->SmallKeys(RR_BOTTOM_OF_THE_WELL, 2)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_EAST_INNER_ROOM_FREESTANDING_KEY, true),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_GS_WEST_INNER_ROOM,               logic->CanChildAttack && (randoCtx->GetTrickOption(RT_BOTW_MQ_PITS) || logic->HasExplosives)),
+                    //Trick: logic->CanChildAttack && (LogicBotWMQPits || logic->HasExplosives)
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_CELL_SUN_FAIRY,                   logic->CanUse(RG_SUNS_SONG)),
+                  LOCATION(RC_BOTTOM_OF_THE_WELL_MQ_EAST_INNER_ROOM_FACE,             logic->CanUse(RG_FAIRY_SLINGSHOT)),
   }, {
                   //Exits
-                  Entrance(BOTTOM_OF_THE_WELL_MQ_PERIMETER, {[]{return true;}}),
+                  Entrance(RR_BOTTOM_OF_THE_WELL_MQ_PERIMETER, {[]{return true;}}),
   });
   }
 }

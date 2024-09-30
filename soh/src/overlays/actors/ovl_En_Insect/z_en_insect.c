@@ -211,6 +211,13 @@ void EnInsect_Init(Actor* thisx, PlayState* play2) {
 
         func_80A7D39C(this);
 
+        // For bugs that aren't linked to a soil patch, we remove the "short lived" flag to prevent them from despawning
+        // And exit early to not increment the "bugs dropped count"
+        if (CVarGetInteger(CVAR_CHEAT("NoBugsDespawn"), 0) && this->soilActor == NULL) {
+            this->unk_314 &= ~4;
+            return;
+        }
+
         D_80A7DEB8++;
     } else {
         rand = Rand_ZeroOne();
@@ -779,7 +786,7 @@ void EnInsect_Update(Actor* thisx, PlayState* play) {
 
             if (!(this->unk_314 & 8) && D_80A7DEB4 < 4 && EnInsect_InBottleRange(this, play) &&
                 // GI_MAX in this case allows the player to catch the actor in a bottle
-                func_8002F434(&this->actor, play, GI_MAX, 60.0f, 30.0f)) {
+                Actor_OfferGetItem(&this->actor, play, GI_MAX, 60.0f, 30.0f)) {
                 D_80A7DEB4++;
             }
         }
@@ -792,7 +799,7 @@ void EnInsect_Draw(Actor* thisx, PlayState* play) {
     EnInsect* this = (EnInsect*)thisx;
 
     Gfx_SetupDL_25Opa(play->state.gfxCtx);
-    SkelAnime_DrawOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, NULL, NULL, NULL);
+    SkelAnime_DrawSkeletonOpa(play, &this->skelAnime, NULL, NULL, NULL);
     Collider_UpdateSpheres(0, &this->collider);
     D_80A7DEB4 = 0;
 }

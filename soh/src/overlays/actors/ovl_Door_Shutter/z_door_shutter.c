@@ -23,6 +23,7 @@
 #include "objects/object_menkuri_objects/object_menkuri_objects.h"
 #include "objects/object_demo_kekkai/object_demo_kekkai.h"
 #include "objects/object_ouke_haka/object_ouke_haka.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS ACTOR_FLAG_UPDATE_WHILE_CULLED
 
@@ -103,7 +104,7 @@ static ShutterInfo sShutterInfo[] = {
     { gPhantomGanonBarsDL, NULL, 130, 12, 50, 15 },
     { gGohmaDoorDL, NULL, 130, 12, 50, 15 },
     { gSpiritDoorDL, gJyaDoorMetalBarsDL, 240, 14, 50, 15 },
-    { object_bdoor_DL_0010C0, NULL, 130, 12, 50, 15 },
+    { gBossDoorDL, NULL, 130, 12, 50, 15 },
     { gDungeonDoorDL, gDoorMetalBarsDL, 130, 12, 20, 15 },
     { gFireTempleDoorFrontDL, gDoorMetalBarsDL, 130, 12, 20, 15 },
     { gFireTempleDoorBackDL, gDoorMetalBarsDL, 130, 12, 20, 15 },
@@ -135,12 +136,12 @@ typedef struct {
 } ShutterSceneInfo;
 
 static ShutterSceneInfo sSceneInfo[] = {
-    { SCENE_YDAN, 0x02 },       { SCENE_DDAN, 0x03 },         { SCENE_DDAN_BOSS, 0x03 },
-    { SCENE_BDAN, 0x04 },       { SCENE_BMORI1, 0x05 },       { SCENE_HIDAN, 0x08 },
-    { SCENE_GANON, 0x09 },      { SCENE_GANON_BOSS, 0x09 },   { SCENE_JYASINZOU, 0x0A },
-    { SCENE_JYASINBOSS, 0x0A }, { SCENE_MIZUSIN, 0x0B },      { SCENE_HAKADAN, 0x0C },
-    { SCENE_HAKADANCH, 0x0C },  { SCENE_ICE_DOUKUTO, 0x0D },  { SCENE_MEN, 0x0E },
-    { SCENE_GANONTIKA, 0x0F },  { SCENE_HAKAANA_OUKE, 0x10 }, { -1, 0x07 },
+    { SCENE_DEKU_TREE, 0x02 },            { SCENE_DODONGOS_CAVERN, 0x03 },    { SCENE_DODONGOS_CAVERN_BOSS, 0x03 },
+    { SCENE_JABU_JABU, 0x04 },            { SCENE_FOREST_TEMPLE, 0x05 },      { SCENE_FIRE_TEMPLE, 0x08 },
+    { SCENE_GANONS_TOWER, 0x09 },         { SCENE_GANONDORF_BOSS, 0x09 },     { SCENE_SPIRIT_TEMPLE, 0x0A },
+    { SCENE_SPIRIT_TEMPLE_BOSS, 0x0A },   { SCENE_WATER_TEMPLE, 0x0B },       { SCENE_SHADOW_TEMPLE, 0x0C },
+    { SCENE_BOTTOM_OF_THE_WELL, 0x0C },   { SCENE_ICE_CAVERN, 0x0D },         { SCENE_GERUDO_TRAINING_GROUND, 0x0E },
+    { SCENE_INSIDE_GANONS_CASTLE, 0x0F }, { SCENE_ROYAL_FAMILYS_TOMB, 0x10 }, { -1, 0x07 },
 };
 
 typedef struct {
@@ -150,12 +151,12 @@ typedef struct {
 } BossDoorInfo;
 
 static BossDoorInfo D_80998288[] = {
-    { SCENE_HIDAN, SCENE_FIRE_BS, 0x01 },
-    { SCENE_MIZUSIN, SCENE_MIZUSIN_BS, 0x02 },
-    { SCENE_HAKADAN, SCENE_HAKADAN_BS, 0x03 },
-    { SCENE_GANON, SCENE_GANON_BOSS, 0x04 },
-    { SCENE_BMORI1, SCENE_MORIBOSSROOM, 0x05 },
-    { SCENE_JYASINZOU, SCENE_JYASINBOSS, 0x06 },
+    { SCENE_FIRE_TEMPLE, SCENE_FIRE_TEMPLE_BOSS, 0x01 },
+    { SCENE_WATER_TEMPLE, SCENE_WATER_TEMPLE_BOSS, 0x02 },
+    { SCENE_SHADOW_TEMPLE, SCENE_SHADOW_TEMPLE_BOSS, 0x03 },
+    { SCENE_GANONS_TOWER, SCENE_GANONDORF_BOSS, 0x04 },
+    { SCENE_FOREST_TEMPLE, SCENE_FOREST_TEMPLE_BOSS, 0x05 },
+    { SCENE_SPIRIT_TEMPLE, SCENE_SPIRIT_TEMPLE_BOSS, 0x06 },
     { -1, -1, 0x00 },
 };
 
@@ -165,8 +166,8 @@ static Gfx* sJabuDoorDLists[] = {
 };
 
 static void* D_809982D4[] = {
-    object_bdoor_Tex_0065C0, object_bdoor_Tex_0035C0, object_bdoor_Tex_0055C0, object_bdoor_Tex_0045C0,
-    object_bdoor_Tex_000000, object_bdoor_Tex_0025C0, object_bdoor_Tex_0015C0,
+    gBossDoorDefaultTex, gBossDoorFireTex, gBossDoorWaterTex, gBossDoorShadowTex,
+    gBossDoorGanonsCastleTex, gBossDoorForestTex, gBossDoorSpiritTex,
 };
 
 void DoorShutter_SetupAction(DoorShutter* this, DoorShutterActionFunc actionFunc) {
@@ -260,7 +261,7 @@ void DoorShutter_Init(Actor* thisx, PlayState* play2) {
     DoorShutter_SetupAction(this, DoorShutter_SetupType);
     this->unk_16B = phi_a3;
     if (this->doorType == SHUTTER_KEY_LOCKED || this->doorType == SHUTTER_BOSS) {
-        if (!Flags_GetSwitch(play, this->dyna.actor.params & 0x3F)) {
+        if (GameInteractor_Should(VB_LOCK_DOOR, !Flags_GetSwitch(play, this->dyna.actor.params & 0x3F), this)) {
             this->unk_16E = 10;
         }
         Actor_SetFocus(&this->dyna.actor, 60.0f);
@@ -354,9 +355,11 @@ void func_80996A54(DoorShutter* this, PlayState* play) {
     if (Flags_GetClear(play, this->dyna.actor.room) || Flags_GetTempClear(play, this->dyna.actor.room)) {
         Flags_SetClear(play, this->dyna.actor.room);
         DoorShutter_SetupAction(this, func_80997150);
-        OnePointCutscene_Attention(play, &this->dyna.actor);
-        OnePointCutscene_Attention(play, &GET_PLAYER(play)->actor);
-        this->unk_16F = -100;
+        if (GameInteractor_Should(VB_PLAY_ONEPOINT_ACTOR_CS, true, this)) {
+            OnePointCutscene_Attention(play, &this->dyna.actor);
+            OnePointCutscene_Attention(play, &GET_PLAYER(play)->actor);
+            this->unk_16F = -100;
+        }
     } else if (func_809968D4(this, play) != 0) {
         Player* player = GET_PLAYER(play);
 
@@ -470,12 +473,14 @@ void func_80996EE8(DoorShutter* this, PlayState* play) {
     if (func_80996E08(this, play, 1.0f)) {
         if (Flags_GetSwitch(play, this->dyna.actor.params & 0x3F)) {
             DoorShutter_SetupAction(this, func_80997150);
-            OnePointCutscene_Attention(play, &this->dyna.actor);
-            this->unk_16F = -100;
+            if (GameInteractor_Should(VB_PLAY_ONEPOINT_ACTOR_CS, true, this)) {
+                OnePointCutscene_Attention(play, &this->dyna.actor);
+                this->unk_16F = -100;
+            }
         } else if (func_809968D4(this, play)) {
             Player* player = GET_PLAYER(play);
             // Jabu navi text for switch doors is different
-            player->naviTextId = (play->sceneNum == SCENE_BDAN) ? -0x20B : -0x202;
+            player->naviTextId = (play->sceneNum == SCENE_JABU_JABU) ? -0x20B : -0x202;
         }
     }
 }
@@ -553,9 +558,9 @@ void func_80997220(DoorShutter* this, PlayState* play) {
     }
     this->unk_164 = 0;
     this->dyna.actor.velocity.y = 0.0f;
-    if (DoorShutter_SetupDoor(this, play) && !(player->stateFlags1 & 0x800)) {
+    if (DoorShutter_SetupDoor(this, play) && !(player->stateFlags1 & PLAYER_STATE1_ITEM_OVER_HEAD)) {
         DoorShutter_SetupAction(this, func_80997568);
-        func_8002DF54(play, NULL, 2);
+        Player_SetCsActionWithHaltedActors(play, NULL, 2);
     }
 }
 
@@ -589,7 +594,7 @@ void func_80997528(DoorShutter* this, PlayState* play) {
 
 void func_80997568(DoorShutter* this, PlayState* play) {
     if (this->unk_16F++ > 30) {
-        func_8002DF54(play, NULL, 7);
+        Player_SetCsActionWithHaltedActors(play, NULL, 7);
         DoorShutter_SetupDoor(this, play);
     }
 }
@@ -637,7 +642,7 @@ void DoorShutter_Update(Actor* thisx, PlayState* play) {
     DoorShutter* this = (DoorShutter*)thisx;
     Player* player = GET_PLAYER(play);
 
-    if (!(player->stateFlags1 & 0x100004C0) || (this->actionFunc == DoorShutter_SetupType)) {
+    if (!(player->stateFlags1 & (PLAYER_STATE1_TEXT_ON_SCREEN | PLAYER_STATE1_DEAD | PLAYER_STATE1_GETTING_ITEM | PLAYER_STATE1_IN_ITEM_CS)) || (this->actionFunc == DoorShutter_SetupType)) {
         this->actionFunc(this, play);
     }
 }

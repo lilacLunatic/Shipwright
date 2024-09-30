@@ -1,5 +1,6 @@
 #include "z_en_eiyer.h"
 #include "objects/object_ei/object_ei.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE)
 
@@ -613,7 +614,7 @@ void EnEiyer_UpdateDamage(EnEiyer* this, PlayState* play) {
                 Enemy_StartFinishingBlow(play, &this->actor);
                 Audio_PlayActorSound2(&this->actor, NA_SE_EN_EIER_DEAD);
                 this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
-                gSaveContext.sohStats.count[COUNT_ENEMIES_DEFEATED_STINGER]++;
+                GameInteractor_ExecuteOnEnemyDefeat(&this->actor);
             }
 
             // If underground, one hit kill
@@ -707,14 +708,14 @@ void EnEiyer_Draw(Actor* thisx, PlayState* play) {
         gSPSegment(POLY_OPA_DISP++, 0x08, &D_80116280[2]);
         gDPSetEnvColor(POLY_OPA_DISP++, 255, 255, 255, 255);
 
-        POLY_OPA_DISP = SkelAnime_Draw(play, this->skelanime.skeleton, this->skelanime.jointTable,
+        POLY_OPA_DISP = SkelAnime_DrawSkeleton2(play, &this->skelanime,
                                        EnEiyer_OverrideLimbDraw, NULL, this, POLY_OPA_DISP);
     } else {
         Gfx_SetupDL_25Xlu(play->state.gfxCtx);
         gSPSegment(POLY_XLU_DISP++, 0x08, D_80116280);
         gDPSetEnvColor(POLY_XLU_DISP++, 255, 255, 255, this->actor.shape.shadowAlpha);
 
-        POLY_XLU_DISP = SkelAnime_Draw(play, this->skelanime.skeleton, this->skelanime.jointTable,
+        POLY_XLU_DISP = SkelAnime_DrawSkeleton2(play, &this->skelanime,
                                        EnEiyer_OverrideLimbDraw, NULL, this, POLY_XLU_DISP);
     }
     CLOSE_DISPS(play->state.gfxCtx);

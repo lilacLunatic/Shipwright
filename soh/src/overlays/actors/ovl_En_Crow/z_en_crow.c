@@ -1,5 +1,6 @@
 #include "z_en_crow.h"
 #include "objects/object_crow/object_crow.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_IGNORE_QUAKE | ACTOR_FLAG_ARROW_DRAGGABLE)
 
@@ -191,7 +192,7 @@ void EnCrow_SetupDamaged(EnCrow* this, PlayState* play) {
 void EnCrow_SetupDie(EnCrow* this) {
     this->actor.colorFilterTimer = 0;
     this->actionFunc = EnCrow_Die;
-    gSaveContext.sohStats.count[COUNT_ENEMIES_DEFEATED_GUAY]++;
+    GameInteractor_ExecuteOnEnemyDefeat(&this->actor);
 }
 
 void EnCrow_SetupTurnAway(EnCrow* this) {
@@ -280,8 +281,9 @@ void EnCrow_FlyIdle(EnCrow* this, PlayState* play) {
     if (this->timer != 0) {
         this->timer--;
     }
-    if ((this->timer == 0) && (this->actor.xzDistToPlayer < 300.0f) && !(player->stateFlags1 & 0x00800000) &&
-        (this->actor.yDistToWater < -40.0f) && (Player_GetMask(play) != PLAYER_MASK_SKULL)) {
+    if ((this->timer == 0) && (this->actor.xzDistToPlayer < 300.0f) && !(player->stateFlags1 & PLAYER_STATE1_ON_HORSE) &&
+        (this->actor.yDistToWater < -40.0f) && (Player_GetMask(play) != PLAYER_MASK_SKULL) &&
+        !CVarGetInteger(CVAR_CHEAT("NoKeeseGuayTarget"), 0)) {
         EnCrow_SetupDiveAttack(this);
     }
 }
@@ -318,7 +320,8 @@ void EnCrow_DiveAttack(EnCrow* this, PlayState* play) {
 
     if ((this->timer == 0) || (Player_GetMask(play) == PLAYER_MASK_SKULL) ||
         (this->collider.base.atFlags & AT_HIT) || (this->actor.bgCheckFlags & 9) ||
-        (player->stateFlags1 & 0x00800000) || (this->actor.yDistToWater > -40.0f)) {
+        (player->stateFlags1 & PLAYER_STATE1_ON_HORSE) || (this->actor.yDistToWater > -40.0f) ||
+        CVarGetInteger(CVAR_CHEAT("NoKeeseGuayTarget"), 0)) {
         if (this->collider.base.atFlags & AT_HIT) {
             this->collider.base.atFlags &= ~AT_HIT;
             Audio_PlayActorSound2(&this->actor, NA_SE_EN_KAICHO_ATTACK);
@@ -361,7 +364,7 @@ void EnCrow_Die(EnCrow* this, PlayState* play) {
         } else {
             Item_DropCollectible(play, &this->actor.world.pos, ITEM00_RUPEE_RED);
         }
-        if (!CVarGetInteger("gRandomizedEnemies", 0)) {
+        if (!CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0)) {
             EnCrow_SetupRespawn(this);
         } else {
             Actor_Kill(this);
@@ -512,6 +515,5 @@ void EnCrow_Draw(Actor* thisx, PlayState* play) {
     EnCrow* this = (EnCrow*)thisx;
 
     Gfx_SetupDL_25Opa(play->state.gfxCtx);
-    SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
-                          EnCrow_OverrideLimbDraw, EnCrow_PostLimbDraw, this);
+    SkelAnime_DrawSkeletonOpa(play, &this->skelAnime, EnCrow_OverrideLimbDraw, EnCrow_PostLimbDraw, this);
 }

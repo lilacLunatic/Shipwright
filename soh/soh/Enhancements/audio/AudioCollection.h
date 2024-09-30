@@ -1,3 +1,4 @@
+#pragma once
 #ifdef __cplusplus
 #include <map>
 #include <string>
@@ -14,6 +15,7 @@ enum SeqType {
     SEQ_BGM_ERROR  = 1 << 5,
     SEQ_SFX        = 1 << 6,
     SEQ_INSTRUMENT = 1 << 7,
+    SEQ_VOICE      = 1 << 8,
     SEQ_BGM_CUSTOM = SEQ_BGM_WORLD | SEQ_BGM_EVENT | SEQ_BGM_BATTLE,
 };
 
@@ -24,6 +26,8 @@ struct SequenceInfo {
     std::string label;
     std::string sfxKey;
     SeqType category;
+    bool canBeReplaced;
+    bool canBeUsedAsReplacement;
 };
 
 class AudioCollection {
@@ -61,6 +65,8 @@ class AudioCollection {
         const char* GetSequenceName(uint16_t seqId);
         bool HasSequenceNum(uint16_t seqId);
         size_t SequenceMapSize();
+        std::string GetCvarKey(std::string sfxKey);
+        std::string GetCvarLockKey(std::string sfxKey);
 };
 #else
 void AudioCollection_AddToCollection(char *otrPath, uint16_t seqNum);

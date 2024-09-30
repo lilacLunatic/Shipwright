@@ -9,6 +9,7 @@
 #include "objects/object_ahg/object_ahg.h"
 #include "objects/object_boj/object_boj.h"
 #include <assert.h>
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_WHILE_CULLED)
 
@@ -81,7 +82,21 @@ static EnSthActionFunc sRewardObtainedWaitActions[6] = {
 };
 
 static u16 sEventFlags[6] = {
-    0, EVENTCHKINF_SKULLTULA_REWARD_10_MASK, EVENTCHKINF_SKULLTULA_REWARD_20_MASK, EVENTCHKINF_SKULLTULA_REWARD_30_MASK, EVENTCHKINF_SKULLTULA_REWARD_40_MASK, EVENTCHKINF_SKULLTULA_REWARD_50_MASK,
+    0,
+    EVENTCHKINF_SKULLTULA_REWARD_10_MASK,
+    EVENTCHKINF_SKULLTULA_REWARD_20_MASK,
+    EVENTCHKINF_SKULLTULA_REWARD_30_MASK,
+    EVENTCHKINF_SKULLTULA_REWARD_40_MASK,
+    EVENTCHKINF_SKULLTULA_REWARD_50_MASK,
+};
+
+static u16 sEventFlagsShift[6] = {
+    0,
+    EVENTCHKINF_SKULLTULA_REWARD_10_SHIFT,
+    EVENTCHKINF_SKULLTULA_REWARD_20_SHIFT,
+    EVENTCHKINF_SKULLTULA_REWARD_30_SHIFT,
+    EVENTCHKINF_SKULLTULA_REWARD_40_SHIFT,
+    EVENTCHKINF_SKULLTULA_REWARD_50_SHIFT,
 };
 
 static s16 sGetItemIds[6] = {
@@ -242,63 +257,34 @@ void EnSth_ParentRewardObtainedWait(EnSth* this, PlayState* play) {
 
 void EnSth_GivePlayerItem(EnSth* this, PlayState* play) {
     u16 getItemId = sGetItemIds[this->actor.params];
-    GetItemEntry getItemEntry = (GetItemEntry)GET_ITEM_NONE;
-    
-    if (gSaveContext.n64ddFlag) {
-        switch (getItemId) {
-            case GI_RUPEE_GOLD:
-                if (!Flags_GetRandomizerInf(RAND_INF_KAK_100_GOLD_SKULLTULA_REWARD)) {
-                    getItemEntry = Randomizer_GetItemFromKnownCheck(RC_KAK_100_GOLD_SKULLTULA_REWARD, GI_RUPEE_GOLD);
-                    Flags_SetRandomizerInf(RAND_INF_KAK_100_GOLD_SKULLTULA_REWARD);
-                }
-                break;
-            case GI_WALLET_ADULT:
-                getItemEntry = Randomizer_GetItemFromKnownCheck(RC_KAK_10_GOLD_SKULLTULA_REWARD, GI_WALLET_ADULT);
-                break;
-            case GI_STONE_OF_AGONY:
-                getItemEntry = Randomizer_GetItemFromKnownCheck(RC_KAK_20_GOLD_SKULLTULA_REWARD, GI_STONE_OF_AGONY);
-                break;
-            case GI_WALLET_GIANT:
-                getItemEntry = Randomizer_GetItemFromKnownCheck(RC_KAK_30_GOLD_SKULLTULA_REWARD, GI_WALLET_GIANT);
-                break;
-            case GI_BOMBCHUS_10:
-                getItemEntry = Randomizer_GetItemFromKnownCheck(RC_KAK_40_GOLD_SKULLTULA_REWARD, GI_BOMBCHUS_10);
-                break;
-            case GI_HEART_PIECE:
-                getItemEntry = Randomizer_GetItemFromKnownCheck(RC_KAK_50_GOLD_SKULLTULA_REWARD, GI_HEART_PIECE);
-                break;
-        }
-        getItemId = getItemEntry.getItemId;
-    } else {
-        switch (this->actor.params) {
-            case 1:
-            case 3:
-                switch (CUR_UPG_VALUE(UPG_WALLET)) {
-                    case 0:
-                        getItemId = GI_WALLET_ADULT;
-                        break;
 
-                    case 1:
-                        getItemId = GI_WALLET_GIANT;
-                        break;
-                }
-                break;
-        }
+    switch (this->actor.params) {
+        case 1:
+        case 3:
+            switch (CUR_UPG_VALUE(UPG_WALLET)) {
+                case 0:
+                    getItemId = GI_WALLET_ADULT;
+                    break;
+
+                case 1:
+                    getItemId = GI_WALLET_GIANT;
+                    break;
+            }
+            break;
     }
 
-    if (!gSaveContext.n64ddFlag || getItemEntry.getItemId == GI_NONE) {
-        func_8002F434(&this->actor, play, getItemId, 10000.0f, 50.0f);
-    } else {
-        GiveItemEntryFromActor(&this->actor, play, getItemEntry, 10000.0f, 50.0f);
-    }
+    Actor_OfferGetItem(&this->actor, play, getItemId, 10000.0f, 50.0f);
 }
 
 void EnSth_GiveReward(EnSth* this, PlayState* play) {
-    if (Actor_HasParent(&this->actor, play)) {
+    if (Actor_HasParent(&this->actor, play) || !GameInteractor_Should(VB_GIVE_ITEM_FROM_SKULLTULA_REWARD, true, this)) {
         this->actor.parent = NULL;
         EnSth_SetupAction(this, EnSth_RewardObtainedTalk);
         gSaveContext.eventChkInf[EVENTCHKINF_SKULLTULA_REWARD_INDEX] |= this->eventFlag;
-    } else {
+        if (this->eventFlag != 0) {
+            GameInteractor_ExecuteOnFlagSet(FLAG_EVENT_CHECK_INF, (EVENTCHKINF_SKULLTULA_REWARD_INDEX << 4) + sEventFlagsShift[this->actor.params]);
+        }
+    } else if (GameInteractor_Should(VB_GIVE_ITEM_FROM_SKULLTULA_REWARD, true, this)) {
         EnSth_GivePlayerItem(this, play);
     }
     EnSth_FacePlayer(this, play);
@@ -308,7 +294,9 @@ void EnSth_RewardUnobtainedTalk(EnSth* this, PlayState* play) {
     if ((Message_GetState(&play->msgCtx) == TEXT_STATE_EVENT) && Message_ShouldAdvance(play)) {
         Message_CloseTextbox(play);
         EnSth_SetupAction(this, EnSth_GiveReward);
-        EnSth_GivePlayerItem(this, play);
+        if (GameInteractor_Should(VB_GIVE_ITEM_FROM_SKULLTULA_REWARD, true, this)) {
+            EnSth_GivePlayerItem(this, play);
+        }
     }
     EnSth_FacePlayer(this, play);
 }
@@ -441,8 +429,7 @@ void EnSth_Draw(Actor* thisx, PlayState* play) {
     } else {
         gSPSegment(POLY_OPA_DISP++, 0x09, EnSth_AllocColorDList(play->state.gfxCtx, 90, 110, 130, 255));
     }
-    SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
-                          EnSth_OverrideLimbDraw, EnSth_PostLimbDraw, &this->actor);
+    SkelAnime_DrawSkeletonOpa(play, &this->skelAnime, EnSth_OverrideLimbDraw, EnSth_PostLimbDraw, &this->actor);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }

@@ -1,27 +1,20 @@
 #pragma once
 
-#include "keys.hpp"
+#include "../randomizerTypes.h"
 
 #include <vector>
 #include <string>
-
-enum class SearchMode {
-  ReachabilitySearch,
-  GeneratePlaythrough,
-  CheckBeatable,
-  AllLocationsReachable,
-  ValidateWorld,
-  TimePassAccess,
-  TempleOfTimeAccess,
-  ValidStartingRegion,
-  PoeCollectorAccess,
-};
 
 void ClearProgress();
 void VanillaFill();
 int Fill();
 
-std::vector<uint32_t> GetAccessibleLocations(const std::vector<uint32_t>& allowedLocations,
-                                             SearchMode mode = SearchMode::ReachabilitySearch, std::string ignore = "",
-                                             bool checkPoeCollectorAccess = false,
-                                             bool checkOtherEntranceAccess = false);
+std::vector<RandomizerCheck> GetEmptyLocations(std::vector<RandomizerCheck> allowedLocations);
+
+std::vector<RandomizerCheck> ReachabilitySearch(const std::vector<RandomizerCheck>& allowedLocations, RandomizerGet ignore=RG_NONE);
+
+void GeneratePlaythrough();
+
+bool CheckBeatable(RandomizerGet ignore=RG_NONE);
+
+void ValidateEntrances(bool checkPoeCollectorAccess, bool checkOtherEntranceAccess);

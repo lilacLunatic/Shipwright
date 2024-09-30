@@ -65,6 +65,7 @@ typedef enum {
     CM_BOSS_RUSH_MENU,
     CM_START_BOSS_RUSH_MENU,
     CM_BOSS_RUSH_TO_QUEST,
+    CM_GENERATE_SEED,
 } ConfigMode;
 
 typedef enum {
@@ -142,7 +143,8 @@ typedef enum {
 
 typedef enum {
     /* 0 */ FS_SETTING_AUDIO,
-    /* 1 */ FS_SETTING_TARGET
+    /* 1 */ FS_SETTING_TARGET,
+    /* 2 */ FS_SETTING_LANGUAGE, // PAL N64 only
 } SettingIndex;
 
 typedef enum {
@@ -171,13 +173,6 @@ typedef enum {
     /* 04 */ FS_KBD_BTN_END,
     /* 99 */ FS_KBD_BTN_NONE = 99
 } KeyboardButton;
-
-typedef enum {
-    /* 00 */ FS_QUEST_NORMAL,
-    /* 01 */ FS_QUEST_MASTER,
-    /* 02 */ FS_QUEST_RANDOMIZER,
-    /* 03 */ FS_QUEST_BOSSRUSH,
-} FileSelectQuest;
 
 void FileChoose_SetupCopySource(GameState* thisx); 
 void FileChoose_SelectCopySource(GameState* thisx); 

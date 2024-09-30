@@ -2,11 +2,73 @@
 #define Z64ITEM_H
 
 typedef enum {
-    /* 0x00 */ EQUIP_SWORD,
-    /* 0x01 */ EQUIP_SHIELD,
-    /* 0x02 */ EQUIP_TUNIC,
-    /* 0x03 */ EQUIP_BOOTS
+    /* 0 */ EQUIP_TYPE_SWORD,
+    /* 1 */ EQUIP_TYPE_SHIELD,
+    /* 2 */ EQUIP_TYPE_TUNIC,
+    /* 3 */ EQUIP_TYPE_BOOTS,
+    /* 4 */ EQUIP_TYPE_MAX
 } EquipmentType;
+
+// `EquipInv*` enums are for Inventory.equipment (for example used in the `CHECK_OWNED_EQUIP` macro)
+
+typedef enum {
+    /* 0 */ EQUIP_INV_SWORD_KOKIRI,
+    /* 1 */ EQUIP_INV_SWORD_MASTER,
+    /* 2 */ EQUIP_INV_SWORD_BIGGORON,
+    /* 3 */ EQUIP_INV_SWORD_BROKENGIANTKNIFE
+} EquipInvSword;
+
+typedef enum {
+    /* 0 */ EQUIP_INV_SHIELD_DEKU,
+    /* 1 */ EQUIP_INV_SHIELD_HYLIAN,
+    /* 2 */ EQUIP_INV_SHIELD_MIRROR
+} EquipInvShield;
+
+typedef enum {
+    /* 0 */ EQUIP_INV_TUNIC_KOKIRI,
+    /* 1 */ EQUIP_INV_TUNIC_GORON,
+    /* 2 */ EQUIP_INV_TUNIC_ZORA
+} EquipInvTunic;
+
+typedef enum {
+    /* 0 */ EQUIP_INV_BOOTS_KOKIRI,
+    /* 1 */ EQUIP_INV_BOOTS_IRON,
+    /* 2 */ EQUIP_INV_BOOTS_HOVER
+} EquipInvBoots;
+
+// `EquipValue*` enums are for ItemEquips.equipment (for example used in the `CUR_EQUIP_VALUE` macro)
+
+typedef enum {
+    /* 0 */ EQUIP_VALUE_SWORD_NONE,
+    /* 1 */ EQUIP_VALUE_SWORD_KOKIRI,
+    /* 2 */ EQUIP_VALUE_SWORD_MASTER,
+    /* 3 */ EQUIP_VALUE_SWORD_BIGGORON,
+    /* 4 */ EQUIP_VALUE_SWORD_MAX
+} EquipValueSword;
+
+typedef enum {
+    /* 0 */ EQUIP_VALUE_SHIELD_NONE,
+    /* 1 */ EQUIP_VALUE_SHIELD_DEKU,
+    /* 2 */ EQUIP_VALUE_SHIELD_HYLIAN,
+    /* 3 */ EQUIP_VALUE_SHIELD_MIRROR,
+    /* 4 */ EQUIP_VALUE_SHIELD_MAX
+} EquipValueShield;
+
+typedef enum {
+    /* 0 */ EQUIP_VALUE_TUNIC_NONE,
+    /* 1 */ EQUIP_VALUE_TUNIC_KOKIRI,
+    /* 2 */ EQUIP_VALUE_TUNIC_GORON,
+    /* 3 */ EQUIP_VALUE_TUNIC_ZORA,
+    /* 4 */ EQUIP_VALUE_TUNIC_MAX
+} EquipValueTunic;
+
+typedef enum {
+    /* 0 */ EQUIP_VALUE_BOOTS_NONE,
+    /* 1 */ EQUIP_VALUE_BOOTS_KOKIRI,
+    /* 2 */ EQUIP_VALUE_BOOTS_IRON,
+    /* 3 */ EQUIP_VALUE_BOOTS_HOVER,
+    /* 4 */ EQUIP_VALUE_BOOTS_MAX
+} EquipValueBoots;
 
 typedef enum {
     /* 0x00 */ UPG_QUIVER,
@@ -248,6 +310,21 @@ typedef enum {
     /* 0xFE */ ITEM_NONE_FE = 0xFE,
     /* 0xFF */ ITEM_NONE = 0xFF
 } ItemID;
+
+typedef enum {
+    EQUIP_FLAG_SWORD_KOKIRI = 1 << 0,
+    EQUIP_FLAG_SWORD_MASTER = 1 << 1,
+    EQUIP_FLAG_SWORD_BGS = 1 << 2,
+    EQUIP_FLAG_SHIELD_DEKU = 1 << 4,
+    EQUIP_FLAG_SHIELD_HYLIAN = 1 << 5,
+    EQUIP_FLAG_SHIELD_MIRROR = 1 << 6,
+    EQUIP_FLAG_TUNIC_KOKIRI = 1 << 8,
+    EQUIP_FLAG_TUNIC_GORON = 1 << 9,
+    EQUIP_FLAG_TUNIC_ZORA = 1 << 10,
+    EQUIP_FLAG_BOOTS_KOKIRI = 1 << 12,
+    EQUIP_FLAG_BOOTS_IRON = 1 << 13,
+    EQUIP_FLAG_BOOTS_HOVER = 1 << 14,
+} EquipmentFlag;
 
 #define ITEM_TRADE_CHILD ITEM_WEIRD_EGG
 #define ITEM_TRADE_ADULT ITEM_POCKET_EGG
@@ -511,6 +588,8 @@ typedef enum {
     /* 0x79 */ GID_SONG_SUN,
     /* 0x7A */ GID_SONG_TIME,
     /* 0x7B */ GID_SONG_STORM,
+    /* 0x7C */ GID_TRIFORCE_PIECE,
+    /*      */ GID_FISHING_POLE,
     /* 0x7C */ GID_MAXIMUM
 
 } GetItemDrawID;

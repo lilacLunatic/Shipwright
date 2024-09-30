@@ -128,8 +128,8 @@ void func_80BADF0C(ShotSun* this, PlayState* play) {
         this->unk_1A4 = 0;
     } else {
         if (this->unk_1A4 == 0) {
-            if (!(player->stateFlags2 & 0x1000000)) {
-                player->stateFlags2 |= 0x800000;
+            if (!(player->stateFlags2 & PLAYER_STATE2_ATTEMPT_PLAY_FOR_ACTOR)) {
+                player->stateFlags2 |= PLAYER_STATE2_NEAR_OCARINA_ACTOR;
                 return;
             } else {
                 this->unk_1A4 = 1;
@@ -162,8 +162,8 @@ void ShotSun_UpdateHyliaSun(ShotSun* this, PlayState* play) {
     if (this->collider.base.acFlags & AC_HIT) {
         func_80078884(NA_SE_SY_CORRECT_CHIME);
         osSyncPrintf(VT_FGCOL(CYAN) "SHOT_SUN HIT!!!!!!!\n" VT_RST);
-        if ((INV_CONTENT(ITEM_ARROW_FIRE) == ITEM_NONE && !gSaveContext.n64ddFlag) ||
-            (!Flags_GetTreasure(play, 0x1F) && gSaveContext.n64ddFlag)) {
+        if ((INV_CONTENT(ITEM_ARROW_FIRE) == ITEM_NONE && !IS_RANDO) ||
+            (!Flags_GetTreasure(play, 0x1F) && IS_RANDO)) {
             Actor_Spawn(&play->actorCtx, play, ACTOR_ITEM_ETCETERA, 700.0f, -800.0f, 7261.0f, 0, 0, 0, 7, true);
             play->csCtx.segment = SEGMENTED_TO_VIRTUAL(gLakeHyliaFireArrowsCS);
             gSaveContext.cutsceneTrigger = 1;

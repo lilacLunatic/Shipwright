@@ -7,7 +7,7 @@
 #include "z_en_hs.h"
 #include "vt.h"
 #include "objects/object_hs/object_hs.h"
-#include "soh/Enhancements/randomizer/adult_trade_shuffle.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
 
@@ -79,25 +79,7 @@ void EnHs_Init(Actor* thisx, PlayState* play) {
         // "chicken shop (adult era)"
         osSyncPrintf(VT_FGCOL(CYAN) " ヒヨコの店(大人の時) \n" VT_RST);
         func_80A6E3A0(this, func_80A6E9AC);
-        bool shouldSpawn;
-        bool tradedMushroom = Flags_GetItemGetInf(ITEMGETINF_30);
-        if (gSaveContext.n64ddFlag && Randomizer_GetSettingValue(RSK_SHUFFLE_ADULT_TRADE)) {
-            // To explain the logic because Fado and Grog are linked:
-            // - If you have Cojiro, then spawn Grog and not Fado.
-            // - If you don't have Cojiro but do have Odd Potion, spawn Fado and not Grog.
-            // - If you don't have either, spawn Grog if you haven't traded the Odd Mushroom.
-            // - If you don't have either but have traded the mushroom, don't spawn either.
-            if (PLAYER_HAS_SHUFFLED_ADULT_TRADE_ITEM(ITEM_COJIRO)) {
-                shouldSpawn = true;
-            } else if (PLAYER_HAS_SHUFFLED_ADULT_TRADE_ITEM(ITEM_ODD_POTION)) {
-                shouldSpawn = false;
-            } else {
-                shouldSpawn = !tradedMushroom;
-            }
-        } else {
-            shouldSpawn = !tradedMushroom;
-        }
-        if (!shouldSpawn) {
+        if (GameInteractor_Should(VB_DESPAWN_GROG, Flags_GetItemGetInf(ITEMGETINF_30), this)) {
             // "chicken shop closed"
             osSyncPrintf(VT_FGCOL(CYAN) " ヒヨコ屋閉店 \n" VT_RST);
             Actor_Kill(&this->actor);
@@ -148,11 +130,11 @@ void func_80A6E5EC(EnHs* this, PlayState* play) {
 
 void func_80A6E630(EnHs* this, PlayState* play) {
     if ((Message_GetState(&play->msgCtx) == TEXT_STATE_DONE) && Message_ShouldAdvance(play)) {
-        if (!gSaveContext.n64ddFlag) {
+        if (GameInteractor_Should(VB_TRADE_TIMER_ODD_MUSHROOM, true, NULL)) {
             func_80088AA0(180);
+            gSaveContext.eventInf[1] &= ~1;
         }
         func_80A6E3A0(this, func_80A6E6B0);
-        gSaveContext.eventInf[1] &= ~1;
     }
 
     this->unk_2A8 |= 1;
@@ -175,19 +157,12 @@ void func_80A6E70C(EnHs* this, PlayState* play) {
 }
 
 void func_80A6E740(EnHs* this, PlayState* play) {
-    if (Actor_HasParent(&this->actor, play)) {
+    if (Actor_HasParent(&this->actor, play) || !GameInteractor_Should(VB_TRADE_COJIRO, true, this)) {
         this->actor.parent = NULL;
+        Flags_SetRandomizerInf(RAND_INF_ADULT_TRADES_LW_TRADE_COJIRO);
         func_80A6E3A0(this, func_80A6E630);
     } else {
-        if (gSaveContext.n64ddFlag) {
-            GetItemEntry itemEntry = Randomizer_GetItemFromKnownCheck(RC_LW_TRADE_COJIRO, GI_ODD_MUSHROOM);
-            Randomizer_ConsumeAdultTradeItem(play, ITEM_COJIRO);
-            GiveItemEntryFromActor(&this->actor, play, itemEntry, 10000.0f, 50.0f);
-            Flags_SetRandomizerInf(RAND_INF_ADULT_TRADES_LW_TRADE_COJIRO);
-        } else {
-            s32 itemId = GI_ODD_MUSHROOM;
-            func_8002F434(&this->actor, play, itemId, 10000.0f, 50.0f);
-        }
+        Actor_OfferGetItem(&this->actor, play, GI_ODD_MUSHROOM, 10000.0f, 50.0f);
     }
 
     this->unk_2A8 |= 1;
@@ -198,14 +173,8 @@ void func_80A6E7BC(EnHs* this, PlayState* play) {
         switch (play->msgCtx.choiceIndex) {
             case 0:
                 func_80A6E3A0(this, func_80A6E740);
-                if (gSaveContext.n64ddFlag) {
-                    GetItemEntry itemEntry = Randomizer_GetItemFromKnownCheck(RC_LW_TRADE_COJIRO, GI_ODD_MUSHROOM);
-                    Randomizer_ConsumeAdultTradeItem(play, ITEM_COJIRO);
-                    GiveItemEntryFromActor(&this->actor, play, itemEntry, 10000.0f, 50.0f);
-                    Flags_SetRandomizerInf(RAND_INF_ADULT_TRADES_LW_TRADE_COJIRO);
-                } else {
-                    s32 itemId = GI_ODD_MUSHROOM;
-                    func_8002F434(&this->actor, play, itemId, 10000.0f, 50.0f);
+                if (GameInteractor_Should(VB_TRADE_COJIRO, true, this)) {
+                    Actor_OfferGetItem(&this->actor, play, GI_ODD_MUSHROOM, 10000.0f, 50.0f);
                 }
                 break;
             case 1:
@@ -234,7 +203,7 @@ void func_80A6E8CC(EnHs* this, PlayState* play) {
     if (this->unk_2AA > 0) {
         this->unk_2AA--;
         if (this->unk_2AA == 0) {
-            func_8002F7DC(&player->actor, NA_SE_EV_CHICKEN_CRY_M);
+            Player_PlaySfx(&player->actor, NA_SE_EV_CHICKEN_CRY_M);
         }
     }
 
@@ -334,6 +303,5 @@ void EnHs_Draw(Actor* thisx, PlayState* play) {
     EnHs* this = (EnHs*)thisx;
 
     Gfx_SetupDL_37Opa(play->state.gfxCtx);
-    SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
-                          EnHs_OverrideLimbDraw, EnHs_PostLimbDraw, this);
+    SkelAnime_DrawSkeletonOpa(play, &this->skelAnime, EnHs_OverrideLimbDraw, EnHs_PostLimbDraw, this);
 }
