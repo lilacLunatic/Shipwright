@@ -101,6 +101,9 @@ static const char* imguiScaleOptions[4] = { "Small", "Normal", "Large", "X-Large
         "OHKO"
     };
     static const char* timeTravelOptions[3] = { "Disabled", "Ocarina of Time", "Any Ocarina" };
+    static const char* locationDisplayOptions[3] = { "On", "Off", "Teammates Only" };
+    static const char* teleportOptions[3] = { "On", "Off", "Teammates Only" };
+    static const char* iceTrapTargets[4] = { "Team Only", "Self Only", "Enemies Only", "All" };
 
 extern "C" SaveContext gSaveContext;
 
@@ -1426,6 +1429,7 @@ extern std::shared_ptr<ValueViewerWindow> mValueViewerWindow;
 #ifdef ENABLE_REMOTE_CONTROL
 extern std::shared_ptr<AnchorPlayerLocationWindow> mAnchorPlayerLocationWindow;
 extern std::shared_ptr<AnchorLogWindow> mAnchorLogWindow;
+extern std::shared_ptr<AnchorTrapWindow> mAnchorTrapWindow;
 #endif
 
 void DrawDeveloperToolsMenu() {
@@ -1538,6 +1542,7 @@ void DrawRemoteControlMenu() {
         static uint16_t port = CVarGetInteger("gRemote.Port", 43384);
         static std::string AnchorName = CVarGetString("gRemote.AnchorName", "");
         static std::string anchorRoomId = CVarGetString("gRemote.AnchorRoomId", "");
+        static std::string AnchorTeam = CVarGetString("gRemote.AnchorTeam", "");
         bool isFormValid = !isStringEmpty(CVarGetString("gRemote.IP", "127.0.0.1")) && port > 1024 && port < 65535 && (
             CVarGetInteger("gRemote.Scheme", GI_SCHEME_SAIL) != GI_SCHEME_ANCHOR ||
             (
@@ -1653,6 +1658,10 @@ void DrawRemoteControlMenu() {
                 LUS::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesOnNextTick();
             }
             ImGui::Text("Room ID");
+            UIWidgets::InsertHelpHoverText(
+                "Identifier for your room that must match across all players. "
+                "Use something unique, this is basically your password."
+            );
             int flags = 0;
             if (GameInteractor::Instance->isRemoteInteractorEnabled) flags = ImGuiInputTextFlags_Password;
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
@@ -1660,10 +1669,114 @@ void DrawRemoteControlMenu() {
                 CVarSetString("gRemote.AnchorRoomId", anchorRoomId.c_str());
                 LUS::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesOnNextTick();
             }
+            ImGui::Text("Team ID");
+            UIWidgets::InsertHelpHoverText(
+                "Identifier for your team. Players with matching Team IDs will share inventory and game state. "
+                "Items picked up by members of one team will not be shared with other teams.\n"
+                "\n"
+                "When joining an existing room, your inventory will be synced with anyone with a matching Team ID."
+            );
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            if (ImGui::InputText("##gRemote.AnchorTeam", (char*)AnchorTeam.c_str(), AnchorTeam.capacity() + 1, ImGuiInputTextFlags_None)) {
+                CVarSetString("gRemote.AnchorTeam", AnchorTeam.c_str());
+                LUS::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesOnNextTick();
+            }
+
+            UIWidgets::PaddedSeparator(true, true);
+
+            if (ImGui::BeginMenu("Room Settings")) {
+                UIWidgets::EnhancementCheckbox("Broadcast items to all.", "gBroadcastItemsToAll");
+                UIWidgets::Tooltip("Alert everyone when an item is found, including players on opposing teams. If off, "
+                                   "only teammates are alerted when they receive the item.");
+
+                ImGui::Text("Display Player Location");
+                UIWidgets::EnhancementCombobox("gLocationDisplay", locationDisplayOptions, 0);
+                UIWidgets::Tooltip("Modify which players' locations you can see");
+
+                ImGui::Text("Enable Teleport");
+                UIWidgets::EnhancementCombobox("gTeleportOptions", teleportOptions, 0);
+                UIWidgets::Tooltip("Modify who you can teleport to");
+
+                UIWidgets::PaddedEnhancementSliderInt("Teleport Cost: %d Rupees", "##gTeleportRupeeCost",
+                                                      "gTeleportRupeeCost", 0, 200, "", 0, true, true, true);
+                UIWidgets::Tooltip("Rupees needed to teleport to another player.");
+
+                UIWidgets::PaddedSeparator(true, true);
+
+                if (ImGui::BeginMenu("PvP Buff Options")) {
+                    UIWidgets::InsertHelpHoverText(
+                        "PvP credits can be obtained when dealing the final blow to a player "
+                        "on an opposing team. Enabling a buff will add it to the PvP menu as "
+                        "an option to spend PvP credits on.");
+                    UIWidgets::EnhancementCheckbox("Refill Wallet", "gPvpBuffEnableRefillWallet", false, "",
+                                                   UIWidgets::CheckboxGraphics::Cross, true);
+                    UIWidgets::EnhancementCheckbox("Refill Consumables", "gPvpBuffEnableRefillConsumables", false, "",
+                                                   UIWidgets::CheckboxGraphics::Cross, true);
+                    UIWidgets::Tooltip("Refills sticks, nuts, bombs, arrows, and deku seeds.\n"
+                    "\n"
+                    "If chus are in logic and have been discovered, then chus will be maxed out as well.");
+                    UIWidgets::EnhancementCheckbox("Speed Boost", "gPvpBuffEnableSpeedBoost", false, "",
+                                                   UIWidgets::CheckboxGraphics::Cross, true);
+                    UIWidgets::Tooltip("Run speed boost for 1 minute.");
+                    UIWidgets::EnhancementCheckbox("Invincibility", "gPvpBuffEnableInvincibility", false, "",
+                                                   UIWidgets::CheckboxGraphics::Cross, true);
+                    UIWidgets::Tooltip("Invincibility for 1 minute.");
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("PvP Trap Options")) {
+                    UIWidgets::PaddedEnhancementSliderInt("Cucco Cost: %d Rupees", "##gTrapMenuCuccoCost",
+                                                          "gTrapMenuCuccoCost", 0, 200, "", 50, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Hands Cost: %d Rupees", "##gTrapMenuHandsCost",
+                                                          "gTrapMenuHandsCost", 0, 200, "", 20, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Gibdo Cost: %d Rupees", "##gTrapMenuGibdoCost",
+                                                          "gTrapMenuGibdoCost", 0, 200, "", 99, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Like Like Cost: %d Rupees", "##gTrapMenuLikeLikeCost",
+                                                          "gTrapMenuLikeLikeCost", 0, 200, "", 50, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Small Knockback Cost: %d Rupees",
+                                                          "##gTrapMenuKnockback2Cost", "gTrapMenuKnockback2Cost", 0,
+                                                          200, "", 50, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Large Knockback Cost: %d Rupees",
+                                                          "##gTrapMenuKnockback4Cost", "gTrapMenuKnockback4Cost", 0,
+                                                          200, "", 100, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Random Wind Cost: %d Rupees", "##gTrapMenuRandWindCost",
+                                                          "gTrapMenuRandWindCost", 0, 200, "", 100, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Slippery Cost: %d Rupees", "##gTrapMenuSlipperyCost",
+                                                          "gTrapMenuSlipperyCost", 0, 200, "", 50, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Inverted Controls Cost: %d Rupees", "##gTrapMenuInvertedCost",
+                                                          "gTrapMenuInvertedCost", 0, 200, "", 150, true, true, true);
+                    UIWidgets::PaddedEnhancementSliderInt("Teleport Home Cost: %d Rupees", "##gTrapMenuTelehomeCost",
+                                                          "gTrapMenuTelehomeCost", 0, 200, "", 200, true, true, true);
+                    ImGui::EndMenu();
+                }
+                UIWidgets::PaddedSeparator(true, true);
+
+                ImGui::Text("PVP Damage Multiplier");
+                UIWidgets::EnhancementCombobox("gPvpDamageMul", allPowers, 0);
+                UIWidgets::Tooltip("Modifies all sources of damage from other players\n"
+                                   "2x: Can survive all common attacks from the start of the game\n"
+                                   "4x: Dies in 1 hit to any substantial attack from the start of the game\n"
+                                   "8x: Can only survive trivial damage from the start of the game\n"
+                                   "16x: Can survive all common attacks with max health without double defense\n"
+                                   "32x: Can survive all common attacks with max health and double defense\n"
+                                   "64x: Can survive trivial damage with max health without double defense\n"
+                                   "128x: Can survive trivial damage with max health and double defense\n"
+                                   "256x: Cannot survive damage");
+
+                ImGui::Text("Ice Trap Targets");
+                UIWidgets::EnhancementCombobox("gIceTrapTargets", iceTrapTargets, ICE_TRAP_TARGETS_TEAM_ONLY);
+                UIWidgets::Tooltip("Choose who gets affected when an ice trap is picked up.\n"
+                                   "\n"
+                                   "If Enemies Only is picked, Enhancements > Extra Modes > Additional Traps will "
+                                   "also be turned on to allow ice traps to be ignored for yourself.");
+
+                ImGui::EndMenu();
+            }
+
         }
         ImGui::EndDisabled();
 
         ImGui::Spacing();
+        UIWidgets::PaddedSeparator(false, true);
 
         if (CVarGetInteger("gRemote.Scheme", GI_SCHEME_SAIL) == GI_SCHEME_ANCHOR) {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12.0f, 6.0f));
@@ -1693,6 +1806,18 @@ void DrawRemoteControlMenu() {
                     "buttons to change the direction the messages stack towards."
                 );
             }
+            if (mAnchorTrapWindow) {
+                if (ImGui::Button(
+                        GetWindowButtonText("PvP Menu", CVarGetInteger("gRemote.AnchorTrapWindow", 0)).c_str(),
+                        ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, 0.0f))) {
+                    mAnchorTrapWindow->ToggleVisibility();
+                }
+                UIWidgets::InsertHelpHoverText("This window shows various buffs you can give yourself "
+                                               "and traps you can send to your opponents.\n"
+                                               "\n"
+                                               "You can move this window around, and press the options "
+                                               "to send traps to players on opposing teams.");
+            }
             ImGui::PopStyleVar(3);
         }
 
@@ -1720,6 +1845,9 @@ void DrawRemoteControlMenu() {
                         if (CVarGetInteger("gRemote.AnchorPlayerLocationWindow", 0) && mAnchorPlayerLocationWindow) {
                             mAnchorPlayerLocationWindow->ToggleVisibility();
                         }
+                        if (CVarGetInteger("gRemote.AnchorTrapWindow", 0) && mAnchorTrapWindow) {
+                            mAnchorTrapWindow->ToggleVisibility();
+                        }
                         GameInteractorAnchor::Instance->Disable();
                         break;
                 }
@@ -1739,6 +1867,13 @@ void DrawRemoteControlMenu() {
                         }
                         if (!CVarGetInteger("gRemote.AnchorPlayerLocationWindow", 0) && mAnchorPlayerLocationWindow) {
                             mAnchorPlayerLocationWindow->ToggleVisibility();
+                        }
+                        if (!CVarGetInteger("gRemote.AnchorTrapWindow", 0) && mAnchorTrapWindow) {
+                            mAnchorTrapWindow->ToggleVisibility();
+                        }
+                        if (CVarGetInteger("gIceTrapTargets", ICE_TRAP_TARGETS_TEAM_ONLY) == ICE_TRAP_TARGETS_ENEMIES_ONLY) {
+                            // Enable additional traps to allow ice traps to turn off for yourself.
+                            CVarSetInteger("gAddTraps.enabled", 1);
                         }
                         GameInteractorAnchor::Instance->Enable();
                         break;

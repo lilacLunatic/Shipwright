@@ -10,8 +10,12 @@
 #include <soh/Enhancements/nametag.h>
 #include <soh/Enhancements/presets.h>
 #include <soh/Enhancements/randomizer/randomizer_check_tracker.h>
+#include <soh/UIWidgets.hpp>
 #include <soh/util.h>
 #include <nlohmann/json.hpp>
+#include <cstring>
+#include <sstream>
+#include <queue>
 
 extern "C" {
 #include <variables.h>
@@ -165,6 +169,7 @@ void from_json(const json& j, AnchorClient& client) {
     j.contains("clientVersion") ? j.at("clientVersion").get_to(client.clientVersion) : client.clientVersion = "???";
     j.contains("name") ? j.at("name").get_to(client.name) : client.name = "???";
     j.contains("color") ? j.at("color").get_to(client.color) : client.color = {255, 255, 255};
+    j.contains("team") ? j.at("team").get_to(client.team) : client.team = "???";
     j.contains("seed") ? j.at("seed").get_to(client.seed) : client.seed = 0;
     j.contains("fileNum") ? j.at("fileNum").get_to(client.fileNum) : client.fileNum = 0xFF;
     j.contains("gameComplete") ? j.at("gameComplete").get_to(client.gameComplete) : client.gameComplete = false;
@@ -282,6 +287,19 @@ std::vector<std::pair<uint16_t, int16_t>> receivedItems = {};
 std::vector<uint16_t> discoveredEntrances = {};
 std::vector<AnchorMessage> anchorMessages = {};
 uint32_t notificationId = 0;
+bool settingsCopied = false;
+uint16_t pvpCredits = 0;
+std::queue<std::string> queuedTraps;
+bool randomWindOn = false;
+uint16_t randomWindTimer = 0;
+bool slipperyOn = false;
+uint16_t slipperyTimer = 0;
+bool invertedOn = false;
+uint16_t invertedTimer = 0;
+uint32_t lastAttackerClientId = 0;
+uint8_t pvpVulnerableTimer = 0;
+uint16_t speedBuffTimer = 0;
+uint16_t invincibilityTimer = 0;
 
 void Anchor_DisplayMessage(AnchorMessage message = {}) {
     message.id = notificationId++;
@@ -293,6 +311,7 @@ void Anchor_SendClientData() {
     nlohmann::json payload;
     payload["data"]["name"] = CVarGetString("gRemote.AnchorName", "");
     payload["data"]["color"] = CVarGetColor24("gRemote.AnchorColor", { 100, 255, 100 });
+    payload["data"]["team"] = CVarGetString("gRemote.AnchorTeam", "");
     payload["data"]["clientVersion"] = GameInteractorAnchor::clientVersion;
     payload["type"] = "UPDATE_CLIENT_DATA";
 
@@ -315,6 +334,87 @@ void Anchor_SendClientData() {
     GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
 }
 
+void Anchor_PushSettingsToRemote() {
+    // If we're asked to push, set settingsCopied to true since we were either the
+    // first in the room, or we've already had our settings copied.
+    settingsCopied = true;
+
+    nlohmann::json payload;
+    payload["type"] = "PUSH_ANCHOR_SETTINGS";
+    payload["broadcastItemsToAll"] = CVarGetInteger("gBroadcastItemsToAll", 0);
+    payload["locationDisplay"] = CVarGetInteger("gLocationDisplay", 0);
+    payload["teleportOptions"] = CVarGetInteger("gTeleportOptions", 0);
+    payload["teleportRupeeCost"] = CVarGetInteger("gTeleportRupeeCost", 0);
+    payload["pvpDamageMul"] = CVarGetInteger("gPvpDamageMul", 0);
+    payload["gIceTrapTargets"] = CVarGetInteger("gIceTrapTargets", 0);
+
+    // Trap menu costs.
+    payload["gTrapMenuCuccoCost"] = CVarGetInteger("gTrapMenuCuccoCost", 50);
+    payload["gTrapMenuHandsCost"] = CVarGetInteger("gTrapMenuHandsCost", 20);
+    payload["gTrapMenuGibdoCost"] = CVarGetInteger("gTrapMenuGibdoCost", 99);
+    payload["gTrapMenuLikeLikeCost"] = CVarGetInteger("gTrapMenuLikeLikeCost", 50);
+    payload["gTrapMenuKnockback2Cost"] = CVarGetInteger("gTrapMenuKnockback2Cost", 50);
+    payload["gTrapMenuKnockback4Cost"] = CVarGetInteger("gTrapMenuKnockback4Cost", 100);
+    payload["gTrapMenuRandWindCost"] = CVarGetInteger("gTrapMenuRandWindCost", 100);
+    payload["gTrapMenuSlipperyCost"] = CVarGetInteger("gTrapMenuSlipperyCost", 50);
+    payload["gTrapMenuInvertedCost"] = CVarGetInteger("gTrapMenuInvertedCost", 150);
+    payload["gTrapMenuTelehomeCost"] = CVarGetInteger("gTrapMenuTelehomeCost", 200);
+
+    // PvP buffs.
+    payload["gPvpBuffEnableRefillWallet"] = CVarGetInteger("gPvpBuffEnableRefillWallet", 1);
+    payload["gPvpBuffEnableRefillConsumables"] = CVarGetInteger("gPvpBuffEnableRefillConsumables", 1);
+    payload["gPvpBuffEnableSpeedBoost"] = CVarGetInteger("gPvpBuffEnableSpeedBoost", 1);
+    payload["gPvpBuffEnableInvincibility"] = CVarGetInteger("gPvpBuffEnableInvincibility", 1);
+
+    GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+}
+
+void Anchor_RequestSettingsFromRemote() {
+    nlohmann::json payload;
+    payload["type"] = "REQUEST_ANCHOR_SETTINGS";
+
+    GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+}
+
+void Anchor_CopySettingsFromRemote(nlohmann::json payload) {
+    if (settingsCopied) {
+        return;
+    }
+
+    CVarSetInteger("gBroadcastItemsToAll", payload["broadcastItemsToAll"].get<int32_t>());
+    CVarSetInteger("gLocationDisplay", payload["locationDisplay"].get<int32_t>());
+    CVarSetInteger("gTeleportOptions", payload["teleportOptions"].get<int32_t>());
+    CVarSetInteger("gTeleportRupeeCost", payload["teleportRupeeCost"].get<int32_t>());
+    CVarSetInteger("gPvpDamageMul", payload["pvpDamageMul"].get<int32_t>());
+    CVarSetInteger("gIceTrapTargets", payload["gIceTrapTargets"].get<int32_t>());
+
+    // Trap menu costs
+    CVarSetInteger("gTrapMenuCuccoCost", payload["gTrapMenuCuccoCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuHandsCost", payload["gTrapMenuHandsCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuGibdoCost", payload["gTrapMenuGibdoCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuLikeLikeCost", payload["gTrapMenuLikeLikeCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuKnockback2Cost", payload["gTrapMenuKnockback2Cost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuKnockback4Cost", payload["gTrapMenuKnockback4Cost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuRandWindCost", payload["gTrapMenuRandWindCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuSlipperyCost", payload["gTrapMenuSlipperyCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuInvertedCost", payload["gTrapMenuInvertedCost"].get<int32_t>());
+    CVarSetInteger("gTrapMenuTelehomeCost", payload["gTrapMenuTelehomeCost"].get<int32_t>());
+
+    if (CVarGetInteger("gIceTrapTargets", ICE_TRAP_TARGETS_TEAM_ONLY) == ICE_TRAP_TARGETS_ENEMIES_ONLY) {
+        // Enable additional traps to allow ice traps to turn off for yourself.
+        CVarSetInteger("gAddTraps.enabled", 1);
+    }
+
+    // PvP buffs.
+    CVarSetInteger("gPvpBuffEnableRefillWallet", payload["gPvpBuffEnableRefillWallet"].get<int32_t>());
+    CVarSetInteger("gPvpBuffEnableRefillConsumables", payload["gPvpBuffEnableRefillConsumables"].get<int32_t>());
+    CVarSetInteger("gPvpBuffEnableSpeedBoost", payload["gPvpBuffEnableSpeedBoost"].get<int32_t>());
+    CVarSetInteger("gPvpBuffEnableInvincibility", payload["gPvpBuffEnableInvincibility"].get<int32_t>());
+
+    settingsCopied = true;
+    Anchor_DisplayMessage({ .message = "Settings copied from remote." });
+}
+
 void GameInteractorAnchor::Enable() {
     if (isEnabled) {
         return;
@@ -334,6 +434,7 @@ void GameInteractorAnchor::Enable() {
     GameInteractor::Instance->RegisterRemoteConnectedHandler([&]() {
         Anchor_DisplayMessage({ .message = "Connected to Anchor" });
         Anchor_SendClientData();
+        Anchor_RequestSettingsFromRemote();
 
         if (GameInteractor::IsSaveLoaded()) {
             Anchor_RequestSaveStateFromRemote();
@@ -350,6 +451,7 @@ void GameInteractorAnchor::Disable() {
     }
 
     isEnabled = false;
+    settingsCopied = false;
     GameInteractor::Instance->DisableRemoteInteractor();
 
     GameInteractorAnchor::AnchorClients.clear();
@@ -367,6 +469,46 @@ void GameInteractorAnchor::TransmitJsonToRemote(nlohmann::json payload) {
 
 void Anchor_ParseSaveStateFromRemote(nlohmann::json payload);
 void Anchor_PushSaveStateToRemote();
+
+bool IsTeammate(AnchorClient client) {
+    return client.team == CVarGetString("gRemote.AnchorTeam", "");
+}
+
+int GetPvpDamageMultiplier() {
+    int32_t damageOption = CVarGetInteger("gPvpDamageMul", 0);
+    switch (damageOption) {
+        case 0: return 1;
+        case 1: return 2;
+        case 2: return 4;
+        case 3: return 8;
+        case 4: return 16;
+        case 5: return 32;
+        case 6: return 64;
+        case 7: return 128;
+        case 8: return 256;
+    }
+    return 1;
+}
+
+void ApplyIceTrap(bool fromTeammate) {
+    switch (CVarGetInteger("gIceTrapTargets", ICE_TRAP_TARGETS_TEAM_ONLY)) {
+        case ICE_TRAP_TARGETS_TEAM_ONLY:
+            if (fromTeammate) {
+                GameInteractor::RawAction::FreezePlayer();
+            }
+            break;
+        case ICE_TRAP_TARGETS_SELF_ONLY:
+            break;
+        case ICE_TRAP_TARGETS_ENEMIES_ONLY:
+            if (!fromTeammate) {
+                GameInteractor::RawAction::FreezePlayer();
+            }
+            break;
+        case ICE_TRAP_TARGETS_ALL:
+            GameInteractor::RawAction::FreezePlayer();
+            break;
+    }
+}
 
 void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
     if (!payload.contains("type")) {
@@ -386,16 +528,52 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         }
     }
 
-    if (payload["type"] == "GIVE_ITEM") {
-        auto effect = new GameInteractionEffect::GiveItem();
-        effect->parameters[0] = payload["modId"].get<uint16_t>();
-        effect->parameters[1] = payload["getItemId"].get<int16_t>();
-        CVarSetInteger("gFromGI", 1);
-        receivedItems.push_back({ payload["modId"].get<uint16_t>(), payload["getItemId"].get<int16_t>() });
-        if (effect->Apply() == Possible) {
-            GetItemEntry getItemEntry = ItemTableManager::Instance->RetrieveItemEntry(effect->parameters[0], effect->parameters[1]);
+    AnchorClient anchorClient;
+    bool from_teammate = true;
+    if (payload.contains("clientId")) {
+        anchorClient = GameInteractorAnchor::AnchorClients[payload["clientId"].get<uint32_t>()];
+        from_teammate = IsTeammate(anchorClient);
+    }
 
-            AnchorClient anchorClient = GameInteractorAnchor::AnchorClients[payload["clientId"].get<uint32_t>()];
+    if (payload["type"] == "GIVE_ITEM") {
+        uint16_t modId = payload["modId"].get<uint16_t>();
+        uint16_t getItemId = payload["getItemId"].get<int16_t>();
+        GetItemEntry getItemEntry = ItemTableManager::Instance->RetrieveItemEntry(modId, getItemId);
+
+        if (getItemId == RG_ICE_TRAP) {
+            ApplyIceTrap(from_teammate);
+            return;
+        }
+
+        if (!from_teammate) {
+            if (CVarGetInteger("gBroadcastItemsToAll", 0) != 0) {
+                // Broadcast that the item was found, but don't receive item.
+                if (getItemEntry.getItemCategory != ITEM_CATEGORY_JUNK) {
+                    if (getItemEntry.modIndex == MOD_NONE) {
+                        Anchor_DisplayMessage({ .itemIcon = SohUtils::GetIconNameFromItemID(getItemEntry.itemId),
+                                                .prefix = SohUtils::GetItemName(getItemEntry.itemId),
+                                                .message = "found by",
+                                                .suffix = anchorClient.name });
+                    } else if (getItemEntry.modIndex == MOD_RANDOMIZER) {
+                        Anchor_DisplayMessage(
+                            { .itemIcon = SohUtils::GetIconNameFromItemID(
+                                  SohUtils::GetItemIdIconFromRandomizerGet(getItemEntry.getItemId)),
+                              .prefix = OTRGlobals::Instance->gRandomizer
+                                            ->EnumToSpoilerfileGetName[(RandomizerGet)getItemEntry.getItemId]
+                                                                      [gSaveContext.language],
+                              .message = "found by",
+                              .suffix = anchorClient.name });
+                    }
+                }
+            }
+            return;
+        }
+        auto effect = new GameInteractionEffect::GiveItem();
+        effect->parameters[0] = modId;
+        effect->parameters[1] = getItemId;
+        CVarSetInteger("gFromGI", 1);
+        receivedItems.push_back({ modId, getItemId });
+        if (effect->Apply() == Possible) {
             if (getItemEntry.getItemCategory != ITEM_CATEGORY_JUNK) {
                 if (getItemEntry.modIndex == MOD_NONE) {
                     Anchor_DisplayMessage({
@@ -417,6 +595,9 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         CVarClear("gFromGI");
     }
     if (payload["type"] == "SET_SCENE_FLAG") {
+        if (!from_teammate) {
+            return;
+        }
         auto effect = new GameInteractionEffect::SetSceneFlag();
         effect->parameters[0] = payload["sceneNum"].get<int16_t>();
         effect->parameters[1] = payload["flagType"].get<int16_t>();
@@ -424,6 +605,9 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         effect->Apply();
     }
     if (payload["type"] == "SET_FLAG") {
+        if (!from_teammate) {
+            return;
+        }
         auto effect = new GameInteractionEffect::SetFlag();
         effect->parameters[0] = payload["flagType"].get<int16_t>();
         effect->parameters[1] = payload["flag"].get<int16_t>();
@@ -439,6 +623,9 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         }
     }
     if (payload["type"] == "UNSET_SCENE_FLAG") {
+        if (!from_teammate) {
+            return;
+        }
         auto effect = new GameInteractionEffect::UnsetSceneFlag();
         effect->parameters[0] = payload["sceneNum"].get<int16_t>();
         effect->parameters[1] = payload["flagType"].get<int16_t>();
@@ -446,6 +633,9 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         effect->Apply();
     }
     if (payload["type"] == "UNSET_FLAG") {
+        if (!from_teammate) {
+            return;
+        }
         auto effect = new GameInteractionEffect::UnsetFlag();
         effect->parameters[0] = payload["flagType"].get<int16_t>();
         effect->parameters[1] = payload["flag"].get<int16_t>();
@@ -454,9 +644,14 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
     if (payload["type"] == "DAMAGE_PLAYER") {
         if (payload["damageEffect"] > 0 && GET_PLAYER(gPlayState)->invincibilityTimer <= 0 &&
             !Player_InBlockingCsMode(gPlayState, GET_PLAYER(gPlayState))) {
+            // Save id of last person to hit, and also set vulnerability timer.
+            // This helps send a buff to the last hitter if game over is triggered while vulnerable.
+            lastAttackerClientId = payload["clientId"].get<uint32_t>();
+            pvpVulnerableTimer = 100;
+
             if (payload["damageEffect"] == PUPPET_DMGEFF_NORMAL) {
                 u8 damage = payload["damageValue"];
-                Player_InflictDamage(gPlayState, damage * -4);
+                Player_InflictDamage(gPlayState, damage * GetPvpDamageMultiplier() * -4);
                 func_80837C0C(gPlayState, GET_PLAYER(gPlayState), 0, 0, 0, 0, 0);
                 GET_PLAYER(gPlayState)->invincibilityTimer = 18;
                 GET_PLAYER(gPlayState)->actor.freezeTimer = 0;
@@ -487,6 +682,15 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
             }
         }
     }
+    if (payload["type"] == "GOT_PLAYER_KILL") {
+        if (from_teammate) {
+            Anchor_DisplayMessage(
+                { .message = "That was your teammate, you monster." });
+        } else {
+            Anchor_DisplayMessage({ .message = "You killed", .suffix = anchorClient.name });
+            pvpCredits++;
+        }
+    }
     if (payload["type"] == "CLIENT_UPDATE") {
         uint32_t clientId = payload["clientId"].get<uint32_t>();
 
@@ -507,10 +711,22 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         }
     }
     if (payload["type"] == "PUSH_SAVE_STATE" && GameInteractor::IsSaveLoaded()) {
+        if (!from_teammate) {
+            return;
+        }
         Anchor_ParseSaveStateFromRemote(payload);
     }
     if (payload["type"] == "REQUEST_SAVE_STATE" && GameInteractor::IsSaveLoaded()) {
+        if (!from_teammate) {
+            return;
+        }
         Anchor_PushSaveStateToRemote();
+    }
+    if (payload["type"] == "PUSH_ANCHOR_SETTINGS") {
+        Anchor_CopySettingsFromRemote(payload);
+    }
+    if (payload["type"] == "REQUEST_ANCHOR_SETTINGS") {
+        Anchor_PushSettingsToRemote();
     }
     if (payload["type"] == "ALL_CLIENT_DATA") {
         std::vector<AnchorClient> newClients = payload["clients"].get<std::vector<AnchorClient>>();
@@ -523,6 +739,7 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
                     client.clientVersion,
                     client.name,
                     client.color,
+                    client.team,
                     client.seed,
                     client.fileNum,
                     client.gameComplete,
@@ -566,6 +783,7 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
             GameInteractorAnchor::AnchorClients[clientId].clientVersion = client.clientVersion;
             GameInteractorAnchor::AnchorClients[clientId].name = client.name;
             GameInteractorAnchor::AnchorClients[clientId].color = client.color;
+            GameInteractorAnchor::AnchorClients[clientId].team = client.team;
             GameInteractorAnchor::AnchorClients[clientId].seed = client.seed;
             GameInteractorAnchor::AnchorClients[clientId].fileNum = client.fileNum;
             GameInteractorAnchor::AnchorClients[clientId].gameComplete = client.gameComplete;
@@ -574,30 +792,51 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         }
     }
     if (payload["type"] == "UPDATE_CHECK_DATA" && GameInteractor::IsSaveLoaded()) {
+        if (!from_teammate) {
+            return;
+        }
         auto check = payload["locationIndex"].get<uint32_t>();
         auto data = payload["checkData"].get<RandomizerCheckTrackerData>();
         CheckTracker::UpdateCheck(check, data);
     }
     if (payload["type"] == "ENTRANCE_DISCOVERED") {
+        if (!from_teammate) {
+            return;
+        }
         auto entranceIndex = payload["entranceIndex"].get<uint16_t>();
         discoveredEntrances.push_back(entranceIndex);
         Entrance_SetEntranceDiscovered(entranceIndex, 1);
     }
     if (payload["type"] == "UPDATE_BEANS_BOUGHT" && GameInteractor::IsSaveLoaded()) {
+        if (!from_teammate) {
+            return;
+        }
         BEANS_BOUGHT = payload["amount"].get<uint8_t>();
     }
     if (payload["type"] == "UPDATE_BEANS_COUNT" && GameInteractor::IsSaveLoaded()) {
+        if (!from_teammate) {
+            return;
+        }
         AMMO(ITEM_BEAN) = payload["amount"].get<uint8_t>();
     }
     if (payload["type"] == "CONSUME_ADULT_TRADE_ITEM" && GameInteractor::IsSaveLoaded()) {
+        if (!from_teammate) {
+            return;
+        }
         uint8_t itemId = payload["itemId"].get<uint8_t>();
         gSaveContext.adultTradeItems &= ~ADULT_TRADE_FLAG(itemId);
 	    Inventory_ReplaceItem(gPlayState, itemId, Randomizer_GetNextAdultTradeItem());
     }
     if (payload["type"] == "UPDATE_KEY_COUNT" && GameInteractor::IsSaveLoaded()) {
+        if (!from_teammate) {
+            return;
+        }
         gSaveContext.inventory.dungeonKeys[payload["sceneNum"].get<int16_t>()] = payload["amount"].get<int8_t>();
     }
     if (payload["type"] == "GIVE_DUNGEON_ITEM" && GameInteractor::IsSaveLoaded()) {
+        if (!from_teammate) {
+            return;
+        }
         gSaveContext.inventory.dungeonItems[payload["sceneNum"].get<int16_t>()] |= gBitFlags[payload["itemId"].get<uint16_t>() - ITEM_KEY_BOSS];
     }
     if (payload["type"] == "GAME_COMPLETE") {
@@ -611,12 +850,58 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         Anchor_TeleportToPlayer(payload["clientId"].get<uint32_t>());
     }
     if (payload["type"] == "TELEPORT_TO") {
+        // Check if we have enough rupees.
+        int32_t teleportCost = CVarGetInteger("gTeleportRupeeCost", 0);
+        if (gSaveContext.rupees < teleportCost) {
+            // Can't teleport.
+            std::stringstream msg;
+            msg << "Need " << teleportCost << " rupees to teleport.";
+            Anchor_DisplayMessage({ .message = msg.str() });
+            return;
+        }
+        Rupees_ChangeBy(-1 * teleportCost);
+
         uint32_t entranceIndex = payload["entranceIndex"].get<uint32_t>();
         uint32_t roomIndex = payload["roomIndex"].get<uint32_t>();
         PosRot posRot = payload["posRot"].get<PosRot>();
 
         Play_SetRespawnData(gPlayState, RESPAWN_MODE_DOWN, entranceIndex, roomIndex, 0xDFF, &posRot.pos, posRot.rot.y);
         Play_TriggerVoidOut(gPlayState);
+    }
+    if (payload["type"] == "SEND_TRAP") {
+        Anchor_DisplayMessage(
+            { .prefix = anchorClient.name,
+              .message = "sent trap",
+              .suffix = payload["trapType"] });
+        if (from_teammate) {
+            return;
+        }
+
+        std::string trap = payload["trapType"];
+        // Certain traps like spawning certain enemies will be added multiple times.
+        uint8_t n = 1;
+        if (trap == "hands") {
+            n = 5;
+        } else if (trap == "gibdos") {
+            n = 4;
+        } else if (trap == "likelike") {
+            n = 4;
+        }
+
+        for (int i = 0; i < n; i++) {
+            queuedTraps.push(trap);
+        }
+    }
+    if (payload["type"] == "PLAYER_MESSAGE") {
+        uint32_t teamOnly = payload["teamOnly"].get<uint32_t>();
+        if (teamOnly && !from_teammate) {
+            return;
+        }
+        // Green name for team chat, red for all chat.
+        ImVec4 preCol = teamOnly ? ImVec4(0.5f, 1.0f, 0.5f, 1.0f) : ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
+        Anchor_DisplayMessage({ .prefix = anchorClient.name,
+                                .prefixColor = preCol,
+                                .message = payload["msg"] });
     }
     if (payload["type"] == "SERVER_MESSAGE") {
         Anchor_DisplayMessage({
@@ -1012,6 +1297,156 @@ void Anchor_RegisterHooks() {
         gSaveContext.playerData.damageValue = 0;
         gSaveContext.playerData.playerSound = 0;
     });
+
+    // Process anything in the trap queue.
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (queuedTraps.empty()) {
+            return;
+        }
+
+        const std::string& trap = queuedTraps.front();
+
+        // Store result if the action returns GameInteractionEffectQueryResult.
+        GameInteractionEffectQueryResult result = GameInteractionEffectQueryResult::Possible;
+
+        if (trap == "cuccostorm") {
+            result = GameInteractor::RawAction::SpawnActor(ACTOR_EN_NIW, 0);
+        } else if (trap == "hands") {
+            result = GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_DHA, 0);
+        } else if (trap == "gibdos") {
+            result = GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RD, 32766);
+        } else if (trap == "likelike") {
+            result = GameInteractor::RawAction::SpawnEnemyWithOffset(ACTOR_EN_RR, 0);
+        } else if (trap == "knockback2" || trap == "knockback4") {
+            Player* player = GET_PLAYER(gPlayState);
+            if (!GameInteractor::IsSaveLoaded() || GameInteractor::IsGameplayPaused() ||
+                player->stateFlags2 & PLAYER_STATE2_CRAWLING) {
+                result = GameInteractionEffectQueryResult::TemporarilyNotPossible;
+            } else if (trap == "knockback2") {
+                GameInteractor::RawAction::KnockbackPlayer(2);
+            } else if (trap == "knockback4") {
+                GameInteractor::RawAction::KnockbackPlayer(4);
+            }
+        } else if (trap == "randwind") {
+            randomWindTimer = 0;
+            randomWindOn = true;
+        } else if (trap == "slippery") {
+            slipperyTimer = 0;
+            slipperyOn = true;
+            GameInteractor::State::SlipperyFloorActive = 1;
+        } else if (trap == "inverted") {
+            invertedTimer = 0;
+            invertedOn = true;
+            GameInteractor::State::ReverseControlsActive = 1;
+        } else if (trap == "telehome") {
+            if (!GameInteractor::IsSaveLoaded() || GameInteractor::IsGameplayPaused()) {
+                result = GameInteractionEffectQueryResult::TemporarilyNotPossible;
+            } else {
+                GameInteractor::RawAction::TeleportPlayer(GI_TP_DEST_LINKSHOUSE);
+            }
+        }
+
+        // If we got TemporarilyNotPossible, just leave it in the queue and try again.
+        if (result != GameInteractionEffectQueryResult::TemporarilyNotPossible) {
+            queuedTraps.pop();
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (!randomWindOn) {
+            return;
+        }
+
+        const static uint16_t windEndTime = 60 * 20;  // 60 seconds
+
+        if (randomWindTimer >= windEndTime) {
+            randomWindOn = false;
+            randomWindTimer = 0;
+            GameInteractor::RawAction::SetRandomWind(false);
+        } else {
+            // Every second (20 frames) call SetRandomWind.
+            if (randomWindTimer % 20 == 0) {
+                GameInteractor::RawAction::SetRandomWind(true);
+            }
+            randomWindTimer++;
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (!slipperyOn) {
+            return;
+        }
+
+        const static uint16_t slipperyEndTime = 60 * 20;  // 60 seconds
+
+        if (slipperyTimer >= slipperyEndTime) {
+            slipperyOn = false;
+            slipperyTimer = 0;
+            GameInteractor::State::SlipperyFloorActive = 0;
+        } else {
+            slipperyTimer++;
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (!invertedOn) {
+            return;
+        }
+
+        const static uint16_t invertedEndTime = 30 * 20;  // 30 seconds
+
+        if (invertedTimer >= invertedEndTime) {
+            invertedOn = false;
+            invertedTimer = 0;
+            GameInteractor::State::ReverseControlsActive = 0;
+        } else {
+            invertedTimer++;
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (pvpVulnerableTimer > 0) {
+            pvpVulnerableTimer--;
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (speedBuffTimer > 0) {
+            speedBuffTimer--;
+            if (speedBuffTimer <= 0) {
+                Anchor_DisplayMessage({ .message = "Speed boost removed." });
+                GameInteractor::State::RunSpeedModifier = 0;
+            }
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (invincibilityTimer > 0) {
+            // Reset player->invincibilityTimer to a small positive number to retain invincibility.
+            Player* player = GET_PLAYER(gPlayState);
+            player->invincibilityTimer = 10;
+            invincibilityTimer--;
+            if (invincibilityTimer <= 0) {
+                // Just let the player->invincibilityTimer expire.
+                Anchor_DisplayMessage({ .message = "Invincibility removed." });
+            }
+        }
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameOver>([]() {
+        if (pvpVulnerableTimer > 0) {
+            AnchorClient lastAttackerClient = GameInteractorAnchor::AnchorClients[lastAttackerClientId];
+            Anchor_DisplayMessage({ .message = "Died to", .suffix = lastAttackerClient.name });
+
+            // Send payload to last attacker letting them know they got a kill.
+            nlohmann::json payload;
+
+            payload["type"] = "GOT_PLAYER_KILL";
+            payload["targetClientId"] = lastAttackerClientId;
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    });
 }
 
 void Anchor_EntranceDiscovered(uint16_t entranceIndex) {
@@ -1159,6 +1594,7 @@ void Anchor_TeleportToPlayer(uint32_t clientId) {
 const ImVec4 GRAY = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 const ImVec4 WHITE = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 const ImVec4 GREEN = ImVec4(0.5f, 1.0f, 0.5f, 1.0f);
+const ImVec4 RED = ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
 
 bool heartTexturesLoaded = false;
 
@@ -1173,6 +1609,15 @@ const char* heartTextureNames[16] = {
     "Heart_Half",          "Heart_Half",          "Heart_Half",          "Heart_Three_Fourths",
     "Heart_Three_Fourths", "Heart_Three_Fourths", "Heart_Three_Fourths", "Heart_Three_Fourths",
 };
+
+void DisplayNameAndTeam(const char* name, const char* team, bool gameComplete) {
+    if (team && !team[0]) {
+        // team is empty.
+        ImGui::TextColored(gameComplete ? GREEN : WHITE, "%s", name);
+    } else {
+        ImGui::TextColored(gSaveContext.sohStats.gameComplete ? GREEN : WHITE, "%s (%s)", name, team);
+    }
+}
 
 void DisplayLifeMeter(AnchorClient& client) {
     int currentHealth = client.playerData.playerHealth;
@@ -1293,14 +1738,15 @@ void AnchorPlayerLocationWindow::DrawElement() {
         ImGuiWindowFlags_NoScrollbar
     );
 
-    ImGui::TextColored(gSaveContext.sohStats.gameComplete ? GREEN : WHITE, "%s", CVarGetString("gRemote.AnchorName", ""));
+    DisplayNameAndTeam(CVarGetString("gRemote.AnchorName", ""), CVarGetString("gRemote.AnchorTeam", ""), 
+                       gSaveContext.sohStats.gameComplete);
     if (GameInteractor::Instance->IsSaveLoaded()) {
         ImGui::SameLine();
         ImGui::TextColored(ImVec4(0.5, 0.5, 0.5, 1), "%s", SohUtils::GetSceneName(gPlayState->sceneNum).c_str());
     }
     for (auto& [clientId, client] : GameInteractorAnchor::AnchorClients) {
         ImGui::PushID(clientId);
-        ImGui::TextColored(client.gameComplete ? GREEN : WHITE, "%s", client.name.c_str());
+        DisplayNameAndTeam(client.name.c_str(), client.team.c_str(), client.gameComplete);
         if (client.clientVersion != GameInteractorAnchor::clientVersion) {
                     ImGui::SameLine();
                     ImGui::TextColored(ImVec4(1, 0, 0, 1), ICON_FA_EXCLAMATION_TRIANGLE);
@@ -1324,15 +1770,24 @@ void AnchorPlayerLocationWindow::DrawElement() {
             }
         }
         if (client.sceneNum < SCENE_ID_MAX && client.fileNum != 0xFF) {
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4(0.5, 0.5, 0.5, 1), "%s", SohUtils::GetSceneName(client.sceneNum).c_str());
-            if (GameInteractor::Instance->IsSaveLoaded() && client.sceneNum != SCENE_GROTTOS && client.sceneNum != SCENE_ID_MAX) {
+            // Display location only if gLocationDisplay is on, or if it's teammates only and this client is a teammate
+            if (CVarGetInteger("gLocationDisplay", 0) == 0 ||
+                (CVarGetInteger("gLocationDisplay", 0) == 2 && IsTeammate(client))) {
                 ImGui::SameLine();
-                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-                if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
-                    Anchor_RequestTeleport(clientId);
+                ImGui::TextColored(ImVec4(0.5, 0.5, 0.5, 1), "%s", SohUtils::GetSceneName(client.sceneNum).c_str());
+            }
+            // Display teleport button only if gTeleportOptions is on, or if it's teammates only and this client is a teammate
+            if (CVarGetInteger("gTeleportOptions", 0) == 0 ||
+                (CVarGetInteger("gTeleportOptions", 0) == 2 && IsTeammate(client))) {
+                if (GameInteractor::Instance->IsSaveLoaded() && client.sceneNum != SCENE_GROTTOS &&
+                    client.sceneNum != SCENE_ID_MAX) {
+                    ImGui::SameLine();
+                    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+                    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+                        Anchor_RequestTeleport(clientId);
+                    }
+                    ImGui::PopStyleVar();
                 }
-                ImGui::PopStyleVar();
             }
             if (IsValidSave() && CVarGetInteger("gAnchorPlayerHealth", 0) != 0) {
                 DisplayLifeMeter(client);
@@ -1361,6 +1816,41 @@ void AnchorLogWindow::DrawElement() {
         ImGuiWindowFlags_NoScrollWithMouse |
         ImGuiWindowFlags_NoScrollbar
     );
+
+    // Text box for sending messages.
+    static int teamOnly = 0;
+    ImGui::RadioButton("All", &teamOnly, 0);
+    ImGui::SameLine();
+    ImGui::RadioButton("Team", &teamOnly, 1);
+    ImGui::SameLine();
+
+    char msg[256] = "";
+    bool reclaim_focus = false;
+    ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+    if (ImGui::InputText("##", msg, IM_ARRAYSIZE(msg), input_text_flags)) {
+        // Green name for team chat, red for all chat.
+        ImVec4 preCol = teamOnly ? ImVec4(0.5f, 1.0f, 0.5f, 1.0f) : ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
+        Anchor_DisplayMessage({ .prefix = CVarGetString("gRemote.AnchorName", ""), 
+                                .prefixColor = preCol,
+                                .message = msg });
+            
+        nlohmann::json payload;
+
+        payload["type"] = "PLAYER_MESSAGE";
+        payload["msg"] = msg;
+        payload["teamOnly"] = teamOnly;
+
+        GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+
+        std::strcpy(msg, "");
+        reclaim_focus = true;
+    }
+
+    // Auto-focus on window apparition
+    ImGui::SetItemDefaultFocus();
+    if (reclaim_focus) {
+        ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+    }
 
     // Options to stack notifications on top or bottom, and left or right
     if (ImGui::Button(CVarGetInteger("gRemote.AnchorLogWindowX", 1) ? ICON_FA_CHEVRON_RIGHT : ICON_FA_CHEVRON_LEFT, ImVec2(20, 20))) {
@@ -1440,6 +1930,312 @@ void AnchorLogWindow::UpdateElement() {
             --index;
         }
     }
+}
+
+bool PayTrapCost(int32_t cost) {
+    // Check if we have enough rupees.
+    if (gSaveContext.rupees < cost) {
+        std::stringstream msg;
+        msg << "Need " << cost << " rupees to send this trap.";
+        Anchor_DisplayMessage({ .message = msg.str() });
+        return false;
+    }
+    Rupees_ChangeBy(-1 * cost);
+    return true;
+}
+
+void AnchorTrapWindow::DrawElement() {
+    ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.5f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 4.0f);
+    ImGui::Begin("AnchorTrapWindow", &mIsVisible,
+        ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoNav |
+        ImGuiWindowFlags_NoFocusOnAppearing |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoDocking |
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoScrollWithMouse |
+        ImGuiWindowFlags_NoScrollbar
+    );
+
+    ImVec4 menuItemColor = RED;
+    std::string buffName = "";
+    ImGui::Text("PvP Buffs (%d credits)", pvpCredits);
+    UIWidgets::InsertHelpHoverText(
+        "Acquire credits by dealing the final blow to players on opposing teams. These can then be spent on buffs.");
+    
+    if (CVarGetInteger("gPvpBuffEnableRefillWallet", 1)) {
+        ImGui::PushID("refillwallet");
+        if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+            buffName = "Rupee Refill";
+            if (pvpCredits >= 1) {
+                pvpCredits--;
+                Rupees_ChangeBy(1000);
+                Anchor_DisplayMessage({ .message = "Received buff:", .suffix = buffName });
+            } else {
+                Anchor_DisplayMessage({ .prefix = buffName, .message = "requires 1 credit." });
+            }
+        }
+        ImGui::SameLine();
+        menuItemColor = pvpCredits < 1 ? RED : GREEN;
+        ImGui::TextColored(menuItemColor, "(1 cred) Refill Wallet");
+        ImGui::PopID();
+    }
+
+    if (CVarGetInteger("gPvpBuffEnableRefillConsumables", 1)) {
+        ImGui::PushID("refillconsumables");
+        if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+            buffName = "Consumables Refill";
+            if (pvpCredits >= 1) {
+                pvpCredits--;
+                GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_STICK);
+                GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_NUT);
+                GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_BOMB);
+                GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_BOW);
+                GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_SEEDS);
+                // Only add chus if chus are in logic and we have found chus before.
+                if (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_BOMBCHUS_IN_LOGIC) &&
+                    INV_CONTENT(ITEM_BOMBCHU) == ITEM_BOMBCHU) {
+                    GameInteractor::RawAction::AddOrTakeAmmo(50, ITEM_BOMBCHU);
+                }
+                Anchor_DisplayMessage({ .message = "Received buff:", .suffix = buffName });
+            } else {
+                Anchor_DisplayMessage({ .prefix = buffName, .message = "requires 1 credit." });
+            }
+        }
+        ImGui::SameLine();
+        menuItemColor = pvpCredits < 1 ? RED : GREEN;
+        ImGui::TextColored(menuItemColor, "(1 cred) Refill Consumables");
+        ImGui::PopID();
+    }
+
+    if (CVarGetInteger("gPvpBuffEnableSpeedBoost", 1)) {
+        ImGui::PushID("speedboost");
+        if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+            buffName = "Speed Boost (1min)";
+            if (pvpCredits >= 1) {
+                pvpCredits--;
+                GameInteractor::State::RunSpeedModifier = 2;
+                speedBuffTimer = 60 * 20; // 1 minute
+                Anchor_DisplayMessage({ .message = "Received buff:", .suffix = buffName });
+            } else {
+                Anchor_DisplayMessage({ .prefix = buffName, .message = "requires 1 credit." });
+            }
+        }
+        ImGui::SameLine();
+        menuItemColor = pvpCredits < 1 ? RED : GREEN;
+        ImGui::TextColored(menuItemColor, "(1 cred) Speed Boost (1min)");
+        ImGui::PopID();
+    }
+
+    if (CVarGetInteger("gPvpBuffEnableInvincibility", 1)) {
+        ImGui::PushID("invincibility");
+        if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+            buffName = "Invincibility (1min)";
+            if (pvpCredits >= 2) {
+                pvpCredits -= 2;
+                // Set player->invincibilityTimer (signed 8bit int) to a small positive int.
+                // We use local invincibilityTimer var instead to count more than 128 frames.
+                Player* player = GET_PLAYER(gPlayState);
+                player->invincibilityTimer = 10;
+                invincibilityTimer = 60 * 20; // 1 minute
+                Anchor_DisplayMessage({ .message = "Received buff:", .suffix = buffName });
+            } else {
+                Anchor_DisplayMessage({ .prefix = buffName, .message = "requires 2 credits." });
+            }
+        }
+        ImGui::SameLine();
+        menuItemColor = pvpCredits < 2 ? RED : GREEN;
+        ImGui::TextColored(menuItemColor, "(2 cred) Invincibility (1min)");
+        ImGui::PopID();
+    }
+
+    ImGui::Text("\nPvP Traps");
+    ImGui::PushID("cuccostorm");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuCuccoCost", 50);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "cuccostorm";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuCuccoCost", 50) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Summon Cucco Storm", CVarGetInteger("gTrapMenuCuccoCost", 50));
+    ImGui::PopID();
+
+    ImGui::PushID("hands");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuHandsCost", 20);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "hands";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuHandsCost", 20) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Spawn Hand x5", CVarGetInteger("gTrapMenuHandsCost", 20));
+    ImGui::PopID();
+
+    ImGui::PushID("gibdo");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuGibdoCost", 99);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "gibdos";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuGibdoCost", 99) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Spawn Gibdo x4", CVarGetInteger("gTrapMenuGibdoCost", 99));
+    ImGui::PopID();
+
+    ImGui::PushID("likelike");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuLikeLikeCost", 50);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "likelike";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuLikeLikeCost", 50) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Spawn Like Like x4", CVarGetInteger("gTrapMenuLikeLikeCost", 50));
+    ImGui::PopID();
+
+    ImGui::PushID("knockback2");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuKnockback2Cost", 50);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "knockback2";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuKnockback2Cost", 50) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Small knockback", CVarGetInteger("gTrapMenuKnockback2Cost", 50));
+    ImGui::PopID();
+
+    ImGui::PushID("knockback4");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuKnockback4Cost",100);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "knockback4";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuKnockback4Cost", 100) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Large Knockback", CVarGetInteger("gTrapMenuKnockback4Cost", 100));
+    ImGui::PopID();
+
+    ImGui::PushID("randwind");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuRandWindCost", 100);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "randwind";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuRandWindCost", 100) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Summon Random Wind", CVarGetInteger("gTrapMenuRandWindCost", 100));
+    ImGui::PopID();
+
+    ImGui::PushID("slippery");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuSlipperyCost", 50);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "slippery";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuSlipperyCost", 50) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Slippery Surface", CVarGetInteger("gTrapMenuSlipperyCost", 50));
+    ImGui::PopID();
+
+    ImGui::PushID("inverted");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuInvertedCost", 150);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "inverted";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuInvertedCost", 150) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Invert Controls", CVarGetInteger("gTrapMenuInvertedCost", 150));
+    ImGui::PopID();
+
+    ImGui::PushID("telehome");
+    if (ImGui::Button(ICON_FA_CHEVRON_RIGHT, ImVec2(ImGui::GetFontSize() * 1.0f, ImGui::GetFontSize() * 1.0f))) {
+        int32_t cost = CVarGetInteger("gTrapMenuTelehomeCost", 200);
+        if (PayTrapCost(cost)) {
+            nlohmann::json payload;
+
+            payload["type"] = "SEND_TRAP";
+            payload["trapType"] = "telehome";
+            payload["team"] = CVarGetString("gRemote.AnchorTeam", "");
+
+            GameInteractorAnchor::Instance->TransmitJsonToRemote(payload);
+        }
+    }
+    ImGui::SameLine();
+    menuItemColor = gSaveContext.rupees < CVarGetInteger("gTrapMenuTelehomeCost", 200) ? RED : GREEN;
+    ImGui::TextColored(menuItemColor, "(%d) Teleport Home", CVarGetInteger("gTrapMenuTelehomeCost", 200));
+    ImGui::PopID();
+
+    ImGui::End();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(2);
 }
 
 #endif
