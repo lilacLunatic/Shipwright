@@ -38,6 +38,8 @@
 #include "Enhancements/randomizer/randomizer_item_tracker.h"
 #include "Enhancements/randomizer/randomizer_settings_window.h"
 #include "Enhancements/resolution-editor/ResolutionEditor.h"
+#include "Enhancements/enemyrandomizer.h"
+#include "Enhancements/GameplayMacros.h"
 
 // FA icons are kind of wonky, if they worked how I expected them to the "+ 2.0f" wouldn't be needed, but
 // they don't work how I expect them to so I added that because it looked good when I eyeballed it
@@ -1827,6 +1829,52 @@ void DrawDeveloperToolsMenu() {
             }
         }
         UIWidgets::PaddedSeparator();
+        if (gPlayState != NULL) {
+            UIWidgets::EnhancementCheckbox("Macros##Macros", "Macro.Enabled");
+            /*if (macroFiles.size() > 0) {
+                if (UIWidgets::EnhancementCombobox("Macro.FileIndex", macroFiles, 0)) {
+                    CVarSetString("Macro.File",
+                                  macroFiles[CVarGetInteger("MacroFileIndex", 0)]);
+                }
+            }
+            else {
+                GameplayMacros_RefreshMacroList();
+            }
+            */
+
+            if (CVarGetInteger("Macro.Enabled", 0)) {
+                /*
+                if (ImGui::Button("Refresh List##MacroRefreshList")) {
+                    GameplayMacros_RefreshMacroList();
+                }
+                */
+                static std::string macroFile = {};
+                if (ImGui::InputText("##Macro File Name", (char*)macroFile.c_str(), 4096)) {
+                    CVarSetString("Macro.File", macroFile.c_str());
+                    Ship::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesOnNextTick();
+                }
+                if (ImGui::Button("Clear##MacroClear")) {
+                    CVarSetInteger("Macro.Clear", 1);
+                }
+                if (ImGui::Button("Save##MacroSave",
+                             ImVec2(ImGui::GetContentRegionAvail().x / 2.0f, 0.0f))) {
+                    CVarSetInteger("Macro.Save", 1);
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Load##MacroLoad")) {
+                    CVarSetInteger("Macro.Load", 1);
+                }
+                if (ImGui::Button((!CVarGetInteger("Macro.Recording", 0) ? "Record##MacroRec" : "Stop Rec##MacroRec"),
+                             ImVec2(ImGui::GetContentRegionAvail().x / 2.0f, 0.0f))) {
+                    CVarSetInteger("Macro.Recording", !CVarGetInteger("Macro.Recording", 0));
+                }
+                ImGui::SameLine();
+                if (ImGui::Button((!CVarGetInteger("Macro.Playback", 0) ? "Play##MacroPlay" : "Stop Play##MacroPlay"))) {
+                    CVarSetInteger("Macro.Playback", !CVarGetInteger("Macro.Playback", 0));
+                }
+            }
+            UIWidgets::PaddedSeparator();
+        }
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12.0f, 6.0f));
         ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0,0));
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
