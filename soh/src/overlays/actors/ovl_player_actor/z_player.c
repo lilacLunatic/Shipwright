@@ -1889,7 +1889,7 @@ void Player_ProcessControlStick(PlayState* play, Player* this) {
         phi_v0 = (u16)((s16)(D_808535DC - this->actor.shape.rot.y) + 0x2000) >> 14;
     }
 
-    if(CVarGetInteger("gMouseTouchEnabled", 0)){
+    if(CVarGetInteger(CVAR_SETTING("EnableMouse"), 0)){
         f32 x = sControlInput->cur.touch_x;
         f32 y = sControlInput->cur.touch_y;
         this->mouseQuickspinX[this->quickspinCount] = x;
@@ -3890,7 +3890,7 @@ s32 func_808375D8(Player* this) {
         return 0;
     }
 
-    if(CVarGetInteger("gMouseTouchEnabled", 0)){ //mouse quickspin
+    if(CVarGetInteger(CVAR_SETTING("EnableMouse"), 0)){ //mouse quickspin
         iter2 = &sp3C[0];
         u32 willSpin = 1;
         for (i = 0; i < 4; i++, iter2++){
@@ -5975,7 +5975,7 @@ s32 Player_ActionChange_11(Player* this, PlayState* play) {
 
         if (Player_SetupAction(play, this, Player_Action_80843188, 0)) {
             /* MOD: move cursor to the middle on shield pull (RR) */
-            if (CVarGetInteger("gMouseTouchEnabled", 0)) {
+            if (CVarGetInteger(CVAR_SETTING("EnableMouse"), 0)) {
                 u32 width = OTRGetCurrentWidth();
                 u32 height = OTRGetCurrentHeight();
                 OTRMoveCursor(width/2, height/2);
@@ -8789,7 +8789,7 @@ void Player_Action_80843188(Player* this, PlayState* play) {
         sp50 = sControlInput->rel.stick_x * (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0) ? 120 : -120) * (CVarGetInteger(CVAR_SETTING("Controls.InvertShieldAimingYAxis"), 0) ? -1 : 1);
         sp4E = this->actor.shape.rot.y - Camera_GetInputDirYaw(GET_ACTIVE_CAM(play));
 
-        if (CVarGetInteger("gMouseTouchEnabled", 0)) {
+        if (CVarGetInteger(CVAR_SETTING("EnableMouse"), 0)) {
             u32 width = OTRGetCurrentWidth();
             u32 height = OTRGetCurrentHeight();
             /*
@@ -8799,7 +8799,7 @@ void Player_Action_80843188(Player* this, PlayState* play) {
             f32 xBound = 15360 / ((f32)width / 2);
             f32 yBound = 12800 / ((f32)height / 2);
             sp54 += +(sControlInput->cur.touch_y - (height) / 2) * yBound;
-            sp50 += +(sControlInput->cur.touch_x - (width) / 2) * xBound * (CVarGetInteger("gMirroredWorld", 0) ? 1 : -1);
+            sp50 += +(sControlInput->cur.touch_x - (width) / 2) * xBound * (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0) ? 1 : -1);
         }
 
         sp40 = Math_CosS(sp4E);
@@ -12118,7 +12118,7 @@ s16 func_8084ABD8(PlayState* play, Player* this, s32 arg2, s16 arg3) {
     f32 xAxisMulti = CVarGetFloat(CVAR_SETTING("FirstPersonCameraSensitivity.X"), 1.0f);
     f32 yAxisMulti = CVarGetFloat(CVAR_SETTING("FirstPersonCameraSensitivity.Y"), 1.0f);
     /* TODO: Move all this mouse stuff somewhere more appropriate */
-    if(CVarGetInteger("gMouseTouchEnabled", 0)) {
+    if(CVarGetInteger(CVAR_SETTING("EnableMouse"), 0)) {
         int mouseX, mouseY;
         SDL_GetRelativeMouseState(&mouseX, &mouseY);
 
@@ -12126,12 +12126,12 @@ s16 func_8084ABD8(PlayState* play, Player* this, s32 arg2, s16 arg3) {
         sControlInput->cur.mouse_move_y = mouseY;
         if (fabsf(sControlInput->cur.mouse_move_x) > 0) {
             //printf("x:%d\n", sControlInput->cur.mouse_move_x);
-            this->actor.focus.rot.y -= (sControlInput->cur.mouse_move_x) * 12.0f * (CVarGetFloat("gFirstPersonCameraSensitivity", 1.0f)) *\
+            this->actor.focus.rot.y -= (sControlInput->cur.mouse_move_x) * 12.0f * xAxisMulti *\
                                        invertXAxisMulti;
         }
         if (fabsf(sControlInput->cur.mouse_move_y) > 0) {
             //printf("y:%d\n", sControlInput->cur.mouse_move_y);
-            this->actor.focus.rot.x += (sControlInput->cur.mouse_move_y) * 12.0f * (CVarGetFloat("gFirstPersonCameraSensitivity", 1.0f)) *\
+            this->actor.focus.rot.x += (sControlInput->cur.mouse_move_y) * 12.0f * yAxisMulti *\
                                        invertYAxisMulti;
         }
     }
