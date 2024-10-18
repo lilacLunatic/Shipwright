@@ -13,6 +13,7 @@
 #include "soh/Enhancements/enhancementTypes.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/framebuffer_effects.h"
+#include "soh/Enhancements/GameplayMacros.h"
 
 #include <libultraship/libultraship.h>
 
@@ -22,6 +23,7 @@
 void* D_8012D1F0 = NULL;
 //UNK_TYPE D_8012D1F4 = 0; // unused
 Input* D_8012D1F8 = NULL;
+static Macro macro;
 
 TransitionUnk sTrnsnUnk;
 s32 gTrnsnUnkState;
@@ -682,6 +684,40 @@ void Play_Update(PlayState* play) {
     if (FrameAdvance_Update(&play->frameAdvCtx, &input[1])) {
         if ((play->transitionMode == TRANS_MODE_OFF) && (play->transitionTrigger != TRANS_TRIGGER_OFF)) {
             play->transitionMode = TRANS_MODE_SETUP;
+        }
+
+        if (CVarGetInteger("Macro.Recording", 0)) {
+            if (macro.duration >= MAX_MACRO_LEN) {
+                CVarSetInteger("Macro.Recording", 0);
+            }
+            macro.inputs[macro.duration++] = input[0];
+        }
+        else if (CVarGetInteger("Macro.Playback", 0)) {
+            if (macro.playback >= macro.duration) {
+                CVarSetInteger("Macro.Playback", 0);
+                macro.playback = 0;
+            }
+            else {
+                input[0] = macro.inputs[macro.playback++];
+            }
+        }
+
+        if (CVarGetInteger("Macro.Clear", 0)) {
+            CVarSetInteger("Macro.Clear", 0);
+            CVarSetInteger("Macro.Playback", 0);
+            CVarSetInteger("Macro.Recording", 0);
+            macro.duration = 0;
+            macro.playback = 0;
+        }
+
+        char* path = CVarGetString("Macro.File", 0);
+        if (CVarGetInteger("Macro.Save", 0)) {
+            CVarSetInteger("Macro.Save", 0);
+            GameplayMacros_SaveMacro(path, &macro);
+        }
+        if (CVarGetInteger("Macro.Load", 0)) {
+            CVarSetInteger("Macro.Load", 0);
+            macro = GameplayMacros_LoadMacro(path);
         }
 
         // Gameplay stats: Count button presses
