@@ -605,17 +605,19 @@ void ValidateEntrances(bool checkPoeCollectorAccess, bool checkOtherEntranceAcce
   }
   if (gals.sphereZeroComplete) {
     ctx->allLocationsReachable = true;
-    for (const RandomizerCheck loc : ctx->allLocations) {
-      if (!ctx->GetItemLocation(loc)->IsAddedToPool()) {
-          ctx->allLocationsReachable = false;
-          auto message = "Location " +
-                         Rando::StaticData::GetLocation(ctx->GetItemLocation(loc)->GetRandomizerCheck())->GetName() +
-                         " not reachable\n";
-          SPDLOG_DEBUG(message);
-        #ifndef ENABLE_DEBUG
-          break;
-        #endif
-      }
+    if(!ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_NO_LOGIC)) {
+        for (const RandomizerCheck loc : ctx->allLocations) {
+          if (!ctx->GetItemLocation(loc)->IsAddedToPool()) {
+              ctx->allLocationsReachable = false;
+              auto message = "Location " +
+                             Rando::StaticData::GetLocation(ctx->GetItemLocation(loc)->GetRandomizerCheck())->GetName() +
+                             " not reachable\n";
+              SPDLOG_DEBUG(message);
+            #ifndef ENABLE_DEBUG
+              break;
+            #endif
+          }
+        }
     }
   }
 }
