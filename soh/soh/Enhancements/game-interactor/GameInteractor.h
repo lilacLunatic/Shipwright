@@ -254,6 +254,11 @@ typedef enum {
     VB_LOCK_DOOR,
     VB_FREEZE_LINK_FOR_BLOCK_THROW,
     VB_MOVE_THROWN_ACTOR,
+    VB_CONSUME_SMALL_KEY,
+    // Vanilla condition: gSaveContext.inventory.dungeonKeys[gSaveContext.mapIndex] <= 0
+    VB_NOT_HAVE_SMALL_KEY,
+    // Vanilla condition: !Flags_GetSwitch(play, this->actor.params & 0x3F)
+    VB_DOOR_BE_LOCKED,
 
     /*** Play Cutscenes ***/
 
