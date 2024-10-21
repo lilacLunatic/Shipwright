@@ -21,7 +21,6 @@ extern "C" {
 void GameplayMacros_RefreshMacroList();
 void GameplayMacros_SaveMacro(char* filePath, Macro* macro);
 Macro GameplayMacros_LoadMacro(char* filePath);
-char* GameplayMacros_GetMacroPath();
 #ifdef __cplusplus
 }
 #endif

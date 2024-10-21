@@ -115,12 +115,3 @@ void GameplayMacros_SaveMacro(char* filePath, Macro* macro){
 
     stream << macroJson;
 }
-
-
-char* GameplayMacros_GetMacroPath() {
-    if (macroFiles.size() > 0) {
-        return macroFiles[CVarGetInteger("Macro.FileIndex", 0)]; 
-    }
-    return "";
-}
-

@@ -447,6 +447,7 @@ void ResetPositionAll() {
 int hue = 0;
 
 // Runs every frame to update rainbow hue, a potential future optimization is to only run this a once or twice a second and increase the speed of the rainbow hue rotation.
+#define TRANS 1
 void CosmeticsUpdateTick() {
     int index = 0;
     float rainbowSpeed = CVarGetFloat(CVAR_COSMETIC("RainbowSpeed"), 0.6f);
@@ -454,10 +455,25 @@ void CosmeticsUpdateTick() {
         if (cosmeticOption.supportsRainbow && CVarGetInteger(cosmeticOption.rainbowCvar, 0)) {
             float frequency = 2 * M_PI / (360 * rainbowSpeed);
             Color_RGBA8 newColor;
+#ifndef TRANS
             newColor.r = sin(frequency * (hue + index) + 0) * 127 + 128;
             newColor.g = sin(frequency * (hue + index) + (2 * M_PI / 3)) * 127 + 128;
             newColor.b = sin(frequency * (hue + index) + (4 * M_PI / 3)) * 127 + 128;
             newColor.a = 255;
+#else
+            float sinangle = sin(frequency * (hue + index));
+            if (0 <= sinangle && sinangle <= 1) {
+                newColor.r = sinangle * (255 - 255) + 255;
+                newColor.g = sinangle * (159 - 255) + 255;
+                newColor.b = sinangle * (186 - 255) + 255;
+            }
+            else {
+                newColor.r = -sinangle * (71 - 255) + 255;
+                newColor.g = -sinangle * (186 - 255) + 255;
+                newColor.b = -sinangle * (230 - 255) + 255;
+            }
+            newColor.a = 255;
+#endif
             // For alpha supported options, retain the last set alpha instead of overwriting
             if (cosmeticOption.supportsAlpha) {
                 newColor.a = cosmeticOption.currentColor.w * 255;

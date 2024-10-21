@@ -295,21 +295,23 @@ s32 EffectBlure_Update(void* thisx) {
         default: // don't do anything
             break;
     }
-
+    Color_RGBA8 BLUE  = (Color_RGBA8){ 71, 186, 230, 255 };
+    Color_RGBA8 PINK  = (Color_RGBA8){ 225, 149, 165, 255 };
+    Color_RGBA8 WHITE = (Color_RGBA8){ 255, 255, 255, 255 };
     // We cant just straight up assign the colors because we need to preserve the alpha channel
     if (changed) {
-        this->p1StartColor.r = color.r;
-        this->p2StartColor.r = color.r;
-        this->p1EndColor.r = color.r;
-        this->p2EndColor.r = color.r;
-        this->p1StartColor.g = color.g;
-        this->p2StartColor.g = color.g;
-        this->p1EndColor.g = color.g;
-        this->p2EndColor.g = color.g;
-        this->p1StartColor.b = color.b;
-        this->p2StartColor.b = color.b;
-        this->p1EndColor.b = color.b;
-        this->p2EndColor.b = color.b;
+        this->p1StartColor.r = PINK.r;
+        this->p2StartColor.r = BLUE.r;
+        this->p1EndColor.r = WHITE.r;
+        this->p2EndColor.r = WHITE.r;
+        this->p1StartColor.g = PINK.g;
+        this->p2StartColor.g = BLUE.g;
+        this->p1EndColor.g = WHITE.g;
+        this->p2EndColor.g = WHITE.g;
+        this->p1StartColor.b = PINK.b;
+        this->p2StartColor.b = BLUE.b;
+        this->p1EndColor.b = WHITE.b;
+        this->p2EndColor.b = WHITE.b;
     }
     if (reset) {
         changed = 0;
