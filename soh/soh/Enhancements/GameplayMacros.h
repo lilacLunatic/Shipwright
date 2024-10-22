@@ -15,10 +15,9 @@ typedef struct {
 
 
 #ifdef __cplusplus
-extern std::vector<const char*> macroFiles;
 extern "C" {
 #endif
-void GameplayMacros_RefreshMacroList();
+//void GameplayMacros_RefreshMacroList();
 void GameplayMacros_SaveMacro(char* filePath, Macro* macro);
 Macro GameplayMacros_LoadMacro(char* filePath);
 #ifdef __cplusplus
