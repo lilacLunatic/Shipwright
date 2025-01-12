@@ -881,7 +881,7 @@ static void AssumedFill(const std::vector<RandomizerGet>& items, const std::vect
 
             // If ALR is off, then we check beatability after placing the item.
             // If the game is beatable, then we can stop placing items with logic.
-            if (!ctx->GetOption(RSK_ALL_LOCATIONS_REACHABLE)) {
+            if (!ctx->GetOption(RSK_ALL_LOCATIONS_REACHABLE) && !logic->IsNNL()) {
                 ctx->playthroughBeatable = false;
                 logic->Reset();
                 CheckBeatable();

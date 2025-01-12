@@ -8,8 +8,8 @@ void RegionTable_Init_ForestTemple() {
     // Vanilla/MQ Decider
     areaTable[RR_FOREST_TEMPLE_ENTRYWAY] = Region("Forest Temple Entryway", "Forest Temple", {RA_FOREST_TEMPLE}, NO_DAY_NIGHT_CYCLE, {}, {}, {
         //Exits
-        Entrance(RR_FOREST_TEMPLE_FIRST_ROOM, []{return ctx->GetDungeon(FOREST_TEMPLE)->IsVanilla();}),
-        Entrance(RR_FOREST_TEMPLE_MQ_LOBBY,   []{return ctx->GetDungeon(FOREST_TEMPLE)->IsMQ();}),
+        Entrance(RR_FOREST_TEMPLE_FIRST_ROOM, []{return ctx->GetDungeon(FOREST_TEMPLE)->IsVanilla();}, true),
+        Entrance(RR_FOREST_TEMPLE_MQ_LOBBY,   []{return ctx->GetDungeon(FOREST_TEMPLE)->IsMQ();}, true),
         Entrance(RR_SACRED_FOREST_MEADOW,     []{return true;}),
     });
 
@@ -33,7 +33,7 @@ void RegionTable_Init_ForestTemple() {
 
     areaTable[RR_FOREST_TEMPLE_LOBBY] = Region("Forest Temple Lobby", "Forest Temple", {RA_FOREST_TEMPLE}, NO_DAY_NIGHT_CYCLE, {
         //Events
-        EventAccess(&logic->ForestTempleMeg, []{return logic->ForestTempleMeg || (logic->ForestTempleJoelle && logic->ForestTempleBeth && logic->ForestTempleAmy && logic->CanUse(RG_FAIRY_BOW));}),
+        EventAccess(&logic->ForestTempleMeg, []{return logic->ForestTempleMeg || (logic->ForestTempleJoelle && logic->ForestTempleBeth && logic->ForestTempleAmy && logic->CanUse(RG_FAIRY_BOW));}, true),
     }, {
         //Locations
         LOCATION(RC_FOREST_TEMPLE_GS_LOBBY,    logic->HookshotOrBoomerang()),
@@ -66,9 +66,9 @@ void RegionTable_Init_ForestTemple() {
         EventAccess(&logic->FairyPot, []{return true;}),
     }, {
         //Locations
-        LOCATION(RC_FOREST_TEMPLE_FIRST_STALFOS_CHEST, logic->CanKillEnemy(RE_STALFOS, ED_CLOSE, true, 2)),
-        LOCATION(RC_FOREST_TEMPLE_LOWER_STALFOS_POT_1, logic->CanBreakPots()),
-        LOCATION(RC_FOREST_TEMPLE_LOWER_STALFOS_POT_2, logic->CanBreakPots()),
+        LOCATION_NNL(RC_FOREST_TEMPLE_FIRST_STALFOS_CHEST, logic->CanKillEnemy(RE_STALFOS, ED_CLOSE, true, 2)),
+        LOCATION(RC_FOREST_TEMPLE_LOWER_STALFOS_POT_1,     logic->CanBreakPots()),
+        LOCATION(RC_FOREST_TEMPLE_LOWER_STALFOS_POT_2,     logic->CanBreakPots()),
     }, {
         //Exits
         Entrance(RR_FOREST_TEMPLE_NORTH_CORRIDOR, []{return true;}),
@@ -202,10 +202,10 @@ void RegionTable_Init_ForestTemple() {
 
     areaTable[RR_FOREST_TEMPLE_RED_POE_ROOM] = Region("Forest Temple Red Poe Room", "Forest Temple", {RA_FOREST_TEMPLE}, NO_DAY_NIGHT_CYCLE, {
         //Events
-        EventAccess(&logic->ForestTempleJoelle, []{return logic->ForestTempleJoelle || logic->CanUse(RG_FAIRY_BOW);}),
+        EventAccess(&logic->ForestTempleJoelle, []{return logic->ForestTempleJoelle || logic->CanUse(RG_FAIRY_BOW);}, true),
     }, {
         //Locations
-        LOCATION(RC_FOREST_TEMPLE_RED_POE_CHEST, logic->ForestTempleJoelle),
+        LOCATION_NNL(RC_FOREST_TEMPLE_RED_POE_CHEST, logic->ForestTempleJoelle),
     }, {
         //Exits
         Entrance(RR_FOREST_TEMPLE_NW_CORRIDOR_TWISTED, []{return logic->SmallKeys(RR_FOREST_TEMPLE, 3);}),
@@ -214,7 +214,7 @@ void RegionTable_Init_ForestTemple() {
 
     areaTable[RR_FOREST_TEMPLE_UPPER_STALFOS] = Region("Forest Temple Upper Stalfos", "Forest Temple", {RA_FOREST_TEMPLE}, NO_DAY_NIGHT_CYCLE, {}, {
         //Locations
-        LOCATION(RC_FOREST_TEMPLE_BOW_CHEST,           logic->CanKillEnemy(RE_STALFOS, ED_CLOSE, true, 3)),
+        LOCATION_NNL(RC_FOREST_TEMPLE_BOW_CHEST,       logic->CanKillEnemy(RE_STALFOS, ED_CLOSE, true, 3)),
         LOCATION(RC_FOREST_TEMPLE_UPPER_STALFOS_POT_1, logic->CanBreakPots()),
         LOCATION(RC_FOREST_TEMPLE_UPPER_STALFOS_POT_2, logic->CanBreakPots()),
         LOCATION(RC_FOREST_TEMPLE_UPPER_STALFOS_POT_3, logic->CanBreakPots()),
@@ -227,10 +227,10 @@ void RegionTable_Init_ForestTemple() {
 
     areaTable[RR_FOREST_TEMPLE_BLUE_POE_ROOM] = Region("Forest Temple Blue Poe Room", "Forest Temple", {RA_FOREST_TEMPLE}, NO_DAY_NIGHT_CYCLE, {
         //Events
-        EventAccess(&logic->ForestTempleBeth, []{return logic->ForestTempleBeth || logic->CanUse(RG_FAIRY_BOW);}),
+        EventAccess(&logic->ForestTempleBeth, []{return logic->ForestTempleBeth || logic->CanUse(RG_FAIRY_BOW);}, true),
     }, {
         //Locations
-        LOCATION(RC_FOREST_TEMPLE_BLUE_POE_CHEST, logic->ForestTempleBeth),
+        LOCATION_NNL(RC_FOREST_TEMPLE_BLUE_POE_CHEST, logic->ForestTempleBeth),
         LOCATION(RC_FOREST_TEMPLE_BLUE_POE_POT_1, logic->CanBreakPots()),
         LOCATION(RC_FOREST_TEMPLE_BLUE_POE_POT_2, logic->CanBreakPots()),
         LOCATION(RC_FOREST_TEMPLE_BLUE_POE_POT_3, logic->CanBreakPots()),
@@ -273,7 +273,7 @@ void RegionTable_Init_ForestTemple() {
 
     areaTable[RR_FOREST_TEMPLE_GREEN_POE_ROOM] = Region("Forest Temple Green Poe Room", "Forest Temple", {RA_FOREST_TEMPLE}, NO_DAY_NIGHT_CYCLE, {
         //Events
-        EventAccess(&logic->ForestTempleAmy, []{return logic->ForestTempleAmy || logic->CanUse(RG_FAIRY_BOW);}),
+        EventAccess(&logic->ForestTempleAmy, []{return logic->ForestTempleAmy || logic->CanUse(RG_FAIRY_BOW);}, true),
     }, {
         //Locations
         LOCATION(RC_FOREST_TEMPLE_GREEN_POE_POT_1, logic->CanBreakPots()),
@@ -281,7 +281,7 @@ void RegionTable_Init_ForestTemple() {
     }, {
         //Exits
         Entrance(RR_FOREST_TEMPLE_FALLING_ROOM,  []{return true;}),
-        Entrance(RR_FOREST_TEMPLE_EAST_CORRIDOR, []{return logic->ForestTempleAmy;}),
+        Entrance(RR_FOREST_TEMPLE_EAST_CORRIDOR, []{return logic->ForestTempleAmy;}, true),
     });
 
     areaTable[RR_FOREST_TEMPLE_EAST_CORRIDOR] = Region("Forest Temple East Corridor", "Forest Temple", {RA_FOREST_TEMPLE}, NO_DAY_NIGHT_CYCLE, {}, {}, {
@@ -297,7 +297,7 @@ void RegionTable_Init_ForestTemple() {
     }, {
         //Exits
         Entrance(RR_FOREST_TEMPLE_LOBBY,         []{return true;}),
-        Entrance(RR_FOREST_TEMPLE_BOSS_ENTRYWAY, []{return logic->HasItem(RG_FOREST_TEMPLE_BOSS_KEY);}),
+        Entrance(RR_FOREST_TEMPLE_BOSS_ENTRYWAY, []{return logic->HasItem(RG_FOREST_TEMPLE_BOSS_KEY);}, true),
     });
 
 #pragma endregion
@@ -317,7 +317,7 @@ void RegionTable_Init_ForestTemple() {
 
     areaTable[RR_FOREST_TEMPLE_MQ_CENTRAL_AREA] = Region("Forest Temple MQ Central Region", "Forest Temple", {RA_FOREST_TEMPLE}, NO_DAY_NIGHT_CYCLE, {
         //Events
-        EventAccess(&logic->ForestTempleMeg, []{return logic->ForestTempleJoelle && logic->ForestTempleBeth && logic->ForestTempleAmy && logic->CanKillEnemy(RE_MEG);}),
+        EventAccess(&logic->ForestTempleMeg, []{return logic->ForestTempleJoelle && logic->ForestTempleBeth && logic->ForestTempleAmy && logic->CanKillEnemy(RE_MEG);}, true),
     }, {
         //Locations
         LOCATION(RC_FOREST_TEMPLE_MQ_LOBBY_POT_1, logic->CanBreakPots()),
@@ -339,12 +339,12 @@ void RegionTable_Init_ForestTemple() {
     areaTable[RR_FOREST_TEMPLE_MQ_WOLFOS_ROOM] = Region("Forest Temple MQ Wolfos Room", "Forest Temple", {RA_FOREST_TEMPLE}, NO_DAY_NIGHT_CYCLE, {
         //Events
         EventAccess(&logic->FairyPot,                 []{return true;}),
-        EventAccess(&logic->ForestClearBelowBowChest, []{return logic->CanKillEnemy(RE_WOLFOS);}),
+        EventAccess(&logic->ForestClearBelowBowChest, []{return logic->CanKillEnemy(RE_WOLFOS);}, true),
     }, {
         //Locations
-        LOCATION(RC_FOREST_TEMPLE_MQ_WOLFOS_CHEST, logic->ForestClearBelowBowChest),
-        LOCATION(RC_FOREST_TEMPLE_MQ_WOLFOS_POT_1, logic->CanBreakPots()),
-        LOCATION(RC_FOREST_TEMPLE_MQ_WOLFOS_POT_2, logic->CanBreakPots()),
+        LOCATION_NNL(RC_FOREST_TEMPLE_MQ_WOLFOS_CHEST, logic->ForestClearBelowBowChest),
+        LOCATION(RC_FOREST_TEMPLE_MQ_WOLFOS_POT_1,     logic->CanBreakPots()),
+        LOCATION(RC_FOREST_TEMPLE_MQ_WOLFOS_POT_2,     logic->CanBreakPots()),
     }, {
         //Exits
         Entrance(RR_FOREST_TEMPLE_MQ_CENTRAL_AREA, []{return logic->ForestClearBelowBowChest && (logic->IsChild || logic->CanUse(RG_SONG_OF_TIME));}),
@@ -495,10 +495,10 @@ void RegionTable_Init_ForestTemple() {
     areaTable[RR_FOREST_TEMPLE_MQ_3_STALFOS_ROOM] = Region("Forest Temple MQ 3 Stalfos Room", "Forest Temple", {RA_FOREST_TEMPLE}, NO_DAY_NIGHT_CYCLE, {
         //Events
         //technically happens in RR_FOREST_TEMPLE_MQ_WOLFOS_ROOM, but the way this room blocks the hole means it cannot be logical to do anything else there.
-        EventAccess(&logic->ForestClearBelowBowChest, []{return logic->CanKillEnemy(RE_WOLFOS);}),
+        EventAccess(&logic->ForestClearBelowBowChest, []{return logic->CanKillEnemy(RE_WOLFOS);}, true),
     }, {
         //Locations
-        LOCATION(RC_FOREST_TEMPLE_MQ_BOW_CHEST,           logic->ForestClearBelowBowChest && logic->CanKillEnemy(RE_STALFOS, ED_CLOSE, true, 3)),
+        LOCATION_NNL(RC_FOREST_TEMPLE_MQ_BOW_CHEST,       logic->ForestClearBelowBowChest && logic->CanKillEnemy(RE_STALFOS, ED_CLOSE, true, 3)),
         LOCATION(RC_FOREST_TEMPLE_MQ_UPPER_STALFOS_POT_1, logic->CanBreakPots()),
         LOCATION(RC_FOREST_TEMPLE_MQ_UPPER_STALFOS_POT_2, logic->CanBreakPots()),
         LOCATION(RC_FOREST_TEMPLE_MQ_UPPER_STALFOS_POT_3, logic->CanBreakPots()),
@@ -585,7 +585,7 @@ void RegionTable_Init_ForestTemple() {
     areaTable[RR_FOREST_TEMPLE_MQ_BOSS_REGION] = Region("Forest Temple MQ Boss Region", "Forest Temple", {RA_FOREST_TEMPLE}, NO_DAY_NIGHT_CYCLE, {}, {}, {
         //Exits
         Entrance(RR_FOREST_TEMPLE_MQ_BASEMENT,   []{return logic->ForestOpenBossCorridor;}),
-        Entrance(RR_FOREST_TEMPLE_BOSS_ENTRYWAY, []{return logic->HasItem(RG_FOREST_TEMPLE_BOSS_KEY);}),
+        Entrance(RR_FOREST_TEMPLE_BOSS_ENTRYWAY, []{return logic->HasItem(RG_FOREST_TEMPLE_BOSS_KEY);}, true),
     });
 
 #pragma endregion
@@ -593,21 +593,21 @@ void RegionTable_Init_ForestTemple() {
     // Boss Room
     areaTable[RR_FOREST_TEMPLE_BOSS_ENTRYWAY] = Region("Forest Temple Boss Entryway", "Forest Temple", {RA_FOREST_TEMPLE}, NO_DAY_NIGHT_CYCLE, {}, {}, {
         // Exits
-        Entrance(RR_FOREST_TEMPLE_BOSS_REGION,    []{return ctx->GetDungeon(FOREST_TEMPLE)->IsVanilla() && false;}),
-        Entrance(RR_FOREST_TEMPLE_MQ_BOSS_REGION, []{return ctx->GetDungeon(FOREST_TEMPLE)->IsMQ() && false;}),
+        Entrance(RR_FOREST_TEMPLE_BOSS_REGION,    []{return ctx->GetDungeon(FOREST_TEMPLE)->IsVanilla() && false;}, true),
+        Entrance(RR_FOREST_TEMPLE_MQ_BOSS_REGION, []{return ctx->GetDungeon(FOREST_TEMPLE)->IsMQ() && false;}, true),
         Entrance(RR_FOREST_TEMPLE_BOSS_ROOM,      []{return true;}),
     });
 
     areaTable[RR_FOREST_TEMPLE_BOSS_ROOM] = Region("Forest Temple Boss Room", "Forest Temple", {}, NO_DAY_NIGHT_CYCLE, {
         // Events
-        EventAccess(&logic->ForestTempleClear, []{return logic->ForestTempleClear || (logic->HasBossSoul(RG_PHANTOM_GANON_SOUL) && ((logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_BIGGORON_SWORD)) && (logic->CanUse(RG_HOOKSHOT) || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_FAIRY_SLINGSHOT))));}),
+        EventAccess(&logic->ForestTempleClear, []{return logic->ForestTempleClear || (logic->HasBossSoul(RG_PHANTOM_GANON_SOUL) && ((logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_BIGGORON_SWORD)) && (logic->CanUse(RG_HOOKSHOT) || logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_FAIRY_SLINGSHOT))));}, true),
     }, {
         // Locations
-        LOCATION(RC_FOREST_TEMPLE_PHANTOM_GANON_HEART, logic->ForestTempleClear),
-        LOCATION(RC_PHANTOM_GANON,                     logic->ForestTempleClear),
+        LOCATION_NNL(RC_FOREST_TEMPLE_PHANTOM_GANON_HEART, logic->ForestTempleClear),
+        LOCATION_NNL(RC_PHANTOM_GANON,                     logic->ForestTempleClear),
     }, {
         // Exits
         Entrance(RR_FOREST_TEMPLE_BOSS_ENTRYWAY, []{return false;}),
-        Entrance(RR_SACRED_FOREST_MEADOW,        []{return logic->ForestTempleClear;}, false),
+        Entrance(RR_SACRED_FOREST_MEADOW,        []{return logic->ForestTempleClear;}, true, false),
     });
 }

@@ -15,6 +15,9 @@
 #include <spdlog/spdlog.h>
 
 namespace Rando {
+    bool Logic::IsNNL() {
+        return ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_NEARLY_NO_LOGIC);
+    }
 
     bool Logic::HasItem(RandomizerGet itemName) {
         switch (itemName) {
@@ -421,33 +424,6 @@ namespace Rando {
 
     uint8_t GetDifficultyValueFromString(Rando::Option& glitchOption) {
         return 0;
-    }
-
-    //todo rewrite glitch section
-
-    bool Logic::CanEquipSwap(RandomizerGet itemName) {
-        if (!HasItem(itemName))
-            return false;
-    
-        if (CanDoGlitch(GlitchType::EquipSwapDins) || CanDoGlitch(GlitchType::EquipSwap))
-            return true;
-
-        return false;
-    }
-
-    bool Logic::CanDoGlitch(GlitchType glitch) {
-        // TODO: Uncomment when glitches are implemented
-        switch(glitch) {
-            case GlitchType::EquipSwapDins:
-                return ((IsAdult && HasItem(RG_DINS_FIRE)) || (IsChild && (HasItem(RG_STICKS) || HasItem(RG_DINS_FIRE)))) && false; //GlitchEquipSwapDins;
-            case GlitchType::EquipSwap: // todo: add bunny hood to adult item equippable list and child trade item to child item equippable list
-                return ((IsAdult && (HasItem(RG_DINS_FIRE) || HasItem(RG_FARORES_WIND) || HasItem(RG_NAYRUS_LOVE))) || (IsChild && (HasItem(RG_STICKS) || 
-                    HasItem(RG_FAIRY_SLINGSHOT) || HasItem(RG_BOOMERANG) || HasBottle() || CanUse(RG_NUTS) || HasItem(RG_FAIRY_OCARINA) || HasItem(RG_LENS_OF_TRUTH) || HasExplosives() ||
-                    GetAmmo(ITEM_BEAN) > 0 || HasItem(RG_DINS_FIRE) || HasItem(RG_FARORES_WIND) || HasItem(RG_NAYRUS_LOVE)))) && false; //GlitchEquipSwap;
-        }
-
-        //Shouldn't be reached
-        return false;
     }
 
 //RANDOTODO quantity is a placeholder for proper ammo use calculation logic. in time will want updating to account for ammo capacity

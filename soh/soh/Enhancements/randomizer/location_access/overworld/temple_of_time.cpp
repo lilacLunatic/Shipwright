@@ -6,17 +6,17 @@ using namespace Rando;
 void RegionTable_Init_TempleOfTime() {
     areaTable[RR_TOT_ENTRANCE] = Region("ToT Entrance", "ToT Entrance", {RA_THE_MARKET}, NO_DAY_NIGHT_CYCLE, {
         //Events
-        EventAccess(&logic->GossipStoneFairy, []{return logic->CallGossipFairyExceptSuns();}),
+        EventAccess(&logic->GossipStoneFairy, []{return logic->CallGossipFairyExceptSuns();}, true),
     }, {
         //Locations
-        LOCATION(RC_TOT_LEFTMOST_GOSSIP_STONE_FAIRY,         logic->CallGossipFairyExceptSuns() || (logic->CanUse(RG_SUNS_SONG) && logic->IsAdult)),
-        LOCATION(RC_TOT_LEFTMOST_GOSSIP_STONE_FAIRY_BIG,     logic->CanUse(RG_SONG_OF_STORMS)),
-        LOCATION(RC_TOT_LEFT_CENTER_GOSSIP_STONE_FAIRY,      logic->CallGossipFairyExceptSuns() || (logic->CanUse(RG_SUNS_SONG) && logic->IsAdult)),
-        LOCATION(RC_TOT_LEFT_CENTER_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
-        LOCATION(RC_TOT_RIGHT_CENTER_GOSSIP_STONE_FAIRY,     logic->CallGossipFairyExceptSuns() || (logic->CanUse(RG_SUNS_SONG) && logic->IsAdult)),
-        LOCATION(RC_TOT_RIGHT_CENTER_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS)),
-        LOCATION(RC_TOT_RIGHTMOST_GOSSIP_STONE_FAIRY,        logic->CallGossipFairyExceptSuns() || (logic->CanUse(RG_SUNS_SONG) && logic->IsAdult)),
-        LOCATION(RC_TOT_RIGHTMOST_GOSSIP_STONE_FAIRY_BIG,    logic->CanUse(RG_SONG_OF_STORMS)),
+        LOCATION_NNL(RC_TOT_LEFTMOST_GOSSIP_STONE_FAIRY,         logic->CallGossipFairyExceptSuns() || (logic->CanUse(RG_SUNS_SONG) && logic->IsAdult)),
+        LOCATION_NNL(RC_TOT_LEFTMOST_GOSSIP_STONE_FAIRY_BIG,     logic->CanUse(RG_SONG_OF_STORMS)),
+        LOCATION_NNL(RC_TOT_LEFT_CENTER_GOSSIP_STONE_FAIRY,      logic->CallGossipFairyExceptSuns() || (logic->CanUse(RG_SUNS_SONG) && logic->IsAdult)),
+        LOCATION_NNL(RC_TOT_LEFT_CENTER_GOSSIP_STONE_FAIRY_BIG,  logic->CanUse(RG_SONG_OF_STORMS)),
+        LOCATION_NNL(RC_TOT_RIGHT_CENTER_GOSSIP_STONE_FAIRY,     logic->CallGossipFairyExceptSuns() || (logic->CanUse(RG_SUNS_SONG) && logic->IsAdult)),
+        LOCATION_NNL(RC_TOT_RIGHT_CENTER_GOSSIP_STONE_FAIRY_BIG, logic->CanUse(RG_SONG_OF_STORMS)),
+        LOCATION_NNL(RC_TOT_RIGHTMOST_GOSSIP_STONE_FAIRY,        logic->CallGossipFairyExceptSuns() || (logic->CanUse(RG_SUNS_SONG) && logic->IsAdult)),
+        LOCATION_NNL(RC_TOT_RIGHTMOST_GOSSIP_STONE_FAIRY_BIG,    logic->CanUse(RG_SONG_OF_STORMS)),
         LOCATION(RC_TOT_LEFTMOST_GOSSIP_STONE,               true),
         LOCATION(RC_TOT_LEFT_CENTER_GOSSIP_STONE,            true),
         LOCATION(RC_TOT_RIGHT_CENTER_GOSSIP_STONE,           true),
@@ -29,10 +29,10 @@ void RegionTable_Init_TempleOfTime() {
 
     areaTable[RR_TEMPLE_OF_TIME] = Region("Temple of Time", "Temple of Time", {RA_TEMPLE_OF_TIME}, NO_DAY_NIGHT_CYCLE, {}, {
         //Locations
-        LOCATION(RC_TOT_LIGHT_ARROWS_CUTSCENE, logic->IsAdult && logic->CanTriggerLACS()),
-        LOCATION(RC_ALTAR_HINT_CHILD,          logic->IsChild),
-        LOCATION(RC_ALTAR_HINT_ADULT,          logic->IsAdult),
-        LOCATION(RC_TOT_SHEIK_HINT,            logic->IsAdult),
+        LOCATION_NNL(RC_TOT_LIGHT_ARROWS_CUTSCENE, logic->IsAdult && logic->CanTriggerLACS()),
+        LOCATION_NNL(RC_ALTAR_HINT_CHILD,          logic->IsChild),
+        LOCATION_NNL(RC_ALTAR_HINT_ADULT,          logic->IsAdult),
+        LOCATION_NNL(RC_TOT_SHEIK_HINT,            logic->IsAdult),
     }, {
         //Exits
         Entrance(RR_TOT_ENTRANCE,            []{return true;}),
@@ -44,9 +44,9 @@ void RegionTable_Init_TempleOfTime() {
         //EventAccess(&logic->TimeTravel, []{return true;}),
     }, {
         //Locations
-        LOCATION(RC_TOT_MASTER_SWORD, logic->IsAdult),
-        LOCATION(RC_GIFT_FROM_RAURU,  logic->IsAdult),
-        LOCATION(RC_SHEIK_AT_TEMPLE,  logic->HasItem(RG_FOREST_MEDALLION) && logic->IsAdult),
+        LOCATION_NNL(RC_TOT_MASTER_SWORD, logic->IsAdult),
+        LOCATION_NNL(RC_GIFT_FROM_RAURU,  logic->IsAdult),
+        LOCATION_NNL(RC_SHEIK_AT_TEMPLE,  logic->HasItem(RG_FOREST_MEDALLION) && logic->IsAdult),
     }, {
         //Exits
         Entrance(RR_TEMPLE_OF_TIME, []{return true;}),
