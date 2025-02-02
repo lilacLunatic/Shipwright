@@ -292,7 +292,7 @@ void EnKusa_WaitObject(EnKusa* this, PlayState* play) {
             EnKusa_SetupMain(this);
         }
 
-        if (!GameInteractor_Should(VB_GRASS_SETUP_DRAW, false, this)) {
+        if (!GameInteractor_Should(VB_GRASS_SETUP_DRAW, true, this)) {
             return;
         }
 

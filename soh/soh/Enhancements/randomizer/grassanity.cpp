@@ -10,8 +10,9 @@ extern "C" {
 extern PlayState* gPlayState;
 }
 
-extern void EnItem00_DrawRandomizedItem(EnItem00* enItem00, PlayState* play);
+#define RAND_GET_OPTION(option) Rando::Context::GetInstance()->GetOption(option).Get()
 
+extern void EnItem00_DrawRandomizedItem(EnItem00* enItem00, PlayState* play);
 
 extern "C" void EnKusa_RandomizerDraw(Actor* thisx, PlayState* play) {
     static Gfx* dLists[] = { (Gfx*)gFieldBushDL, (Gfx*)object_kusa_DL_000140, (Gfx*)object_kusa_DL_000140 };
@@ -21,7 +22,8 @@ extern "C" void EnKusa_RandomizerDraw(Actor* thisx, PlayState* play) {
     Gfx_SetupDL_25Opa(play->state.gfxCtx);
     gDPSetGrayscaleColor(POLY_OPA_DISP++, 175, 255, 0, 255);
 
-    if (grassActor->grassIdentity.randomizerCheck != RC_MAX && Flags_GetRandomizerInf(grassActor->grassIdentity.randomizerInf) == 0) {
+    if (grassActor->grassIdentity.randomizerCheck != RC_MAX &&
+        Flags_GetRandomizerInf(grassActor->grassIdentity.randomizerInf) == 0) {
         gSPGrayscale(POLY_OPA_DISP++, true);
     }
 
@@ -43,7 +45,7 @@ uint8_t EnKusa_RandomizerHoldsItem(EnKusa* grassActor, PlayState* play) {
     RandomizerCheck rc = grassActor->grassIdentity.randomizerCheck;
 
     uint8_t isDungeon = Rando::StaticData::GetLocation(rc)->IsDungeon();
-    uint8_t grassSetting = Rando::Context::GetInstance()->GetOption(RSK_GRASSANITY).GetContextOptionIndex();
+    uint8_t grassSetting = Rando::Context::GetInstance()->GetOption(RSK_GRASSANITY).Get();
 
     // Don't pull randomized item if grass isn't randomized or is already checked
     if (!IS_RANDO || (grassSetting == RO_SHUFFLE_GRASS_OVERWORLD && isDungeon) ||
@@ -59,7 +61,8 @@ uint8_t EnKusa_RandomizerHoldsItem(EnKusa* grassActor, PlayState* play) {
 void EnKusa_RandomizerSpawnCollectible(EnKusa* grassActor, PlayState* play) {
     EnItem00* item00 = (EnItem00*)Item_DropCollectible2(play, &grassActor->actor.world.pos, ITEM00_SOH_DUMMY);
     item00->randoInf = grassActor->grassIdentity.randomizerInf;
-    item00->itemEntry = Rando::Context::GetInstance()->GetFinalGIEntry(grassActor->grassIdentity.randomizerCheck, true, GI_NONE);
+    item00->itemEntry =
+        Rando::Context::GetInstance()->GetFinalGIEntry(grassActor->grassIdentity.randomizerCheck, true, GI_NONE);
     item00->actor.draw = (ActorFunc)EnItem00_DrawRandomizedItem;
     item00->actor.velocity.y = 8.0f;
     item00->actor.speedXZ = 2.0f;
@@ -69,20 +72,22 @@ void EnKusa_RandomizerSpawnCollectible(EnKusa* grassActor, PlayState* play) {
 void EnKusa_RandomizerInit(void* actorRef) {
     Actor* actor = static_cast<Actor*>(actorRef);
 
-    if (actor->id != ACTOR_EN_KUSA) return;
+    if (actor->id != ACTOR_EN_KUSA)
+        return;
 
     EnKusa* grassActor = static_cast<EnKusa*>(actorRef);
     s16 respawnData = gSaveContext.respawn[RESPAWN_MODE_RETURN].data & ((1 << 8) - 1);
 
-    grassActor->grassIdentity = OTRGlobals::Instance->gRandomizer->IdentifyGrass(gPlayState->sceneNum, (s16)actor->world.pos.x, (s16)actor->world.pos.z, respawnData, gPlayState->linkAgeOnLoad);
+    grassActor->grassIdentity = OTRGlobals::Instance->gRandomizer->IdentifyGrass(
+        gPlayState->sceneNum, (s16)actor->world.pos.x, (s16)actor->world.pos.z, respawnData, gPlayState->linkAgeOnLoad);
 }
 
-void ShuffleGrass_OnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, va_list originalArgs) {
-    va_list args;
-    va_copy(args, originalArgs);
+void RegisterGrassanity() {
+    bool shouldRegister = IS_RANDO && RAND_GET_OPTION(RSK_GRASSANITY);
 
-    // Draw custom model for grass to indicate it holding a randomized item.
-    if (id == VB_GRASS_SETUP_DRAW) {
+    COND_ID_HOOK(OnActorInit, ACTOR_EN_KUSA, shouldRegister, EnKusa_RandomizerInit);
+
+    COND_VB_SHOULD(VB_GRASS_SETUP_DRAW, shouldRegister, {
         EnKusa* grassActor = va_arg(args, EnKusa*);
         if (EnKusa_RandomizerHoldsItem(grassActor, gPlayState)) {
             grassActor->actor.draw = (ActorFunc)EnKusa_RandomizerDraw;
@@ -90,10 +95,9 @@ void ShuffleGrass_OnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, v
         } else {
             *should = true;
         }
-    }
+    });
 
-    // Do not spawn vanilla item from grass, instead spawn the randomized item.
-    if (id == VB_GRASS_DROP_ITEM) {
+    COND_VB_SHOULD(VB_GRASS_DROP_ITEM, shouldRegister, {
         EnKusa* grassActor = va_arg(args, EnKusa*);
         if (EnKusa_RandomizerHoldsItem(grassActor, gPlayState)) {
             EnKusa_RandomizerSpawnCollectible(grassActor, gPlayState);
@@ -103,7 +107,7 @@ void ShuffleGrass_OnVanillaBehaviorHandler(GIVanillaBehavior id, bool* should, v
         } else {
             *should = true;
         }
-    }
-
-    va_end(args);
+    });
 }
+
+static RegisterShipInitFunc initFunc(RegisterGrassanity, { "IS_RANDO" });
