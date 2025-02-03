@@ -31,7 +31,7 @@ nlohmann::json Anchor::PrepClientState() {
     payload["online"] = true;
 
     if (IsSaveLoaded()) {
-        payload["seed"] = IS_RANDO ? Rando::Context::GetInstance()->GetSettings()->GetSeed() : 0;
+        payload["seed"] = IS_RANDO ? Rando::Context::GetInstance()->GetSeed() : 0;
         payload["isSaveLoaded"] = true;
         payload["isGameComplete"] = gSaveContext.ship.stats.gameComplete;
         payload["sceneNum"] = gPlayState->sceneNum;

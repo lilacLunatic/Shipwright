@@ -84,8 +84,8 @@ void Anchor::SendPacket_UpdateTeamState() {
         // for (int i = 0; i < randoContext->hashIconIndexes.size(); i++) {
         //     payload["state"]["rando"]["seed"][i] = randoContext->hashIconIndexes[i];
         // }
-        // payload["state"]["rando"]["inputSeed"] = randoContext->GetSettings()->GetSeedString();
-        // payload["state"]["rando"]["finalSeed"] = randoContext->GetSettings()->GetSeed();
+        // payload["state"]["rando"]["inputSeed"] = randoContext->GetSeedString();
+        // payload["state"]["rando"]["finalSeed"] = randoContext->GetSeed();
         
         // payload["state"]["rando"]["randoSettings"] = json::array();
         // for (int i = 0; i < RSK_MAX; i++) {

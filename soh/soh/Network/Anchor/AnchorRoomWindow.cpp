@@ -96,7 +96,7 @@ void AnchorRoomWindow::Draw() {
                     ImGui::EndTooltip();
                 }
             }
-            uint32_t seed = IS_RANDO ? Rando::Context::GetInstance()->GetSettings()->GetSeed() : 0;
+            uint32_t seed = IS_RANDO ? Rando::Context::GetInstance()->GetSeed() : 0;
             if (client.isSaveLoaded && Anchor::Instance->IsSaveLoaded() && client.seed != seed && client.online && !client.self) {
                 ImGui::SameLine();
                 ImGui::TextColored(ImVec4(1, 0, 0, 1), ICON_FA_EXCLAMATION_TRIANGLE);
