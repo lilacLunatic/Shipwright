@@ -808,7 +808,7 @@ static void AssumedFill(const std::vector<RandomizerGet>& items, const std::vect
         return;
     }
 
-    if (ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_NO_LOGIC)) {
+    if (ctx->GetOption(RSK_LOGIC_RULES).Is(RO_LOGIC_NO_LOGIC) || (logic->IsNNL() && !ctx->GetOption(RSK_ALL_LOCATIONS_REACHABLE))) {
         FastFill(items, GetEmptyLocations(allowedLocations), true);
         return;
     }
