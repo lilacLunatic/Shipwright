@@ -475,7 +475,7 @@ void RegionTable_Init_GanonsCastle() {
     }, {
         //Exits
         Entrance(RR_GANONS_TOWER_FLOOR_3,        []{return Here(RR_GANONS_TOWER_BEFORE_GANONDORF_LAIR, []{return true;});}),
-        Entrance(RR_GANONS_TOWER_GANONDORF_LAIR, []{return Here(RR_GANONS_TOWER_BEFORE_GANONDORF_LAIR, []{return logic->HasItem(RG_GANONS_CASTLE_BOSS_KEY);});}),
+        Entrance(RR_GANONS_TOWER_GANONDORF_LAIR, []{return Here(RR_GANONS_TOWER_BEFORE_GANONDORF_LAIR, []{return logic->HasItem(RG_GANONS_CASTLE_BOSS_KEY);});}, true),
     });
 
     areaTable[RR_GANONS_TOWER_GANONDORF_LAIR] = Region("Ganondorf's Lair", "Ganons Castle", {RA_GANONS_CASTLE}, NO_DAY_NIGHT_CYCLE, {}, {
@@ -483,7 +483,7 @@ void RegionTable_Init_GanonsCastle() {
         LOCATION_NNL(RC_GANONDORF_HINT, logic->HasBossSoul(RG_GANON_SOUL)),
     }, {
         //Exits
-        Entrance(RR_GANONS_CASTLE_ESCAPE, []{return logic->CanKillEnemy(RE_GANONDORF);}),
+        Entrance(RR_GANONS_CASTLE_ESCAPE, []{return logic->CanKillEnemy(RE_GANONDORF);}, true),
     });
 
     areaTable[RR_GANONS_CASTLE_ESCAPE] = Region("Ganon's Castle Escape", "Ganons Castle", {RA_GANONS_CASTLE}, NO_DAY_NIGHT_CYCLE, {}, {
@@ -500,7 +500,7 @@ void RegionTable_Init_GanonsCastle() {
 
     areaTable[RR_GANONS_CASTLE_GANON_ARENA] = Region("Ganon's Arena", "Ganons Castle", {RA_GANONS_CASTLE}, NO_DAY_NIGHT_CYCLE, {}, {
         //Locations
-        LOCATION(RC_GANON, logic->CanKillEnemy(RE_GANON)),
+        LOCATION_NNL(RC_GANON, logic->CanKillEnemy(RE_GANON)),
     }, {});
 
 #pragma endregion
