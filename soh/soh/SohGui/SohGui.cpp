@@ -141,9 +141,6 @@ namespace SohGui {
     std::shared_ptr<AnchorRoomWindow> mAnchorRoomWindow;
 #endif
     std::shared_ptr<AboutWindow> mAboutWindow;
-#ifdef ENABLE_REMOTE_CONTROL    
-    std::shared_ptr<AnchorRoomWindow> mAnchorRoomWindow;
-#endif
 
     void SetupGuiElements() {
         auto gui = Ship::Context::GetInstance()->GetWindow()->GetGui();
