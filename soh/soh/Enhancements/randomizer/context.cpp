@@ -66,6 +66,9 @@ void Context::InitStaticData() {
     StaticData::hintNameToEnum = StaticData::PopulateTranslationMap(StaticData::hintNames);
     StaticData::hintTypeNameToEnum = StaticData::PopulateTranslationMap(StaticData::hintTypeNames);
     StaticData::areaNameToEnum = StaticData::PopulateTranslationMap(StaticData::areaNames);
+    StaticData::InitLocationTablePots();
+    StaticData::InitLocationTableCrates();
+    StaticData::InitLocationTableGrass();
     StaticData::InitLocationTable();
 }
 
