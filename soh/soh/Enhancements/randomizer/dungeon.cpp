@@ -161,7 +161,8 @@ std::vector<RandomizerCheck> DungeonInfo::GetDungeonLocations() const {
         Context::GetInstance()->GetOption(RSK_SHUFFLE_CRATES).Is(RO_SHUFFLE_CRATES_ALL)) {
         auto crateLocations = masterQuest ? mqCrates : vanillaCrates;
         AddElementsToPool(locations, crateLocations);
-        
+    }
+
     if (Context::GetInstance()->GetOption(RSK_SHUFFLE_GRASS).Is(RO_SHUFFLE_GRASS_DUNGEONS) ||
         Context::GetInstance()->GetOption(RSK_SHUFFLE_GRASS).Is(RO_SHUFFLE_GRASS_ALL)) {
         auto grassLocations = masterQuest ? mqGrass : vanillaGrass;
@@ -237,7 +238,7 @@ Dungeons::Dungeons() {
                         RC_DEKU_TREE_MQ_LOBBY_CRATE,
                         RC_DEKU_TREE_MQ_SLINGSHOT_ROOM_CRATE_1,
                         RC_DEKU_TREE_MQ_SLINGSHOT_ROOM_CRATE_2,
-
+                    },
                     {
                         // Vanilla Grass
                         RC_DEKU_TREE_LOBBY_GRASS_1,
@@ -457,24 +458,6 @@ Dungeons::Dungeons() {
                                                    RC_DODONGOS_CAVERN_MQ_BACKROOM_POT_1,
                                                    RC_DODONGOS_CAVERN_MQ_BACKROOM_POT_2,
                                                },
-                                               {
-                                                   // Vanilla Grass
-                                                   RC_DODONGOS_CAVERN_FIRST_BRIDGE_GRASS,
-                                                   RC_DODONGOS_CAVERN_BLADE_GRASS,
-                                                   RC_DODONGOS_CAVERN_SINGLE_EYE_GRASS,
-                                                   RC_DODONGOS_CAVERN_BEFORE_BOSS_GRASS,
-                                               },
-                                               {
-                                                   // MQ Grass
-                                                   RC_DODONGOS_CAVERN_MQ_COMPASS_GRASS_1,
-                                                   RC_DODONGOS_CAVERN_MQ_COMPASS_GRASS_2,
-                                                   RC_DODONGOS_CAVERN_MQ_COMPASS_GRASS_3,
-                                                   RC_DODONGOS_CAVERN_MQ_COMPASS_GRASS_4,
-                                                   RC_DODONGOS_CAVERN_MQ_ARMOS_GRASS,
-                                                   RC_DODONGOS_CAVERN_MQ_BACK_POE_GRASS,
-                                                   RC_DODONGOS_CAVERN_MQ_SCRUB_GRASS_1,
-                                                   RC_DODONGOS_CAVERN_MQ_SCRUB_GRASS_2,
-                                               },
                                                {},
                                                {
                                                    // MQ Crates
@@ -500,6 +483,24 @@ Dungeons::Dungeons() {
                                                    RC_DODONGOS_CAVERN_MQ_LARVAE_ROOM_CRATE_4,
                                                    RC_DODONGOS_CAVERN_MQ_LARVAE_ROOM_CRATE_5,
                                                    RC_DODONGOS_CAVERN_MQ_LARVAE_ROOM_CRATE_6,
+                                               },
+                                               {
+                                                   // Vanilla Grass
+                                                   RC_DODONGOS_CAVERN_FIRST_BRIDGE_GRASS,
+                                                   RC_DODONGOS_CAVERN_BLADE_GRASS,
+                                                   RC_DODONGOS_CAVERN_SINGLE_EYE_GRASS,
+                                                   RC_DODONGOS_CAVERN_BEFORE_BOSS_GRASS,
+                                               },
+                                               {
+                                                   // MQ Grass
+                                                   RC_DODONGOS_CAVERN_MQ_COMPASS_GRASS_1,
+                                                   RC_DODONGOS_CAVERN_MQ_COMPASS_GRASS_2,
+                                                   RC_DODONGOS_CAVERN_MQ_COMPASS_GRASS_3,
+                                                   RC_DODONGOS_CAVERN_MQ_COMPASS_GRASS_4,
+                                                   RC_DODONGOS_CAVERN_MQ_ARMOS_GRASS,
+                                                   RC_DODONGOS_CAVERN_MQ_BACK_POE_GRASS,
+                                                   RC_DODONGOS_CAVERN_MQ_SCRUB_GRASS_1,
+                                                   RC_DODONGOS_CAVERN_MQ_SCRUB_GRASS_2,
                                                },
                                                {},
                                                {
@@ -882,7 +883,6 @@ Dungeons::Dungeons() {
                         RC_FIRE_TEMPLE_MQ_LAVA_TORCH_SMALL_CRATE_4,
                         RC_FIRE_TEMPLE_MQ_LAVA_TORCH_SMALL_CRATE_5,
                     },
-                    {},
                     {}, {}, {},
                     {
                         // Boos Room Locations
@@ -1609,8 +1609,7 @@ Dungeons::Dungeons() {
                         // MQ Crates
                         RC_GERUDO_TRAINING_GROUND_MQ_MAZE_CRATE,
                     },
-                    {}, {});
-                    }, {}, {}, {}, {});
+                    {}, {}, {}, {});
     dungeonList[GANONS_CASTLE] =
         DungeonInfo("Ganon's Castle", RHT_GANONS_CASTLE, RG_NONE, RG_NONE, RG_GANONS_CASTLE_SMALL_KEY,
                     RG_GANONS_CASTLE_KEY_RING, RG_GANONS_CASTLE_BOSS_KEY, RA_GANONS_CASTLE, 2, 3, RSK_MQ_GANONS_CASTLE,
@@ -1758,7 +1757,8 @@ Dungeons::Dungeons() {
                     },
                     {},
                     {},
-                    {}, {},
+                    {}, 
+                    {},
                     {
                         // Shared Locations
                         RC_GANONS_TOWER_BOSS_KEY_CHEST,

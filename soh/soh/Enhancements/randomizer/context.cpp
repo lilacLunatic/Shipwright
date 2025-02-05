@@ -172,7 +172,8 @@ void Context::GenerateLocationPool() {
         mOptions[RSK_SHUFFLE_CRATES].Is(RO_SHUFFLE_CRATES_ALL)) {
         AddLocations(StaticData::GetOverworldCrateLocations());
         AddLocations(StaticData::GetOverworldSmallCrateLocations());
-        
+    }
+
     if (mOptions[RSK_SHUFFLE_GRASS].Is(RO_SHUFFLE_GRASS_OVERWORLD) ||
         mOptions[RSK_SHUFFLE_GRASS].Is(RO_SHUFFLE_GRASS_ALL)) {
         AddLocations(StaticData::GetOverworldGrassLocations());
