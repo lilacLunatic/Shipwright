@@ -7,6 +7,7 @@
 #include "z_obj_kibako.h"
 #include "objects/gameplay_dangeon_keep/gameplay_dangeon_keep.h"
 #include "overlays/effects/ovl_Effect_Ss_Kakera/z_eff_ss_kakera.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_CAN_PRESS_SWITCHES)
 
@@ -66,6 +67,10 @@ static InitChainEntry sInitChain[] = {
 
 void ObjKibako_SpawnCollectible(ObjKibako* this, PlayState* play) {
     s16 collectible;
+
+    if (!GameInteractor_Should(VB_SMALL_CRATE_DROP_ITEM, false, this)) {
+        return;
+    }
 
     collectible = this->actor.params & 0x1F;
     if ((collectible >= 0) && (collectible <= 0x19)) {
@@ -283,6 +288,8 @@ void ObjKibako_Update(Actor* thisx, PlayState* play) {
 void ObjKibako_Draw(Actor* thisx, PlayState* play) {
     s32 pad;
     ObjKibako* this = (ObjKibako*)thisx;
+
+    if (!GameInteractor_Should(VB_SMALL_CRATE_SETUP_DRAW, false, thisx)) {}
 
     Gfx_DrawDListOpa(play, gSmallWoodenBoxDL);
 }
