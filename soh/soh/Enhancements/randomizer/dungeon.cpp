@@ -12,6 +12,7 @@ DungeonInfo::DungeonInfo(std::string name_, const RandomizerHintTextKey hintKey_
     std::vector<RandomizerCheck> vanillaLocations_, std::vector<RandomizerCheck> mqLocations_,
     std::vector<RandomizerCheck> vanillaPots_, std::vector<RandomizerCheck> mqPots_,
     std::vector<RandomizerCheck> vanillaCrates_, std::vector<RandomizerCheck> mqCrates_,
+    std::vector<RandomizerCheck> vanillaGrass_, std::vector<RandomizerCheck> mqGrass_,
     std::vector<RandomizerCheck> sharedLocations_, std::vector<RandomizerCheck> bossRoomLocations_)
     : name(std::move(name_)), hintKey(hintKey_), map(map_), compass(compass_), smallKey(smallKey_), keyRing(keyRing_),
       bossKey(bossKey_), area(area_), vanillaKeyCount(vanillaKeyCount_), mqKeyCount(mqKeyCount_),
@@ -19,6 +20,7 @@ DungeonInfo::DungeonInfo(std::string name_, const RandomizerHintTextKey hintKey_
       vanillaLocations(std::move(vanillaLocations_)), mqLocations(std::move(mqLocations_)),
       vanillaPots(std::move(vanillaPots_)), mqPots(std::move(mqPots_)),
       vanillaCrates(std::move(vanillaCrates_)), mqCrates(std::move(mqCrates_)),
+      vanillaGrass(std::move(vanillaGrass_)), mqGrass(std::move(mqGrass_)),
       sharedLocations(std::move(sharedLocations_)), bossRoomLocations(std::move(bossRoomLocations_)) {
 }
 DungeonInfo::DungeonInfo() : hintKey(RHT_NONE), map(RG_NONE), compass(RG_NONE), smallKey(RG_NONE), keyRing(RG_NONE),
@@ -159,6 +161,11 @@ std::vector<RandomizerCheck> DungeonInfo::GetDungeonLocations() const {
         Context::GetInstance()->GetOption(RSK_SHUFFLE_CRATES).Is(RO_SHUFFLE_CRATES_ALL)) {
         auto crateLocations = masterQuest ? mqCrates : vanillaCrates;
         AddElementsToPool(locations, crateLocations);
+        
+    if (Context::GetInstance()->GetOption(RSK_SHUFFLE_GRASS).Is(RO_SHUFFLE_GRASS_DUNGEONS) ||
+        Context::GetInstance()->GetOption(RSK_SHUFFLE_GRASS).Is(RO_SHUFFLE_GRASS_ALL)) {
+        auto grassLocations = masterQuest ? mqGrass : vanillaGrass;
+        AddElementsToPool(locations, grassLocations);
     }
     AddElementsToPool(locations, sharedLocations);
     AddElementsToPool(locations, bossRoomLocations);
@@ -173,6 +180,8 @@ std::vector<RandomizerCheck> DungeonInfo::GetEveryLocation() const {
     AddElementsToPool(locations, mqPots);
     AddElementsToPool(locations, vanillaCrates);
     AddElementsToPool(locations, mqCrates);
+    AddElementsToPool(locations, vanillaGrass);
+    AddElementsToPool(locations, mqGrass);
     AddElementsToPool(locations, sharedLocations);
     AddElementsToPool(locations, bossRoomLocations);
     return locations;
@@ -229,6 +238,107 @@ Dungeons::Dungeons() {
                         RC_DEKU_TREE_MQ_SLINGSHOT_ROOM_CRATE_1,
                         RC_DEKU_TREE_MQ_SLINGSHOT_ROOM_CRATE_2,
 
+                    {
+                        // Vanilla Grass
+                        RC_DEKU_TREE_LOBBY_GRASS_1,
+                        RC_DEKU_TREE_LOBBY_GRASS_2,
+                        RC_DEKU_TREE_LOBBY_GRASS_3,
+                        RC_DEKU_TREE_LOBBY_GRASS_4,
+                        RC_DEKU_TREE_LOBBY_GRASS_5,
+                        RC_DEKU_TREE_SLINGSHOT_GRASS_1,
+                        RC_DEKU_TREE_SLINGSHOT_GRASS_2,
+                        RC_DEKU_TREE_SLINGSHOT_GRASS_3,
+                        RC_DEKU_TREE_SLINGSHOT_GRASS_4,
+                        RC_DEKU_TREE_COMPASS_GRASS_1,
+                        RC_DEKU_TREE_COMPASS_GRASS_2,
+                        RC_DEKU_TREE_BASEMENT_GRASS_1,
+                        RC_DEKU_TREE_BASEMENT_GRASS_2,
+                        RC_DEKU_TREE_BASEMENT_SCRUB_ROOM_GRASS_1,
+                        RC_DEKU_TREE_BASEMENT_SCRUB_ROOM_GRASS_2,
+                        RC_DEKU_TREE_BASEMENT_SCRUB_ROOM_GRASS_3,
+                        RC_DEKU_TREE_BASEMENT_SCRUB_ROOM_GRASS_4,
+                        RC_DEKU_TREE_BASEMENT_SPIKE_ROLLER_GRASS_1,
+                        RC_DEKU_TREE_BASEMENT_SPIKE_ROLLER_GRASS_2,
+                        RC_DEKU_TREE_BASEMENT_TORCHES_GRASS_1,
+                        RC_DEKU_TREE_BASEMENT_TORCHES_GRASS_2,
+                        RC_DEKU_TREE_BASEMENT_LARVAE_GRASS_1,
+                        RC_DEKU_TREE_BASEMENT_LARVAE_GRASS_2,
+                        RC_DEKU_TREE_BEFORE_BOSS_GRASS_1,
+                        RC_DEKU_TREE_BEFORE_BOSS_GRASS_2,
+                        RC_DEKU_TREE_BEFORE_BOSS_GRASS_3,
+                        
+                        // Shared Grass
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_1,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_2,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_3,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_4,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_5,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_6,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_7,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_8,
+                    },
+                    {
+                        // MQ Grass
+                        RC_DEKU_TREE_MQ_LOBBY_GRASS_1,
+                        RC_DEKU_TREE_MQ_LOBBY_GRASS_2,
+                        RC_DEKU_TREE_MQ_LOBBY_GRASS_3,
+                        RC_DEKU_TREE_MQ_LOBBY_GRASS_4,
+                        RC_DEKU_TREE_MQ_LOBBY_GRASS_5,
+                        RC_DEKU_TREE_MQ_LOBBY_GRASS_6,
+                        RC_DEKU_TREE_MQ_LOBBY_GRASS_7,
+                        RC_DEKU_TREE_MQ_SLINGSHOT_GRASS_1,
+                        RC_DEKU_TREE_MQ_SLINGSHOT_GRASS_2,
+                        RC_DEKU_TREE_MQ_SLINGSHOT_GRASS_3,
+                        RC_DEKU_TREE_MQ_SLINGSHOT_GRASS_4,
+                        RC_DEKU_TREE_MQ_BEFORE_COMPASS_GRASS_1,
+                        RC_DEKU_TREE_MQ_BEFORE_COMPASS_GRASS_2,
+                        RC_DEKU_TREE_MQ_BEFORE_COMPASS_GRASS_3,
+                        RC_DEKU_TREE_MQ_BEFORE_COMPASS_GRASS_4,
+                        RC_DEKU_TREE_MQ_BEFORE_COMPASS_GRASS_5,
+                        RC_DEKU_TREE_MQ_BEFORE_COMPASS_GRASS_6,
+                        RC_DEKU_TREE_MQ_BEFORE_COMPASS_GRASS_7,
+                        RC_DEKU_TREE_MQ_COMPASS_GRASS_1,
+                        RC_DEKU_TREE_MQ_COMPASS_GRASS_2,
+                        RC_DEKU_TREE_MQ_COMPASS_GRASS_3,
+                        RC_DEKU_TREE_MQ_COMPASS_GRASS_4,
+                        RC_DEKU_TREE_MQ_BASEMENT_LOWER_GRASS_1,
+                        RC_DEKU_TREE_MQ_BASEMENT_LOWER_GRASS_2,
+                        RC_DEKU_TREE_MQ_BASEMENT_LOWER_GRASS_3,
+                        RC_DEKU_TREE_MQ_BASEMENT_LOWER_GRASS_4,
+                        RC_DEKU_TREE_MQ_BASEMENT_UPPER_GRASS_1,
+                        RC_DEKU_TREE_MQ_BASEMENT_UPPER_GRASS_2,
+                        RC_DEKU_TREE_MQ_BASEMENT_UPPER_GRASS_3,
+                        RC_DEKU_TREE_MQ_BASEMENT_SPIKE_ROLLER_FRONT_GRASS_1,
+                        RC_DEKU_TREE_MQ_BASEMENT_SPIKE_ROLLER_FRONT_GRASS_2,
+                        RC_DEKU_TREE_MQ_BASEMENT_SPIKE_ROLLER_FRONT_GRASS_3,
+                        RC_DEKU_TREE_MQ_BASEMENT_SPIKE_ROLLER_BACK_GRASS_1,
+                        RC_DEKU_TREE_MQ_BASEMENT_SPIKE_ROLLER_BACK_GRASS_2,
+                        RC_DEKU_TREE_MQ_BASEMENT_TORCHES_GRASS_1,
+                        RC_DEKU_TREE_MQ_BASEMENT_TORCHES_GRASS_2,
+                        RC_DEKU_TREE_MQ_BASEMENT_TORCHES_GRASS_3,
+                        RC_DEKU_TREE_MQ_BASEMENT_TORCHES_GRASS_4,
+                        RC_DEKU_TREE_MQ_BASEMENT_LARVAE_GRASS_1,
+                        RC_DEKU_TREE_MQ_BASEMENT_LARVAE_GRASS_2,
+                        RC_DEKU_TREE_MQ_BASEMENT_GRAVES_GRASS_1,
+                        RC_DEKU_TREE_MQ_BASEMENT_GRAVES_GRASS_2,
+                        RC_DEKU_TREE_MQ_BASEMENT_GRAVES_GRASS_3,
+                        RC_DEKU_TREE_MQ_BASEMENT_GRAVES_GRASS_4,
+                        RC_DEKU_TREE_MQ_BASEMENT_GRAVES_GRASS_5,
+                        RC_DEKU_TREE_MQ_BASEMENT_BACK_GRASS_1,
+                        RC_DEKU_TREE_MQ_BASEMENT_BACK_GRASS_2,
+                        RC_DEKU_TREE_MQ_BASEMENT_BACK_GRASS_3,
+                        RC_DEKU_TREE_MQ_BEFORE_BOSS_GRASS_1,
+                        RC_DEKU_TREE_MQ_BEFORE_BOSS_GRASS_2,
+                        RC_DEKU_TREE_MQ_BEFORE_BOSS_GRASS_3,
+                        // Shared Grass
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_1,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_2,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_3,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_4,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_5,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_6,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_7,
+                        RC_DEKU_TREE_QUEEN_GOHMA_GRASS_8,
                     },
                     {},
                     {
@@ -347,6 +457,24 @@ Dungeons::Dungeons() {
                                                    RC_DODONGOS_CAVERN_MQ_BACKROOM_POT_1,
                                                    RC_DODONGOS_CAVERN_MQ_BACKROOM_POT_2,
                                                },
+                                               {
+                                                   // Vanilla Grass
+                                                   RC_DODONGOS_CAVERN_FIRST_BRIDGE_GRASS,
+                                                   RC_DODONGOS_CAVERN_BLADE_GRASS,
+                                                   RC_DODONGOS_CAVERN_SINGLE_EYE_GRASS,
+                                                   RC_DODONGOS_CAVERN_BEFORE_BOSS_GRASS,
+                                               },
+                                               {
+                                                   // MQ Grass
+                                                   RC_DODONGOS_CAVERN_MQ_COMPASS_GRASS_1,
+                                                   RC_DODONGOS_CAVERN_MQ_COMPASS_GRASS_2,
+                                                   RC_DODONGOS_CAVERN_MQ_COMPASS_GRASS_3,
+                                                   RC_DODONGOS_CAVERN_MQ_COMPASS_GRASS_4,
+                                                   RC_DODONGOS_CAVERN_MQ_ARMOS_GRASS,
+                                                   RC_DODONGOS_CAVERN_MQ_BACK_POE_GRASS,
+                                                   RC_DODONGOS_CAVERN_MQ_SCRUB_GRASS_1,
+                                                   RC_DODONGOS_CAVERN_MQ_SCRUB_GRASS_2,
+                                               },
                                                {},
                                                {
                                                    // MQ Crates
@@ -438,7 +566,7 @@ Dungeons::Dungeons() {
                                                     RC_JABU_JABUS_BELLY_BARINADE_POT_4,
                                                     RC_JABU_JABUS_BELLY_BARINADE_POT_5,
                                                     RC_JABU_JABUS_BELLY_BARINADE_POT_6,
-                                                }, 
+                                                },
                                                 {
                                                     // MQ Pots
                                                     RC_JABU_JABUS_BELLY_MQ_ENTRANCE_POT_1,
@@ -468,6 +596,24 @@ Dungeons::Dungeons() {
                                                     // MQ Small Crates
                                                     RC_JABU_JABUS_BELLY_MQ_TRIPLE_HALLWAY_SMALL_CRATE_1,
                                                     RC_JABU_JABUS_BELLY_MQ_TRIPLE_HALLWAY_SMALL_CRATE_2,                                                
+                                                },
+                                                {},
+                                                {
+                                                    // MQ Grass
+                                                    RC_JABU_JABUS_BELLY_MQ_FIRST_GRASS_1,
+                                                    RC_JABU_JABUS_BELLY_MQ_FIRST_GRASS_2,
+                                                    RC_JABU_JABUS_BELLY_MQ_PIT_GRASS_1,
+                                                    RC_JABU_JABUS_BELLY_MQ_PIT_GRASS_2,
+                                                    RC_JABU_JABUS_BELLY_MQ_BASEMENT_GRASS_1,
+                                                    RC_JABU_JABUS_BELLY_MQ_BASEMENT_GRASS_2,
+                                                    RC_JABU_JABUS_BELLY_MQ_BASEMENT_GRASS_3,
+                                                    RC_JABU_JABUS_BELLY_MQ_WIGGLERS_GRASS,
+                                                    RC_JABU_JABUS_BELLY_MQ_AFTER_BIG_OCTO_GRASS_1,
+                                                    RC_JABU_JABUS_BELLY_MQ_AFTER_BIG_OCTO_GRASS_2,
+                                                    RC_JABU_JABUS_BELLY_MQ_FALLING_LIKE_LIKE_GRASS,
+                                                    RC_JABU_JABUS_BELLY_MQ_BASEMENT_BOOMERANG_GRASS,
+                                                    RC_JABU_JABUS_BELLY_MQ_BEFORE_BOSS_GRASS_1,
+                                                    RC_JABU_JABUS_BELLY_MQ_BEFORE_BOSS_GRASS_2,
                                                 },
                                                 {},
                                                 {
@@ -575,7 +721,7 @@ Dungeons::Dungeons() {
                         RC_FOREST_TEMPLE_MQ_BASEMENT_POT_3,
                         RC_FOREST_TEMPLE_MQ_BASEMENT_POT_4,
                     },
-                    {},
+                    {}, {}, {},
                     {
                         // MQ Small Crates
                         RC_FOREST_TEMPLE_MQ_FROZEN_EYE_SWITCH_SMALL_CRATE_1,
@@ -737,6 +883,7 @@ Dungeons::Dungeons() {
                         RC_FIRE_TEMPLE_MQ_LAVA_TORCH_SMALL_CRATE_5,
                     },
                     {},
+                    {}, {}, {},
                     {
                         // Boos Room Locations
                         RC_FIRE_TEMPLE_VOLVAGIA_HEART,
@@ -844,7 +991,7 @@ Dungeons::Dungeons() {
                         RC_WATER_TEMPLE_MQ_LOWEST_GS_POT_4,
                         RC_WATER_TEMPLE_MQ_BOSS_KEY_POT,
                     },
-                    {},
+                    {}, {}, {},
                     {
                         // MQ Crates
                         RC_WATER_TEMPLE_MQ_CENTRAL_PILLAR_UPPER_CRATE_1,
@@ -1064,6 +1211,7 @@ Dungeons::Dungeons() {
                         RC_SPIRIT_TEMPLE_MQ_EARLY_ADULT_POT_1,
                         RC_SPIRIT_TEMPLE_MQ_EARLY_ADULT_POT_2,
                     },
+                    {}, {},
                     {
                         // Vanilla Small Crates
                         RC_SPIRIT_TEMPLE_BEFORE_CHILD_CLIMB_SMALL_CRATE_1,
@@ -1212,7 +1360,7 @@ Dungeons::Dungeons() {
                         RC_SHADOW_TEMPLE_MQ_DEAD_HAND_POT_1,
                         RC_SHADOW_TEMPLE_MQ_DEAD_HAND_POT_2,
                     },
-                    {},
+                    {}, {}, {},
                     {
                         // MQ Small Crates
                         RC_SHADOW_TEMPLE_MQ_TRUTH_SPINNER_SMALL_CRATE_1,
@@ -1311,6 +1459,28 @@ Dungeons::Dungeons() {
         },
         {},
         {},
+        {
+            // Vanilla Grass
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_BEHIND_ROCKS_GRASS_1,
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_BEHIND_ROCKS_GRASS_2,
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_BEHIND_ROCKS_GRASS_3,
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_BEHIND_ROCKS_GRASS_4,
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_BEHIND_ROCKS_GRASS_5,
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_BEHIND_ROCKS_GRASS_6,
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_BEHIND_ROCKS_GRASS_7,
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_BEHIND_ROCKS_GRASS_8,
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_BEHIND_ROCKS_GRASS_9,
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_GRASS_1,
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_GRASS_2,
+            RC_BOTTOM_OF_THE_WELL_BASEMENT_GRASS_3,
+        },
+        {
+            // MQ Grass
+            RC_BOTTOM_OF_THE_WELL_MQ_DEAD_HAND_GRASS_1,
+            RC_BOTTOM_OF_THE_WELL_MQ_DEAD_HAND_GRASS_2,
+            RC_BOTTOM_OF_THE_WELL_MQ_DEAD_HAND_GRASS_3,
+            RC_BOTTOM_OF_THE_WELL_MQ_DEAD_HAND_GRASS_4,
+        },
         {}, {});
     dungeonList[ICE_CAVERN] = DungeonInfo("Ice Cavern", RHT_ICE_CAVERN, RG_ICE_CAVERN_MAP, RG_ICE_CAVERN_COMPASS,
                                           RG_NONE, RG_NONE, RG_NONE, RA_ICE_CAVERN, 0, 0, RSK_MQ_ICE_CAVERN,
@@ -1369,6 +1539,7 @@ Dungeons::Dungeons() {
                                           },
                                           {},
                                           {},
+                                          {}, {},
                                           {
                                               // Shared Locations
                                               RC_SHEIK_IN_ICE_CAVERN,
@@ -1439,6 +1610,7 @@ Dungeons::Dungeons() {
                         RC_GERUDO_TRAINING_GROUND_MQ_MAZE_CRATE,
                     },
                     {}, {});
+                    }, {}, {}, {}, {});
     dungeonList[GANONS_CASTLE] =
         DungeonInfo("Ganon's Castle", RHT_GANONS_CASTLE, RG_NONE, RG_NONE, RG_GANONS_CASTLE_SMALL_KEY,
                     RG_GANONS_CASTLE_KEY_RING, RG_GANONS_CASTLE_BOSS_KEY, RA_GANONS_CASTLE, 2, 3, RSK_MQ_GANONS_CASTLE,
@@ -1586,6 +1758,7 @@ Dungeons::Dungeons() {
                     },
                     {},
                     {},
+                    {}, {},
                     {
                         // Shared Locations
                         RC_GANONS_TOWER_BOSS_KEY_CHEST,

@@ -939,6 +939,14 @@ void GenerateItemPool() {
   if (overworldCratesActive || dungeonCratesActive) {
       PlaceItemsForType(RCTYPE_CRATE, overworldCratesActive, dungeonCratesActive, false);
       PlaceItemsForType(RCTYPE_SMALL_CRATE, overworldCratesActive, dungeonCratesActive, false);
+      
+  // Shuffle Grass
+  bool overworldGrassActive = ctx->GetOption(RSK_SHUFFLE_GRASS).Is(RO_SHUFFLE_GRASS_OVERWORLD) ||
+                              ctx->GetOption(RSK_SHUFFLE_GRASS).Is(RO_SHUFFLE_GRASS_ALL);
+  bool dungeonGrassActive = ctx->GetOption(RSK_SHUFFLE_GRASS).Is(RO_SHUFFLE_GRASS_DUNGEONS) ||
+                            ctx->GetOption(RSK_SHUFFLE_GRASS).Is(RO_SHUFFLE_GRASS_ALL);
+  if (overworldGrassActive || dungeonGrassActive) {
+      PlaceItemsForType(RCTYPE_GRASS, overworldGrassActive, dungeonGrassActive, false);
   }
   
   auto fsMode = ctx->GetOption(RSK_FISHSANITY);

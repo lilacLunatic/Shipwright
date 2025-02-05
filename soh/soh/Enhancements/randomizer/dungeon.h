@@ -16,6 +16,7 @@ class DungeonInfo {
                 std::vector<RandomizerCheck> vanillaLocations_, std::vector<RandomizerCheck> mqLocations_,
                 std::vector<RandomizerCheck> vanillaPots_, std::vector<RandomizerCheck> mqPots_,
                 std::vector<RandomizerCheck> vanillaCrates_, std::vector<RandomizerCheck> mqCrates_,
+                std::vector<RandomizerCheck> vanillaGrass_, std::vector<RandomizerCheck> mqGrass_,
                 std::vector<RandomizerCheck> sharedLocations_,
                 std::vector<RandomizerCheck> bossRoomLocations_);
     DungeonInfo();
@@ -67,6 +68,8 @@ class DungeonInfo {
     std::vector<RandomizerCheck> mqPots;
     std::vector<RandomizerCheck> vanillaCrates;
     std::vector<RandomizerCheck> mqCrates;
+    std::vector<RandomizerCheck> vanillaGrass;
+    std::vector<RandomizerCheck> mqGrass;
     std::vector<RandomizerCheck> sharedLocations;
     std::vector<RandomizerCheck> bossRoomLocations;
 };
