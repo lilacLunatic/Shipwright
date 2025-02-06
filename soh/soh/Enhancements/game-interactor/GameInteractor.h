@@ -252,6 +252,12 @@ typedef enum {
     // Opt: *ObjTsubo
     VB_POT_SETUP_DRAW,
     VB_POT_DROP_ITEM,
+    // Opt: *ObjKabiko2
+    VB_CRATE_SETUP_DRAW,
+    VB_CRATE_DROP_ITEM,
+    // Opt: *ObjKabiko
+    VB_SMALL_CRATE_SETUP_DRAW,
+    VB_SMALL_CRATE_DROP_ITEM,
     // Opt: *ActorDoorShutter
     VB_LOCK_BOSS_DOOR,
     // Vanilla condition: true

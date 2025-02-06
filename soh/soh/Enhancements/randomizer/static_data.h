@@ -30,6 +30,9 @@ class StaticData {
       static Item& ItemFromGIID(const int giid);
       static std::array<Item, RG_MAX>& GetItemTable();// is there a reason this is a function and not just an exposed table?
       static void InitLocationTable();
+      static void InitLocationTablePots();
+      static void InitLocationTableCrates();
+      static void InitLocationTableGrass();
       static Location* GetLocation(RandomizerCheck locKey);
       static std::array<Rando::Location, RC_MAX>& GetLocationTable();
       static std::unordered_map<std::string, uint32_t> PopulateTranslationMap(std::unordered_map<uint32_t, CustomMessage> input);
@@ -47,6 +50,8 @@ class StaticData {
       static std::vector<RandomizerCheck> GetPondFishLocations();
       static std::vector<RandomizerCheck> GetOverworldFishLocations();
       static std::vector<RandomizerCheck> GetOverworldPotLocations();
+      static std::vector<RandomizerCheck> GetOverworldCrateLocations();
+      static std::vector<RandomizerCheck> GetOverworldSmallCrateLocations();
       static std::vector<RandomizerCheck> GetOverworldGrassLocations();
       static std::vector<RandomizerCheck> GetOverworldFairyLocations();
       static std::array<std::pair<RandomizerCheck, RandomizerCheck>, 17> randomizerFishingPondFish;

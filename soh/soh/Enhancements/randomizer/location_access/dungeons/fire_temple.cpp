@@ -326,7 +326,13 @@ void RegionTable_Init_FireTemple() {
         Entrance(RR_FIRE_TEMPLE_HAMMER_RETURN_PATH, []{return logic->CanUse(RG_MEGATON_HAMMER);}),
     });
 
-    areaTable[RR_FIRE_TEMPLE_HAMMER_RETURN_PATH] = Region("Fire Temple Hammer Return Path", "Fire Temple", {RA_FIRE_TEMPLE}, NO_DAY_NIGHT_CYCLE, {}, {}, {
+    areaTable[RR_FIRE_TEMPLE_HAMMER_RETURN_PATH] = Region("Fire Temple Hammer Return Path", "Fire Temple", {RA_FIRE_TEMPLE}, NO_DAY_NIGHT_CYCLE, {}, 
+    {
+        // Locations
+        LOCATION(RC_FIRE_TEMPLE_AFTER_HAMMER_SMALL_CRATE_1, logic->CanBreakSmallCrates()),
+        LOCATION(RC_FIRE_TEMPLE_AFTER_HAMMER_SMALL_CRATE_2, logic->CanBreakSmallCrates()),
+    }, 
+    {
         //Exits
         Entrance(RR_FIRE_TEMPLE_ABOVE_FIRE_MAZE, []{return logic->CanUse(RG_MEGATON_HAMMER);}),
     });
@@ -429,7 +435,10 @@ void RegionTable_Init_FireTemple() {
     areaTable[RR_FIRE_TEMPLE_MQ_NEAR_BOSS_ROOM] = Region("Fire Temple MQ Near Boss Room", "Fire Temple", {RA_FIRE_TEMPLE}, NO_DAY_NIGHT_CYCLE, {}, {
         //Locations
         //If we're using the south torch as the initial torch, or using FAs, we either have to cross to the north to remove the crate, or use a trick to ignore it
-        LOCATION(RC_FIRE_TEMPLE_MQ_NEAR_BOSS_CHEST, logic->FireTimer() > 25 && ctx->GetTrickOption(RT_FIRE_MQ_NEAR_BOSS) && (logic->CanUse(RG_FIRE_ARROWS) || (logic->IsAdult && logic->CanUse(RG_DINS_FIRE) && logic->CanUse(RG_FAIRY_BOW))))
+        LOCATION(RC_FIRE_TEMPLE_MQ_NEAR_BOSS_CHEST,      logic->FireTimer() > 25 && ctx->GetTrickOption(RT_FIRE_MQ_NEAR_BOSS) && (logic->CanUse(RG_FIRE_ARROWS) || (logic->IsAdult && logic->CanUse(RG_DINS_FIRE) && logic->CanUse(RG_FAIRY_BOW)))),
+        LOCATION(RC_FIRE_TEMPLE_MQ_OUTSIDE_BOSS_CRATE_1, logic->FireTimer() > 25 && logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_OUTSIDE_BOSS_CRATE_2, logic->FireTimer() > 25 && logic->CanBreakCrates()),
+
     }, {
         //Exits
         Entrance(RR_FIRE_TEMPLE_MQ_FIRST_ROOM_UPPER,     []{return true;}),
@@ -452,6 +461,12 @@ void RegionTable_Init_FireTemple() {
         LOCATION(RC_FIRE_TEMPLE_MQ_NEAR_BOSS_CHEST,    logic->CanUse(RG_FIRE_ARROWS) || (logic->CanUse(RG_DINS_FIRE) && (logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_LONGSHOT) || (logic->IsAdult && (logic->CanUse(RG_HOVER_BOOTS) || logic->CanUse(RG_GORON_TUNIC) || logic->EffectiveHealth() >= 2 || (logic->CanUse(RG_NAYRUS_LOVE) && logic->CanUse(RG_STICKS))))))),
         LOCATION(RC_FIRE_TEMPLE_MQ_OUTSIDE_BOSS_POT_1, logic->CanBreakPots()),
         LOCATION(RC_FIRE_TEMPLE_MQ_OUTSIDE_BOSS_POT_2, logic->CanBreakPots()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_OUTSIDE_BOSS_CRATE_1, logic->FireTimer() > 25 && logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_OUTSIDE_BOSS_CRATE_2, logic->FireTimer() > 25 && logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_OUTSIDE_BOSS_CRATE_3, logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_OUTSIDE_BOSS_CRATE_4, logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_OUTSIDE_BOSS_CRATE_5, logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_OUTSIDE_BOSS_CRATE_6, logic->CanBreakCrates()),
     }, {
         //Exits
         Entrance(RR_FIRE_TEMPLE_NEAR_BOSS_ROOM, []{return true;}),
@@ -522,6 +537,9 @@ void RegionTable_Init_FireTemple() {
     areaTable[RR_FIRE_TEMPLE_MQ_LOWER_MAZE_CRATE_CAGE] = Region("Fire Temple MQ Lower Maze Crate Cage", "Fire Temple", {RA_FIRE_TEMPLE}, NO_DAY_NIGHT_CYCLE, {}, {
         //Locations
         LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_LOWER_CHEST, true),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_LOWER_CRATE_1, logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_LOWER_CRATE_2, logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_LOWER_CRATE_3, logic->CanBreakCrates()),
     }, {
         //Exits
         Entrance(RR_FIRE_TEMPLE_MQ_LOWER_MAZE, []{return true;}),
@@ -544,6 +562,11 @@ void RegionTable_Init_FireTemple() {
     areaTable[RR_FIRE_TEMPLE_MQ_UPPER_MAZE_BOX_CAGE] = Region("Fire Temple MQ Upper Maze Box Cage", "Fire Temple", {RA_FIRE_TEMPLE}, NO_DAY_NIGHT_CYCLE, {}, {
         //Locations
         LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_UPPER_CHEST,     true),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_UPPER_CRATE_1,         logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_UPPER_CRATE_2,         logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_UPPER_CRATE_3,         logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_UPPER_SMALL_CRATE_1,   logic->CanBreakSmallCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_UPPER_SMALL_CRATE_2,   logic->CanBreakSmallCrates()),
         //Assumes maze access
         LOCATION(RC_FIRE_TEMPLE_MQ_LIZALFOS_MAZE_SIDE_ROOM_CHEST, logic->HasExplosives()),
     }, {
@@ -563,6 +586,12 @@ void RegionTable_Init_FireTemple() {
     areaTable[RR_FIRE_TEMPLE_MQ_MAZE_SHORTCUT_CAGE] = Region("Fire Temple MQ Maze Shortcut Cage", "Fire Temple", {RA_FIRE_TEMPLE}, NO_DAY_NIGHT_CYCLE, {}, {
         //Locations
         LOCATION(RC_FIRE_TEMPLE_MQ_COMPASS_CHEST,  logic->OpenedUpperFireShortcut;),
+        LOCATION(RC_FIRE_TEMPLE_MQ_SHORTCUT_CRATE_1, logic->OpenedUpperFireShortcut && logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_SHORTCUT_CRATE_2, logic->OpenedUpperFireShortcut && logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_SHORTCUT_CRATE_3, logic->OpenedUpperFireShortcut && logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_SHORTCUT_CRATE_4, logic->OpenedUpperFireShortcut && logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_SHORTCUT_CRATE_5, logic->OpenedUpperFireShortcut && logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_SHORTCUT_CRATE_6, logic->OpenedUpperFireShortcut && logic->CanBreakCrates()),
     }, {
         //Exits
         Entrance(RR_FIRE_TEMPLE_MQ_MAZE_SHORTCUT,  []{return logic->OpenedUpperFireShortcut;}),
@@ -601,6 +630,16 @@ void RegionTable_Init_FireTemple() {
         //Locations
         LOCATION(RC_FIRE_TEMPLE_MQ_FLAME_WALL_POT_1, logic->CanBreakPots()),
         LOCATION(RC_FIRE_TEMPLE_MQ_FLAME_WALL_POT_2, logic->CanBreakPots()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LAVA_TORCH_CRATE_1,          logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LAVA_TORCH_CRATE_2,          logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LAVA_TORCH_CRATE_3,          logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LAVA_TORCH_CRATE_4,          logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LAVA_TORCH_CRATE_5,          logic->CanBreakCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LAVA_TORCH_SMALL_CRATE_1,    logic->CanBreakSmallCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LAVA_TORCH_SMALL_CRATE_2,    logic->CanBreakSmallCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LAVA_TORCH_SMALL_CRATE_3,    logic->CanBreakSmallCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LAVA_TORCH_SMALL_CRATE_4,    logic->CanBreakSmallCrates()),
+        LOCATION(RC_FIRE_TEMPLE_MQ_LAVA_TORCH_SMALL_CRATE_5,    logic->CanBreakSmallCrates()),
     }, {
         //Exits
         Entrance(RR_FIRE_TEMPLE_MQ_UPPER_MAZE,       []{return logic->SmallKeys(RR_FIRE_TEMPLE, 3);}),

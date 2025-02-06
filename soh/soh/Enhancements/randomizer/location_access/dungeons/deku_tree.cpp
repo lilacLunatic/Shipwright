@@ -216,6 +216,7 @@ void RegionTable_Init_DekuTree() {
         LOCATION(RC_DEKU_TREE_MQ_MAP_CHEST,     true),
         LOCATION(RC_DEKU_TREE_MQ_GS_LOBBY,      logic->CanGetEnemyDrop(RE_GOLD_SKULLTULA)),
         LOCATION(RC_DEKU_TREE_MQ_LOBBY_HEART,   true),
+        LOCATION(RC_DEKU_TREE_MQ_LOBBY_CRATE,   logic->CanBreakCrates()),
         LOCATION(RC_DEKU_TREE_MQ_LOBBY_GRASS_6, logic->CanCutShrubs()),
         LOCATION(RC_DEKU_TREE_MQ_LOBBY_GRASS_7, logic->CanCutShrubs()),
     }, {
@@ -237,6 +238,8 @@ void RegionTable_Init_DekuTree() {
         LOCATION(RC_DEKU_TREE_MQ_SLINGSHOT_CHEST,           logic->CanKillEnemy(RE_DEKU_BABA)),
         LOCATION(RC_DEKU_TREE_MQ_SLINGSHOT_ROOM_BACK_CHEST, logic->HasFireSourceWithTorch() || (logic->IsAdult && logic->CanUse(RG_FAIRY_BOW))),
         LOCATION(RC_DEKU_TREE_MQ_SLINGSHOT_ROOM_HEART,      true),
+        LOCATION(RC_DEKU_TREE_MQ_SLINGSHOT_ROOM_CRATE_1,    logic->CanBreakCrates()),
+        LOCATION(RC_DEKU_TREE_MQ_SLINGSHOT_ROOM_CRATE_2,    logic->CanBreakCrates()),
         LOCATION(RC_DEKU_TREE_MQ_SLINGSHOT_GRASS_1,         logic->CanCutShrubs()),
         LOCATION(RC_DEKU_TREE_MQ_SLINGSHOT_GRASS_2,         logic->CanCutShrubs()),
         LOCATION(RC_DEKU_TREE_MQ_SLINGSHOT_GRASS_3,         logic->CanCutShrubs()),

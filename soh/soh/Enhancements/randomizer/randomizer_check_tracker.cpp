@@ -20,6 +20,7 @@
 #include "z64item.h"
 #include "randomizerTypes.h"
 #include "fishsanity.h"
+#include "ShuffleCrates.h"
 
 extern "C" {
 #include "variables.h"
@@ -58,6 +59,8 @@ bool showWeirdEgg;
 bool showGerudoCard;
 bool showOverworldPots;
 bool showDungeonPots;
+bool showOverworldCrates;
+bool showDungeonCrates;
 bool showOverworldGrass;
 bool showDungeonGrass;
 bool showFrogSongRupees;
@@ -1236,6 +1239,24 @@ void LoadSettings() {
                 break;
         }
 
+        switch (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_CRATES)) {
+            case RO_SHUFFLE_CRATES_ALL:
+                showOverworldCrates = true;
+                showDungeonCrates = true;
+                break;
+            case RO_SHUFFLE_CRATES_OVERWORLD:
+                showOverworldCrates = true;
+                showDungeonCrates = false;
+                break;
+            case RO_SHUFFLE_CRATES_DUNGEONS:
+                showOverworldCrates = false;
+                showDungeonCrates = true;
+                break;
+            default:
+                showOverworldCrates = false;
+                showDungeonCrates = false;
+        }
+        
         switch (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_GRASS)) {
             case RO_SHUFFLE_GRASS_ALL:
                 showOverworldGrass = true;
@@ -1259,6 +1280,8 @@ void LoadSettings() {
         showDungeonTokens = true;
         showOverworldPots = false;
         showDungeonPots = false;
+        showOverworldCrates = false;
+        showDungeonCrates = false;
         showOverworldGrass = false;
         showDungeonGrass = false;
     }
@@ -1340,6 +1363,12 @@ bool IsCheckShuffled(RandomizerCheck rc) {
             (loc->GetRCType() != RCTYPE_POT ||
                 (showOverworldPots && RandomizerCheckObjects::AreaIsOverworld(loc->GetArea())) ||
                 (showDungeonPots && RandomizerCheckObjects::AreaIsDungeon(loc->GetArea()))) &&
+            (loc->GetRCType() != RCTYPE_CRATE ||
+                (showOverworldCrates && RandomizerCheckObjects::AreaIsOverworld(loc->GetArea()) && GetOverworldCratesIncluded(loc)) ||
+                (showDungeonCrates && RandomizerCheckObjects::AreaIsDungeon(loc->GetArea()))) &&
+            (loc->GetRCType() != RCTYPE_SMALL_CRATE ||
+                (showOverworldCrates && RandomizerCheckObjects::AreaIsOverworld(loc->GetArea())) ||
+                (showDungeonCrates && RandomizerCheckObjects::AreaIsDungeon(loc->GetArea()))) &&
             (loc->GetRCType() != RCTYPE_GRASS ||
                 (showOverworldGrass && RandomizerCheckObjects::AreaIsOverworld(loc->GetArea())) ||
                 (showDungeonGrass && RandomizerCheckObjects::AreaIsDungeon(loc->GetArea()))) &&

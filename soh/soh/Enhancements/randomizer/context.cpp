@@ -45,6 +45,7 @@ Context::Context() {
         &mOptions[RSK_SHUFFLE_BEEHIVES],
         &mOptions[RSK_SHUFFLE_COWS],
         &mOptions[RSK_SHUFFLE_POTS],
+        &mOptions[RSK_SHUFFLE_CRATES],
         &mOptions[RSK_SHUFFLE_FREESTANDING],
         &mOptions[RSK_SHUFFLE_MERCHANTS],
         &mOptions[RSK_SHUFFLE_FROG_SONG_RUPEES],
@@ -65,6 +66,9 @@ void Context::InitStaticData() {
     StaticData::hintNameToEnum = StaticData::PopulateTranslationMap(StaticData::hintNames);
     StaticData::hintTypeNameToEnum = StaticData::PopulateTranslationMap(StaticData::hintTypeNames);
     StaticData::areaNameToEnum = StaticData::PopulateTranslationMap(StaticData::areaNames);
+    StaticData::InitLocationTablePots();
+    StaticData::InitLocationTableCrates();
+    StaticData::InitLocationTableGrass();
     StaticData::InitLocationTable();
 }
 
@@ -165,6 +169,12 @@ void Context::GenerateLocationPool() {
     if (mOptions[RSK_SHUFFLE_POTS].Is(RO_SHUFFLE_POTS_OVERWORLD) ||
         mOptions[RSK_SHUFFLE_POTS].Is(RO_SHUFFLE_POTS_ALL)) {
         AddLocations(StaticData::GetOverworldPotLocations());
+    }
+
+    if (mOptions[RSK_SHUFFLE_CRATES].Is(RO_SHUFFLE_CRATES_OVERWORLD) ||
+        mOptions[RSK_SHUFFLE_CRATES].Is(RO_SHUFFLE_CRATES_ALL)) {
+        AddLocations(StaticData::GetOverworldCrateLocations());
+        AddLocations(StaticData::GetOverworldSmallCrateLocations());
     }
 
     if (mOptions[RSK_SHUFFLE_GRASS].Is(RO_SHUFFLE_GRASS_OVERWORLD) ||
