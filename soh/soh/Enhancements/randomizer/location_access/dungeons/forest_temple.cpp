@@ -66,7 +66,7 @@ void RegionTable_Init_ForestTemple() {
         EventAccess(&logic->FairyPot, []{return true;}),
     }, {
         //Locations
-        LOCATION_NNL(RC_FOREST_TEMPLE_FIRST_STALFOS_CHEST, logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_BIGGORON_SWORD) || logic->CanUse(RG_MEGATON_HAMMER)),
+        LOCATION_NNL(RC_FOREST_TEMPLE_FIRST_STALFOS_CHEST, logic->CanKillEnemy(RE_STALFOS, ED_CLOSE, true, 2)),
         LOCATION(RC_FOREST_TEMPLE_LOWER_STALFOS_POT_1, logic->CanBreakPots()),
         LOCATION(RC_FOREST_TEMPLE_LOWER_STALFOS_POT_2, logic->CanBreakPots()),
     }, {
