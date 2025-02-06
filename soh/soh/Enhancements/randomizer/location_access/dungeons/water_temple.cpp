@@ -462,7 +462,6 @@ void RegionTable_Init_WaterTemple() {
         LOCATION(RC_WATER_TEMPLE_MQ_CENTRAL_PILLAR_LOWER_CRATE_12, logic->CanBreakCrates()),
         LOCATION(RC_WATER_TEMPLE_MQ_CENTRAL_PILLAR_LOWER_CRATE_13, logic->CanBreakCrates()),
         LOCATION(RC_WATER_TEMPLE_MQ_CENTRAL_PILLAR_LOWER_CRATE_14, logic->CanBreakCrates()),
->>>>>>> 9e522255403d92c543c7f57bcc8f7a6f027082ac
     }, {});
 
     //Region exists to add crate/pot/box locations

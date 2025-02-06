@@ -47,7 +47,6 @@ void RegionTable_Init_KokiriForest() {
         LOCATION_NNL(RC_KF_SARIAS_ROOF_WEST_HEART,  logic->IsChild),
         LOCATION_NNL(RC_KF_SARIAS_ROOF_EAST_HEART,  logic->IsChild),
         LOCATION_NNL(RC_KF_SARIAS_ROOF_NORTH_HEART, logic->IsChild),
->>>>>>> b36a18ee3cb73c357d9c3ffcf91d08c572cb2016
         LOCATION(RC_KF_GOSSIP_STONE,               true),
         LOCATION(RC_KF_CHILD_GRASS_1,           logic->IsChild && logic->CanCutShrubs()),
         LOCATION(RC_KF_CHILD_GRASS_2,           logic->IsChild && logic->CanCutShrubs()),

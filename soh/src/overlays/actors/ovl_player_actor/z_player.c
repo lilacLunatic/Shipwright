@@ -2578,7 +2578,7 @@ void Player_ProcessItemButtons(Player* this, PlayState* play) {
                 sHeldItemButtonIsHeldDown = true;
             }
         } else if (GameInteractor_Should(VB_CHANGE_HELD_ITEM_AND_USE_ITEM, true, item) &&
-                (item != ITEM_NAYRUS_LOVE || !CVarGetInteger("gRocsFeather", 0)) {
+                (item != ITEM_NAYRUS_LOVE || !CVarGetInteger("gRocsFeather", 0))) {
             this->heldItemButton = i;
             Player_UseItem(play, this, item);
         } else if (this->rocUseCount == 0) {
