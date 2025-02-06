@@ -307,10 +307,10 @@ void RegionTable_Init_JabuJabusBelly() {
         EventAccess(&logic->LoweredJabuPath, []{return logic->CanUse(RG_BOOMERANG) && logic->CanUse(RG_FAIRY_SLINGSHOT);}),
     }, {
         //Locations
-        LOCATION_NNL(RC_JABU_JABUS_BELLY_MQ_COW,                    logic->CanUse(RG_EPONAS_SONG) && logic->CanUse(RG_FAIRY_SLINGSHOT)),
         LOCATION(RC_JABU_JABUS_BELLY_MQ_WIGGLERS_GRASS,         logic->CanCutShrubs()),
         LOCATION(RC_JABU_JABUS_BELLY_MQ_AFTER_BIG_OCTO_GRASS_1, logic->CanCutShrubs()),
         LOCATION(RC_JABU_JABUS_BELLY_MQ_AFTER_BIG_OCTO_GRASS_2, logic->CanCutShrubs()),
+        LOCATION_NNL(RC_JABU_JABUS_BELLY_MQ_COW, logic->CanUse(RG_EPONAS_SONG) && (logic->IsNNL() || logic->CanUse(RG_FAIRY_SLINGSHOT))),
     }, {
         //Exits
         Entrance(RR_JABU_JABUS_BELLY_MQ_LIFT_ROOM,  []{return logic->CanUse(RG_BOOMERANG) && logic->CanUse(RG_FAIRY_SLINGSHOT);}),

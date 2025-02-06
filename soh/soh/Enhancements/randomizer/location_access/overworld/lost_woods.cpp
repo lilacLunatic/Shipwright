@@ -121,7 +121,7 @@ void RegionTable_Init_LostWoods() {
         LOCATION_NNL(RC_LW_DEKU_SCRUB_GROTTO_REAR,  logic->CanStunDeku()),
         LOCATION_NNL(RC_LW_DEKU_SCRUB_GROTTO_FRONT, logic->CanStunDeku()),
         LOCATION(RC_LW_DEKU_SCRUB_GROTTO_BEEHIVE,   logic->CanBreakUpperBeehives()),
-        LOCATION(RC_LW_DEKU_SCRUB_GROTTO_SUN_FAIRY, logic->CanUse(RG_SUNS_SONG)),
+        LOCATION_NNL(RC_LW_DEKU_SCRUB_GROTTO_SUN_FAIRY, logic->CanUse(RG_SUNS_SONG)),
     }, {
         //Exits
         Entrance(RR_LW_BEYOND_MIDO, []{return true;}),

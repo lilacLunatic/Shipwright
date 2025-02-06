@@ -19,8 +19,8 @@ void RegionTable_Init_GerudoTrainingGround() {
         //Locations
         LOCATION(RC_GERUDO_TRAINING_GROUND_LOBBY_LEFT_CHEST,          logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_FAIRY_SLINGSHOT)),
         LOCATION(RC_GERUDO_TRAINING_GROUND_LOBBY_RIGHT_CHEST,         logic->CanUse(RG_FAIRY_BOW) || logic->CanUse(RG_FAIRY_SLINGSHOT)),
-        LOCATION(RC_GERUDO_TRAINING_GROUND_STALFOS_CHEST,             logic->CanUse(RG_KOKIRI_SWORD) || logic->CanUse(RG_MASTER_SWORD) || logic->CanUse(RG_BIGGORON_SWORD)),
-        LOCATION(RC_GERUDO_TRAINING_GROUND_BEAMOS_CHEST,          logic->CanKillEnemy(RE_BEAMOS) && logic->CanKillEnemy(RE_DINOLFOS, ED_CLOSE, true, 2, true)),
+        LOCATION_NNL(RC_GERUDO_TRAINING_GROUND_STALFOS_CHEST,         logic->CanKillEnemy(RE_STALFOS, ED_CLOSE, true, 2, true)),
+        LOCATION_NNL(RC_GERUDO_TRAINING_GROUND_BEAMOS_CHEST,          logic->CanKillEnemy(RE_BEAMOS) && logic->CanKillEnemy(RE_DINOLFOS, ED_CLOSE, true, 2, true)),
         LOCATION_NNL(RC_GERUDO_TRAINING_GROUND_ENTRANCE_STORMS_FAIRY, logic->CanUse(RG_SONG_OF_STORMS)),
         LOCATION(RC_GERUDO_TRAINING_GROUND_BEAMOS_SOUTH_HEART,        true),
         LOCATION(RC_GERUDO_TRAINING_GROUND_BEAMOS_EAST_HEART,         true),
