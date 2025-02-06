@@ -1236,7 +1236,7 @@ void LoadSettings() {
                 break;
         }
 
-        switch (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_GRASSANITY)) {
+        switch (OTRGlobals::Instance->gRandomizer->GetRandoSettingValue(RSK_SHUFFLE_GRASS)) {
             case RO_SHUFFLE_GRASS_ALL:
                 showOverworldGrass = true;
                 showDungeonGrass = true;

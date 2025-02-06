@@ -294,7 +294,7 @@ typedef enum {
     RCTYPE_FISH,                       // Fishes
     RCTYPE_FREESTANDING,               // Freestanding rupees and hearts
     RCTYPE_FAIRY,                      // Fairies
-    RCTYPE_GRASS                       // Grass
+    RCTYPE_GRASS,                      // Grass
 } RandomizerCheckType;
 
 typedef enum { RCQUEST_VANILLA, RCQUEST_MQ, RCQUEST_BOTH } RandomizerCheckQuest;
@@ -5589,7 +5589,7 @@ typedef enum {
     RSK_SHUFFLE_FREESTANDING,
     RSK_SHUFFLE_FAIRIES,
     RSK_LOCK_OVERWORLD_DOORS,
-    RSK_GRASSANITY,
+    RSK_SHUFFLE_GRASS,
     RSK_MAX
 } RandomizerSettingKey;
 
@@ -5937,7 +5937,7 @@ typedef enum {
     RO_SHUFFLE_POTS_ALL,
 } RandoOptionShufflePots;
 
-// Shuffle Pots settings (off, dungeons, overworld, all)
+// Shuffle Grass settings (off, dungeons, overworld, all)
 typedef enum {
     RO_SHUFFLE_GRASS_OFF,
     RO_SHUFFLE_GRASS_DUNGEONS,

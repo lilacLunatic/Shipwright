@@ -155,8 +155,8 @@ std::vector<RandomizerCheck> DungeonInfo::GetDungeonLocations() const {
         auto potLocations = masterQuest ? mqPots : vanillaPots;
         AddElementsToPool(locations, potLocations);
     }
-    if (Context::GetInstance()->GetOption(RSK_GRASSANITY).Is(RO_SHUFFLE_GRASS_DUNGEONS) ||
-        Context::GetInstance()->GetOption(RSK_GRASSANITY).Is(RO_SHUFFLE_GRASS_ALL)) {
+    if (Context::GetInstance()->GetOption(RSK_SHUFFLE_GRASS).Is(RO_SHUFFLE_GRASS_DUNGEONS) ||
+        Context::GetInstance()->GetOption(RSK_SHUFFLE_GRASS).Is(RO_SHUFFLE_GRASS_ALL)) {
         auto grassLocations = masterQuest ? mqGrass : vanillaGrass;
         AddElementsToPool(locations, grassLocations);
     }

@@ -449,7 +449,7 @@ void Settings::CreateOptionDescriptions() {
                                               "All Items - Shuffle all freestanding rupees & hearts.";
     mOptionDescriptions[RSK_SHUFFLE_FAIRIES] =
         "Shuffle fairy locations.";
-    mOptionDescriptions[RSK_GRASSANITY] =
+    mOptionDescriptions[RSK_SHUFFLE_GRASS] =
         "Grass/Bushes will drop a randomized item the first time they're cut and collected. "
         "Grass/Bushes will have a different appearance when they hold a randomized item.\n"
         "\n"

@@ -2227,7 +2227,7 @@ GrassIdentity Randomizer::IdentifyGrass(s32 sceneNum, s32 posX, s32 posZ, s32 re
             }
         }
 
-        // The two bushes behind the sign in KF should be separated
+        // The two bushes behind the sign in KF should be separate
         // locations between Child and Adult.
         if (sceneNum == SCENE_KOKIRI_FOREST && linkAge == 0) {
             if (posX == -498 || posX == -523) {

@@ -1,4 +1,4 @@
-#include "grassanity.h"
+#include "ShuffleGrass.h"
 #include "soh_assets.h"
 #include "static_data.h"
 
@@ -45,7 +45,7 @@ uint8_t EnKusa_RandomizerHoldsItem(EnKusa* grassActor, PlayState* play) {
     RandomizerCheck rc = grassActor->grassIdentity.randomizerCheck;
 
     uint8_t isDungeon = Rando::StaticData::GetLocation(rc)->IsDungeon();
-    uint8_t grassSetting = Rando::Context::GetInstance()->GetOption(RSK_GRASSANITY).Get();
+    uint8_t grassSetting = Rando::Context::GetInstance()->GetOption(RSK_SHUFFLE_GRASS).Get();
 
     // Don't pull randomized item if grass isn't randomized or is already checked
     if (!IS_RANDO || (grassSetting == RO_SHUFFLE_GRASS_OVERWORLD && isDungeon) ||
@@ -82,8 +82,8 @@ void EnKusa_RandomizerInit(void* actorRef) {
         gPlayState->sceneNum, (s16)actor->world.pos.x, (s16)actor->world.pos.z, respawnData, gPlayState->linkAgeOnLoad);
 }
 
-void RegisterGrassanity() {
-    bool shouldRegister = IS_RANDO && RAND_GET_OPTION(RSK_GRASSANITY);
+void RegisterShuffleGrass() {
+    bool shouldRegister = IS_RANDO && RAND_GET_OPTION(RSK_SHUFFLE_GRASS);
 
     COND_ID_HOOK(OnActorInit, ACTOR_EN_KUSA, shouldRegister, EnKusa_RandomizerInit);
 
@@ -110,4 +110,4 @@ void RegisterGrassanity() {
     });
 }
 
-static RegisterShipInitFunc initFunc(RegisterGrassanity, { "IS_RANDO" });
+static RegisterShipInitFunc initFunc(RegisterShuffleGrass, { "IS_RANDO" });
