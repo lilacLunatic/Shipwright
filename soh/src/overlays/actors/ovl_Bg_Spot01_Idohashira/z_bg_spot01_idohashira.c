@@ -8,7 +8,7 @@
 #include "objects/object_spot01_objects/object_spot01_objects.h"
 #include "vt.h"
 
-#define FLAGS ACTOR_FLAG_UPDATE_WHILE_CULLED
+#define FLAGS ACTOR_FLAG_UPDATE_CULLING_DISABLED
 
 void BgSpot01Idohashira_Init(Actor* thisx, PlayState* play);
 void BgSpot01Idohashira_Destroy(Actor* thisx, PlayState* play);
@@ -50,7 +50,7 @@ const ActorInit Bg_Spot01_Idohashira_InitVars = {
 };
 
 void BgSpot01Idohashira_PlayBreakSfx1(BgSpot01Idohashira* this) {
-    func_80078914(&this->dyna.actor.projectedPos, NA_SE_EV_BOX_BREAK);
+    Sfx_PlaySfxAtPos(&this->dyna.actor.projectedPos, NA_SE_EV_BOX_BREAK);
 }
 
 void BgSpot01Idohashira_PlayBreakSfx2(BgSpot01Idohashira* this, PlayState* play) {

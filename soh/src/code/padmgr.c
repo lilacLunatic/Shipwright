@@ -3,6 +3,9 @@
 #include <string.h>
 
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
+#include "soh/Enhancements/controls/Mouse.h"
+#include "soh/OTRGlobals.h"
+#include "soh/ResourceManagerHelpers.h"
 
 s32 D_8012D280 = 1;
 
@@ -284,13 +287,6 @@ void PadMgr_ProcessInputs(PadMgr* padMgr) {
                 Fault_AddHungupAndCrash(__FILE__, __LINE__);
         }
 
-        // When 3 frames are left on easy pause buffer, re-apply the last held inputs to the prev inputs
-        // to compute the pressed difference. This makes it so previously held inputs are continued as "held",
-        // but new inputs when unpausing are "pressed" out of the pause menu.
-        if (CVarGetInteger(CVAR_GENERAL("CheatEasyPauseBufferTimer"), 0) == 3) {
-            input->prev.button = CVarGetInteger(CVAR_GENERAL("CheatEasyPauseBufferLastInputs"), 0);
-        }
-
         buttonDiff = input->prev.button ^ input->cur.button;
         input->press.button |= (u16)(buttonDiff & input->cur.button);
         input->rel.button |= (u16)(buttonDiff & input->prev.button);
@@ -321,6 +317,8 @@ void PadMgr_HandleRetraceMsg(PadMgr* padMgr) {
     }
     osRecvMesg(queue, NULL, OS_MESG_BLOCK);
     osContGetReadData(padMgr->pads);
+
+    Mouse_UpdateAll();
 
     for (i = 0; i < __osMaxControllers; i++) {
         padMgr->padStatus[i].status = Controller_ShouldRumble(i);

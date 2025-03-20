@@ -2,12 +2,24 @@
 
 // MARK: - Gameplay
 
+void GameInteractor_ExecuteOnZTitleInit(void* gameState) {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnZTitleInit>(gameState);
+}
+
+void GameInteractor_ExecuteOnZTitleUpdate(void* gameState) {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnZTitleUpdate>(gameState);
+}
+
 void GameInteractor_ExecuteOnLoadGame(int32_t fileNum) {
     GameInteractor::Instance->ExecuteHooks<GameInteractor::OnLoadGame>(fileNum);
 }
 
 void GameInteractor_ExecuteOnExitGame(int32_t fileNum) {
     GameInteractor::Instance->ExecuteHooks<GameInteractor::OnExitGame>(fileNum);
+}
+
+void GameInteractor_ExecuteOnGameStateMainStart() {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnGameStateMainStart>();
 }
 
 void GameInteractor_ExecuteOnGameFrameUpdate() {
@@ -68,6 +80,10 @@ void GameInteractor_ExecuteOnOcarinaSongAction() {
     GameInteractor::Instance->ExecuteHooks<GameInteractor::OnOcarinaSongAction>();
 }
 
+void GameInteractor_ExecuteOnCuccoOrChickenHatch() {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnCuccoOrChickenHatch>();
+}
+
 void GameInteractor_ExecuteOnShopSlotChangeHooks(uint8_t cursorIndex, int16_t price) {
     GameInteractor::Instance->ExecuteHooks<GameInteractor::OnShopSlotChange>(cursorIndex, price);
 }
@@ -107,8 +123,36 @@ void GameInteractor_ExecuteOnBossDefeat(void* actor) {
     GameInteractor::Instance->ExecuteHooksForFilter<GameInteractor::OnBossDefeat>(actor);
 }
 
+void GameInteractor_ExecuteOnTimestamp (u8 item) {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnTimestamp>(item);
+}
+
 void GameInteractor_ExecuteOnPlayerBonk() {
     GameInteractor::Instance->ExecuteHooks<GameInteractor::OnPlayerBonk>();
+}
+
+void GameInteractor_ExecuteOnPlayerHealthChange(int16_t amount) {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnPlayerHealthChange>(amount);
+}
+
+void GameInteractor_ExecuteOnPlayerBottleUpdate(int16_t contents) {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnPlayerBottleUpdate>(contents);
+}
+
+void GameInteractor_ExecuteOnPlayerHoldUpShield() {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnPlayerHoldUpShield>();
+}
+
+void GameInteractor_ExecuteOnPlayerFirstPersonControl(Player* player) {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnPlayerFirstPersonControl>(player);
+}
+
+void GameInteractor_ExecuteOnPlayerShieldControl(float_t* sp50, float_t* sp54) {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnPlayerShieldControl>(sp50, sp54);
+}
+
+void GameInteractor_ExecuteOnPlayerProcessStick() {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnPlayerProcessStick>();
 }
 
 void GameInteractor_ExecuteOnPlayDestroy() {

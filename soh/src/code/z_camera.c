@@ -7,6 +7,7 @@
 #include "overlays/actors/ovl_En_Horse/z_en_horse.h"
 
 #include "soh/frame_interpolation.h"
+#include "soh/Enhancements/controls/Mouse.h"
 
 s16 Camera_ChangeSettingFlags(Camera* camera, s16 setting, s16 flags);
 s32 Camera_ChangeModeFlags(Camera* camera, s16 mode, u8 flags);
@@ -1422,6 +1423,8 @@ s32 SetCameraManual(Camera* camera) {
     f32 newCamX = -D_8015BD7C->state.input[0].cur.right_stick_x * 10.0f;
     f32 newCamY = D_8015BD7C->state.input[0].cur.right_stick_y * 10.0f;
 
+    Mouse_HandleThirdPerson(&newCamX, &newCamY);
+
     if ((fabsf(newCamX) >= 15.0f || fabsf(newCamY) >= 15.0f) && camera->play->manualCamera == false) {
         camera->play->manualCamera = true;
 
@@ -1485,8 +1488,17 @@ s32 Camera_Free(Camera* camera) {
 
     camera->animState = 0;
 
-    f32 newCamX = -D_8015BD7C->state.input[0].cur.right_stick_x * 10.0f * (CVarGetFloat(CVAR_SETTING("FreeLook.CameraSensitivity.X"), 1.0f));
-    f32 newCamY = D_8015BD7C->state.input[0].cur.right_stick_y * 10.0f * (CVarGetFloat(CVAR_SETTING("FreeLook.CameraSensitivity.Y"), 1.0f));
+    f32 newCamX = -D_8015BD7C->state.input[0].cur.right_stick_x * 10.0f;
+    f32 newCamY = +D_8015BD7C->state.input[0].cur.right_stick_y * 10.0f;
+
+    /* Disable mouse movement when holding down the shield */
+    if (!(camera->player->stateFlags1 & 0x400000)) {
+        Mouse_HandleThirdPerson(&newCamX, &newCamY);
+    }
+
+    newCamX *= (CVarGetFloat(CVAR_SETTING("FreeLook.CameraSensitivity.X"), 1.0f));
+    newCamY *= (CVarGetFloat(CVAR_SETTING("FreeLook.CameraSensitivity.Y"), 1.0f));
+
     bool invertXAxis = (CVarGetInteger(CVAR_SETTING("FreeLook.InvertXAxis"), 0) && !CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0)) || (!CVarGetInteger(CVAR_SETTING("FreeLook.InvertXAxis"), 0) && CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0));
 
     camera->play->camX += newCamX * (invertXAxis ? -1 : 1);
@@ -6168,7 +6180,7 @@ s32 Camera_Demo5(Camera* camera) {
 
     pad = sDemo5PrevSfxFrame - camera->play->state.frames;
     if ((pad >= 0x33) || (pad < -0x32)) {
-        func_80078884(camera->data1);
+        Sfx_PlaySfxCentered(camera->data1);
     }
 
     sDemo5PrevSfxFrame = camera->play->state.frames;
@@ -7362,11 +7374,11 @@ s32 Camera_DbgChangeMode(Camera* camera) {
     if (!gDbgCamEnabled && camera->play->activeCamera == MAIN_CAM) {
         if (CHECK_BTN_ALL(D_8015BD7C->state.input[2].press.button, BTN_CUP)) {
             osSyncPrintf("attention sound URGENCY\n");
-            func_80078884(NA_SE_SY_ATTENTION_URGENCY);
+            Sfx_PlaySfxCentered(NA_SE_SY_ATTENTION_URGENCY);
         }
         if (CHECK_BTN_ALL(D_8015BD7C->state.input[2].press.button, BTN_CDOWN)) {
             osSyncPrintf("attention sound NORMAL\n");
-            func_80078884(NA_SE_SY_ATTENTION_ON);
+            Sfx_PlaySfxCentered(NA_SE_SY_ATTENTION_ON);
         }
 
         if (CHECK_BTN_ALL(D_8015BD7C->state.input[2].press.button, BTN_CRIGHT)) {
@@ -7589,7 +7601,7 @@ Vec3s Camera_Update(Camera* camera) {
     }
 
     if (camera->status == CAM_STAT_ACTIVE) {
-        if ((gSaveContext.gameMode != 0) && (gSaveContext.gameMode != 3)) {
+        if ((gSaveContext.gameMode != GAMEMODE_NORMAL) && (gSaveContext.gameMode != GAMEMODE_END_CREDITS)) {
             sCameraInterfaceFlags = 0;
             Camera_UpdateInterface(sCameraInterfaceFlags);
         } else if ((D_8011D3F0 != 0) && (camera->thisIdx == MAIN_CAM)) {
@@ -7783,7 +7795,7 @@ s32 Camera_ChangeModeFlags(Camera* camera, s16 mode, u8 flags) {
     if (!((sCameraSettings[camera->setting].unk_00 & 0x3FFFFFFF) & (1 << mode))) {
         if (mode == CAM_MODE_FIRSTPERSON) {
             osSyncPrintf("camera: error sound\n");
-            func_80078884(NA_SE_SY_ERROR);
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
         }
 
         if (camera->mode != CAM_MODE_NORMAL) {
@@ -7871,20 +7883,20 @@ s32 Camera_ChangeModeFlags(Camera* camera, s16 mode, u8 flags) {
         if (camera->status == CAM_STAT_ACTIVE) {
             switch (modeChangeFlags) {
                 case 1:
-                    func_80078884(0);
+                    Sfx_PlaySfxCentered(0);
                     break;
                 case 2:
                     if (camera->play->roomCtx.curRoom.behaviorType1 == ROOM_BEHAVIOR_TYPE1_1) {
-                        func_80078884(NA_SE_SY_ATTENTION_URGENCY);
+                        Sfx_PlaySfxCentered(NA_SE_SY_ATTENTION_URGENCY);
                     } else {
-                        func_80078884(NA_SE_SY_ATTENTION_ON);
+                        Sfx_PlaySfxCentered(NA_SE_SY_ATTENTION_ON);
                     }
                     break;
                 case 4:
-                    func_80078884(NA_SE_SY_ATTENTION_URGENCY);
+                    Sfx_PlaySfxCentered(NA_SE_SY_ATTENTION_URGENCY);
                     break;
                 case 8:
-                    func_80078884(NA_SE_SY_ATTENTION_ON);
+                    Sfx_PlaySfxCentered(NA_SE_SY_ATTENTION_ON);
                     break;
             }
         }
