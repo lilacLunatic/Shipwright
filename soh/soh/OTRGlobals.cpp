@@ -558,11 +558,115 @@ void OTRAudio_Thread() {
     }
 }
 
+namespace ZAPD {
+#include <ZAudio.h>
+#include <Globals.h>
+#include <Utils/MemoryStream.cpp>
+#include <Utils/BinaryWriter.h>
+#include <Utils/BinaryWriter.cpp>
+}
 // C->C++ Bridge
 extern "C" void OTRAudio_Init()
 {
     // Precache all our samples, sequences, etc...
     ResourceMgr_LoadDirectory("audio");
+    auto samples = Ship::Context::GetInstance()->GetResourceManager()->LoadResources("audio/samples/*");
+
+    auto archive = std::make_shared<Ship::O2rArchive>(Ship::Context::GetPathRelativeToAppBundle("mods/___sample_mod.o2r"));
+    if (archive->Open()) {
+        for (auto sR : *samples) {
+            if (sR == nullptr) {
+                continue;
+            }
+            if (!sR->GetInitData()->IsCustom) {
+                continue;
+            }
+
+            std::shared_ptr<SOH::AudioSample> s = static_pointer_cast<SOH::AudioSample>(sR);
+            
+            ZAPD::SampleEntry zSampleEntry;
+            zSampleEntry.fileName = s->GetInitData()->Path;
+            zSampleEntry.codec = s->sample.codec;
+            zSampleEntry.medium = s->sample.medium;
+            zSampleEntry.unk_bit26 = s->sample.unk_bit26;
+            zSampleEntry.unk_bit25 = s->sample.unk_bit25;
+
+            ZAPD::AdpcmLoop zAdpcmLoop;
+            zAdpcmLoop.start = s->loop.start;
+            zAdpcmLoop.end = s->loop.end;
+            zAdpcmLoop.count = s->loop.count;
+            for (s16 i = 0; i < 16; i++) {
+                zAdpcmLoop.states.push_back(s->loop.state[i]);
+            }
+
+            ZAPD::AdpcmBook zAdpcmBook;
+            zAdpcmBook.order = 1; //s->book.order;
+            zAdpcmBook.npredictors = 1; //s->book.npredictors;
+            //zAdpcmBook.books.push_back(0);
+            /*for (s16 i = 0; i < 8 * s->book.order * s->book.npredictors; i++) {
+                zAdpcmBook.books.push_back(s->book.book[i]);
+            }*/
+
+            zSampleEntry.loop = zAdpcmLoop;
+            zSampleEntry.book = zAdpcmBook;
+
+            for (u32 i = 0; i < s->sample.size; i++) {
+                zSampleEntry.data.push_back(*(s->sample.sampleAddr + i));
+            }
+
+            auto stream = std::make_shared<ZAPD::MemoryStream>();
+            ZAPD::BinaryWriter* writer = &ZAPD::BinaryWriter(stream);
+            writer->Write((uint8_t)0); // 0x00
+            writer->Write((uint8_t)0); // 0x01
+            writer->Write((uint8_t)0); // 0x02
+            writer->Write((uint8_t)0); // 0x03
+
+            writer->Write((uint32_t)static_cast<uint32_t>(SOH::ResourceType::SOH_AudioSample)); // 0x04
+            //writer->Write((uint32_t)MAJOR_VERSION); // 0x08
+            writer->Write((uint32_t)2); // 0x08
+            writer->Write((uint64_t)0xDEADBEEFDEADBEEF); // id, 0x0C
+            writer->Write((uint32_t)0); // 0x10
+            writer->Write((uint64_t)0); // ROM CRC, 0x14
+            writer->Write((uint32_t)0); // ROM Enum, 0x1C
+            
+            while (writer->GetBaseAddress() < 0x40)
+                writer->Write((uint32_t)0); // To be used at a later date!
+
+            writer->Write(zSampleEntry.codec);
+            writer->Write(zSampleEntry.medium);
+            writer->Write(zSampleEntry.unk_bit26);
+            writer->Write(zSampleEntry.unk_bit25);
+
+            writer->Write((uint32_t)zSampleEntry.data.size());
+            writer->Write((char*)zSampleEntry.data.data(), zSampleEntry.data.size());
+
+            writer->Write((uint32_t)(zSampleEntry.loop.start));
+            writer->Write((uint32_t)(zSampleEntry.loop.end));
+            writer->Write((uint32_t)(zSampleEntry.loop.count));
+            writer->Write((uint32_t)zSampleEntry.loop.states.size());
+
+            for (size_t i = 0; i < zSampleEntry.loop.states.size(); i++) {
+                writer->Write((zSampleEntry.loop.states[i]));
+            }
+
+            writer->Write((uint32_t)(zSampleEntry.book.order));
+            writer->Write((uint32_t)(zSampleEntry.book.npredictors));
+            writer->Write((uint32_t)zSampleEntry.book.books.size());
+
+            for (size_t i = 0; i < zSampleEntry.book.books.size(); i++) {
+                writer->Write((zSampleEntry.book.books[i]));
+            }
+
+            std::vector<u8> outputData;
+            writer->GetStream()->Seek(0, ZAPD::SeekOffsetType::Start);
+            for (size_t i = 0; i < writer->GetStream()->GetLength(); i++) {
+                outputData.push_back(writer->GetStream()->ReadByte());
+            }
+
+            archive->WriteFile(zSampleEntry.fileName, outputData);
+        }
+        archive->Close();
+    }
 
     if (!audio.running) {
         audio.running = true;

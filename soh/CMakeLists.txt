@@ -353,6 +353,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE assets
     ${CMAKE_CURRENT_SOURCE_DIR}/../libultraship/src/graphic/Fast3D/U64/PR
     ${CMAKE_CURRENT_SOURCE_DIR}/../libultraship/src/graphic
     ${CMAKE_CURRENT_SOURCE_DIR}/../ZAPDTR/ZAPD/resource/type
+    ${CMAKE_CURRENT_SOURCE_DIR}/../ZAPDTR/ZAPD/
+    ${CMAKE_CURRENT_SOURCE_DIR}/../OTRExporter/OTRExporter/
 	${SDL2-INCLUDE}
     ${SDL2-NET-INCLUDE}
     ${BOOST-INCLUDE}
