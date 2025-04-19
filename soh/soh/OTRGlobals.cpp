@@ -616,7 +616,7 @@ extern "C" void OTRAudio_Init()
 
             auto stream = std::make_shared<ZAPD::MemoryStream>();
             ZAPD::BinaryWriter writerObj = ZAPD::BinaryWriter(stream);
-            ZAPD::BinaryWriter writer = &writerObj;
+            ZAPD::BinaryWriter* writer = &writerObj;
             writer->Write((uint8_t)0); // 0x00
             writer->Write((uint8_t)0); // 0x01
             writer->Write((uint8_t)0); // 0x02
