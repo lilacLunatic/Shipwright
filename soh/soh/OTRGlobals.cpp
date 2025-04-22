@@ -572,7 +572,12 @@ extern "C" void OTRAudio_Init()
     ResourceMgr_LoadDirectory("audio");
     auto samples = Ship::Context::GetInstance()->GetResourceManager()->LoadResources("audio/samples/*");
 
-    auto archive = std::make_shared<Ship::O2rArchive>(Ship::Context::GetPathRelativeToAppBundle("mods/___sample_mod.o2r"));
+    std::string modsPath = Ship::Context::LocateFileAcrossAppDirs("mods", appShortName);
+    if (!std::filesystem::exists(modsPath)) {
+        modsPath = Ship::Context::GetPathRelativeToAppDirectory("mods", appShortName);
+    }
+
+    auto archive = std::make_shared<Ship::O2rArchive>(modsPath + "/___sample_mod.o2r");
     if (archive->Open()) {
         for (auto sR : *samples) {
             if (sR == nullptr) {
