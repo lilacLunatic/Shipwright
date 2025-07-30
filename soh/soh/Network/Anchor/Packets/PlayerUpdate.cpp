@@ -46,7 +46,8 @@ void Anchor::SendPacket_PlayerUpdate() {
     payload["posRot"]["pos"] = player->actor.world.pos;
     payload["posRot"]["rot"] = player->actor.shape.rot;
     std::vector<int> jointArray;
-    for (const auto& joint : player->jointTable) {
+    for (size_t i = 0; i < 24; i++) {
+        Vec3s joint = player->skelAnime.jointTable[i];
         jointArray.push_back(joint.x);
         jointArray.push_back(joint.y);
         jointArray.push_back(joint.z);
