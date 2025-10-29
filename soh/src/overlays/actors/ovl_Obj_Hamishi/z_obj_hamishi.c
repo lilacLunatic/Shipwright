@@ -6,6 +6,7 @@
 
 #include "z_obj_hamishi.h"
 #include "objects/gameplay_field_keep/gameplay_field_keep.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS 0
 
@@ -127,8 +128,8 @@ void ObjHamishi_Break(ObjHamishi* this, PlayState* play) {
             gravity = -320;
         }
 
-        EffectSsKakera_Spawn(play, &pos, &velocity, &this->actor.world.pos, gravity, phi_v0, 30, 5, 0,
-                             sEffectScales[i], 3, 0, 70, 1, OBJECT_GAMEPLAY_FIELD_KEEP, gSilverRockFragmentsDL);
+        EffectSsKakera_Spawn(play, &pos, &velocity, &this->actor.world.pos, gravity, phi_v0, 30, 5, 0, sEffectScales[i],
+                             3, 0, 70, 1, OBJECT_GAMEPLAY_FIELD_KEEP, gSilverRockFragmentsDL);
     }
 
     func_80033480(play, &this->actor.world.pos, 140.0f, 6, 180, 90, 1);
@@ -150,7 +151,7 @@ void ObjHamishi_Init(Actor* thisx, PlayState* play) {
     ObjHamishi_InitCollision(&this->actor, play);
     CollisionCheck_SetInfo(&this->actor.colChkInfo, NULL, &sColChkInfoInit);
 
-    if (Flags_GetSwitch(play, this->actor.params & 0x3F)) {
+    if (GameInteractor_Should(VB_BOULDER_BREAK_FLAG, Flags_GetSwitch(play, this->actor.params & 0x3F), this)) {
         Actor_Kill(&this->actor);
         return;
     }
@@ -171,10 +172,12 @@ void ObjHamishi_Update(Actor* thisx, PlayState* play) {
 
     ObjHamishi_Shake(this);
 
-    if ((this->collider.base.acFlags & AC_HIT) && (this->collider.info.acHitInfo->toucher.dmgFlags & 0x40000040)) {
+    // #region SOH [Co-op]
+    if (((this->collider.base.acFlags & AC_HIT) && (this->collider.info.acHitInfo->toucher.dmgFlags & 0x40000040)) || Flags_GetSwitch(play, this->actor.params & 0x3F)) {
         this->collider.base.acFlags &= ~AC_HIT;
         this->hitCount++;
-        if (this->hitCount < 2) {
+        if (this->hitCount < 2 && !Flags_GetSwitch(play, this->actor.params & 0x3F)) {
+    // #endregion
             this->shakeFrames = 15;
             this->shakePosSize = 2.0f;
             this->shakeRotSize = 400.0f;
@@ -199,8 +202,7 @@ void ObjHamishi_Draw(Actor* thisx, PlayState* play) {
 
     Gfx_SetupDL_25Opa(play->state.gfxCtx);
 
-    gSPMatrix(POLY_OPA_DISP++, MATRIX_NEWMTX(play->state.gfxCtx),
-              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    gSPMatrix(POLY_OPA_DISP++, MATRIX_NEWMTX(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 170, 130, 255);
     gSPDisplayList(POLY_OPA_DISP++, gSilverRockDL);
 

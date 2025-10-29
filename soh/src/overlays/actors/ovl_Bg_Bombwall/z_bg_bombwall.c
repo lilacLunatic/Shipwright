@@ -211,7 +211,9 @@ void func_8086ED50(BgBombwall* this, PlayState* play) {
 }
 
 void func_8086ED70(BgBombwall* this, PlayState* play) {
-    if (this->collider.base.acFlags & AC_HIT) {
+    // #region SOH [Co-op]
+    if ((this->collider.base.acFlags & AC_HIT) || Flags_GetSwitch(play, this->dyna.actor.params & 0x3F)) {
+    // #endregion
         this->collider.base.acFlags &= ~AC_HIT;
         func_8086EDFC(this, play);
         Flags_SetSwitch(play, this->dyna.actor.params & 0x3F);
@@ -234,7 +236,7 @@ void func_8086EE40(BgBombwall* this, PlayState* play) {
         func_8086EE94(this, play);
 
         if (((this->dyna.actor.params >> 0xF) & 1) != 0) {
-            func_80078884(NA_SE_SY_CORRECT_CHIME);
+            Sfx_PlaySfxCentered(NA_SE_SY_CORRECT_CHIME);
         }
     }
 }

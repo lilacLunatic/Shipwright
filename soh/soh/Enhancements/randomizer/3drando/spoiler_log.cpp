@@ -2,15 +2,14 @@
 
 #include "../dungeon.h"
 #include "../static_data.h"
-#include "../context.h"
+#include "../settings.h"
 #include "../entrance.h"
 #include "random.hpp"
 #include "../trial.h"
-#include "tinyxml2.h"
-#include "utils.hpp"
 #include "hints.hpp"
 #include "pool_functions.hpp"
 #include "soh/Enhancements/randomizer/randomizer_check_objects.h"
+#include "soh/Enhancements/randomizer/randomizer_entrance_tracker.h"
 #include <nlohmann/json.hpp>
 
 #include <cstdio>
@@ -47,7 +46,7 @@ std::string placementtxt;
 
 void GenerateHash() {
     auto ctx = Rando::Context::GetInstance();
-    std::string hash = ctx->GetSettings()->GetHash();
+    std::string hash = ctx->GetHash();
     // adds leading 0s to the hash string if it has less than 10 digits.
     while (hash.length() < 10) {
         hash = "0" + hash;
@@ -56,9 +55,6 @@ void GenerateHash() {
         int number = std::stoi(hash.substr(j, 2));
         ctx->hashIconIndexes[i] = number;
     }
-
-    // Clear out spoiler log data here, in case we aren't going to re-generate it
-    // spoilerData = { 0 };
 }
 
 static auto GetGeneralPath() {
@@ -70,17 +66,15 @@ static auto GetSpoilerLogPath() {
 }
 
 static auto GetPlacementLogPath() {
-  return GetGeneralPath();
+    return GetGeneralPath();
 }
 
 // Writes the location to the specified node.
-static void WriteLocation(
-    std::string sphere, const RandomizerCheck locationKey, const bool withPadding = false) {
-  Rando::Location* location = Rando::StaticData::GetLocation(locationKey);
-  Rando::ItemLocation* itemLocation = Rando::Context::GetInstance()->GetItemLocation(locationKey);
+static void WriteLocation(std::string sphere, const RandomizerCheck locationKey, const bool withPadding = false) {
+    Rando::Location* location = Rando::StaticData::GetLocation(locationKey);
+    Rando::ItemLocation* itemLocation = Rando::Context::GetInstance()->GetItemLocation(locationKey);
 
-  // auto node = parentNode->InsertNewChildElement("location");
-  switch (gSaveContext.language) {
+    switch (gSaveContext.language) {
         case LANGUAGE_ENG:
         default:
             jsonData["playthrough"][sphere][location->GetName()] = itemLocation->GetPlacedItemName().GetEnglish();
@@ -89,79 +83,50 @@ static void WriteLocation(
             jsonData["playthrough"][sphere][location->GetName()] = itemLocation->GetPlacedItemName().GetFrench();
             break;
     }
-  // node->SetAttribute("name", location->GetName().c_str());
-  // node->SetText(location->GetPlacedItemName().GetEnglish().c_str());
-
-  // if (withPadding) {
-  //   constexpr int16_t LONGEST_NAME = 56; // The longest name of a location.
-  //   constexpr int16_t PRICE_ATTRIBUTE = 12; // Length of a 3-digit price attribute.
-
-  //   // Insert a padding so we get a kind of table in the XML document.
-  //   int16_t requiredPadding = LONGEST_NAME - location->GetName().length();
-  //   if (location->GetRCType() == RCTYPE_SHOP) {
-  //     // Shop items have short location names, but come with an additional price attribute.
-  //     requiredPadding -= PRICE_ATTRIBUTE;
-  //   }
-  //   if (requiredPadding >= 0) {
-  //     std::string padding(requiredPadding, ' ');
-  //     node->SetAttribute("_", padding.c_str());
-  //   }
-  // }
-
-  // if (location->GetRCType() == RCTYPE_SHOP) {
-  //   char price[6];
-  //   sprintf(price, "%03d", location->GetPrice());
-  //   node->SetAttribute("price", price);
-  // }
-  // if (!location->IsAddedToPool()) {
-  //   #ifdef ENABLE_DEBUG
-  //     node->SetAttribute("not-added", true);
-  //   #endif
-  // }
 }
 
-//Writes a shuffled entrance to the specified node
+// Writes a shuffled entrance to the specified node
 static void WriteShuffledEntrance(std::string sphereString, Entrance* entrance) {
-  int16_t originalIndex = entrance->GetIndex();
-  int16_t destinationIndex = -1;
-  int16_t replacementIndex = entrance->GetReplacement()->GetIndex();
-  int16_t replacementDestinationIndex = -1;
-  std::string name = entrance->GetName();
-  std::string text = entrance->GetConnectedRegion()->regionName + " from " + entrance->GetReplacement()->GetParentRegion()->regionName;
+    int16_t originalIndex = entrance->GetIndex();
+    int16_t destinationIndex = -1;
+    int16_t replacementIndex = entrance->GetReplacement()->GetIndex();
+    int16_t replacementDestinationIndex = -1;
+    std::string name = GetEntranceData(originalIndex)->source;
+    std::string text = GetEntranceData(replacementIndex)->destination;
 
-  // Track the reverse destination, useful for savewarp handling
-  if (entrance->GetReverse() != nullptr) {
-    destinationIndex = entrance->GetReverse()->GetIndex();
-    // When decouple is off we track the replacement's reverse destination, useful for recording visited entrances
-    if (!entrance->IsDecoupled()) {
-      replacementDestinationIndex = entrance->GetReplacement()->GetReverse()->GetIndex();
+    // Track the reverse destination, useful for savewarp handling
+    if (entrance->GetReverse() != nullptr) {
+        destinationIndex = entrance->GetReverse()->GetIndex();
+        // When decouple is off we track the replacement's reverse destination, useful for recording visited entrances
+        if (!entrance->IsDecoupled()) {
+            replacementDestinationIndex = entrance->GetReplacement()->GetReverse()->GetIndex();
+        }
     }
-  }
 
-  json entranceJson = json::object({
-    {"type", entrance->GetType()},
-    {"index", originalIndex},
-    {"destination", destinationIndex},
-    {"override", replacementIndex},
-    {"overrideDestination", replacementDestinationIndex},
-  });
-
-  jsonData["entrances"].push_back(entranceJson);
-
-  // When decoupled entrances is off, handle saving reverse entrances
-  if (entrance->GetReverse() != nullptr && !entrance->IsDecoupled()) {
-    json reverseEntranceJson = json::object({
-      {"type", entrance->GetReverse()->GetType()},
-      {"index", replacementDestinationIndex},
-      {"destination", replacementIndex},
-      {"override", destinationIndex},
-      {"overrideDestination", originalIndex},
+    json entranceJson = json::object({
+        { "type", entrance->GetType() },
+        { "index", originalIndex },
+        { "destination", destinationIndex },
+        { "override", replacementIndex },
+        { "overrideDestination", replacementDestinationIndex },
     });
 
-    jsonData["entrances"].push_back(reverseEntranceJson);
-  }
+    jsonData["entrances"].push_back(entranceJson);
 
-  switch (gSaveContext.language) {
+    // When decoupled entrances is off, handle saving reverse entrances
+    if (entrance->GetReverse() != nullptr && !entrance->IsDecoupled()) {
+        json reverseEntranceJson = json::object({
+            { "type", entrance->GetReverse()->GetType() },
+            { "index", replacementDestinationIndex },
+            { "destination", replacementIndex },
+            { "override", destinationIndex },
+            { "overrideDestination", originalIndex },
+        });
+
+        jsonData["entrances"].push_back(reverseEntranceJson);
+    }
+
+    switch (gSaveContext.language) {
         case LANGUAGE_ENG:
         case LANGUAGE_FRA:
         default:
@@ -171,127 +136,64 @@ static void WriteShuffledEntrance(std::string sphereString, Entrance* entrance) 
 }
 
 // Writes the settings (without excluded locations, starting inventory and tricks) to the spoilerLog document.
-static void WriteSettings(const bool printAll = false) {
-    // auto parentNode = spoilerLog.NewElement("settings");
+static void WriteSettings() {
     auto ctx = Rando::Context::GetInstance();
-    auto allOptionGroups = ctx->GetSettings()->GetOptionGroups();
-    for (const Rando::OptionGroup& optionGroup : allOptionGroups) {
-        if (optionGroup.GetName() == "Timesaver Settings") {
-            for (const Rando::Option* option : optionGroup.GetOptions()) {
-                if (option->GetName() == "Big Poe Target Count" || option->GetName() == "Cuccos to return" ||
-                    option->GetName() == "Skip Epona Race" || option->GetName() == "Skip Tower Escape" ||
-                    option->GetName() == "Skip Child Stealth" || option->GetName() == "Complete Mask Quest" ||
-                    option->GetName() == "Skip Scarecrow's Song" ||
-                    option->GetName() == "Enable Glitch-Useful Cutscenes") {
-                    std::string settingName = optionGroup.GetName() + ":" + option->GetName();
-                    jsonData["settings"][settingName] = option->GetSelectedOptionText();
-                }
-            }
-            continue;
-        }
-        if (optionGroup.GetContainsType() == Rando::OptionGroupType::DEFAULT && optionGroup.PrintInSpoiler()) {
-            for (const Rando::Option* option : optionGroup.GetOptions()) {
-                std::string settingName = optionGroup.GetName() + ":" + option->GetName();
-                jsonData["settings"][settingName] = option->GetSelectedOptionText();
-            }
+    std::array<Rando::Option, RSK_MAX> options = Rando::Settings::GetInstance()->GetAllOptions();
+    for (const Rando::Option& option : options) {
+        if (option.GetName() != "") {
+            jsonData["settings"][option.GetName()] = option.GetOptionText(ctx->GetOption(option.GetKey()).Get());
         }
     }
+}
 
-    // spoilerLog.RootElement()->InsertEndChild(parentNode);
-
-    //     for (const uint32_t key : allLocations) {
-    //       ItemLocation* location = GetLocation(key);
-    //       settingsJsonData["locations"][location->GetName()] = location->GetPlacedItemName().english;
-    //   }
+// Removes any line breaks from s.
+std::string RemoveLineBreaks(std::string s) {
+    s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
+    return s;
 }
 
 // Writes the excluded locations to the spoiler log, if there are any.
 static void WriteExcludedLocations() {
-  // auto parentNode = spoilerLog.NewElement("excluded-locations");
-  auto ctx = Rando::Context::GetInstance();
+    auto ctx = Rando::Context::GetInstance();
 
-  for (size_t i = 1; i < ctx->GetSettings()->GetExcludeLocationsOptions().size(); i++) {
-    for (const auto& location : ctx->GetSettings()->GetExcludeLocationsOptions()[i]) {
-      if (location->GetSelectedOptionIndex() == RO_LOCATION_INCLUDE) {
-        continue;
-      }
+    for (size_t i = 1; i < Rando::Settings::GetInstance()->GetExcludeLocationsOptions().size(); i++) {
+        for (const auto& location : Rando::Settings::GetInstance()->GetExcludeLocationsOptions()[i]) {
+            if (ctx->GetLocationOption(static_cast<RandomizerCheck>(location->GetKey())).Get() == RO_LOCATION_INCLUDE) {
+                continue;
+            }
 
-      jsonData["excludedLocations"].push_back(RemoveLineBreaks(location->GetName()));
-
-      // tinyxml2::XMLElement* node = spoilerLog.NewElement("location");
-      // node->SetAttribute("name", RemoveLineBreaks(location->GetName()).c_str());
-      // parentNode->InsertEndChild(node);
+            jsonData["excludedLocations"].push_back(RemoveLineBreaks(location->GetName()));
+        }
     }
-  }
-
-  // if (!parentNode->NoChildren()) {
-  //   spoilerLog.RootElement()->InsertEndChild(parentNode);
-  // }
 }
 
 // Writes the starting inventory to the spoiler log, if there is any.
 static void WriteStartingInventory() {
     auto ctx = Rando::Context::GetInstance();
-    const Rando::OptionGroup& optionGroup = ctx->GetSettings()->GetOptionGroup(RSG_STARTING_INVENTORY);
+    const Rando::OptionGroup& optionGroup = Rando::Settings::GetInstance()->GetOptionGroup(RSG_STARTING_INVENTORY);
     for (const Rando::OptionGroup* subGroup : optionGroup.GetSubGroups()) {
         if (subGroup->GetContainsType() == Rando::OptionGroupType::DEFAULT) {
-            for (const Rando::Option* option : subGroup->GetOptions()) {
-                jsonData["settings"][option->GetName()] = option->GetSelectedOptionText();
+            for (Rando::Option* option : subGroup->GetOptions()) {
+                jsonData["settings"][option->GetName()] = option->GetOptionText(ctx->GetOption(option->GetKey()).Get());
             }
         }
     }
 }
 
 // Writes the enabled tricks to the spoiler log, if there are any.
-static void WriteEnabledTricks(tinyxml2::XMLDocument& spoilerLog) {
-  //auto parentNode = spoilerLog.NewElement("enabled-tricks");
-  auto ctx = Rando::Context::GetInstance();
+static void WriteEnabledTricks() {
+    auto ctx = Rando::Context::GetInstance();
 
-  for (const auto& setting : ctx->GetSettings()->GetOptionGroup(RSG_TRICKS).GetOptions()) {
-    if (setting->GetSelectedOptionIndex() != RO_GENERIC_ON/* || !setting->IsCategory(OptionCategory::Setting)*/) {
-      continue;
+    for (const auto& setting : Rando::Settings::GetInstance()->GetOptionGroup(RSG_TRICKS).GetOptions()) {
+        if (ctx->GetTrickOption(static_cast<RandomizerTrick>(setting->GetKey())).IsNot(RO_GENERIC_ON)) {
+            continue;
+        }
+        jsonData["enabledTricks"].push_back(RemoveLineBreaks(setting->GetName()).c_str());
     }
-    jsonData["enabledTricks"].push_back(RemoveLineBreaks(setting->GetName()).c_str());
-    //auto node = parentNode->InsertNewChildElement("trick");
-    //node->SetAttribute("name", RemoveLineBreaks(setting->GetName()).c_str());
-  }
-
-  // if (!parentNode->NoChildren()) {
-  //  spoilerLog.RootElement()->InsertEndChild(parentNode);
-  //}
 }
 
-// Writes the enabled glitches to the spoiler log, if there are any.
-// TODO: Implement Glitches
-// static void WriteEnabledGlitches(tinyxml2::XMLDocument& spoilerLog) {
-//   auto parentNode = spoilerLog.NewElement("enabled-glitches");
-
-//   for (const auto& setting : Settings::glitchCategories) {
-//     if (setting->Value<uint8_t>() == 0) {
-//       continue;
-//     }
-
-//     auto node = parentNode->InsertNewChildElement("glitch-category");
-//     node->SetAttribute("name", setting->GetName().c_str());
-//     node->SetText(setting->GetSelectedOptionText().c_str());
-//   }
-
-//   for (const auto& setting : Settings::miscGlitches) {
-//     if (!setting->Value<bool>()) {
-//       continue;
-//     }
-
-//     auto node = parentNode->InsertNewChildElement("misc-glitch");
-//     node->SetAttribute("name", RemoveLineBreaks(setting->GetName()).c_str());
-//   }
-
-//   if (!parentNode->NoChildren()) {
-//     spoilerLog.RootElement()->InsertEndChild(parentNode);
-//   }
-// }
-
 // Writes the Master Quest dungeons to the spoiler log, if there are any.
-static void WriteMasterQuestDungeons(tinyxml2::XMLDocument& spoilerLog) {
+static void WriteMasterQuestDungeons() {
     auto ctx = Rando::Context::GetInstance();
     for (const auto* dungeon : ctx->GetDungeons()->GetDungeonList()) {
         std::string dungeonName;
@@ -303,7 +205,7 @@ static void WriteMasterQuestDungeons(tinyxml2::XMLDocument& spoilerLog) {
 }
 
 // Writes the required trials to the spoiler log, if there are any.
-static void WriteRequiredTrials() {
+static void WriteChosenOptions() {
     auto ctx = Rando::Context::GetInstance();
     for (const auto& trial : ctx->GetTrials()->GetTrialList()) {
         if (trial->IsRequired()) {
@@ -311,38 +213,42 @@ static void WriteRequiredTrials() {
             jsonData["requiredTrials"].push_back(RemoveLineBreaks(trialName));
         }
     }
+    if (ctx->GetOption(RSK_SELECTED_STARTING_AGE).Is(RO_AGE_ADULT)) {
+        jsonData["SelectedStartingAge"] = "Adult";
+    } else {
+        jsonData["SelectedStartingAge"] = "Child";
+    }
 }
 
 // Writes the intended playthrough to the spoiler log, separated into spheres.
 static void WritePlaythrough() {
-  // auto playthroughNode = spoilerLog.NewElement("playthrough");
-  auto ctx = Rando::Context::GetInstance();
+    auto ctx = Rando::Context::GetInstance();
 
-  for (uint32_t i = 0; i < ctx->playthroughLocations.size(); ++i) {
-    auto sphereNum = std::to_string(i);
-    std::string sphereString =  "sphere ";
-    if (i < 10) sphereString += "0";
-    sphereString += sphereNum;
-    for (const RandomizerCheck key : ctx->playthroughLocations[i]) {
-      WriteLocation(sphereString, key, true);
+    for (uint32_t i = 0; i < ctx->playthroughLocations.size(); ++i) {
+        auto sphereNum = std::to_string(i);
+        std::string sphereString = "sphere ";
+        if (i < 10)
+            sphereString += "0";
+        sphereString += sphereNum;
+        for (const RandomizerCheck key : ctx->playthroughLocations[i]) {
+            WriteLocation(sphereString, key, true);
+        }
     }
-  }
-
-  // spoilerLog.RootElement()->InsertEndChild(playthroughNode);
 }
 
-//Write the randomized entrance playthrough to the spoiler log, if applicable
+// Write the randomized entrance playthrough to the spoiler log, if applicable
 static void WriteShuffledEntrances() {
-  auto ctx = Rando::Context::GetInstance();
-  for (uint32_t i = 0; i < ctx->GetEntranceShuffler()->playthroughEntrances.size(); ++i) {
-    auto sphereNum = std::to_string(i);
-    std::string sphereString = "sphere ";
-    if (i < 10) sphereString += "0";
-    sphereString += sphereNum;
-    for (Entrance* entrance : ctx->GetEntranceShuffler()->playthroughEntrances[i]) {
-        WriteShuffledEntrance(sphereString, entrance);
+    auto ctx = Rando::Context::GetInstance();
+    for (uint32_t i = 0; i < ctx->GetEntranceShuffler()->playthroughEntrances.size(); ++i) {
+        auto sphereNum = std::to_string(i);
+        std::string sphereString = "sphere ";
+        if (i < 10)
+            sphereString += "0";
+        sphereString += sphereNum;
+        for (Entrance* entrance : ctx->GetEntranceShuffler()->playthroughEntrances[i]) {
+            WriteShuffledEntrance(sphereString, entrance);
+        }
     }
-  }
 }
 
 Rando::ItemLocation* GetItemLocation(RandomizerGet item) {
@@ -359,70 +265,72 @@ static void WriteAllLocations() {
         std::string placedItemName;
 
         switch (gSaveContext.language) {
-          case 0:
-          default:
-            placedItemName = location->GetPlacedItemName().english;
-            break;
-          case 2:
-            placedItemName = location->GetPlacedItemName().french;
-            break;
+            case 0:
+            default:
+                placedItemName = location->GetPlacedItemName().GetEnglish();
+                break;
+            case 2:
+                placedItemName = location->GetPlacedItemName().GetFrench();
+                break;
         }
 
         // If it's a simple item (not an ice trap, doesn't have a price)
         // just add the name of the item and move on
-        if (!location->HasCustomPrice() &&
-            location->GetPlacedRandomizerGet() != RG_ICE_TRAP) {
-            
-            jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()] = placedItemName;
+        if (!location->HasCustomPrice() && location->GetPlacedRandomizerGet() != RG_ICE_TRAP) {
+
+            jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()] =
+                placedItemName;
             continue;
         }
 
         // We're dealing with a complex item, build out the json object for it
-        jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()]["item"] = placedItemName;
+        jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()]["item"] =
+            placedItemName;
 
         if (location->HasCustomPrice()) {
             jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()]["price"] =
                 location->GetPrice();
         }
         if (location->IsAHintAccessible()) {
-          hintedLocations.emplace(Rando::StaticData::GetLocation(key)->GetHintKey(), location);
+            hintedLocations.emplace(Rando::StaticData::GetLocation(key)->GetHintKey(), location);
         }
 
         if (location->GetPlacedRandomizerGet() == RG_ICE_TRAP) {
-          switch (gSaveContext.language) {
-              case 0:
-              default:
-                  jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()]["model"] =
-                      Rando::StaticData::RetrieveItem(ctx->overrides[location->GetRandomizerCheck()].LooksLike()).GetName().english;
-                  jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()]["trickName"] = 
-                      ctx->overrides[location->GetRandomizerCheck()].GetTrickName().english;
-                  break;
-              case 2:
-                  jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()]["model"] =
-                      Rando::StaticData::RetrieveItem(ctx->overrides[location->GetRandomizerCheck()].LooksLike()).GetName().french;
-                  jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()]["trickName"] =
-                      ctx->overrides[location->GetRandomizerCheck()].GetTrickName().french;
-                  break;
-          }
-      }
+            switch (gSaveContext.language) {
+                case 0:
+                default:
+                    jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()]
+                            ["model"] = Rando::StaticData::RetrieveItem(
+                                            ctx->overrides[location->GetRandomizerCheck()].LooksLike())
+                                            .GetName()
+                                            .GetEnglish();
+                    jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()]
+                            ["trickName"] = ctx->overrides[location->GetRandomizerCheck()].GetTrickName().GetEnglish();
+                    break;
+                case 2:
+                    jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()]
+                            ["model"] = Rando::StaticData::RetrieveItem(
+                                            ctx->overrides[location->GetRandomizerCheck()].LooksLike())
+                                            .GetName()
+                                            .GetFrench();
+                    jsonData["locations"][Rando::StaticData::GetLocation(location->GetRandomizerCheck())->GetName()]
+                            ["trickName"] = ctx->overrides[location->GetRandomizerCheck()].GetTrickName().GetFrench();
+                    break;
+            }
+        }
     }
 }
 
 const char* SpoilerLog_Write() {
     auto ctx = Rando::Context::GetInstance();
-    auto spoilerLog = tinyxml2::XMLDocument(false);
-    spoilerLog.InsertEndChild(spoilerLog.NewDeclaration());
-
-    auto rootNode = spoilerLog.NewElement("spoiler-log");
-    spoilerLog.InsertEndChild(rootNode);
 
     jsonData.clear();
 
-    jsonData["version"] = (char*) gBuildVersion;
-    jsonData["git_branch"] = (char*) gGitBranch;
-    jsonData["git_commit"] = (char*) gGitCommitHash;
-    jsonData["seed"] = ctx->GetSettings()->GetSeedString();
-    jsonData["finalSeed"] = ctx->GetSettings()->GetSeed();
+    jsonData["version"] = (char*)gBuildVersion;
+    jsonData["git_branch"] = (char*)gGitBranch;
+    jsonData["git_commit"] = (char*)gGitCommitHash;
+    jsonData["seed"] = ctx->GetSeedString();
+    jsonData["finalSeed"] = ctx->GetSeed();
 
     // Write Hash
     int index = 0;
@@ -434,12 +342,9 @@ const char* SpoilerLog_Write() {
     WriteSettings();
     WriteExcludedLocations();
     WriteStartingInventory();
-    WriteEnabledTricks(spoilerLog); //RANDOTODO clean up spoilerLog refernces
-    //if (Settings::Logic.Is(LOGIC_GLITCHED)) {
-    //    WriteEnabledGlitches(spoilerLog);
-    //}
-    WriteMasterQuestDungeons(spoilerLog);
-    WriteRequiredTrials();
+    WriteEnabledTricks();
+    WriteMasterQuestDungeons();
+    WriteChosenOptions();
     WritePlaythrough();
 
     ctx->playthroughLocations.clear();
@@ -455,7 +360,7 @@ const char* SpoilerLog_Write() {
 
     std::string jsonString = jsonData.dump(4);
     std::ostringstream fileNameStream;
-    for (uint8_t i = 0; i < ctx->hashIconIndexes.size(); i ++) {
+    for (uint8_t i = 0; i < ctx->hashIconIndexes.size(); i++) {
         if (i) {
             fileNameStream << '-';
         }
@@ -485,32 +390,4 @@ void PlacementLog_Msg(std::string_view msg) {
 
 void PlacementLog_Clear() {
     placementtxt = "";
-}
-
-// RANDOTODO: Do we even use this?
-bool PlacementLog_Write() {
-    auto placementLog = tinyxml2::XMLDocument(false);
-    placementLog.InsertEndChild(placementLog.NewDeclaration());
-
-    auto rootNode = placementLog.NewElement("placement-log");
-    placementLog.InsertEndChild(rootNode);
-
-    // rootNode->SetAttribute("version", Settings::version.c_str());
-    // rootNode->SetAttribute("seed", Settings::seed);
-
-    // WriteSettings(placementLog, true); // Include hidden settings.
-    // WriteExcludedLocations(placementLog);
-    // WriteStartingInventory(placementLog);
-    WriteEnabledTricks(placementLog);
-    //WriteEnabledGlitches(placementLog);
-    WriteMasterQuestDungeons(placementLog);
-    //WriteRequiredTrials(placementLog);
-
-    placementtxt = "\n" + placementtxt;
-
-    auto node = rootNode->InsertNewChildElement("log");
-    auto contentNode = node->InsertNewText(placementtxt.c_str());
-    contentNode->SetCData(true);
-
-    return true;
 }

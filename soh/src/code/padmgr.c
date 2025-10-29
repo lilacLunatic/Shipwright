@@ -3,6 +3,9 @@
 #include <string.h>
 
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
+#include "soh/Enhancements/controls/Mouse.h"
+#include "soh/OTRGlobals.h"
+#include "soh/ResourceManagerHelpers.h"
 
 s32 D_8012D280 = 1;
 
@@ -235,6 +238,28 @@ void PadMgr_ProcessInputs(PadMgr* padMgr) {
                     GameInteractor_SetEmulatedButtons(0);
                 }
 
+                // #region SOH [Enhancement]
+                f32 sensitivityMod = 1.0f;
+
+                if (CVarGetInteger(CVAR_SETTING("WalkModifier.Enabled"), 0) == 1) {
+                    if (CVarGetInteger(CVAR_SETTING("WalkModifier.SpeedToggle"), 0) == 1) {
+                        if (gWalkSpeedToggle1) {
+                            sensitivityMod *= CVarGetFloat(CVAR_SETTING("WalkModifier.SensitivityMapping1"), 1.0f);
+                        } else if (gWalkSpeedToggle2) {
+                            sensitivityMod *= CVarGetFloat(CVAR_SETTING("WalkModifier.SensitivityMapping2"), 1.0f);
+                        }
+                    } else {
+                        if (CHECK_BTN_ALL(input->cur.button, BTN_CUSTOM_MODIFIER1)) {
+                            sensitivityMod *= CVarGetFloat(CVAR_SETTING("WalkModifier.SensitivityMapping1"), 1.0f);
+                        } else if (CHECK_BTN_ALL(input->cur.button, BTN_CUSTOM_MODIFIER2)) {
+                            sensitivityMod *= CVarGetFloat(CVAR_SETTING("WalkModifier.SensitivityMapping2"), 1.0f);
+                        }
+                    }
+                }
+                input->cur.stick_x *= sensitivityMod;
+                input->cur.stick_y *= sensitivityMod;
+                // #endregion
+
                 if (GameInteractor_ReverseControlsActive()) {
                     if (input->cur.stick_x == -128) {
                         input->cur.stick_x = 127;
@@ -284,13 +309,6 @@ void PadMgr_ProcessInputs(PadMgr* padMgr) {
                 Fault_AddHungupAndCrash(__FILE__, __LINE__);
         }
 
-        // When 3 frames are left on easy pause buffer, re-apply the last held inputs to the prev inputs
-        // to compute the pressed difference. This makes it so previously held inputs are continued as "held",
-        // but new inputs when unpausing are "pressed" out of the pause menu.
-        if (CVarGetInteger(CVAR_GENERAL("CheatEasyPauseBufferTimer"), 0) == 3) {
-            input->prev.button = CVarGetInteger(CVAR_GENERAL("CheatEasyPauseBufferLastInputs"), 0);
-        }
-
         buttonDiff = input->prev.button ^ input->cur.button;
         input->press.button |= (u16)(buttonDiff & input->cur.button);
         input->rel.button |= (u16)(buttonDiff & input->prev.button);
@@ -298,7 +316,7 @@ void PadMgr_ProcessInputs(PadMgr* padMgr) {
         input->press.stick_x += (s8)(input->cur.stick_x - input->prev.stick_x);
         input->press.stick_y += (s8)(input->cur.stick_y - input->prev.stick_y);
         // #region SOH [Enhancement]
-        PadUtils_UpdateRelRXY(input); 
+        PadUtils_UpdateRelRXY(input);
         input->press.right_stick_x += (s8)(input->cur.right_stick_x - input->prev.right_stick_x);
         input->press.right_stick_y += (s8)(input->cur.right_stick_y - input->prev.right_stick_y);
         // #endregion
@@ -322,6 +340,8 @@ void PadMgr_HandleRetraceMsg(PadMgr* padMgr) {
     osRecvMesg(queue, NULL, OS_MESG_BLOCK);
     osContGetReadData(padMgr->pads);
 
+    Mouse_UpdateAll();
+
     for (i = 0; i < __osMaxControllers; i++) {
         padMgr->padStatus[i].status = Controller_ShouldRumble(i);
     }
@@ -341,9 +361,9 @@ void PadMgr_HandleRetraceMsg(PadMgr* padMgr) {
             if (padMgr->padStatus[i].type == CONT_TYPE_NORMAL) {
                 mask |= 1 << i;
             } else {
-                //LOG_HEX("this->pad_status[i].type", padMgr->padStatus[i].type);
-                // "An unknown type of controller is connected"
-                //osSyncPrintf("知らない種類のコントローラが接続されています\n");
+                // LOG_HEX("this->pad_status[i].type", padMgr->padStatus[i].type);
+                //  "An unknown type of controller is connected"
+                // osSyncPrintf("知らない種類のコントローラが接続されています\n");
             }
         }
     }
@@ -351,7 +371,8 @@ void PadMgr_HandleRetraceMsg(PadMgr* padMgr) {
 
     /* if (gFaultStruct.msgId) {
         PadMgr_RumbleStop(padMgr);
-    } else */ if (padMgr->rumbleOffFrames > 0) {
+    } else */
+    if (padMgr->rumbleOffFrames > 0) {
         --padMgr->rumbleOffFrames;
         PadMgr_RumbleStop(padMgr);
     } else if (padMgr->rumbleOnFrames == 0) {
@@ -411,7 +432,7 @@ void PadMgr_ThreadEntry(PadMgr* padMgr) {
     s16* mesg = NULL;
     s32 exit;
 
-    //osSyncPrintf("コントローラスレッド実行開始\n"); // "Controller thread execution start"
+    // osSyncPrintf("コントローラスレッド実行開始\n"); // "Controller thread execution start"
 
     exit = false;
     while (!exit) {
@@ -421,7 +442,7 @@ void PadMgr_ThreadEntry(PadMgr* padMgr) {
         }
 
         osRecvMesg(&padMgr->interruptMsgQ, (OSMesg*)&mesg, OS_MESG_BLOCK);
-        //LOG_CHECK_NULL_POINTER("msg", mesg);
+        // LOG_CHECK_NULL_POINTER("msg", mesg);
 
         PadMgr_HandleRetraceMsg(padMgr);
         break;
@@ -451,9 +472,9 @@ void PadMgr_ThreadEntry(PadMgr* padMgr) {
     }
 
     // OTRTODO: Removed due to crash
-    //IrqMgr_RemoveClient(padMgr->irqMgr, &padMgr->irqClient);
+    // IrqMgr_RemoveClient(padMgr->irqMgr, &padMgr->irqClient);
 
-    //osSyncPrintf("コントローラスレッド実行終了\n"); // "Controller thread execution end"
+    // osSyncPrintf("コントローラスレッド実行終了\n"); // "Controller thread execution end"
 }
 
 void PadMgr_Init(PadMgr* padMgr, OSMesgQueue* siIntMsgQ, IrqMgr* irqMgr, OSId id, OSPri priority, void* stack) {
@@ -464,7 +485,7 @@ void PadMgr_Init(PadMgr* padMgr, OSMesgQueue* siIntMsgQ, IrqMgr* irqMgr, OSId id
 
     osCreateMesgQueue(&padMgr->interruptMsgQ, padMgr->interruptMsgBuf, 4);
     // OTRTODO: Removed due to crash
-    //IrqMgr_AddClient(padMgr->irqMgr, &padMgr->irqClient, &padMgr->interruptMsgQ);
+    // IrqMgr_AddClient(padMgr->irqMgr, &padMgr->irqClient, &padMgr->interruptMsgQ);
     osCreateMesgQueue(&padMgr->serialMsgQ, padMgr->serialMsgBuf, 1);
     PadMgr_UnlockSerialMesgQueue(padMgr, siIntMsgQ);
     osCreateMesgQueue(&padMgr->lockMsgQ, padMgr->lockMsgBuf, 1);

@@ -6,6 +6,7 @@
 #include <string>
 
 #include "../../../include/z64item.h"
+#include "../../../include/z64.h"
 #include "../../../include/message_data_textbox_types.h"
 #include "../randomizer/3drando/text.hpp"
 
@@ -20,13 +21,14 @@
 #define QM_YELLOW "\x46"
 #define QM_BLACK "\x47"
 
-#define HS_HORSE_ARCHERY "\x00"s //HS_HBA is an enum already
+#define HS_HORSE_ARCHERY "\x00"s // HS_HBA is an enum already
 
 typedef enum {
     MF_FORMATTED,
     MF_CLEAN,
     MF_RAW,
-    MF_AUTO_FORMAT
+    MF_AUTO_FORMAT,
+    MF_ENCODE,
 } MessageFormat;
 
 /**
@@ -40,19 +42,24 @@ class CustomMessage {
     CustomMessage() = default;
     CustomMessage(std::string english_, std::string german_, std::string french_,
                   TextBoxType type_ = TEXTBOX_TYPE_BLACK, TextBoxPosition position_ = TEXTBOX_POS_BOTTOM);
-    CustomMessage(std::string english_, std::string german_, std::string french_, std::vector<std::string> colors_, std::vector<bool> capital_ = {},
-              TextBoxType type_ = TEXTBOX_TYPE_BLACK, TextBoxPosition position_ = TEXTBOX_POS_BOTTOM);
-    CustomMessage(std::string english_, TextBoxType type_ = TEXTBOX_TYPE_BLACK, TextBoxPosition position_ = TEXTBOX_POS_BOTTOM);
-    CustomMessage(std::string english_, std::vector<std::string> colors_, std::vector<bool> capital_ = {}, TextBoxType type_ = TEXTBOX_TYPE_BLACK, TextBoxPosition position_ = TEXTBOX_POS_BOTTOM);
+    CustomMessage(std::string english_, std::string german_, std::string french_, std::vector<std::string> colors_,
+                  std::vector<bool> capital_ = {}, TextBoxType type_ = TEXTBOX_TYPE_BLACK,
+                  TextBoxPosition position_ = TEXTBOX_POS_BOTTOM);
+    CustomMessage(std::string english_, TextBoxType type_ = TEXTBOX_TYPE_BLACK,
+                  TextBoxPosition position_ = TEXTBOX_POS_BOTTOM);
+    CustomMessage(std::string english_, std::vector<std::string> colors_, std::vector<bool> capital_ = {},
+                  TextBoxType type_ = TEXTBOX_TYPE_BLACK, TextBoxPosition position_ = TEXTBOX_POS_BOTTOM);
     CustomMessage(Text text, TextBoxType type_ = TEXTBOX_TYPE_BLACK, TextBoxPosition position_ = TEXTBOX_POS_BOTTOM);
 
-    static std::string MESSAGE_END() ;
-    static std::string ITEM_OBTAINED(uint8_t x) ;
-    static std::string NEWLINE() ;
-    static std::string COLOR(std::string x) ;
-    static std::string POINTS(std::string x) ;//HIGH_SCORE is also a macro
-    static std::string WAIT_FOR_INPUT() ;
-    static std::string PLAYER_NAME() ;
+    static CustomMessage LoadVanillaMessageTableEntry(uint16_t textId);
+
+    static std::string MESSAGE_END();
+    static std::string ITEM_OBTAINED(uint8_t x);
+    static std::string NEWLINE();
+    static std::string COLOR(std::string x);
+    static std::string POINTS(std::string x); // HIGH_SCORE is also a macro
+    static std::string WAIT_FOR_INPUT();
+    static std::string PLAYER_NAME();
 
     const std::string GetEnglish(MessageFormat format = MF_FORMATTED) const;
     const std::string GetFrench(MessageFormat format = MF_FORMATTED) const;
@@ -109,6 +116,11 @@ class CustomMessage {
     void ReplaceSpecialCharacters(std::string& str) const;
 
     /**
+     * @brief Replaces hashtags with stored colors.
+     */
+    void EncodeColors(std::string& str) const;
+
+    /**
      * @brief Replaces our color variable strings with the OoT control codes.
      */
     void ReplaceColors(std::string& str) const;
@@ -149,16 +161,21 @@ class CustomMessage {
     void Format();
 
     /**
-     * @brief formats the message specifically to fit in OoT's 
+     * @brief formats the message specifically to fit in OoT's
      * textboxes, and use it's formatting.
      */
     void AutoFormat();
 
     /**
-     * @brief Removes all OoT formatting from the message, 
+     * @brief Removes all OoT formatting from the message,
      * making it a good form for writing into spoiler logs.
      */
     void Clean();
+
+    /**
+     * @brief Replaces variable characters with fixed ones to store the sata in string form
+     */
+    void Encode();
 
     /**
      * @brief Replaces various symbols with the control codes necessary to
@@ -166,9 +183,26 @@ class CustomMessage {
      * . i.e. special characters, colors, newlines, wait for input, etc.
      */
     void FormatString(std::string& str) const;
-    
+
     /**
-     * @brief formats the string specifically to fit in OoT's 
+     * @brief finds NEWLINEs in a string, while filtering
+     * /x01's that are used as opperands
+     */
+    size_t FindNEWLINE(std::string& str, size_t lastNewline) const;
+
+    /**
+     * @brief Inserts a string into another string, following the rules
+     * of auto-format inserting new lines: spaces and & are replaced while
+     * other chars are appended to.
+     *
+     * @param str the string we are inserting into
+     * @param pos the position in the string to insert
+     * @param breakString the string we are inserting
+     */
+    bool AddBreakString(std::string& str, size_t pos, std::string breakString) const;
+
+    /**
+     * @brief formats the string specifically to fit in OoT's
      * textboxes, and use it's formatting.
      * RANDOTODO whoever knows exactly what this does check my adaption
      */
@@ -181,7 +215,7 @@ class CustomMessage {
     void CleanString(std::string& str) const;
 
   private:
-    std::vector<std::string> messages = {"","",""};
+    std::vector<std::string> messages = { "", TODO_TRANSLATE, TODO_TRANSLATE };
     TextBoxType type = TEXTBOX_TYPE_BLACK;
     TextBoxPosition position = TEXTBOX_POS_BOTTOM;
     std::vector<std::string> colors = {};
@@ -280,7 +314,7 @@ class MessageNotFoundException : public std::exception {
         : messageTableId(std::move(messageTableId_)), textId(textId_) {
     }
     virtual const char* what() const noexcept {
-        char* message;
+        static char message[500];
         sprintf(message, "Message from table %s with textId %u was not found", messageTableId.c_str(), textId);
         return message;
     }

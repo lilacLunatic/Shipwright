@@ -6,9 +6,11 @@
 
 #include "z_en_toryo.h"
 #include "objects/object_toryo/object_toryo.h"
+#include "soh/OTRGlobals.h"
+#include "soh/ResourceManagerHelpers.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void EnToryo_Init(Actor* thisx, PlayState* play);
 void EnToryo_Destroy(Actor* thisx, PlayState* play);
@@ -120,8 +122,7 @@ void EnToryo_Init(Actor* thisx, PlayState* play) {
     }
 
     ActorShape_Init(&this->actor.shape, 0.0f, ActorShadow_DrawCircle, 42.0f);
-    SkelAnime_InitFlex(play, &this->skelAnime, &object_toryo_Skel_007150, NULL, this->jointTable, this->morphTable,
-                       17);
+    SkelAnime_InitFlex(play, &this->skelAnime, &object_toryo_Skel_007150, NULL, this->jointTable, this->morphTable, 17);
     Collider_InitCylinder(play, &this->collider);
     Collider_SetCylinder(play, &this->collider, &this->actor, &sCylinderInit);
     CollisionCheck_SetInfo2(&this->actor.colChkInfo, &sDamageTable, &sColChkInfoInit);
@@ -243,7 +244,7 @@ u32 func_80B20634(EnToryo* this, PlayState* play) {
 
     if (this->unk_1E0 != 0) {
         if (this->unk_1E0 == 10) {
-            func_80078884(NA_SE_SY_TRE_BOX_APPEAR);
+            Sfx_PlaySfxCentered(NA_SE_SY_TRE_BOX_APPEAR);
             if (Flags_GetInfTable(INFTABLE_171)) {
                 ret = 0x606E;
             } else {
@@ -388,8 +389,7 @@ void EnToryo_Draw(Actor* thisx, PlayState* play) {
     SkelAnime_DrawSkeletonOpa(play, &this->skelAnime, EnToryo_OverrideLimbDraw, EnToryo_PostLimbDraw, this);
 }
 
-s32 EnToryo_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot,
-                             void* thisx) {
+s32 EnToryo_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx) {
     EnToryo* this = (EnToryo*)thisx;
 
     if ((this->stateFlags & 8)) {

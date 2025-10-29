@@ -17,8 +17,9 @@
 #include "soh/Enhancements/cosmetics/cosmeticsTypes.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include <assert.h>
+#include "soh/OTRGlobals.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_WHILE_CULLED)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED)
 
 void EnOssan_Init(Actor* thisx, PlayState* play);
 void EnOssan_Destroy(Actor* thisx, PlayState* play);
@@ -473,11 +474,11 @@ void EnOssan_UpdateShopOfferings(EnOssan* this, PlayState* play) {
 
                 if (params >= 0) {
                     this->shelfSlots[i] = (EnGirlA*)Actor_Spawn(
-                        &play->actorCtx, play, ACTOR_EN_GIRLA,
-                        this->shelves->actor.world.pos.x + shopItem->xOffset,
+                        &play->actorCtx, play, ACTOR_EN_GIRLA, this->shelves->actor.world.pos.x + shopItem->xOffset,
                         this->shelves->actor.world.pos.y + shopItem->yOffset,
                         this->shelves->actor.world.pos.z + shopItem->zOffset, this->shelves->actor.shape.rot.x,
-                        this->shelves->actor.shape.rot.y + sItemShelfRot[i], this->shelves->actor.shape.rot.z, params, true);
+                        this->shelves->actor.shape.rot.y + sItemShelfRot[i], this->shelves->actor.shape.rot.z, params,
+                        true);
                 }
             }
         }
@@ -606,9 +607,10 @@ void EnOssan_Init(Actor* thisx, PlayState* play) {
     }
 
     // If you haven't given Zelda's Letter to the Kakariko Guard
-    // or are rando'd and haven't gotten gotten the letter from zelda yet 
-    if (this->actor.params == OSSAN_TYPE_MASK && (!Flags_GetInfTable(INFTABLE_SHOWED_ZELDAS_LETTER_TO_GATE_GUARD) || 
-        (IS_RANDO && !Flags_GetEventChkInf(EVENTCHKINF_OBTAINED_ZELDAS_LETTER)))) {
+    // or are rando'd and haven't gotten gotten the letter from zelda yet
+    if (this->actor.params == OSSAN_TYPE_MASK &&
+        (!Flags_GetInfTable(INFTABLE_SHOWED_ZELDAS_LETTER_TO_GATE_GUARD) ||
+         (IS_RANDO && !Flags_GetEventChkInf(EVENTCHKINF_OBTAINED_ZELDAS_LETTER)))) {
         Actor_Kill(&this->actor);
         return;
     }
@@ -620,7 +622,8 @@ void EnOssan_Init(Actor* thisx, PlayState* play) {
 
     // Don't kill bombchu shop actor in rando, making it so the shop is immediately open
     // Flags_GetEventChkInf(EVENTCHKINF_USED_DODONGOS_CAVERN_BLUE_WARP) - Completed Dodongo's Cavern
-    if (this->actor.params == OSSAN_TYPE_BOMBCHUS && !Flags_GetEventChkInf(EVENTCHKINF_USED_DODONGOS_CAVERN_BLUE_WARP) && !IS_RANDO) {
+    if (this->actor.params == OSSAN_TYPE_BOMBCHUS &&
+        !Flags_GetEventChkInf(EVENTCHKINF_USED_DODONGOS_CAVERN_BLUE_WARP) && !IS_RANDO) {
         Actor_Kill(&this->actor);
         return;
     }
@@ -679,7 +682,7 @@ void EnOssan_EndInteraction(PlayState* play, EnOssan* this) {
     play->msgCtx.msgMode = MSGMODE_TEXT_CLOSING;
     play->msgCtx.stateTimer = 4;
     player->stateFlags2 &= ~PLAYER_STATE2_DISABLE_DRAW;
-    func_800BC490(play, 1);
+    Play_SetViewpoint(play, 1);
     Interface_ChangeAlpha(50);
     this->drawCursor = 0;
     this->stickLeftPrompt.isEnabled = false;
@@ -751,7 +754,7 @@ void EnOssan_ChooseTalkToOwner(PlayState* play, EnOssan* this) {
 }
 
 void EnOssan_SetLookToShopkeeperFromShelf(PlayState* play, EnOssan* this) {
-    func_80078884(NA_SE_SY_CURSOR);
+    Sfx_PlaySfxCentered(NA_SE_SY_CURSOR);
     this->drawCursor = 0;
     this->stateFlag = OSSAN_STATE_LOOK_SHOPKEEPER;
 }
@@ -763,7 +766,7 @@ void EnOssan_State_Idle(EnOssan* this, PlayState* play, Player* player) {
         // "Start conversation!!"
         osSyncPrintf(VT_FGCOL(YELLOW) "★★★ 会話開始！！ ★★★" VT_RST "\n");
         player->stateFlags2 |= PLAYER_STATE2_DISABLE_DRAW;
-        func_800BC590(play);
+        Play_SetShopBrowsingViewpoint(play);
         EnOssan_SetStateStartShopping(play, this, false);
     } else if (this->actor.xzDistToPlayer < 100.0f) {
         func_8002F2CC(&this->actor, play, 100);
@@ -917,8 +920,7 @@ void EnOssan_State_StartConversation(EnOssan* this, PlayState* play, Player* pla
     u8 dialogState = Message_GetState(&play->msgCtx);
 
     if (this->actor.params == OSSAN_TYPE_MASK && dialogState == TEXT_STATE_CHOICE) {
-        if (!EnOssan_TestEndInteraction(this, play, &play->state.input[0]) &&
-            Message_ShouldAdvance(play)) {
+        if (!EnOssan_TestEndInteraction(this, play, &play->state.input[0]) && Message_ShouldAdvance(play)) {
             switch (play->msgCtx.choiceIndex) {
                 case 0:
                     EnOssan_StartShopping(play, this);
@@ -929,7 +931,7 @@ void EnOssan_State_StartConversation(EnOssan* this, PlayState* play, Player* pla
             }
         }
     } else if (dialogState == TEXT_STATE_EVENT && Message_ShouldAdvance(play)) {
-        func_80078884(NA_SE_SY_MESSAGE_PASS);
+        Sfx_PlaySfxCentered(NA_SE_SY_MESSAGE_PASS);
 
         switch (this->happyMaskShopState) {
             case OSSAN_HAPPY_STATE_ALL_MASKS_SOLD:
@@ -948,9 +950,9 @@ void EnOssan_State_StartConversation(EnOssan* this, PlayState* play, Player* pla
             case OSSAN_HAPPY_STATE_ANGRY:
                 // In ER, handle happy mask throwing link out with not enough rupees
                 if (IS_RANDO && Randomizer_GetSettingValue(RSK_SHUFFLE_ENTRANCES)) {
-                    play->nextEntranceIndex = Entrance_OverrideNextIndex(ENTR_MARKET_DAY_9);
+                    play->nextEntranceIndex = Entrance_OverrideNextIndex(ENTR_MARKET_DAY_OUTSIDE_HAPPY_MASK_SHOP);
                 } else {
-                    play->nextEntranceIndex = ENTR_MARKET_DAY_9;
+                    play->nextEntranceIndex = ENTR_MARKET_DAY_OUTSIDE_HAPPY_MASK_SHOP;
                 }
                 play->transitionTrigger = TRANS_TRIGGER_START;
                 play->transitionType = TRANS_TYPE_CIRCLE(TCA_STARBURST, TCC_WHITE, TCS_FAST);
@@ -986,7 +988,7 @@ void EnOssan_State_FacingShopkeeper(EnOssan* this, PlayState* play, Player* play
     if ((Message_GetState(&play->msgCtx) == TEXT_STATE_CHOICE) &&
         !EnOssan_TestEndInteraction(this, play, &play->state.input[0])) {
         if (Message_ShouldAdvance(play) && EnOssan_FacingShopkeeperDialogResult(this, play)) {
-            func_80078884(NA_SE_SY_DECIDE);
+            Sfx_PlaySfxCentered(NA_SE_SY_DECIDE);
             return;
         }
 
@@ -1005,8 +1007,9 @@ void EnOssan_State_FacingShopkeeper(EnOssan* this, PlayState* play, Player* play
                 this->stateFlag = OSSAN_STATE_LOOK_SHELF_LEFT;
                 Interface_SetDoAction(play, DO_ACTION_DECIDE);
                 this->stickLeftPrompt.isEnabled = false;
-                func_80078884(NA_SE_SY_CURSOR);
-                GameInteractor_ExecuteOnShopSlotChangeHooks(this->cursorIndex, this->shelfSlots[this->cursorIndex]->basePrice);
+                Sfx_PlaySfxCentered(NA_SE_SY_CURSOR);
+                GameInteractor_ExecuteOnShopSlotChangeHooks(this->cursorIndex,
+                                                            this->shelfSlots[this->cursorIndex]->basePrice);
             }
         } else if ((this->stickAccumX > 0) || (dpad && CHECK_BTN_ALL(input->press.button, dRight))) {
             nextIndex = EnOssan_SetCursorIndexFromNeutral(this, 0);
@@ -1015,8 +1018,9 @@ void EnOssan_State_FacingShopkeeper(EnOssan* this, PlayState* play, Player* play
                 this->stateFlag = OSSAN_STATE_LOOK_SHELF_RIGHT;
                 Interface_SetDoAction(play, DO_ACTION_DECIDE);
                 this->stickRightPrompt.isEnabled = false;
-                func_80078884(NA_SE_SY_CURSOR);
-                GameInteractor_ExecuteOnShopSlotChangeHooks(this->cursorIndex, this->shelfSlots[this->cursorIndex]->basePrice);
+                Sfx_PlaySfxCentered(NA_SE_SY_CURSOR);
+                GameInteractor_ExecuteOnShopSlotChangeHooks(this->cursorIndex,
+                                                            this->shelfSlots[this->cursorIndex]->basePrice);
             }
         }
     }
@@ -1174,23 +1178,23 @@ s32 EnOssan_HasPlayerSelectedItem(PlayState* play, EnOssan* this, Input* input) 
                 case SI_ZORA_MASK:
                 case SI_GORON_MASK:
                 case SI_GERUDO_MASK:
-                    func_80078884(NA_SE_SY_DECIDE);
+                    Sfx_PlaySfxCentered(NA_SE_SY_DECIDE);
                     this->drawCursor = 0;
                     this->stateFlag = OSSAN_STATE_SELECT_ITEM_MASK;
                     return true;
                 case SI_MILK_BOTTLE:
-                    func_80078884(NA_SE_SY_DECIDE);
+                    Sfx_PlaySfxCentered(NA_SE_SY_DECIDE);
                     this->drawCursor = 0;
                     this->stateFlag = OSSAN_STATE_SELECT_ITEM_MILK_BOTTLE;
                     return true;
                 case SI_WEIRD_EGG:
-                    func_80078884(NA_SE_SY_DECIDE);
+                    Sfx_PlaySfxCentered(NA_SE_SY_DECIDE);
                     this->drawCursor = 0;
                     this->stateFlag = OSSAN_STATE_SELECT_ITEM_WEIRD_EGG;
                     return true;
                 case SI_19:
                 case SI_20:
-                    func_80078884(NA_SE_SY_ERROR);
+                    Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
                     this->drawCursor = 0;
                     this->stateFlag = OSSAN_STATE_SELECT_ITEM_UNIMPLEMENTED;
                     return true;
@@ -1199,18 +1203,18 @@ s32 EnOssan_HasPlayerSelectedItem(PlayState* play, EnOssan* this, Input* input) 
                 case SI_BOMBS_20:
                 case SI_BOMBS_30:
                 case SI_BOMBS_5_R35:
-                    func_80078884(NA_SE_SY_DECIDE);
+                    Sfx_PlaySfxCentered(NA_SE_SY_DECIDE);
                     this->drawCursor = 0;
                     this->stateFlag = OSSAN_STATE_SELECT_ITEM_BOMBS;
                     return true;
                 default:
-                    func_80078884(NA_SE_SY_DECIDE);
+                    Sfx_PlaySfxCentered(NA_SE_SY_DECIDE);
                     this->drawCursor = 0;
                     this->stateFlag = OSSAN_STATE_SELECT_ITEM;
                     return true;
             }
         }
-        func_80078884(NA_SE_SY_ERROR);
+        Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
         return true;
     }
     return false;
@@ -1263,7 +1267,8 @@ void EnOssan_State_BrowseLeftShelf(EnOssan* this, PlayState* play, Player* playe
                 }
             }
         } else {
-            if ((this->stickAccumX > 0 && this->stickAccumX > 500) || (dpad && CHECK_BTN_ALL(input->press.button, dRight))) {
+            if ((this->stickAccumX > 0 && this->stickAccumX > 500) ||
+                (dpad && CHECK_BTN_ALL(input->press.button, dRight))) {
                 c = EnOssan_CursorRight(this, this->cursorIndex, 4);
                 if (c != CURSOR_INVALID) {
                     this->cursorIndex = c;
@@ -1271,7 +1276,8 @@ void EnOssan_State_BrowseLeftShelf(EnOssan* this, PlayState* play, Player* playe
                     EnOssan_SetLookToShopkeeperFromShelf(play, this);
                     return;
                 }
-            } else if ((this->stickAccumX < 0 && this->stickAccumX < -500) || (dpad && CHECK_BTN_ALL(input->press.button, dLeft))) {
+            } else if ((this->stickAccumX < 0 && this->stickAccumX < -500) ||
+                       (dpad && CHECK_BTN_ALL(input->press.button, dLeft))) {
                 d = EnOssan_CursorLeft(this, this->cursorIndex, 8);
                 if (d != CURSOR_INVALID) {
                     this->cursorIndex = d;
@@ -1280,9 +1286,10 @@ void EnOssan_State_BrowseLeftShelf(EnOssan* this, PlayState* play, Player* playe
         }
         EnOssan_CursorUpDown(this, play);
         if (this->cursorIndex != prevIndex) {
-            GameInteractor_ExecuteOnShopSlotChangeHooks(this->cursorIndex, this->shelfSlots[this->cursorIndex]->basePrice);
+            GameInteractor_ExecuteOnShopSlotChangeHooks(this->cursorIndex,
+                                                        this->shelfSlots[this->cursorIndex]->basePrice);
             Message_ContinueTextbox(play, this->shelfSlots[this->cursorIndex]->actor.textId);
-            func_80078884(NA_SE_SY_CURSOR);
+            Sfx_PlaySfxCentered(NA_SE_SY_CURSOR);
         }
     }
 }
@@ -1333,7 +1340,8 @@ void EnOssan_State_BrowseRightShelf(EnOssan* this, PlayState* play, Player* play
                 }
             }
         } else {
-            if ((this->stickAccumX < 0 && this->stickAccumX < -500) || (dpad && CHECK_BTN_ALL(input->press.button, dLeft))) {
+            if ((this->stickAccumX < 0 && this->stickAccumX < -500) ||
+                (dpad && CHECK_BTN_ALL(input->press.button, dLeft))) {
                 nextIndex = EnOssan_CursorRight(this, this->cursorIndex, 0);
                 if (nextIndex != CURSOR_INVALID) {
                     this->cursorIndex = nextIndex;
@@ -1341,7 +1349,8 @@ void EnOssan_State_BrowseRightShelf(EnOssan* this, PlayState* play, Player* play
                     EnOssan_SetLookToShopkeeperFromShelf(play, this);
                     return;
                 }
-            } else if ((this->stickAccumX > 0 && this->stickAccumX > 500) || (dpad && CHECK_BTN_ALL(input->press.button, dRight))) {
+            } else if ((this->stickAccumX > 0 && this->stickAccumX > 500) ||
+                       (dpad && CHECK_BTN_ALL(input->press.button, dRight))) {
                 nextIndex = EnOssan_CursorLeft(this, this->cursorIndex, 4);
                 if (nextIndex != CURSOR_INVALID) {
                     this->cursorIndex = nextIndex;
@@ -1350,9 +1359,10 @@ void EnOssan_State_BrowseRightShelf(EnOssan* this, PlayState* play, Player* play
         }
         EnOssan_CursorUpDown(this, play);
         if (this->cursorIndex != prevIndex) {
-            GameInteractor_ExecuteOnShopSlotChangeHooks(this->cursorIndex, this->shelfSlots[this->cursorIndex]->basePrice);
+            GameInteractor_ExecuteOnShopSlotChangeHooks(this->cursorIndex,
+                                                        this->shelfSlots[this->cursorIndex]->basePrice);
             Message_ContinueTextbox(play, this->shelfSlots[this->cursorIndex]->actor.textId);
-            func_80078884(NA_SE_SY_CURSOR);
+            Sfx_PlaySfxCentered(NA_SE_SY_CURSOR);
         }
     }
 }
@@ -1392,7 +1402,7 @@ void EnOssan_GiveItemWithFanfare(PlayState* play, EnOssan* this) {
     play->msgCtx.msgMode = MSGMODE_TEXT_CLOSING;
     play->msgCtx.stateTimer = 4;
     player->stateFlags2 &= ~PLAYER_STATE2_DISABLE_DRAW;
-    func_800BC490(play, 1);
+    Play_SetViewpoint(play, 1);
     Interface_ChangeAlpha(50);
     this->drawCursor = 0;
     EnOssan_UpdateCameraDirection(this, play, 0.0f);
@@ -1415,7 +1425,8 @@ void EnOssan_HandleCanBuyItem(PlayState* play, EnOssan* this) {
 
     switch (selectedItem->canBuyFunc(play, selectedItem)) {
         case CANBUY_RESULT_SUCCESS_FANFARE:
-            if (selectedItem->actor.params == SI_HYLIAN_SHIELD && Flags_GetInfTable(INFTABLE_SHOWED_ZELDAS_LETTER_TO_GATE_GUARD)) {
+            if (selectedItem->actor.params == SI_HYLIAN_SHIELD &&
+                Flags_GetInfTable(INFTABLE_SHOWED_ZELDAS_LETTER_TO_GATE_GUARD)) {
                 EnOssan_SetStateGiveDiscountDialog(play, this);
             } else {
                 EnOssan_GiveItemWithFanfare(play, this);
@@ -1432,19 +1443,19 @@ void EnOssan_HandleCanBuyItem(PlayState* play, EnOssan* this) {
             selectedItem->setOutOfStockFunc(play, selectedItem);
             break;
         case CANBUY_RESULT_CANT_GET_NOW:
-            func_80078884(NA_SE_SY_ERROR);
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
             EnOssan_SetStateCantGetItem(play, this, 0x86);
             break;
         case CANBUY_RESULT_NEED_BOTTLE:
-            func_80078884(NA_SE_SY_ERROR);
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
             EnOssan_SetStateCantGetItem(play, this, 0x96);
             break;
         case CANBUY_RESULT_NEED_RUPEES:
-            func_80078884(NA_SE_SY_ERROR);
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
             EnOssan_SetStateCantGetItem(play, this, 0x85);
             break;
         case CANBUY_RESULT_CANT_GET_NOW_5:
-            func_80078884(NA_SE_SY_ERROR);
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
             EnOssan_SetStateCantGetItem(play, this, 0x86);
             break;
     }
@@ -1493,11 +1504,11 @@ void EnOssan_HandleCanBuyWeirdEgg(PlayState* play, EnOssan* this) {
             item->setOutOfStockFunc(play, item);
             break;
         case CANBUY_RESULT_CANT_GET_NOW:
-            func_80078884(NA_SE_SY_ERROR);
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
             EnOssan_SetStateCantGetItem(play, this, 0x9D);
             break;
         case CANBUY_RESULT_NEED_RUPEES:
-            func_80078884(NA_SE_SY_ERROR);
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
             EnOssan_SetStateCantGetItem(play, this, 0x85);
             break;
     }
@@ -1516,11 +1527,11 @@ void EnOssan_HandleCanBuyBombs(PlayState* play, EnOssan* this) {
             item->setOutOfStockFunc(play, item);
             break;
         case CANBUY_RESULT_CANT_GET_NOW:
-            func_80078884(NA_SE_SY_ERROR);
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
             EnOssan_SetStateCantGetItem(play, this, 0x86);
             break;
         case CANBUY_RESULT_NEED_RUPEES:
-            func_80078884(NA_SE_SY_ERROR);
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
             EnOssan_SetStateCantGetItem(play, this, 0x85);
             break;
     }
@@ -1659,8 +1670,7 @@ void EnOssan_State_SelectMaskItem(EnOssan* this, PlayState* play, Player* player
             this->stateFlag = this->tempStateFlag;
             Message_ContinueTextbox(play, this->shelfSlots[this->cursorIndex]->actor.textId);
         }
-    } else if (talkState == TEXT_STATE_CHOICE &&
-               !EnOssan_TestCancelOption(this, play, &play->state.input[0]) &&
+    } else if (talkState == TEXT_STATE_CHOICE && !EnOssan_TestCancelOption(this, play, &play->state.input[0]) &&
                Message_ShouldAdvance(play)) {
         switch (play->msgCtx.choiceIndex) {
             case 0:
@@ -1770,7 +1780,7 @@ void EnOssan_State_ContinueShoppingPrompt(EnOssan* this, PlayState* play, Player
                         osSyncPrintf(VT_FGCOL(YELLOW) "★★★ 続けるよ！！ ★★★" VT_RST "\n");
                         player->actor.shape.rot.y += 0x8000;
                         player->stateFlags2 |= PLAYER_STATE2_DISABLE_DRAW;
-                        func_800BC490(play, 2);
+                        Play_SetViewpoint(play, 2);
                         Message_StartTextbox(play, this->actor.textId, &this->actor);
                         EnOssan_SetStateStartShopping(play, this, true);
                         func_8002F298(&this->actor, play, 100.0f, -1);
@@ -1789,7 +1799,7 @@ void EnOssan_State_ContinueShoppingPrompt(EnOssan* this, PlayState* play, Player
         selectedItem->updateStockedItemFunc(play, selectedItem);
         player->actor.shape.rot.y += 0x8000;
         player->stateFlags2 |= PLAYER_STATE2_DISABLE_DRAW;
-        func_800BC490(play, 2);
+        Play_SetViewpoint(play, 2);
         Message_StartTextbox(play, this->actor.textId, &this->actor);
         EnOssan_SetStateStartShopping(play, this, true);
         func_8002F298(&this->actor, play, 100.0f, -1);
@@ -2181,7 +2191,7 @@ void EnOssan_InitActionFunc(EnOssan* this, PlayState* play) {
     ShopItem* items;
 
     if (EnOssan_AreShopkeeperObjectsLoaded(this, play)) {
-        this->actor.flags &= ~ACTOR_FLAG_UPDATE_WHILE_CULLED;
+        this->actor.flags &= ~ACTOR_FLAG_UPDATE_CULLING_DISABLED;
         this->actor.objBankIndex = this->objBankIndex1;
         Actor_SetObjectDependency(play, &this->actor);
 
@@ -2266,7 +2276,7 @@ void EnOssan_InitActionFunc(EnOssan* this, PlayState* play) {
         this->blinkTimer = 20;
         this->eyeTextureIdx = 0;
         this->blinkFunc = EnOssan_WaitForBlink;
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         EnOssan_SetupAction(this, EnOssan_MainActionFunc);
     }
 }
@@ -2289,7 +2299,7 @@ void EnOssan_MainActionFunc(EnOssan* this, PlayState* play) {
         sStateFunc[this->stateFlag](this, play, player);
     }
 
-    Actor_MoveForward(&this->actor);
+    Actor_MoveXZGravity(&this->actor);
     Actor_UpdateBgCheckInfo(play, &this->actor, 26.0f, 10.0f, 0.0f, 5);
     Actor_SetFocus(&this->actor, 90.0f);
     Actor_SetScale(&this->actor, sShopkeeperScale[this->actor.params]);
@@ -2309,8 +2319,8 @@ void EnOssan_Update(Actor* thisx, PlayState* play) {
     this->actionFunc(this, play);
 }
 
-s32 EnOssan_OverrideLimbDrawDefaultShopkeeper(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos,
-                                              Vec3s* rot, void* thisx) {
+s32 EnOssan_OverrideLimbDrawDefaultShopkeeper(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot,
+                                              void* thisx) {
     EnOssan* this = (EnOssan*)thisx;
 
     if (limbIndex == 8) {
@@ -2342,8 +2352,8 @@ void EnOssan_DrawCursor(PlayState* play, EnOssan* this, f32 x, f32 y, f32 z, u8 
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
-void EnOssan_DrawTextRec(PlayState* play, s32 r, s32 g, s32 b, s32 a, f32 x, f32 y, f32 z, s32 s, s32 t,
-                         f32 dx, f32 dy) {
+void EnOssan_DrawTextRec(PlayState* play, s32 r, s32 g, s32 b, s32 a, f32 x, f32 y, f32 z, s32 s, s32 t, f32 dx,
+                         f32 dy) {
     f32 unk;
     s32 ulx, uly, lrx, lry;
     f32 w, h;
@@ -2431,8 +2441,8 @@ void EnOssan_DrawBazaarShopkeeper(Actor* thisx, PlayState* play) {
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
-s32 EnOssan_OverrideLimbDrawKokiriShopkeeper(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos,
-                                             Vec3s* rot, void* thisx) {
+s32 EnOssan_OverrideLimbDrawKokiriShopkeeper(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot,
+                                             void* thisx) {
     static void* sKokiriShopkeeperEyeTextures[] = {
         gKokiriShopkeeperEyeDefaultTex,
         gKokiriShopkeeperEyeHalfTex,
@@ -2489,7 +2499,7 @@ void EnOssan_DrawKokiriShopkeeper(Actor* thisx, PlayState* play) {
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
-s32 EnGo2_OverrideLimbDrawGoronShopkeeper (PlayState* play, s32 limb, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx) {
+s32 EnGo2_OverrideLimbDrawGoronShopkeeper(PlayState* play, s32 limb, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx) {
     EnOssan* this = (EnOssan*)thisx;
 
     if (limb == 17) {

@@ -7,6 +7,13 @@
 #include "soh/OTRGlobals.h"
 #include "soh/Enhancements/audio/AudioCollection.h"
 #include "soh/Enhancements/audio/AudioEditor.h"
+#include "soh/ResourceManagerHelpers.h"
+#include <stdio.h>
+
+// Windows deprecated the use of `strdup` it uses _strdup. Linux/Unix doesn't have _strdup.
+#ifdef _MSC_VER
+#define strdup _strdup
+#endif
 
 #define MK_ASYNC_MSG(retData, tableType, id, status) (((retData) << 24) | ((tableType) << 16) | ((id) << 8) | (status))
 #define ASYNC_TBLTYPE(v) ((u8)(v >> 16))
@@ -80,9 +87,10 @@ s32 gAudioContextInitalized = false;
 
 char** sequenceMap;
 size_t sequenceMapSize;
+size_t fontMapSize;
 // A map of authentic sequence IDs to their cache policies, for use with sequence swapping.
 u8 seqCachePolicyMap[MAX_AUTHENTIC_SEQID];
-char* fontMap[256];
+char** fontMap;
 
 uintptr_t fontStart;
 uint32_t fontOffsets[8192];
@@ -706,7 +714,7 @@ SoundFontData* AudioLoad_SyncLoadFont(u32 fontId) {
         return NULL;
     }
 
-    SoundFont* sf = ResourceMgr_LoadAudioSoundFont(fontMap[fontId]);
+    SoundFont* sf = ResourceMgr_LoadAudioSoundFontByName(fontMap[fontId]);
 
     sampleBankId1 = sf->sampleBankId1;
     sampleBankId2 = sf->sampleBankId2;
@@ -767,7 +775,7 @@ uintptr_t AudioLoad_SyncLoad(u32 tableType, u32 id, s32* didAllocate) {
         }
         else if (tableType == FONT_TABLE)
         {
-            fnt = ResourceMgr_LoadAudioSoundFont(fontMap[id]);
+            fnt = ResourceMgr_LoadAudioSoundFontByName(fontMap[id]);
             size = sizeof(SoundFont);
             medium = 2;
             cachePolicy = 0;
@@ -910,7 +918,7 @@ void AudioLoad_RelocateFont(s32 fontId, SoundFontData* mem, RelocInfo* relocInfo
     s32 numInstruments = 0;
     s32 numSfx = 0;
 
-    sf = ResourceMgr_LoadAudioSoundFont(fontMap[fontId]);
+    sf = ResourceMgr_LoadAudioSoundFontByName(fontMap[fontId]);
     numDrums = sf->numDrums;
     numInstruments = sf->numInstruments;
     numSfx = sf->numSfx;
@@ -1353,18 +1361,38 @@ void AudioLoad_Init(void* heap, size_t heapSize) {
     sequenceMap = malloc(sequenceMapSize * sizeof(char*));
     gAudioContext.seqLoadStatus = malloc(sequenceMapSize * sizeof(char*));
 
-    for (size_t i = 0; i < seqListSize; i++)
-    {
+    for (size_t i = 0; i < seqListSize; i++) {
         SequenceData sDat = ResourceMgr_LoadSeqByName(seqList[i]);
-
-        char* str = malloc(strlen(seqList[i]) + 1);
-        strcpy(str, seqList[i]);
-
-        sequenceMap[sDat.seqNumber] = str;
+        sequenceMap[sDat.seqNumber] = strdup(seqList[i]);
         seqCachePolicyMap[sDat.seqNumber] = sDat.cachePolicy;
     }
 
     free(seqList);
+
+    // SOH [Port] [Streamed Audio] We need to load the custom songs after the fonts because streamed songs will use a hash to
+    // find its soundfont
+    int fntListSize = 0;
+    int customFntListSize = 0;
+    char** fntList = ResourceMgr_ListFiles("audio/fonts*", &fntListSize);
+    char** customFntList = ResourceMgr_ListFiles("custom/fonts/*", &customFntListSize);
+
+    gAudioContext.fontLoadStatus = malloc(customFntListSize + fntListSize);
+    fontMapSize = customFntListSize + fntListSize;
+    fontMap = calloc(customFntListSize + fntListSize, sizeof(char*));
+    for (int i = 0; i < fntListSize; i++) {
+        SoundFont* sf = ResourceMgr_LoadAudioSoundFontByName(fntList[i]);
+        fontMap[sf->fntIndex] = strdup(fntList[i]);
+    }
+
+    free(fntList);
+
+    int customFontStart = fntListSize;
+    for (int i = customFontStart; i < customFntListSize + fntListSize; i++) {
+        SoundFont* sf = ResourceMgr_LoadAudioSoundFontByName(customFntList[i - customFontStart]);
+        sf->fntIndex = i;
+        fontMap[i] = strdup(customFntList[i - customFontStart]);
+    }
+    free(customFntList);
 
     int startingSeqNum = MAX_AUTHENTIC_SEQID; // 109 is the highest vanilla sequence
     qsort(customSeqList, customSeqListSize, sizeof(char*), strcmp_sort);
@@ -1377,40 +1405,49 @@ void AudioLoad_Init(void* heap, size_t heapSize) {
 
     for (size_t i = startingSeqNum; i < startingSeqNum + customSeqListSize; i++) {
         // ensure that what would be the next sequence number is actually unassigned in AudioCollection
+        int j = i - startingSeqNum;
+        SequenceData* sDat = ResourceMgr_LoadSeqPtrByName(customSeqList[j]);
+
+        if (sDat->numFonts == -1) {
+            uint64_t crc;
+
+            memcpy(&crc, sDat->fonts, sizeof(uint64_t));
+            const char* res = ResourceGetNameByCrc(crc);
+            if (res == NULL) {
+                // Passing a null buffer and length of 0 to snprintf will return the required numbers of characters the
+                // buffer needs to be.
+                int len =
+                    snprintf(NULL, 0, "Could not find sound font for sequence %s. It will not be in the audio editor.",
+                             customSeqList[j]);
+                char* error = malloc(len + 1);
+                snprintf(error, len, "Could not find sound font for sequence %s. It will not be in the audio editor.",
+                         customSeqList[j]);
+                LUSLOG_ERROR("%s", error);
+                Messagebox_ShowErrorBox("Invalid Sequence", error);
+                free(error);
+                continue;
+            }
+            SoundFont* sf = ResourceMgr_LoadAudioSoundFontByName(res);
+            memset(&sDat->fonts[0], 0, sizeof(sDat->fonts));
+            sDat->fonts[0] = sf->fntIndex;
+            sDat->numFonts = 1;
+        }
+
         while (AudioCollection_HasSequenceNum(seqNum)) {
             seqNum++;
         }
-        int j = i - startingSeqNum;
+
         AudioCollection_AddToCollection(customSeqList[j], seqNum);
-        SequenceData sDat = ResourceMgr_LoadSeqByName(customSeqList[j]);
-        sDat.seqNumber = seqNum;
 
-        char* str = malloc(strlen(customSeqList[j]) + 1);
-        strcpy(str, customSeqList[j]);
-
-        sequenceMap[sDat.seqNumber] = str;
+        sDat->seqNumber = seqNum;
+        sequenceMap[sDat->seqNumber] = strdup(customSeqList[j]);
         seqNum++;
     }
 
     free(customSeqList);
 
-    int fntListSize = 0;
-    char** fntList = ResourceMgr_ListFiles("audio/fonts*", &fntListSize);
-
-    for (int i = 0; i < fntListSize; i++)
-    {
-        SoundFont* sf = ResourceMgr_LoadAudioSoundFont(fntList[i]);
-
-        char* str = malloc(strlen(fntList[i]) + 1);
-        strcpy(str, fntList[i]);
-
-        fontMap[sf->fntIndex] = str;
-    }
-
-        numFonts = fntListSize;
-
-        free(fntList);
-        gAudioContext.soundFonts = AudioHeap_Alloc(&gAudioContext.audioInitPool, numFonts * sizeof(SoundFont));
+    numFonts = fntListSize;
+    gAudioContext.soundFonts = AudioHeap_Alloc(&gAudioContext.audioInitPool, numFonts * sizeof(SoundFont));
 
 
     if (temp_v0_3 = AudioHeap_Alloc(&gAudioContext.audioInitPool, D_8014A6C4.permanentPoolSize), temp_v0_3 == NULL) {
@@ -2079,7 +2116,7 @@ void AudioLoad_PreloadSamplesForFont(s32 fontId, s32 async, RelocInfo* relocInfo
 
     gAudioContext.numUsedSamples = 0;
 
-    SoundFont* sf = ResourceMgr_LoadAudioSoundFont(fontMap[fontId]);
+    SoundFont* sf = ResourceMgr_LoadAudioSoundFontByName(fontMap[fontId]);
 
     numDrums = sf->numDrums;
     numInstruments = sf->numInstruments;
@@ -2209,7 +2246,7 @@ void AudioLoad_LoadPermanentSamples(void) {
             fontId = AudioLoad_GetRealTableIndex(FONT_TABLE, gAudioContext.permanentCache[i].id);
             //fontId = gAudioContext.permanentCache[i].id;
 
-            SoundFont* sf = ResourceMgr_LoadAudioSoundFont(fontMap[fontId]);
+            SoundFont* sf = ResourceMgr_LoadAudioSoundFontByName(fontMap[fontId]);
             relocInfo.sampleBankId1 = sf->sampleBankId1;
             relocInfo.sampleBankId2 = sf->sampleBankId2;
 

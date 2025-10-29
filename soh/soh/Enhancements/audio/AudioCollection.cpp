@@ -1,6 +1,7 @@
 #include "AudioCollection.h"
 #include "sequence.h"
 #include "sfx.h"
+#include "soh/cvar_prefixes.h"
 #include <vector>
 #include <utils/StringHelper.h>
 #include <libultraship/bridge.h>
@@ -13,6 +14,7 @@
     { sequenceId, { sequenceId, label, sfxKey, category, canBeReplaced, canBeUsedAsReplacement } }
 
 AudioCollection::AudioCollection() {
+    // clang-format off
     //                    (originalSequenceId,                  label,                                      sfxKey,                           category,    canBeReplaced, canBeUsedAsReplacement),
     sequenceMap = {
 
@@ -113,7 +115,7 @@ AudioCollection::AudioCollection() {
         SEQUENCE_MAP_ENTRY(NA_BGM_STAFF_2,                      "End Credits II",                           "NA_BGM_STAFF_2",                 SEQ_BGM_EVENT,    false,    false), // Previously SEQ_UNUSED, so not shown anywhere?
         SEQUENCE_MAP_ENTRY(NA_BGM_STAFF_3,                      "End Credits III",                          "NA_BGM_STAFF_3",                 SEQ_BGM_EVENT,    false,    false), // Previously SEQ_UNUSED, so not shown anywhere?
         SEQUENCE_MAP_ENTRY(NA_BGM_STAFF_4,                      "End Credits IV",                           "NA_BGM_STAFF_4",                 SEQ_BGM_EVENT,    false,    false), // Previously SEQ_UNUSED, so not shown anywhere?
-        
+
         // SEQ_INSTRUMENT
         SEQUENCE_MAP_ENTRY(INSTRUMENT_OFFSET + 1,               "Ocarina",                                  "OCARINA_INSTRUMENT_DEFAULT",     SEQ_INSTRUMENT,   true,     true),
         SEQUENCE_MAP_ENTRY(INSTRUMENT_OFFSET + 2,               "Malon",                                    "OCARINA_INSTRUMENT_MALON",       SEQ_INSTRUMENT,   true,     true),
@@ -298,7 +300,7 @@ AudioCollection::AudioCollection() {
         //SEQUENCE_MAP_ENTRY("Adult Link - Unused Sound 1?","NA_SE_VO_LI_ELECTRIC_SHOCK_LV",    "NA_SE_VO_LI_ELECTRIC_SHOCK_LV",        SEQ_VOICE, true, false),
         //SEQUENCE_MAP_ENTRY(NA_SE_VO_LI_GROAN_KID, "Child Link - Groan (Unused)",              "NA_SE_VO_LI_GROAN_KID",                SEQ_VOICE, true, false),
         //SEQUENCE_MAP_ENTRY(NA_SE_VO_LI_ELECTRIC_SHOCK_LV_KID, "Child Link - Unused Sound 1?", "NA_SE_VO_LI_ELECTRIC_SHOCK_LV_KID",    SEQ_VOICE, true, false),
-        
+
         // Following group of Dummies are all duplicate entries for Navi saying Look/Hey/Watchout
         //SEQUENCE_MAP_ENTRY(NA_SE_VO_DUMMY_0x45,          "NA_SE_VO_DUMMY_0x45",                 "NA_SE_VO_DUMMY_0x45",            SEQ_VOICE, true, false),
         //SEQUENCE_MAP_ENTRY(NA_SE_VO_DUMMY_0x46,          "NA_SE_VO_DUMMY_0x46",                 "NA_SE_VO_DUMMY_0x46",            SEQ_VOICE, true, false),
@@ -327,7 +329,7 @@ AudioCollection::AudioCollection() {
         //SEQUENCE_MAP_ENTRY(NA_SE_VO_DUMMY_0x88_YOBI,     "NA_SE_VO_DUMMY_0x88_YOBI",            "NA_SE_VO_DUMMY_0x88_YOBI",       SEQ_VOICE, true, false), // ..
         //SEQUENCE_MAP_ENTRY(NA_SE_VO_DUMMY_0x89_YOBI,     "NA_SE_VO_DUMMY_0x89_YOBI",            "NA_SE_VO_DUMMY_0x89_YOBI",       SEQ_VOICE, true, false), // ..
     };
-
+    // clang-format on
 }
 
 std::string AudioCollection::GetCvarKey(std::string sfxKey) {
@@ -342,21 +344,26 @@ std::string AudioCollection::GetCvarLockKey(std::string sfxKey) {
 
 void AudioCollection::AddToCollection(char* otrPath, uint16_t seqNum) {
     std::string fileName = std::filesystem::path(otrPath).filename().string();
-    std::vector<std::string> splitFileName = StringHelper::Split(fileName, "_");
-    std::string sequenceName = splitFileName[0];
+    size_t underscorePos = fileName.find_last_of('_') + 1;
     SeqType type = SEQ_BGM_CUSTOM;
-    std::string typeString = splitFileName[splitFileName.size() - 1];
-    std::locale loc;
-    for (size_t i = 0; i < typeString.length(); i++) {
-        typeString[i] = std::tolower(typeString[i], loc);
+    if (underscorePos != std::string::npos) {
+        std::string typeString = fileName.substr(underscorePos);
+        std::locale loc;
+        for (size_t i = 0; i < typeString.length(); i++) {
+            typeString[i] = std::tolower(typeString[i], loc);
+        }
+        if (typeString == "fanfare") {
+            type = SEQ_FANFARE;
+        }
     }
-    if (typeString == "fanfare") {
-        type = SEQ_FANFARE;
-    }
-    SequenceInfo info = {seqNum,
-                         sequenceName,
-                         StringHelper::Replace(StringHelper::Replace(StringHelper::Replace(sequenceName, " ", "_"), "~", "-"),".", ""),
-                         type, false, true};
+    std::string sequenceName = fileName.substr(0, underscorePos - 1);
+    SequenceInfo info = { seqNum,
+                          sequenceName,
+                          StringHelper::Replace(
+                              StringHelper::Replace(StringHelper::Replace(sequenceName, " ", "_"), "~", "-"), ".", ""),
+                          type,
+                          false,
+                          true };
     sequenceMap.emplace(seqNum, info);
 }
 
@@ -388,7 +395,7 @@ void AudioCollection::RemoveFromShufflePool(SequenceInfo* seqInfo) {
     excludedSequences.insert(seqInfo);
     includedSequences.erase(seqInfo);
     CVarSetInteger(cvarKey.c_str(), 1);
-    Ship::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesOnNextTick();
+    Ship::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
 }
 
 void AudioCollection::AddToShufflePool(SequenceInfo* seqInfo) {
@@ -396,7 +403,7 @@ void AudioCollection::AddToShufflePool(SequenceInfo* seqInfo) {
     includedSequences.insert(seqInfo);
     excludedSequences.erase(seqInfo);
     CVarClear(cvarKey.c_str());
-    Ship::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesOnNextTick();
+    Ship::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
 }
 
 void AudioCollection::InitializeShufflePool() {

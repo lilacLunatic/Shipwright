@@ -1,0 +1,6 @@
+<DisplayList Version="0">
+	<SetGeometryMode  />
+	<ClearGeometryMode G_FOG="1"  />
+	<PipeSync/>
+</DisplayList>
+

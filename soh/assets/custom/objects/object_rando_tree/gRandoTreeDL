@@ -1,0 +1,12 @@
+<DisplayList Version="0">
+	<ClearGeometryMode G_LIGHTING="1" />
+	<LoadVertices Path="objects/object_rando_tree/gRandoTreeDL_vtx_cull" VertexBufferIndex="0" VertexOffset="0" Count="8"/>
+	<SetGeometryMode G_LIGHTING="1" />
+	<CullDisplayList Start="0" End="7"/>
+	<CallDisplayList Path="objects/object_rando_tree/mat_gRandoTreeDL_treeTexMaterial"/>
+	<CallDisplayList Path="objects/object_rando_tree/gRandoTreeDL_tri_0"/>
+	<CallDisplayList Path="objects/object_rando_tree/mat_gRandoTreeDL_triforceTexMaterial"/>
+	<CallDisplayList Path="objects/object_rando_tree/gRandoTreeDL_tri_1"/>
+	<EndDisplayList/>
+</DisplayList>
+

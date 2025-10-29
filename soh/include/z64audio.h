@@ -24,8 +24,9 @@
 
 //#define MAX_SEQUENCES 0x800
 extern size_t sequenceMapSize;
+extern size_t fontMapSize;
 
-extern char* fontMap[256];
+extern char** fontMap;
 
 #define MAX_AUTHENTIC_SEQID 110
 
@@ -117,13 +118,15 @@ typedef struct {
     /* 0x2 */ s16 arg;
 } AdsrEnvelope; // size = 0x4
 
-typedef struct {
-    /* 0x00 */ uintptr_t start;
-    /* 0x04 */ uintptr_t end;
-    /* 0x08 */ u32 count;
-    /* 0x0C */ char unk_0C[0x4];
-    /* 0x10 */ s16 state[16]; // only exists if count != 0. 8-byte aligned
-} AdpcmLoop; // size = 0x30 (or 0x10)
+typedef struct AdpcmLoop {
+    /* 0x00 */ u32 start;
+    /* 0x04 */ u32 loopEnd;   // numSamples position into the sample where the loop ends
+    /* 0x08 */ u32 count;     // The number of times the loop is played before the sound completes. Setting count to -1
+                              // indicates that the loop should play indefinitely.
+    /* 0x0C */ u32 sampleEnd; // total number of s16-samples in the sample audio clip
+    /* 0x10 */ s16 predictorState[16]; // only exists if count != 0. 8-byte aligned
+} AdpcmLoop;                           // size = 0x30 (or 0x10)
+
 
 typedef struct {
     /* 0x00 */ s32 order;
@@ -139,16 +142,15 @@ typedef struct
             /* 0x00 */ u32 medium : 2;
             /* 0x00 */ u32 unk_bit26 : 1;
             /* 0x00 */ u32 unk_bit25 : 1; // this has been named isRelocated in zret
-            /* 0x01 */ u32 size : 24;
         };
         u32 asU32;
     };
+    // SOH [Port][Custom Audio] Custom sample sizes will be too big to fit in the 24 bits given originally.
+    /* 0x01 */ u32 size;
 
     /* 0x04 */ u8* sampleAddr;
     /* 0x08 */ AdpcmLoop* loop;
     /* 0x0C */ AdpcmBook* book;
-    u32 sampleRateMagicValue; // For wav samples only...
-    s32 sampleRate;           // For wav samples only...
 } SoundFontSample; // size = 0x10
 
 typedef struct {
@@ -917,7 +919,7 @@ typedef struct {
     /* 0x3420 */ AudioPoolSplit3 persistentCommonPoolSplit;
     /* 0x342C */ AudioPoolSplit3 temporaryCommonPoolSplit;
     /* 0x3438 */ u8 sampleFontLoadStatus[0x30];
-    /* 0x3468 */ u8 fontLoadStatus[0x30];
+    /* 0x3468 */ u8* fontLoadStatus;
     /* 0x3498 */ u8* seqLoadStatus;
     /* 0x3518 */ volatile u8 resetStatus;
     /* 0x3519 */ u8 audioResetSpecIdToLoad;

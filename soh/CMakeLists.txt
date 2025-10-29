@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.26.0 FATAL_ERROR)
 
 set(CMAKE_SYSTEM_VERSION 10.0 CACHE STRING "" FORCE)
 
 project(soh LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard to use")
+set(CMAKE_C_STANDARD 23 CACHE STRING "The C standard to use")
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     enable_language(OBJCXX)
@@ -28,6 +29,13 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 		message(FATAL_ERROR "${CMAKE_VS_PLATFORM_NAME} arch is not supported!")
 	endif()
 endif()
+
+FetchContent_Declare(
+    dr_libs
+    GIT_REPOSITORY https://github.com/mackron/dr_libs.git
+	GIT_TAG da35f9d6c7374a95353fd1df1d394d44ab66cf01
+)
+FetchContent_MakeAvailable(dr_libs)
 
 ################################################################################
 # Global configuration types
@@ -120,98 +128,60 @@ source_group("include" FILES ${Header_Files__include})
 # }}}
 
 # soh (root)
-file(GLOB soh__ RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "soh/*.c" "soh/*.cpp" "soh/*.h")
-source_group("soh" FILES ${soh__})
+file(GLOB_RECURSE soh__ RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "soh/*.c" "soh/*.cpp" "soh/*.h" "soh/*.hpp")
 
+# Add specific files that don't match the pattern
+list(APPEND soh__ ${CMAKE_CURRENT_SOURCE_DIR}/soh/Enhancements/savestates_extern.inc)
+list(APPEND soh__ ${CMAKE_CURRENT_SOURCE_DIR}/soh/Enhancements/speechsynthesizer/DarwinSpeechSynthesizer.mm)
+
+# Create source groups that match the real file directory paths
+foreach(source IN LISTS soh__)
+    get_filename_component(source_path "${source}" PATH)
+    string(REPLACE "/" "\\" source_path_adjusted "${source_path}")
+    source_group("${source_path_adjusted}" FILES "${source}")
+endforeach()
+
+# Fix UTF-8 issues for MSVC
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set_source_files_properties(soh/OTRGlobals.cpp PROPERTIES COMPILE_FLAGS "/utf-8")
+    set_source_files_properties(soh/Enhancements/tts/tts.cpp PROPERTIES COMPILE_FLAGS "/utf-8")
 endif()
 
-# soh/config {{{
-file(GLOB_RECURSE soh__config RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "soh/config/*.h"
-    "soh/config/*.cpp"
-)
-# }}}
-
-# soh/enhancements {{{
-file(GLOB_RECURSE soh__Enhancements RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "soh/Enhancements/*.c"
-    "soh/Enhancements/*.cpp"
-    "soh/Enhancements/*.h"
-    "soh/Enhancements/*.hpp"
-    "soh/Enhancements/*_extern.inc"
-    "soh/Enhancements/*.mm"
-)
-
-list(REMOVE_ITEM soh__Enhancements "soh/Enhancements/gamecommand.h")
-list(FILTER soh__Enhancements EXCLUDE REGEX "soh/Enhancements/gfx.*")
-
-# handle crowd control removals
-list(REMOVE_ITEM soh__Enhancements "soh/Enhancements/crowd-control/soh.cs")
-list(REMOVE_ITEM soh__Enhancements "soh/Enhancements/crowd-control/soh.ccpak")
+# handle Network removals
 if (!BUILD_REMOTE_CONTROL)
-    list(FILTER soh__Enhancements EXCLUDE REGEX "soh/Enhancements/crowd-control/*")
+    list(FILTER soh__ EXCLUDE REGEX "soh/Enhancements/crowd-control/*")
 endif()
 
 # handle speechsynthesizer removals
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    list(FILTER soh__Enhancements EXCLUDE REGEX "soh/Enhancements/speechsynthesizer/Darwin*")
+    list(FILTER soh__ EXCLUDE REGEX "soh/Enhancements/speechsynthesizer/Darwin*")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    list(FILTER soh__Enhancements EXCLUDE REGEX "soh/Enhancements/speechsynthesizer/SAPI*")
+    list(FILTER soh__ EXCLUDE REGEX "soh/Enhancements/speechsynthesizer/SAPI*")
 else()
-    list(FILTER soh__Enhancements EXCLUDE REGEX "soh/Enhancements/speechsynthesizer/(Darwin|SAPI).*")
+    list(FILTER soh__ EXCLUDE REGEX "soh/Enhancements/speechsynthesizer/(Darwin|SAPI).*")
 endif()
 
-source_group("soh\\Enhancements" REGULAR_EXPRESSION "soh/Enhancements/*")
-source_group("soh\\Enhancements\\audio" REGULAR_EXPRESSION "soh/Enhancements/audio/*")
-source_group("soh\\Enhancements\\controls" REGULAR_EXPRESSION "soh/Enhancements/controls/*")
-source_group("soh\\Enhancements\\cosmetics" REGULAR_EXPRESSION "soh/Enhancements/cosmetics/*")
-source_group("soh\\Enhancements\\crowd-control" REGULAR_EXPRESSION "soh/Enhancements/crowd-control/*")
-source_group("soh\\Enhancements\\custom-message" REGULAR_EXPRESSION "soh/Enhancements/custom-message/*")
-source_group("soh\\Enhancements\\debugger" REGULAR_EXPRESSION "soh/Enhancements/debugger/*")
-source_group("soh\\Enhancements\\game-interactor" REGULAR_EXPRESSION "soh/Enhancements/game-interactor/*")
-source_group("soh\\Enhancements\\item-tables" REGULAR_EXPRESSION "soh/Enhancements/item-tables/*")
-source_group("soh\\Enhancements\\randomizer" REGULAR_EXPRESSION "soh/Enhancements/randomizer/*")
-source_group("soh\\Enhancements\\randomizer\\3drando" REGULAR_EXPRESSION "soh/Enhancements/randomizer/3drando/*")
-source_group("soh\\Enhancements\\randomizer\\3drando\\hint_list" REGULAR_EXPRESSION "soh/Enhancements/randomizer/3drando/hint_list/*")
-source_group("soh\\Enhancements\\randomizer\\3drando\\location_access" REGULAR_EXPRESSION "soh/Enhancements/randomizer/3drando/location_access/*")
-source_group("soh\\Enhancements\\speechsynthesizer" REGULAR_EXPRESSION "soh/Enhancements/speechsynthesizer/*")
-source_group("soh\\Enhancements\\tts" REGULAR_EXPRESSION "soh/Enhancements/tts/*")
-
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set_source_files_properties(soh/Enhancements/tts/tts.cpp PROPERTIES COMPILE_FLAGS "/utf-8")
-endif()
-# }}}
+# soh/Extractor {{{
+list(FILTER ship__ EXCLUDE REGEX "soh/Extractor/*")
 
 if(NOT CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch|CafeOS")
-    # soh/Extractor {{{
     file(GLOB_RECURSE soh__Extractor RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         "soh/Extractor/*.c"
         "soh/Extractor/*.cpp"
         "soh/Extractor/*.h"
         "soh/Extractor/*.hpp"
     )
-    # }}}
 else()
     file(GLOB_RECURSE soh__Extractor RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         "soh/Extractor/*.h"
         "soh/Extractor/*.hpp"
     )
-# }}}
 endif()
-
-# soh/resource {{{
-file(GLOB_RECURSE soh__Resource RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "soh/resource/*.cpp" "soh/resource/*.h")
-
-source_group("soh\\resource\\type" REGULAR_EXPRESSION "soh/resource/type/*")
-source_group("soh\\resource\\type\\scenecommand" REGULAR_EXPRESSION "soh/resource/type/scenecommand/*")
-source_group("soh\\resource\\importer" REGULAR_EXPRESSION "soh/resource/importer/*")
-source_group("soh\\resource\\importer\\scenecommand" REGULAR_EXPRESSION "soh/resource/importer/scenecommand/*")
 # }}}
 
 # src (decomp) {{{
 file(GLOB_RECURSE src__ RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/*.c" "src/*.h")
+set_source_files_properties(${src__} PROPERTIES COMPILE_OPTIONS "${WARNING_OVERRIDE}")
 
 list(APPEND src__ ${CMAKE_CURRENT_SOURCE_DIR}/Resource.rc)
 list(FILTER src__ EXCLUDE REGEX "src/dmadata/*")
@@ -246,10 +216,7 @@ set(ALL_FILES
     ${Header_Files}
     ${Header_Files__include}
     ${soh__}
-    ${soh__config}
-    ${soh__Enhancements}
     ${soh__Extractor}
-    ${soh__Resource}
     ${src__}
 )
 
@@ -391,6 +358,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE assets
     ${SDL2-NET-INCLUDE}
     ${BOOST-INCLUDE}
 	${CMAKE_CURRENT_SOURCE_DIR}/assets/
+    ${dr_libs_SOURCE_DIR}
 	.
 )
 
@@ -481,6 +449,7 @@ if(MSVC)
                 /Gy;
                 /W3
             >
+            /bigobj;
             /sdl-;
             /permissive-;
             /MP;
@@ -551,10 +520,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
             -Wno-parentheses
             -Wno-narrowing
             -Wno-missing-braces
-            -Wno-int-conversion
             $<$<COMPILE_LANGUAGE:C>:
                 -Werror-implicit-function-declaration
                 -Wno-incompatible-pointer-types
+                -Wno-int-conversion
             >
             $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>
             $<$<COMPILE_LANGUAGE:CXX>:
@@ -627,11 +596,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
             -Wno-parentheses
             -Wno-narrowing
             -Wno-missing-braces
-            -Wno-int-conversion
-            -Wno-implicit-int
             $<$<COMPILE_LANGUAGE:C>:
                 -Werror-implicit-function-declaration
+                -Wno-implicit-int
                 -Wno-incompatible-pointer-types
+                -Wno-int-conversion
             >
             $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>
             $<$<COMPILE_LANGUAGE:CXX>:-Wno-deprecated-enum-enum-conversion>
@@ -648,18 +617,22 @@ endif()
 ################################################################################
 # Pre build events
 ################################################################################
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+	set(VS_COPY_ASSETS_CMD ${CMAKE_COMMAND} -E copy_directory_if_different $<TARGET_FILE_DIR:soh>/assets ${CMAKE_BINARY_DIR}/soh/assets)
+endif()
 if(NOT CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch|CafeOS")
     add_custom_command(
 		TARGET ${PROJECT_NAME}
 		POST_BUILD
 		COMMENT "Copying asset xmls..."
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/soh/assets/extractor $<TARGET_FILE_DIR:soh>/assets/extractor
-		COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/soh/assets/xml $<TARGET_FILE_DIR:soh>/assets/extractor/xmls
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/OTRExporter/CFG/filelists $<TARGET_FILE_DIR:soh>/assets/extractor/filelists
+        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${CMAKE_SOURCE_DIR}/soh/assets/extractor $<TARGET_FILE_DIR:soh>/assets/extractor
+		COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${CMAKE_SOURCE_DIR}/soh/assets/xml $<TARGET_FILE_DIR:soh>/assets/extractor/xmls
+        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${CMAKE_SOURCE_DIR}/OTRExporter/CFG/filelists $<TARGET_FILE_DIR:soh>/assets/extractor/filelists
         COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:soh>/assets/extractor/symbols
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/OTRExporter/CFG/ActorList_OoTMqDbg.txt $<TARGET_FILE_DIR:soh>/assets/extractor/symbols
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/OTRExporter/CFG/ObjectList_OoTMqDbg.txt $<TARGET_FILE_DIR:soh>/assets/extractor/symbols
-	    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/OTRExporter/CFG/SymbolMap_OoTMqDbg.txt $<TARGET_FILE_DIR:soh>/assets/extractor/symbols
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/OTRExporter/CFG/ActorList_OoTMqDbg.txt $<TARGET_FILE_DIR:soh>/assets/extractor/symbols
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/OTRExporter/CFG/ObjectList_OoTMqDbg.txt $<TARGET_FILE_DIR:soh>/assets/extractor/symbols
+	    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/OTRExporter/CFG/SymbolMap_OoTMqDbg.txt $<TARGET_FILE_DIR:soh>/assets/extractor/symbols
+		COMMAND ${VS_COPY_ASSETS_CMD}
     )
 endif()
 ################################################################################
@@ -676,34 +649,28 @@ endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     find_package(glfw3 REQUIRED)
-	if("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64")
-		set(ADDITIONAL_LIBRARY_DEPENDENCIES
-			"libultraship;"
-			"ZAPDLib;"
-			"glu32;"
-			"SDL2::SDL2;"
-			"SDL2::SDL2main;"
-            "$<$<BOOL:${BUILD_REMOTE_CONTROL}>:SDL2_net::SDL2_net-static>"
-			"glfw;"
-			"winmm;"
-			"imm32;"
-			"version;"
-			"setupapi"
-		)
-	elseif("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
-		set(ADDITIONAL_LIBRARY_DEPENDENCIES
-			"libultraship;"
-			"ZAPDLib;"
-			"glu32;"
-			"SDL2::SDL2;"
-			"SDL2::SDL2main;"
-			"glfw;"
-			"winmm;"
-			"imm32;"
-			"version;"
-			"setupapi"
-		)
-	endif()
+    find_package(Ogg CONFIG REQUIRED)
+    link_libraries(Ogg::ogg)
+
+    find_package(Vorbis CONFIG REQUIRED)
+    link_libraries(Vorbis::vorbisfile)
+    set(ADDITIONAL_LIBRARY_DEPENDENCIES
+		"libultraship;"
+		"ZAPDLib;"
+		"glu32;"
+		"SDL2::SDL2;"
+		"SDL2::SDL2main;"
+        "$<$<BOOL:${BUILD_REMOTE_CONTROL}>:SDL2_net::SDL2_net-static>"
+		"glfw;"
+		"winmm;"
+		"imm32;"
+		"version;"
+		"setupapi"
+        "Ogg::ogg"
+        "Vorbis::vorbis"
+        "Vorbis::vorbisenc"
+        "Vorbis::vorbisfile"
+	)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "NintendoSwitch")
     find_package(SDL2)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -729,9 +696,15 @@ else()
     find_package(SDL2)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
+    find_package(Ogg REQUIRED)
+    find_package(Vorbis REQUIRED)
  	set(ADDITIONAL_LIBRARY_DEPENDENCIES
         "libultraship;"
 		"ZAPDLib;"
+        "Ogg::ogg"
+        "Vorbis::vorbis"
+        "Vorbis::vorbisenc"
+        "Vorbis::vorbisfile"
 		SDL2::SDL2
         "$<$<BOOL:${BUILD_REMOTE_CONTROL}>:SDL2_net::SDL2_net>"
 		${CMAKE_DL_LIBS}
@@ -739,7 +712,7 @@ else()
 	)
 endif()
 
-if(NOT CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch|CafeOS")
+if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin|NintendoSwitch|CafeOS")
 INSTALL(TARGETS soh DESTINATION . COMPONENT ship)
 endif()
 
@@ -757,7 +730,7 @@ execute_process(COMMAND ${CURL} -sSfL https://raw.githubusercontent.com/gabomdq/
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/macosx/Info.plist.in ${CMAKE_BINARY_DIR}/macosx/Info.plist @ONLY)
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/macosx/soh-macos.sh.in ${CMAKE_BINARY_DIR}/macosx/soh-macos.sh @ONLY)
+INSTALL(TARGETS soh DESTINATION ../MacOS COMPONENT ship)
 INSTALL(FILES ${CMAKE_BINARY_DIR}/gamecontrollerdb.txt DESTINATION ../MacOS COMPONENT ship)
 INSTALL(FILES ${CMAKE_BINARY_DIR}/soh/soh.otr DESTINATION ../Resources COMPONENT ship)
 elseif(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "NintendoSwitch|CafeOS")

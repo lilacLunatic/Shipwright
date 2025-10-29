@@ -5,7 +5,7 @@
 #include "vt.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
-#define FLAGS ACTOR_FLAG_UPDATE_WHILE_CULLED
+#define FLAGS ACTOR_FLAG_UPDATE_CULLING_DISABLED
 
 typedef void (*DemoDuActionFunc)(DemoDu*, PlayState*);
 typedef void (*DemoDuDrawFunc)(Actor*, PlayState*);
@@ -16,7 +16,7 @@ void DemoDu_Update(Actor* thisx, PlayState* play);
 void DemoDu_Draw(Actor* thisx, PlayState* play);
 void DemoDu_Reset(void);
 
-//static s32 sUnused = 0;
+// static s32 sUnused = 0;
 
 #include "z_demo_du_cutscene_data.c" EARLY
 
@@ -172,8 +172,7 @@ void DemoDu_CsFireMedallion_SpawnDoorWarp(DemoDu* this, PlayState* play) {
     f32 posY = this->actor.world.pos.y;
     f32 posZ = this->actor.world.pos.z;
 
-    Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_DOOR_WARP1, posX, posY, posZ, 0, 0, 0,
-                       WARP_SAGES);
+    Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_DOOR_WARP1, posX, posY, posZ, 0, 0, 0, WARP_SAGES);
 }
 
 // Gives the Fire Medallion to Link.
@@ -309,14 +308,14 @@ void DemoDu_InitCs_GoronsRuby(DemoDu* this, PlayState* play) {
 // Cutscene: Darunia gives Link the Goron's Ruby.
 // Sfx played when Darunia lands at the floor at the start of the cutscene.
 void DemoDu_CsPlaySfx_GoronLanding(DemoDu* this) {
-    func_80078914(&this->actor.projectedPos, NA_SE_EN_GOLON_LAND_BIG);
+    Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_EN_GOLON_LAND_BIG);
 }
 
 // Cutscene: Darunia gives Link the Goron's Ruby.
 // Sfx played when Darunia is falling at the start of the cutscene.
 void DemoDu_CsPlaySfx_DaruniaFalling(PlayState* play) {
     if (play->csCtx.frames == 160) {
-        func_800788CC(NA_SE_EV_OBJECT_FALL);
+        Sfx_PlaySfxCentered2(NA_SE_EV_OBJECT_FALL);
     }
 }
 
@@ -325,14 +324,14 @@ void DemoDu_CsPlaySfx_DaruniaHitsLink(PlayState* play) {
     Player* player = GET_PLAYER(play);
     s32 pad;
 
-    func_80078914(&player->actor.projectedPos, NA_SE_EN_DARUNIA_HIT_LINK);
-    Audio_PlaySoundGeneral(NA_SE_VO_LI_DAMAGE_S_KID, &player->actor.projectedPos, 4, &D_801333E0, &D_801333E0,
-                           &D_801333E8);
+    Sfx_PlaySfxAtPos(&player->actor.projectedPos, NA_SE_EN_DARUNIA_HIT_LINK);
+    Audio_PlaySoundGeneral(NA_SE_VO_LI_DAMAGE_S_KID, &player->actor.projectedPos, 4, &gSfxDefaultFreqAndVolScale,
+                           &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
 }
 
 // Cutscene: Darunia gives Link the Goron's Ruby.
 void DemoDu_CsPlaySfx_HitBreast(DemoDu* this) {
-    func_80078914(&this->actor.projectedPos, NA_SE_EN_DARUNIA_HIT_BREAST - SFX_FLAG);
+    Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_EN_DARUNIA_HIT_BREAST - SFX_FLAG);
 }
 
 // Cutscene: Darunia gives Link the Goron's Ruby.
@@ -341,8 +340,8 @@ void DemoDu_CsPlaySfx_LinkEscapeFromGorons(PlayState* play) {
     if (play->csCtx.frames == 1400) {
         Player* player = GET_PLAYER(play);
 
-        Audio_PlaySoundGeneral(NA_SE_VO_LI_FALL_L_KID, &player->actor.projectedPos, 4, &D_801333E0, &D_801333E0,
-                               &D_801333E8);
+        Audio_PlaySoundGeneral(NA_SE_VO_LI_FALL_L_KID, &player->actor.projectedPos, 4, &gSfxDefaultFreqAndVolScale,
+                               &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
     }
 }
 
@@ -352,8 +351,8 @@ void DemoDu_CsPlaySfx_LinkSurprised(PlayState* play) {
     if (play->csCtx.frames == 174) {
         Player* player = GET_PLAYER(play);
 
-        Audio_PlaySoundGeneral(NA_SE_VO_LI_SURPRISE_KID, &player->actor.projectedPos, 4U, &D_801333E0, &D_801333E0,
-                               &D_801333E8);
+        Audio_PlaySoundGeneral(NA_SE_VO_LI_SURPRISE_KID, &player->actor.projectedPos, 4U, &gSfxDefaultFreqAndVolScale,
+                               &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
     }
 }
 
@@ -431,8 +430,8 @@ void DemoDu_CsGoronsRuby_SpawnDustWhenHittingLink(DemoDu* this, PlayState* play)
             envColor.g += colorDelta;
             envColor.b += colorDelta;
 
-            func_8002829C(play, &position, &velocity, &accel, &primColor, &envColor,
-                          Rand_ZeroOne() * 40.0f + 200.0f, 0);
+            func_8002829C(play, &position, &velocity, &accel, &primColor, &envColor, Rand_ZeroOne() * 40.0f + 200.0f,
+                          0);
         }
 
         DemoDu_CsPlaySfx_DaruniaHitsLink(play);
@@ -715,7 +714,7 @@ void DemoDu_InitCs_AfterGanon(DemoDu* this, PlayState* play) {
 }
 
 void DemoDu_CsPlaySfx_WhiteOut() {
-    func_800788CC(NA_SE_SY_WHITE_OUT_T);
+    Sfx_PlaySfxCentered2(NA_SE_SY_WHITE_OUT_T);
 }
 
 void DemoDu_CsAfterGanon_SpawnDemo6K(DemoDu* this, PlayState* play) {
@@ -822,8 +821,8 @@ void DemoDu_Draw_02(Actor* thisx, PlayState* play2) {
 
     gSPSegment(POLY_XLU_DISP++, 0x0C, &D_80116280[0]);
 
-    POLY_XLU_DISP = SkelAnime_DrawFlex(play, skelAnime->skeleton, skelAnime->jointTable, skelAnime->dListCount, 0,
-                                       0, 0, POLY_XLU_DISP);
+    POLY_XLU_DISP = SkelAnime_DrawFlex(play, skelAnime->skeleton, skelAnime->jointTable, skelAnime->dListCount, 0, 0, 0,
+                                       POLY_XLU_DISP);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }

@@ -19,6 +19,7 @@ typedef struct EnIshi {
     /* 0x0000 */ Actor actor;
     /* 0x014C */ EnIshiActionFunc actionFunc;
     /* 0x0150 */ ColliderCylinder collider;
+    /*        */ RockIdentity     rockIdentity;
 } EnIshi; // size = 0x019C
 
 #endif

@@ -70,13 +70,7 @@ s32 OnePointCutscene_SetInfo(PlayState* play, s16 camIdx, s16 csId, Actor* actor
     PosRot sp8C;
     f32 tempRand;
     Unique9OnePointCs* csInfo = ONEPOINT_CS_INFO(csCam);
-    
-    // #region SOH [Enhancement]
-    //the default is 90, lower values necessary to prevent camera swing as animation speeds up
-    s16 camCrawlTemp = CVarGetInteger(CVAR_ENHANCEMENT("CrawlSpeed"), 1);
-    s16 camCrawlTimer = D_8012042C / camCrawlTemp;
-    // #endregion
-    
+
     switch (csId) {
         case 1020:
             if (timer < 20) {
@@ -253,8 +247,7 @@ s32 OnePointCutscene_SetInfo(PlayState* play, s16 camIdx, s16 csId, Actor* actor
                 D_801211D4[0].atTargetInit.y = actor->focus.pos.y - 5.0f;
                 D_801211D4[0].atTargetInit.z = actor->focus.pos.z;
                 spC0 = ((EnSw*)actor)->unk_364;
-                osSyncPrintf("%s(%d): xyz_t: %s (%f %f %f)\n", __FILE__, __LINE__, "&cp", spC0.x, spC0.y,
-                             spC0.z);
+                osSyncPrintf("%s(%d): xyz_t: %s (%f %f %f)\n", __FILE__, __LINE__, "&cp", spC0.x, spC0.y, spC0.z);
                 D_801211D4[0].eyeTargetInit.x = (actor->focus.pos.x + (120.0f * spC0.x)) - (Rand_ZeroOne() * 20.0f);
                 D_801211D4[0].eyeTargetInit.y = actor->focus.pos.y + (120.0f * spC0.y) + 20.0f;
                 D_801211D4[0].eyeTargetInit.z = (actor->focus.pos.z + (120.0f * spC0.z)) - (Rand_ZeroOne() * 20.0f);
@@ -337,26 +330,19 @@ s32 OnePointCutscene_SetInfo(PlayState* play, s16 camIdx, s16 csId, Actor* actor
         case 9601:
             Play_CameraChangeSetting(play, camIdx, CAM_SET_CS_3);
             Play_CameraChangeSetting(play, MAIN_CAM, mainCam->prevSetting);
-            if (CVarGetInteger(CVAR_ENHANCEMENT("CrawlSpeed"), 1) > 1) {
-                OnePointCutscene_SetCsCamPoints(csCam, D_80120430 | 0x1000, camCrawlTimer, D_80120308, D_80120398);
-            } else {
+            if (GameInteractor_Should(VB_CRAWL_SPEED_EXIT_CS, true, csCam, csId, D_80120430, D_8012042C, D_80120308,
+                                      D_80120398)) {
                 OnePointCutscene_SetCsCamPoints(csCam, D_80120430 | 0x1000, D_8012042C, D_80120308, D_80120398);
             }
             break;
         case 9602:
-            // #region SOH [Enhancement]
-            if (CVarGetInteger(CVAR_ENHANCEMENT("CrawlSpeed"), 1) > 1) {
-                Play_CameraChangeSetting(play, camIdx, CAM_SET_CS_3);
-                Play_CameraChangeSetting(play, MAIN_CAM, mainCam->prevSetting);
-                OnePointCutscene_SetCsCamPoints(csCam, D_80120430 | 0x1000, camCrawlTimer, D_80120308, D_80120434);
-                break;
-            // #endregion
-            } else {
-                Play_CameraChangeSetting(play, camIdx, CAM_SET_CS_3);
-                Play_CameraChangeSetting(play, MAIN_CAM, mainCam->prevSetting);
+            Play_CameraChangeSetting(play, camIdx, CAM_SET_CS_3);
+            Play_CameraChangeSetting(play, MAIN_CAM, mainCam->prevSetting);
+            if (GameInteractor_Should(VB_CRAWL_SPEED_EXIT_CS, true, csCam, csId, D_80120430, D_8012042C, D_80120308,
+                                      D_80120434)) {
                 OnePointCutscene_SetCsCamPoints(csCam, D_80120430 | 0x1000, D_8012042C, D_80120308, D_80120434);
-                break;
             }
+            break;
         case 4175:
             csInfo->keyFrames = D_8012147C;
             csInfo->keyFrameCnt = 4;
@@ -471,7 +457,7 @@ s32 OnePointCutscene_SetInfo(PlayState* play, s16 camIdx, s16 csId, Actor* actor
             Play_CameraChangeSetting(play, camIdx, CAM_SET_CS_3);
             Player_SetCsActionWithHaltedActors(play, &player->actor, 5);
             OnePointCutscene_SetCsCamPoints(csCam, D_80120304 | 0x2000, D_80120300, D_8012013C, D_8012021C);
-            func_80078884(NA_SE_SY_CORRECT_CHIME);
+            Sfx_PlaySfxCentered(NA_SE_SY_CORRECT_CHIME);
             OnePointCutscene_Vec3sToVec3f(&mainCam->at, &D_8012013C[D_801202FC - 2].pos);
             OnePointCutscene_Vec3sToVec3f(&mainCam->eye, &D_8012021C[D_801202FC - 2].pos);
             D_8012013C[D_801202FC - 3].pos.x +=

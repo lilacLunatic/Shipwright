@@ -119,8 +119,8 @@ void BgHidanKowarerukabe_Init(Actor* thisx, PlayState* play) {
     if (((this->dyna.actor.params & 0xFF) < CRACKED_STONE_FLOOR) ||
         ((this->dyna.actor.params & 0xFF) > LARGE_BOMBABLE_WALL)) {
         // "Error: Fire Temple Breakable Walls. arg_data I can't determine the (%s %d)(arg_data 0x%04x)"
-        osSyncPrintf("Error : 炎の神殿 壊れる壁 の arg_data が判別出来ない(%s %d)(arg_data 0x%04x)\n",
-                     __FILE__, __LINE__, this->dyna.actor.params);
+        osSyncPrintf("Error : 炎の神殿 壊れる壁 の arg_data が判別出来ない(%s %d)(arg_data 0x%04x)\n", __FILE__,
+                     __LINE__, this->dyna.actor.params);
         Actor_Kill(&this->dyna.actor);
         return;
     }
@@ -303,7 +303,9 @@ void BgHidanKowarerukabe_Update(Actor* thisx, PlayState* play) {
     BgHidanKowarerukabe* this = (BgHidanKowarerukabe*)thisx;
     s32 pad;
 
-    if (Actor_GetCollidedExplosive(play, &this->collider.base) != NULL) {
+    // #region SOH [Co-op]
+    if ((Actor_GetCollidedExplosive(play, &this->collider.base) != NULL) || Flags_GetSwitch(play, (this->dyna.actor.params >> 8) & 0x3F)) {
+    // #endregion
         BgHidanKowarerukabe_Break(this, play);
         Flags_SetSwitch(play, (this->dyna.actor.params >> 8) & 0x3F);
 
@@ -313,7 +315,7 @@ void BgHidanKowarerukabe_Update(Actor* thisx, PlayState* play) {
             SoundSource_PlaySfxAtFixedWorldPos(play, &this->dyna.actor.world.pos, 40, NA_SE_EV_WALL_BROKEN);
         }
 
-        func_80078884(NA_SE_SY_CORRECT_CHIME);
+        Sfx_PlaySfxCentered(NA_SE_SY_CORRECT_CHIME);
         Actor_Kill(&this->dyna.actor);
         return;
     }
@@ -328,8 +330,7 @@ void BgHidanKowarerukabe_Draw(Actor* thisx, PlayState* play) {
 
     Gfx_SetupDL_25Opa(play->state.gfxCtx);
 
-    gSPMatrix(POLY_OPA_DISP++, MATRIX_NEWMTX(play->state.gfxCtx),
-              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    gSPMatrix(POLY_OPA_DISP++, MATRIX_NEWMTX(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     gSPDisplayList(POLY_OPA_DISP++, sBreakableWallDLists[this->dyna.actor.params & 0xFF]);
 
     Collider_UpdateSpheres(0, &this->collider);

@@ -1,12 +1,13 @@
 #pragma once
 
 #include <libultraship/libultra/gbi.h>
+#include "z64save.h"
 
 #define SECTION_PARENT_NONE -1
 typedef struct {
     u8 valid;
     u16 deaths;
-    char playerName[8];
+    u8 playerName[8];
     u16 healthCapacity;
     u32 questItems;
     s8 defense;
@@ -28,9 +29,16 @@ typedef struct {
     s16 rupees;
     s16 gsTokens;
     u8 isDoubleDefenseAcquired;
-    u8 gregFound;
-    u8 hasWallet;
+    s32 filenameLanguage;
+    s32 gregFound;
+    s32 hasWallet;
 } SaveFileMetaInfo;
+
+typedef enum {
+    /* 0 */ NAME_LANGUAGE_PAL,
+    /* 1 */ NAME_LANGUAGE_NTSC_JPN,
+    /* 2 */ NAME_LANGUAGE_NTSC_ENG,
+} FilenameLanguage;
 
 #ifdef __cplusplus
 
@@ -44,8 +52,6 @@ typedef struct {
 #define BS_THREAD_POOL_ENABLE_PRIORITY
 #define BS_THREAD_POOL_ENABLE_PAUSE
 #include <BS_thread_pool.hpp>
-
-#include "z64save.h"
 
 #include <nlohmann/json.hpp>
 

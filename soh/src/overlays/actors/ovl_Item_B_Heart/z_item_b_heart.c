@@ -6,6 +6,7 @@
 
 #include "z_item_b_heart.h"
 #include "objects/object_gi_hearts/object_gi_hearts.h"
+#include "soh/OTRGlobals.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define FLAGS 0
@@ -54,6 +55,13 @@ void ItemBHeart_Destroy(Actor* thisx, PlayState* play) {
 void ItemBHeart_Update(Actor* thisx, PlayState* play) {
     ItemBHeart* this = (ItemBHeart*)thisx;
 
+    // #region SOH [Co-op]
+    if (Flags_GetCollectible(play, 0x1F)) {
+        Actor_Kill(&this->actor);
+        return;
+    }
+    // #endregion
+
     func_80B85264(this, play);
     Actor_UpdateBgCheckInfo(play, &this->actor, 0.0f, 0.0f, 0.0f, 4);
     if (Actor_HasParent(&this->actor, play)) {
@@ -96,14 +104,12 @@ void ItemBHeart_Draw(Actor* thisx, PlayState* play) {
 
     if (flag) {
         Gfx_SetupDL_25Xlu(play->state.gfxCtx);
-        gSPMatrix(POLY_XLU_DISP++, MATRIX_NEWMTX(play->state.gfxCtx),
-                  G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        gSPMatrix(POLY_XLU_DISP++, MATRIX_NEWMTX(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         gSPDisplayList(POLY_XLU_DISP++, gGiHeartBorderDL);
         gSPDisplayList(POLY_XLU_DISP++, gGiHeartContainerDL);
     } else {
         Gfx_SetupDL_25Opa(play->state.gfxCtx);
-        gSPMatrix(POLY_OPA_DISP++, MATRIX_NEWMTX(play->state.gfxCtx),
-                  G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        gSPMatrix(POLY_OPA_DISP++, MATRIX_NEWMTX(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         gSPDisplayList(POLY_OPA_DISP++, gGiHeartBorderDL);
         gSPDisplayList(POLY_OPA_DISP++, gGiHeartContainerDL);
     }

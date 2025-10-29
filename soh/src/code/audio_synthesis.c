@@ -761,7 +761,7 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSubEu, NoteSynthesisS
         audioFontSample = noteSubEu->sound.soundFontSound->sample;
         
         loopInfo = audioFontSample->loop;
-        loopEndPos = loopInfo->end;
+        loopEndPos = loopInfo->loopEnd;
         sampleAddr = audioFontSample->sampleAddr;
         resampledTempLen = 0;
 
@@ -854,14 +854,28 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSubEu, NoteSynthesisS
                         s5 = samplesLenAdjusted;
                         goto skip;
                     case CODEC_S16:
-                        AudioSynth_ClearBuffer(cmd++, DMEM_UNCOMPRESSED_NOTE, (samplesLenAdjusted * 2) + 0x20);
-                        AudioSynth_LoadBuffer(cmd++, DMEM_UNCOMPRESSED_NOTE, ALIGN16(nSamplesToLoad * 2),
-                                              audioFontSample->sampleAddr + (synthState->samplePosInt * 2));
-                        
+                        // SoH [Port] [Custom Audio] This was not finished originally.
+                        AudioSynth_ClearBuffer(cmd++, DMEM_UNCOMPRESSED_NOTE, (samplesLenAdjusted + 16) * 2);
                         flags = A_CONTINUE;
                         skipBytes = 0;
-                        nSamplesProcessed = samplesLenAdjusted;
-                        s5 = samplesLenAdjusted;
+                        nSamplesProcessed += samplesLenAdjusted;
+                        phi_s4 = samplesLenAdjusted;
+                        size_t bytesToRead;
+
+                        if (((synthState->samplePosInt * 2) + (samplesLenAdjusted + 16) * 2) <
+                            audioFontSample->size) {
+                            bytesToRead = (samplesLenAdjusted + 16) * 2;
+                        } else {
+                            bytesToRead = audioFontSample->size - (synthState->samplePosInt * 2);
+                        }
+                        // SoH [Port] [Custom audio]
+                        // TLDR samples are loaded async and might be null the first time they are played.
+                        // See note in AudioSampleFactory.cpp
+                        if (sampleAddr != NULL) {
+                            aLoadBuffer(cmd++, sampleAddr + (synthState->samplePosInt * 2), DMEM_UNCOMPRESSED_NOTE,
+                                        bytesToRead);
+                        }
+
                         goto skip;
                     case CODEC_REVERB:
                         break;
@@ -895,7 +909,7 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSubEu, NoteSynthesisS
                 }
 
                 if (synthState->restart) {
-                    aSetLoop(cmd++, audioFontSample->loop->state);
+                    aSetLoop(cmd++, audioFontSample->loop->predictorState);
                     flags = A_LOOP;
                     synthState->restart = false;
                 }

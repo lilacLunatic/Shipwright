@@ -15,6 +15,7 @@ typedef struct ObjHamishi {
     /* 0x01A2 */ s16 shakePosPhase;
     /* 0x01A4 */ s16 shakeRotPhase;
     /* 0x01A6 */ s16 hitCount;
+    /*        */ RockIdentity rockIdentity;
 } ObjHamishi; // size = 0x01A8
 
 #endif
